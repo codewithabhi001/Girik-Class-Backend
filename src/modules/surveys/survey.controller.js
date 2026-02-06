@@ -1,0 +1,76 @@
+import * as surveyService from './survey.service.js';
+
+// Assume multer middleware handles file parsing and puts it in req.file
+export const submitSurveyReport = async (req, res, next) => {
+    try {
+        const report = await surveyService.submitSurveyReport(req.body, req.file, req.user);
+        res.status(201).json(report);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const startSurvey = async (req, res, next) => {
+    try {
+        const result = await surveyService.startSurvey(req.body, req.user);
+        res.status(201).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const finalizeSurvey = async (req, res, next) => {
+    try {
+        const result = await surveyService.finalizeSurvey(req.params.id, req.user);
+        res.json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const streamLocation = async (req, res, next) => {
+    try {
+        // Reusing updateGps logic or similar. 
+        // For now, let's just log it linked to survey?
+        const result = await surveyService.streamLocation(req.params.id, req.body, req.user);
+        res.json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const uploadProof = async (req, res, next) => {
+    try {
+        const result = await surveyService.uploadProof(req.params.id, req.file, req.user);
+        res.json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getTimeline = async (req, res, next) => {
+    try {
+        const result = await surveyService.getTimeline(req.params.id);
+        res.json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const flagViolation = async (req, res, next) => {
+    try {
+        const result = await surveyService.flagViolation(req.params.id, req.user);
+        res.json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getSurveyReports = async (req, res, next) => {
+    try {
+        const reports = await surveyService.getSurveyReports(req.query);
+        res.json(reports);
+    } catch (error) {
+        next(error);
+    }
+};
