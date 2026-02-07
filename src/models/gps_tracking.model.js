@@ -3,6 +3,7 @@ export default (sequelize, DataTypes) => {
         id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV7, primaryKey: true },
         surveyor_id: DataTypes.UUID,
         vessel_id: DataTypes.UUID,
+        job_id: DataTypes.UUID,
         latitude: DataTypes.DECIMAL(10, 8),
         longitude: DataTypes.DECIMAL(11, 8),
         timestamp: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
@@ -15,6 +16,7 @@ export default (sequelize, DataTypes) => {
     GpsTracking.associate = (models) => {
         GpsTracking.belongsTo(models.User, { foreignKey: 'surveyor_id' });
         GpsTracking.belongsTo(models.Vessel, { foreignKey: 'vessel_id' });
+        GpsTracking.belongsTo(models.JobRequest, { foreignKey: 'job_id' });
     };
 
     return GpsTracking;

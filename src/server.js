@@ -13,16 +13,18 @@ const startServer = async () => {
         await db.sequelize.authenticate();
         logger.info('Database connected successfully.');
 
-        // Sync models is usually not recommended in production, use migrations instead.
-        // However, for development speed in this context, we might sync if needed.
-        // await db.sequelize.sync({ alter: true }); 
-
+        // Auto-sync models: Updates tables to match models
+        // For production, use migrations instead
+        logger.info('Syncing database models (alter mode)...');
+        await db.sequelize.sync({ alter: true });
+        logger.info('Database models synced successfully.');
 
         startMonitoring();
 
 
         app.listen(PORT, () => {
             logger.info(`Server is running on port ${PORT}`);
+            logger.info(`Swagger API Docs: http://localhost:${PORT}/api-docs`);
         });
     } catch (error) {
         logger.error('Unable to connect to the database:', error);

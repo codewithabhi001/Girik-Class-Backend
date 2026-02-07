@@ -13,8 +13,7 @@ export const login = async (req, res, next) => {
         });
 
 
-        const capabilities = authService.getCapabilities(user.role);
-        res.json({ user: { ...user.toJSON(), capabilities }, token });
+        res.json({ user, token });
 
     } catch (error) {
         next(error);

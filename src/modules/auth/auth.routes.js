@@ -10,9 +10,7 @@ const router = express.Router();
 // Access: Public
 router.post('/login', validate(schemas.login), authController.login);
 
-// Register a new user (Self-registration)
-// Access: Public (Or restricted if self-reg disabled)
-router.post('/register', validate(schemas.register), authController.register); // Optional, depending on reqs
+
 
 // Logout current session (Invalidate token)
 // Access: Authenticated users

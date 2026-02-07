@@ -1,0 +1,1005 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "GIRIK API - SURVEYOR",
+    "version": "1.0.0",
+    "description": "# 🚢 Marine Certification and Operations Management System\n\nWelcome to the GIRIK Backend API. This documentation covers all interactions with the system.\n\n---\n\n## 📋 Quick Start\n\n<details>\n<summary>🔐 <b>Authentication Flow</b> (Click to expand)</summary>\n\n1. **Register** a new account or **Login** with existing credentials.\n2. Receive a **JWT Token**.\n3. Use the token in the `Authorization` header: `Bearer <token>`.\n\n</details>\n\n<details>\n<summary>🌐 <b>Public Verification</b> (Click to expand)</summary>\n\nanyone can verify certificates and vessel details using the public endpoints without logging in.\n\n</details>\n"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api/v1",
+      "description": "Local Development Server"
+    },
+    {
+      "url": "https://api.girik.com/api/v1",
+      "description": "Production Server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "🔐 Authentication",
+      "description": "Public endpoints for user authentication and session management"
+    },
+    {
+      "name": "🌐 Public Access",
+      "description": "Publicly accessible endpoints for verification (No Auth Required)"
+    },
+    {
+      "name": "🔍 Surveys",
+      "description": "Survey execution, reporting, and evidence"
+    },
+    {
+      "name": "👷 Surveyors",
+      "description": "Surveyor recruitment and profiles"
+    },
+    {
+      "name": "📍 Geofence",
+      "description": "GPS tracking and geofencing"
+    },
+    {
+      "name": "✅ Checklists",
+      "description": "Survey checklists"
+    },
+    {
+      "name": "🚫 Non-Conformities",
+      "description": "NC management"
+    },
+    {
+      "name": "🗂️ Evidence",
+      "description": "Evidence and document management"
+    },
+    {
+      "name": "📱 Mobile",
+      "description": "Mobile app synchronization"
+    }
+  ],
+  "paths": {
+    "/surveys/start": {
+      "post": {
+        "tags": [
+          "🔍 Surveys"
+        ],
+        "summary": "Start Survey",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "jobId"
+                ],
+                "properties": {
+                  "jobId": {
+                    "type": "string"
+                  },
+                  "location": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "✅ Survey started"
+          }
+        }
+      }
+    },
+    "/surveys": {
+      "post": {
+        "tags": [
+          "🔍 Surveys"
+        ],
+        "summary": "Submit Report",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "jobId",
+                  "content"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "✅ Report submitted"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "🔍 Surveys"
+        ],
+        "summary": "List Reports",
+        "responses": {
+          "200": {
+            "description": "✅ Reports retrieved"
+          }
+        }
+      }
+    },
+    "/surveys/{id}/location": {
+      "post": {
+        "tags": [
+          "🔍 Surveys"
+        ],
+        "summary": "Stream Location",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "✅ Location updated"
+          }
+        }
+      }
+    },
+    "/surveys/{id}/proof": {
+      "post": {
+        "tags": [
+          "🔍 Surveys"
+        ],
+        "summary": "Upload Proof/Photo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "✅ Proof uploaded"
+          }
+        }
+      }
+    },
+    "/surveys/{id}/finalize": {
+      "put": {
+        "tags": [
+          "🔍 Surveys"
+        ],
+        "summary": "Finalize Survey",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "✅ Survey finalized"
+          }
+        }
+      }
+    },
+    "/public/certificate/verify/{number}": {
+      "get": {
+        "tags": [
+          "🌐 Public Access"
+        ],
+        "summary": "Verify Certificate (Public)",
+        "description": "Verify the validity of a certificate by its unique number. No login required.",
+        "security": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "number",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "Unique Certificate Number (e.g., CERT-2024-001)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "✅ Certificate found and valid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "isValid": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "certificate": {
+                      "type": "object",
+                      "properties": {
+                        "number": {
+                          "type": "string"
+                        },
+                        "vesselName": {
+                          "type": "string"
+                        },
+                        "issueDate": {
+                          "type": "string",
+                          "format": "date"
+                        },
+                        "expiryDate": {
+                          "type": "string",
+                          "format": "date"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "VALID"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "🔍 Certificate not found"
+          }
+        }
+      }
+    },
+    "/public/vessel/{imo}": {
+      "get": {
+        "tags": [
+          "🌐 Public Access"
+        ],
+        "summary": "Verify Vessel (Public)",
+        "description": "Get basic public details of a vessel by its IMO number.",
+        "security": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "imo",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "Vessel IMO Number"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "✅ Vessel found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "imo": {
+                      "type": "string"
+                    },
+                    "flag": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "🔍 Vessel not found"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "🔐 Authentication"
+        ],
+        "summary": "User Login",
+        "description": "Authenticate with email and password to receive a JWT access token.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "admin@girik.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "password123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "✅ Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "token": {
+                      "type": "string",
+                      "description": "JWT Access Token"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "❌ Invalid credentials"
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "🔐 Authentication"
+        ],
+        "summary": "Register New User",
+        "description": "Create a new user account.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "New User"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "user@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "securePass123"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "example": "+1234567890"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "CLIENT",
+                      "SURVEYOR"
+                    ],
+                    "default": "CLIENT"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "✅ User created successfully"
+          },
+          "400": {
+            "description": "❌ Validation error or email exists"
+          }
+        }
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "tags": [
+          "🔐 Authentication"
+        ],
+        "summary": "Forgot Password",
+        "description": "Initiate password reset process via email.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "forgot@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "✅ Reset email sent"
+          }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "tags": [
+          "🔐 Authentication"
+        ],
+        "summary": "Reset Password",
+        "description": "Complete password reset using token received in email.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "token",
+                  "newPassword"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "description": "Reset token from email"
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "format": "password"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "✅ Password reset successful"
+          }
+        }
+      }
+    },
+    "/auth/refresh-token": {
+      "post": {
+        "tags": [
+          "🔐 Authentication"
+        ],
+        "summary": "Refresh Access Token",
+        "description": "Get a new access token using a valid refresh token (usually via cookie or body).",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "✅ Token refreshed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/surveyors/apply": {
+      "post": {
+        "tags": [
+          "👷 Surveyors"
+        ],
+        "summary": "Apply as Surveyor",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cv": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "id_proof": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "certificates": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Applied"
+          }
+        }
+      }
+    },
+    "/surveyors/applications": {
+      "get": {
+        "tags": [
+          "👷 Surveyors"
+        ],
+        "summary": "List Applications",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/surveyors/applications/{id}/review": {
+      "put": {
+        "tags": [
+          "👷 Surveyors"
+        ],
+        "summary": "Review Application",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/surveyors/{id}/profile": {
+      "get": {
+        "tags": [
+          "👷 Surveyors"
+        ],
+        "summary": "Get Profile",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "👷 Surveyors"
+        ],
+        "summary": "Update Profile",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated"
+          }
+        }
+      }
+    },
+    "/geofence/gps/update": {
+      "post": {
+        "tags": [
+          "📍 Geofence"
+        ],
+        "summary": "Update GPS",
+        "responses": {
+          "200": {
+            "description": "Updated"
+          }
+        }
+      }
+    },
+    "/geofence/geofence": {
+      "post": {
+        "tags": [
+          "📍 Geofence"
+        ],
+        "summary": "Set Geofence",
+        "responses": {
+          "200": {
+            "description": "Set"
+          }
+        }
+      }
+    },
+    "/geofence/geofence/{vesselId}": {
+      "get": {
+        "tags": [
+          "📍 Geofence"
+        ],
+        "summary": "Get Geofence",
+        "parameters": [
+          {
+            "name": "vesselId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/jobs/{jobId}/checklist": {
+      "get": {
+        "tags": [
+          "✅ Checklists"
+        ],
+        "summary": "Get Job Checklist",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "✅ Checklists"
+        ],
+        "summary": "Submit Checklist",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Submitted"
+          }
+        }
+      }
+    },
+    "/non-conformities": {
+      "post": {
+        "tags": [
+          "🚫 Non-Conformities"
+        ],
+        "summary": "Create Non-Conformity",
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
+    },
+    "/non-conformities/{id}/close": {
+      "put": {
+        "tags": [
+          "🚫 Non-Conformities"
+        ],
+        "summary": "Close NC",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Closed"
+          }
+        }
+      }
+    },
+    "/non-conformities/job/{jobId}": {
+      "get": {
+        "tags": [
+          "🚫 Non-Conformities"
+        ],
+        "summary": "Get NCs by Job",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/evidence": {
+      "post": {
+        "tags": [
+          "🗂️ Evidence"
+        ],
+        "summary": "Upload Evidence",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Uploaded"
+          }
+        }
+      }
+    },
+    "/evidence/{entity}/{id}": {
+      "get": {
+        "tags": [
+          "🗂️ Evidence"
+        ],
+        "summary": "Get Evidence",
+        "parameters": [
+          {
+            "name": "entity",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/evidence/{id}/chain": {
+      "get": {
+        "tags": [
+          "🗂️ Evidence"
+        ],
+        "summary": "Chain of Custody",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/evidence/verify": {
+      "post": {
+        "tags": [
+          "🗂️ Evidence"
+        ],
+        "summary": "Verify Evidence",
+        "responses": {
+          "200": {
+            "description": "Verified"
+          }
+        }
+      }
+    },
+    "/evidence/{id}/lock": {
+      "put": {
+        "tags": [
+          "🗂️ Evidence"
+        ],
+        "summary": "Lock Evidence",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Locked"
+          }
+        }
+      }
+    },
+    "/mobile/sync": {
+      "post": {
+        "tags": [
+          "📱 Mobile"
+        ],
+        "summary": "Sync Data",
+        "responses": {
+          "200": {
+            "description": "Synced"
+          }
+        }
+      }
+    },
+    "/mobile/offline/jobs": {
+      "get": {
+        "tags": [
+          "📱 Mobile"
+        ],
+        "summary": "Get Offline Jobs",
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/mobile/offline/surveys": {
+      "post": {
+        "tags": [
+          "📱 Mobile"
+        ],
+        "summary": "Submit Offline Surveys",
+        "responses": {
+          "200": {
+            "description": "Submitted"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "GM",
+              "TM",
+              "TO",
+              "TA",
+              "SURVEYOR",
+              "CLIENT",
+              "FLAG_ADMIN"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

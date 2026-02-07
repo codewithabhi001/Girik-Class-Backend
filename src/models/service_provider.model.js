@@ -15,7 +15,7 @@ export default (sequelize, DataTypes) => {
             defaultValue: 'PENDING'
         },
         rating: { type: DataTypes.FLOAT, defaultValue: 0 },
-        legal_hold_status: { type: DataTypes.BOOLEAN, defaultValue: false }
+
     }, {
         tableName: 'service_providers',
         underscored: true,

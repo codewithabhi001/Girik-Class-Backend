@@ -9,6 +9,9 @@ import { validate, schemas } from '../../middlewares/validate.middleware.js';
 const router = express.Router();
 router.use(authenticate);
 
+// List certificate types (for Create Job dropdown) – all authenticated including CLIENT
+router.get('/types', certController.getCertificateTypes);
+
 // Generate a new certificate
 // Access: ADMIN, GM, TM
 router.post('/', hasRole('ADMIN', 'GM', 'TM'), certController.generateCertificate);

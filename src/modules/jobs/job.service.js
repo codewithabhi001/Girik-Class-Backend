@@ -28,7 +28,9 @@ export const getJobs = async (query, user) => {
 
     const whereClause = { ...filters };
     if (user.role === 'CLIENT') {
-        whereClause.requested_by_user_id = user.id;
+        const vessels = await db.Vessel.findAll({ where: { client_id: user.client_id }, attributes: ['id'] });
+        const vesselIds = vessels.map(v => v.id);
+        whereClause.vessel_id = vesselIds;
     } else if (user.role === 'SURVEYOR') {
         whereClause.gm_assigned_surveyor_id = user.id;
     }
@@ -96,18 +98,17 @@ export const reassignSurveyor = async (jobId, surveyorId, reason, user) => {
     await JobStatusHistory.create({
         job_id: job.id,
         old_status: job.job_status,
-        new_status: job.job_status, // Status might not change, just assignee
+        new_status: job.job_status,
         changed_by: user.id,
         change_reason: `Reassigned from ${oldSurveyor} to ${surveyorId}: ${reason}`
     });
 
-    await notificationService.notifyRoles(['SURVEYOR'], 'Job Reassigned', `Job ${jobId} has been reassigned to you.`); // To new surveyor
+    await notificationService.notifyRoles(['SURVEYOR'], 'Job Reassigned', `Job ${jobId} has been reassigned to you.`);
 
     return job;
 };
 
 export const escalateJob = async (jobId, reason, targetRole, user) => {
-    // Log escalation status? Maybe no separate status, just notification and history note
     const job = await getJobById(jobId);
 
     await JobStatusHistory.create({
@@ -118,13 +119,10 @@ export const escalateJob = async (jobId, reason, targetRole, user) => {
         change_reason: `ESCALATED to ${targetRole}: ${reason}`
     });
 
-
     await notificationService.notifyRoles([targetRole], 'Job Escalation', `Job ${jobId} escalated. Reason: ${reason}`, 'URGENT');
 
     return job;
 };
-
-// --- Lifecycle Extensions ---
 
 export const cancelJob = async (id, reason, user) => {
     const job = await getJobById(id);
@@ -138,18 +136,12 @@ export const holdJob = async (id, reason, user) => {
     const job = await getJobById(id);
     if (job.job_status === 'COMPLETED') throw { statusCode: 400, message: 'Cannot hold a completed job' };
 
-    // Trigger SLA Pause (Integration)
-    await slaService.pauseSla(id, reason, user.id);
-
     return updateJobStatus(id, 'ON_HOLD', reason, user);
 };
 
 export const resumeJob = async (id, reason, user) => {
     const job = await getJobById(id);
     if (job.job_status !== 'ON_HOLD') throw { statusCode: 400, message: 'Job is not on hold' };
-
-    // Trigger SLA Resume (Integration)
-    await slaService.resumeSla(id, user.id);
 
     return updateJobStatus(id, 'IN_PROGRESS', reason, user);
 };
@@ -162,7 +154,7 @@ export const cloneJob = async (id, user) => {
         certificate_type_id: originalJob.certificate_type_id,
         reason: `Clone of Job ${originalJob.job_number || originalJob.id}`,
         target_port: originalJob.target_port,
-        target_date: new Date(), // Reset target date
+        target_date: new Date(),
         job_status: 'CREATED',
         requested_by_user_id: user.id
     };
@@ -184,7 +176,6 @@ export const getJobHistory = async (id) => {
     return await JobStatusHistory.findAll({
         where: { job_id: id },
         order: [['created_at', 'ASC']],
-        include: [{ model: User, as: 'Modifier', attributes: ['name', 'email', 'role'] }] // Assuming association exists
+        include: [{ model: User, as: 'Modifier', attributes: ['name', 'email', 'role'] }]
     });
 };
-

@@ -51,20 +51,7 @@ export const performMaintenance = async (action, user) => {
     }
 };
 
-export const getAccessPolicies = async () => {
-    // Return RBAC definitions (Mock)
-    return {
-        roles: ['ADMIN', 'GM', 'TM', 'SURVEYOR', 'CLIENT'],
-        resources: ['JOBS', 'CERTIFICATES', 'VESSELS'],
-        matrix: 'DYNAMIC_DB_LOADED' // Ideally verify from Policy table
-    };
-};
 
-export const createAccessPolicy = async (data) => {
-    // Create Policy Model
-    // await db.Policy.create(data);
-    return { message: 'Policy created (Mock)', data };
-};
 
 export const getMigrations = async () => {
     // Query Sequelize Meta

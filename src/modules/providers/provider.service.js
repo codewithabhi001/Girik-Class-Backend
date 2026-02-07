@@ -101,8 +101,4 @@ export const getEvaluations = async (id) => {
     });
 };
 
-export const toggleLegalHold = async (id, status, user) => {
-    const provider = await getProviderById(id);
-    await provider.update({ legal_hold_status: status });
-    return provider;
-};
+

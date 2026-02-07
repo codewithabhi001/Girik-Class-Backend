@@ -46,11 +46,4 @@ export const getEvaluations = async (req, res, next) => {
     }
 };
 
-export const setLegalHold = async (req, res, next) => {
-    try {
-        const provider = await providerService.toggleLegalHold(req.params.id, true, req.user);
-        res.json(provider);
-    } catch (error) {
-        next(error);
-    }
-};
+

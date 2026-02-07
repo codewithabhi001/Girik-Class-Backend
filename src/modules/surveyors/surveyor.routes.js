@@ -21,6 +21,7 @@ router.post('/apply',
 
 router.use(authenticate);
 
+router.post('/', hasRole('ADMIN', 'TM'), validate(schemas.createUser), surveyorController.createSurveyor);
 router.get('/applications', hasRole('ADMIN', 'TM'), surveyorController.getApplications);
 router.put('/applications/:id/review', hasRole('TM', 'ADMIN'), validate(schemas.reviewSurveyor), surveyorController.reviewApplication);
 

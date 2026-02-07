@@ -51,19 +51,7 @@ export const getFeatureFlags = async (req, res, next) => {
     res.json({ flags: { 'NEW_UI': true, 'BETA_REPORTS': false } });
 };
 
-export const getAccessPolicies = async (req, res, next) => {
-    try {
-        const result = await systemService.getAccessPolicies();
-        res.json(result);
-    } catch (e) { next(e); }
-};
 
-export const createAccessPolicy = async (req, res, next) => {
-    try {
-        const result = await systemService.createAccessPolicy(req.body);
-        res.json(result);
-    } catch (e) { next(e); }
-};
 
 export const getMigrations = async (req, res, next) => {
     try {

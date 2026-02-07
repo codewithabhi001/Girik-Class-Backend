@@ -20,7 +20,6 @@ router.put('/:id/status', hasRole('ADMIN', 'GM'), providerController.updateProvi
 router.post('/:id/evaluations', hasRole('ADMIN', 'GM', 'TM'), providerController.evaluateProvider);
 router.get('/:id/evaluations', hasRole('ADMIN', 'GM', 'TM'), providerController.getEvaluations);
 
-// Legal Hold - Admin/Compliance
-router.post('/:id/legal-hold', hasRole('ADMIN', 'GM'), providerController.setLegalHold);
+
 
 export default router;

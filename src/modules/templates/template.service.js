@@ -1,79 +1,47 @@
-
 import db from '../../models/index.js';
 
-const ChecklistTemplate = db.ChecklistTemplate;
+const { CertificateTemplate } = db;
 
-export const createTemplate = async (data, user) => {
-    // Check if code exists
-    const existing = await ChecklistTemplate.findOne({ where: { code: data.code } });
-    if (existing) {
-        throw { statusCode: 400, message: `Template with code ${data.code} already exists.` };
-    }
-
-    const template = await ChecklistTemplate.create({
-        ...data,
-        created_by: user.id,
-        updated_by: user.id
+export const createTemplate = async (data) => {
+    return await CertificateTemplate.create({
+        template_name: data.template_name,
+        certificate_type_id: data.certificate_type_id,
+        template_content: data.template_content,
+        variables: data.variables || [],
+        is_active: data.is_active !== false
     });
-
-    return template;
 };
 
-export const getTemplates = async (query = {}) => {
-    const { status, type, page = 1, limit = 10 } = query;
+export const getTemplates = async (filters = {}) => {
     const where = {};
+    if (filters.is_active !== undefined) where.is_active = filters.is_active;
+    if (filters.certificate_type_id) where.certificate_type_id = filters.certificate_type_id;
 
-    if (status) where.status = status;
-    // Assuming 'type' or other metadata usage in future, currently filtering by status is generic.
-
-    const templates = await ChecklistTemplate.findAndCountAll({
+    return await CertificateTemplate.findAll({
         where,
-        limit: parseInt(limit),
-        offset: (page - 1) * limit,
-        order: [['created_at', 'DESC']],
-        include: [
-            { model: db.User, as: 'Creator', attributes: ['id', 'name'] }
-        ]
+        include: ['certificateType']
     });
-
-    return templates;
 };
 
 export const getTemplateById = async (id) => {
-    const template = await ChecklistTemplate.findByPk(id, {
-        include: [
-            { model: db.User, as: 'Creator', attributes: ['id', 'name'] },
-            { model: db.User, as: 'Updater', attributes: ['id', 'name'] }
-        ]
+    const template = await CertificateTemplate.findByPk(id, {
+        include: ['certificateType']
     });
-
-    if (!template) {
-        throw { statusCode: 404, message: 'Template not found' };
-    }
+    if (!template) throw new Error('Template not found');
     return template;
 };
 
-export const updateTemplate = async (id, data, user) => {
-    const template = await getTemplateById(id);
+export const updateTemplate = async (id, data) => {
+    const template = await CertificateTemplate.findByPk(id);
+    if (!template) throw new Error('Template not found');
 
-    // If updating code, check uniqueness
-    if (data.code && data.code !== template.code) {
-        const existing = await ChecklistTemplate.findOne({ where: { code: data.code } });
-        if (existing) {
-            throw { statusCode: 400, message: `Template with code ${data.code} already exists.` };
-        }
-    }
-
-    await template.update({
-        ...data,
-        updated_by: user.id
-    });
-
-    return template;
+    return await template.update(data);
 };
 
 export const deleteTemplate = async (id) => {
-    const template = await getTemplateById(id);
+    const template = await CertificateTemplate.findByPk(id);
+    if (!template) throw new Error('Template not found');
+
     await template.destroy();
     return { message: 'Template deleted successfully' };
 };

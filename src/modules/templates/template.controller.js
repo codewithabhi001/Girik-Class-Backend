@@ -1,10 +1,9 @@
-
 import * as templateService from './template.service.js';
 
 export const createTemplate = async (req, res, next) => {
     try {
-        const template = await templateService.createTemplate(req.body, req.user);
-        res.status(201).json(template);
+        const template = await templateService.createTemplate(req.body);
+        res.status(201).json({ message: 'Template created', template });
     } catch (error) {
         next(error);
     }
@@ -12,8 +11,8 @@ export const createTemplate = async (req, res, next) => {
 
 export const getTemplates = async (req, res, next) => {
     try {
-        const result = await templateService.getTemplates(req.query);
-        res.json(result);
+        const templates = await templateService.getTemplates(req.query);
+        res.json({ templates });
     } catch (error) {
         next(error);
     }
@@ -22,7 +21,7 @@ export const getTemplates = async (req, res, next) => {
 export const getTemplateById = async (req, res, next) => {
     try {
         const template = await templateService.getTemplateById(req.params.id);
-        res.json(template);
+        res.json({ template });
     } catch (error) {
         next(error);
     }
@@ -30,8 +29,8 @@ export const getTemplateById = async (req, res, next) => {
 
 export const updateTemplate = async (req, res, next) => {
     try {
-        const template = await templateService.updateTemplate(req.params.id, req.body, req.user);
-        res.json(template);
+        const template = await templateService.updateTemplate(req.params.id, req.body);
+        res.json({ message: 'Template updated', template });
     } catch (error) {
         next(error);
     }

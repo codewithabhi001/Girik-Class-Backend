@@ -12,16 +12,56 @@ const SurveyorProfile = db.SurveyorProfile;
 export const applySurveyor = async (data, files) => {
     // files: { cv: [...], certificates: [...], id_proof: [...] }
 
+    if (!files) {
+        const error = new Error('No files uploaded. CV and ID Proof are required.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    if (!files.cv || !files.cv[0]) {
+        const error = new Error('CV file is required.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    if (!files.id_proof || !files.id_proof[0]) {
+        const error = new Error('ID Proof file is required.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    // Check if user already exists with this email
+    const existingUser = await User.findOne({ where: { email: data.email } });
+    if (existingUser) {
+        const error = new Error('A user with this email already exists.');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    // Check for pending application
+    const existingApp = await SurveyorApplication.findOne({
+        where: {
+            email: data.email,
+            status: ['PENDING', 'DOCUMENTS_REQUIRED']
+        }
+    });
+    if (existingApp) {
+        const error = new Error('An application with this email is already under review.');
+        error.statusCode = 400;
+        throw error;
+    }
+
     let cvUrl = null;
     let idProofUrl = null;
     let certUrls = [];
 
-    if (files.cv && files.cv[0]) {
-        cvUrl = await s3Service.uploadFile(files.cv[0].buffer, files.cv[0].originalname, files.cv[0].mimetype);
-    }
-    if (files.id_proof && files.id_proof[0]) {
-        idProofUrl = await s3Service.uploadFile(files.id_proof[0].buffer, files.id_proof[0].originalname, files.id_proof[0].mimetype);
-    }
+    // Upload CV
+    cvUrl = await s3Service.uploadFile(files.cv[0].buffer, files.cv[0].originalname, files.cv[0].mimetype);
+
+    // Upload ID Proof
+    idProofUrl = await s3Service.uploadFile(files.id_proof[0].buffer, files.id_proof[0].originalname, files.id_proof[0].mimetype);
+
+    // Upload Certificates if any
     if (files.certificates) {
         for (const file of files.certificates) {
             const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype);
@@ -102,6 +142,29 @@ export const reviewApplication = async (id, status, remarks, reviewerUser) => {
     // ...
 
     return app;
+};
+
+export const createSurveyor = async (data, adminUser) => {
+    // 1. Create User
+    const { user } = await authService.register({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role: 'SURVEYOR',
+        phone: data.phone
+    });
+
+    // 2. Create Profile
+    const profile = await SurveyorProfile.create({
+        user_id: user.id,
+        license_number: data.license_number || `SURV-${uuidv4().substring(0, 6).toUpperCase()}`,
+        authorized_ship_types: data.authorized_ship_types,
+        authorized_certificates: data.authorized_certificates,
+        valid_from: data.valid_from || new Date(),
+        status: 'ACTIVE'
+    });
+
+    return { user, profile };
 };
 
 export const getProfile = async (id) => {
