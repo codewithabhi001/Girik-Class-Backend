@@ -1,0 +1,84 @@
+paths:
+  /flags:
+    get:
+      summary: List all flags
+      description: Retrieve a list of all vessel flags.
+      tags: [Flags]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM, TO]
+      responses:
+        '200':
+          description: List of flags
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    post:
+      summary: Create Flag
+      description: Add a new vessel flag to the system.
+      tags: [Flags]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [flag_name, country]
+              properties:
+                flag_name:
+                  type: string
+                country:
+                  type: string
+                authority_name:
+                  type: string
+                contact_email:
+                  type: string
+      responses:
+        '201':
+          description: Flag created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /flags/{id}:
+    put:
+      summary: Update Flag
+      description: Update details of an existing vessel flag.
+      tags: [Flags]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                flag_name:
+                  type: string
+                country:
+                  type: string
+                authority_name:
+                  type: string
+                contact_email:
+                  type: string
+      responses:
+        '200':
+          description: Flag updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

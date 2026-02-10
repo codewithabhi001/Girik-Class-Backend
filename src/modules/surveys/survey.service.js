@@ -1,4 +1,3 @@
-
 import db from '../../models/index.js';
 import * as s3Service from '../../services/s3.service.js';
 import * as notificationService from '../../services/notification.service.js';
@@ -6,16 +5,15 @@ import * as notificationService from '../../services/notification.service.js';
 const SurveyReport = db.SurveyReport;
 const JobRequest = db.JobRequest;
 const GpsTracking = db.GpsTracking;
-const ActivityPlanning = db.ActivityPlanning;
 
-export const submitSurveyReport = async (data, file, user) => {
+export const submitSurveyReport = async (data, file, userId) => {
     const { job_id, gps_latitude, gps_longitude, survey_statement } = data;
 
     const job = await JobRequest.findByPk(job_id);
     if (!job) throw { statusCode: 404, message: 'Job not found' };
 
-    // Validate Surveyor Assignment
-    if (job.gm_assigned_surveyor_id !== user.id) {
+    // Validate Surveyor Assignment (Service level check but not role-based)
+    if (job.gm_assigned_surveyor_id !== userId) {
         throw { statusCode: 403, message: 'You are not assigned to this job' };
     }
 
@@ -28,7 +26,7 @@ export const submitSurveyReport = async (data, file, user) => {
     // Save Report
     const report = await SurveyReport.create({
         job_id,
-        surveyor_id: user.id,
+        surveyor_id: userId,
         survey_date: new Date(),
         gps_latitude,
         gps_longitude,
@@ -41,7 +39,7 @@ export const submitSurveyReport = async (data, file, user) => {
 
     // Log GPS
     await GpsTracking.create({
-        surveyor_id: user.id,
+        surveyor_id: userId,
         vessel_id: job.vessel_id,
         job_id,
         latitude: gps_latitude,
@@ -51,13 +49,12 @@ export const submitSurveyReport = async (data, file, user) => {
     return report;
 };
 
-export const startSurvey = async (data, user) => {
+export const startSurvey = async (data, userId) => {
     const { job_id, latitude, longitude } = data;
-    // Log start location
     const job = await JobRequest.findByPk(job_id);
     if (job) {
         await GpsTracking.create({
-            surveyor_id: user.id,
+            surveyor_id: userId,
             vessel_id: job.vessel_id,
             job_id,
             latitude,
@@ -67,7 +64,7 @@ export const startSurvey = async (data, user) => {
     return { message: 'Survey Started', job_id, started_at: new Date() };
 };
 
-export const finalizeSurvey = async (id, user) => {
+export const finalizeSurvey = async (id, userId) => {
     const job = await JobRequest.findByPk(id);
     if (!job) throw { statusCode: 404, message: 'Job not found' };
 
@@ -82,11 +79,11 @@ export const finalizeSurvey = async (id, user) => {
     return { message: 'Survey Finalized.' };
 };
 
-export const streamLocation = async (jobId, data, user) => {
+export const streamLocation = async (jobId, data, userId) => {
     const { latitude, longitude } = data;
     const job = await JobRequest.findByPk(jobId);
     await GpsTracking.create({
-        surveyor_id: user.id,
+        surveyor_id: userId,
         latitude,
         longitude,
         vessel_id: job?.vessel_id,
@@ -95,7 +92,7 @@ export const streamLocation = async (jobId, data, user) => {
     return { status: 'OK' };
 };
 
-export const uploadProof = async (jobId, file, user) => {
+export const uploadProof = async (jobId, file, userId) => {
     const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype);
     return { url };
 };
@@ -128,7 +125,7 @@ export const getSurveyReports = async (query) => {
     });
 };
 
-export const flagViolation = async (id, user) => {
+export const flagViolation = async (id, userId) => {
     await notificationService.notifyRoles(['ADMIN', 'TM', 'GM'], 'Survey Violation Flagged', `Suspicious behavior flagged for Job ${id}.`, 'CRITICAL');
     return { message: 'Violation flagged and admins notified.' };
 };

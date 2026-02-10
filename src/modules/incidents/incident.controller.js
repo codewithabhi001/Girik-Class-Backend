@@ -1,35 +1,40 @@
 import * as incidentService from './incident.service.js';
 
-export const createIncident = async (req, res, next) => {
-    try {
-        const incident = await incidentService.createIncident({
-            ...req.body,
-            reported_by: req.user.id
-        });
-        res.status(201).json({ message: 'Incident reported', incident });
-    } catch (error) {
-        next(error);
+const getScopeFilters = (user) => {
+    const scopeFilters = {};
+    if (user.role === 'CLIENT') {
+        scopeFilters.reported_by = user.id; // Or scope by vessel client_id if needed
     }
+    return scopeFilters;
+};
+
+export const reportIncident = async (req, res, next) => {
+    try {
+        const clientId = req.user.role === 'CLIENT' ? req.user.client_id : null;
+        const result = await incidentService.reportIncident(req.body, req.user.id, clientId);
+        res.status(201).json({ success: true, data: result });
+    } catch (e) { next(e); }
 };
 
 export const getIncidents = async (req, res, next) => {
     try {
-        const incidents = await incidentService.getIncidents(req.query);
-        res.json({ incidents });
-    } catch (error) {
-        next(error);
-    }
+        const scopeFilters = getScopeFilters(req.user);
+        const result = await incidentService.getIncidents(req.query, scopeFilters);
+        res.json({ success: true, data: result });
+    } catch (e) { next(e); }
 };
 
-export const resolveIncident = async (req, res, next) => {
+export const getIncidentById = async (req, res, next) => {
     try {
-        const incident = await incidentService.resolveIncident(
-            req.params.id,
-            req.user.id,
-            req.body.resolution
-        );
-        res.json({ message: 'Incident resolved', incident });
-    } catch (error) {
-        next(error);
-    }
+        const scopeFilters = getScopeFilters(req.user);
+        const result = await incidentService.getIncidentById(req.params.id, scopeFilters);
+        res.json({ success: true, data: result });
+    } catch (e) { next(e); }
+};
+
+export const updateStatus = async (req, res, next) => {
+    try {
+        const result = await incidentService.updateIncidentStatus(req.params.id, req.body.status, req.body.remarks);
+        res.json({ success: true, data: result });
+    } catch (e) { next(e); }
 };

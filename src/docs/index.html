@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>GIRIK API Documentation</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css" />
+    <style>
+        /* Top Bar - Deep Blue */
+        .swagger-ui .topbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border-bottom: 3px solid #5a67d8;
+        }
+
+        /* Role Filter Container */
+        .role-filter-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .role-filter-container span {
+            margin-right: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .role-btn {
+            padding: 6px 14px;
+            border: 1px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .role-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .role-btn.active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="swagger-ui"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+    <script>
+        window.onload = function () {
+            const ui = SwaggerUIBundle({
+                url: "/api-docs-json",
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "StandaloneLayout",
+                persistAuthorization: true,
+                displayRequestDuration: true,
+                filter: true,
+                syntaxHighlight: {
+                    activate: true,
+                    theme: "monokai"
+                }
+            });
+
+            window.ui = ui;
+
+            // Initialize role filter after UI loads
+            setTimeout(initRoleFilter, 1000);
+        };
+
+        function initRoleFilter() {
+            const roles = ['ALL', 'ADMIN', 'GM', 'TM', 'TO', 'TA', 'SURVEYOR', 'CLIENT'];
+
+            // Create Container
+            const filterContainer = document.createElement('div');
+            filterContainer.className = 'role-filter-container';
+
+            const label = document.createElement('span');
+            label.innerText = 'Switch Role Context: ';
+            filterContainer.appendChild(label);
+
+            roles.forEach(role => {
+                const btn = document.createElement('button');
+                btn.innerText = role === 'ALL' ? 'Show All' : role;
+                btn.className = 'role-btn';
+                if (role === 'ALL') btn.classList.add('active');
+                btn.setAttribute('data-role', role);
+
+                btn.onclick = () => {
+                    // Update Active State
+                    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    filterOperations(role);
+                };
+
+                filterContainer.appendChild(btn);
+            });
+
+            // Insert below the top bar
+            const topbar = document.querySelector('.swagger-ui .topbar');
+            if (topbar) {
+                topbar.parentNode.insertBefore(filterContainer, topbar.nextSibling);
+            }
+        }
+
+        function filterOperations(role) {
+            const operations = document.querySelectorAll('.opblock');
+            const spec = window.ui.specSelectors.specJson().toJS();
+
+            operations.forEach(op => {
+                // Reset Style
+                op.style.opacity = '1';
+                op.style.pointerEvents = 'auto';
+                op.style.filter = 'none';
+
+                const tryOutButton = op.querySelector('.try-out__btn');
+                if (tryOutButton) tryOutButton.style.display = 'block';
+
+                if (role === 'ALL') return;
+
+                // Extract Method and Path
+                const method = op.className.split(' ').find(c => c.startsWith('opblock-') && c !== 'opblock-control' && c !== 'opblock-summary')?.replace('opblock-', '')?.toLowerCase();
+                const summaryPathEl = op.querySelector('.opblock-summary-path');
+                if (!summaryPathEl || !method) return;
+
+                const pathText = summaryPathEl.getAttribute('data-path');
+
+                // Lookup in Spec
+                const pathItem = spec.paths[pathText];
+                if (pathItem && pathItem[method]) {
+                    const operationSpec = pathItem[method];
+                    const allowedRoles = operationSpec['x-roles'] || [];
+
+                    if (!allowedRoles.includes(role)) {
+                        // Disable visuals
+                        op.style.opacity = '0.3';
+                        op.style.pointerEvents = 'none';
+                        op.style.filter = 'grayscale(100%)';
+                        if (tryOutButton) tryOutButton.style.display = 'none';
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

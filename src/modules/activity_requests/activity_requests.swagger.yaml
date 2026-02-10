@@ -1,0 +1,110 @@
+paths:
+  /activity-requests:
+    get:
+      summary: List Activity Requests
+      description: Retrieve a list of activity requests from clients.
+      tags: [Activity Requests]
+      security:
+        - bearerAuth: []
+      x-roles: [CLIENT, ADMIN, GM, TM, TO]
+      responses:
+        '200':
+          description: List of requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    post:
+      summary: Create Activity Request
+      description: Clients or staff can request a specific activity (e.g., inspection).
+      tags: [Activity Requests]
+      security:
+        - bearerAuth: []
+      x-roles: [CLIENT, ADMIN, GM, TM]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [activity_type, vessel_id, requested_service]
+              properties:
+                activity_type:
+                  type: string
+                vessel_id:
+                  type: string
+                  format: uuid
+                requested_service:
+                  type: string
+                priority:
+                  type: string
+                  enum: [LOW, MEDIUM, HIGH, URGENT]
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /activity-requests/{id}:
+    get:
+      summary: Get Activity Request by ID
+      description: Retrieve details of a specific activity request.
+      tags: [Activity Requests]
+      security:
+        - bearerAuth: []
+      x-roles: [CLIENT, ADMIN, GM, TM, TO]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Request details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /activity-requests/{id}/status:
+    put:
+      summary: Update Request Status
+      description: Update the status of an activity request.
+      tags: [Activity Requests]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [PENDING, APPROVED, REJECTED, CANCELLED]
+                remarks:
+                  type: string
+      responses:
+        '200':
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

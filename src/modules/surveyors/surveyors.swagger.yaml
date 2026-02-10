@@ -1,0 +1,184 @@
+paths:
+  /surveyors/apply:
+    post:
+      summary: Apply to be a Surveyor
+      description: Public endpoint for potential surveyors to submit their application and documents.
+      tags: [Surveyors]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [firstName, lastName, email, cv]
+              properties:
+                firstName: [type: string]
+                lastName: [type: string]
+                email: [type: string, format: email]
+                cv: [type: string, format: binary]
+                id_proof: [type: string, format: binary]
+                certificates: [type: array, items: {type: string, format: binary}]
+      responses:
+        '201':
+          description: Application submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /surveyors:
+    post:
+      summary: Create Surveyor Account
+      description: Admin manually creates a surveyor account.
+      tags: [Surveyors]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, TM]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [firstName, lastName, email, password]
+      responses:
+        '201':
+          description: Surveyor created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /surveyors/applications:
+    get:
+      summary: List Applications
+      description: Retrieve list of surveyor applications pending review.
+      tags: [Surveyors]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, TM]
+      responses:
+        '200':
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /surveyors/applications/{id}/review:
+    put:
+      summary: Review Application
+      description: Approve or reject a surveyor application.
+      tags: [Surveyors]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, TM]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: [type: string, format: uuid]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: [type: string, enum: [APPROVED, REJECTED]]
+                remarks: [type: string]
+      responses:
+        '200':
+          description: Review processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /surveyors/{id}/profile:
+    get:
+      summary: Get Surveyor Profile
+      description: Retrieve details of a surveyor's profile.
+      tags: [Surveyors]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, TM, SURVEYOR]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: [type: string, format: uuid]
+      responses:
+        '200':
+          description: Profile details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    put:
+      summary: Update Surveyor Profile
+      description: Update details of a surveyor's profile.
+      tags: [Surveyors]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, TM]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: [type: string, format: uuid]
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /surveyors/availability:
+    post:
+      summary: Update Availability
+      description: Surveyor updates their current availability status.
+      tags: [Surveyors]
+      security:
+        - bearerAuth: []
+      x-roles: [SURVEYOR]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [is_available]
+              properties:
+                is_available: [type: boolean]
+      responses:
+        '200':
+          description: Availability updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /surveyors/{id}/location-history:
+    get:
+      summary: Get GPS History
+      description: Retrieve the GPS location history of a surveyor.
+      tags: [Surveyors]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, TM]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: [type: string, format: uuid]
+      responses:
+        '200':
+          description: Location history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

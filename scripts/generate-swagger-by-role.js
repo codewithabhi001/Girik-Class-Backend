@@ -48,6 +48,9 @@ function getModuleName(pathStr) {
     auth: 'Authentication',
     public: 'Public',
     surveyorsApply: 'Public',
+    support: 'Support',
+    search: 'Search',
+    compliance: 'Compliance',
   };
   if (pathStr.startsWith('/health')) return 'Health & Readiness';
   if (pathStr.startsWith('/public') || pathStr.startsWith('/surveyors/apply')) return 'Public';
@@ -84,7 +87,7 @@ const BODIES = {
     example: { email: 'admin@girik.com', password: 'admin123' },
   },
   'POST /auth/refresh-token': { schema: { type: 'object', required: ['token'], properties: { token: { type: 'string' } } }, example: { token: '{{refresh_token}}' } },
-  'POST /auth/forgot-password': { schema: { type: 'object', required: ['email'], properties: { email: { type: 'string', example: 'user@example.com' } } }, example: { email: 'user@example.com' } },
+  'POST /auth/forgot-password': { schema: { type: 'object', required: ['email'], properties: { email: { type: 'string', example: 'admin@gmail.com' } } }, example: { email: 'admin@gmail.com' } },
   'POST /auth/reset-password': { schema: { type: 'object', required: ['token', 'newPassword'], properties: { token: { type: 'string' }, newPassword: { type: 'string' } } }, example: { token: 'RESET_TOKEN_FROM_EMAIL', newPassword: 'NewSecurePass123!' } },
   'POST /users': { schema: { type: 'object', properties: { name: { type: 'string' }, email: { type: 'string' }, password: { type: 'string' }, role: { type: 'string', enum: ['ADMIN', 'GM', 'TM', 'TO', 'TA', 'SURVEYOR', 'CLIENT', 'FLAG_ADMIN'] }, phone: { type: 'string' }, client_id: { type: 'string' } } }, example: { name: 'Full Name', email: 'user@girik.com', password: 'Password123!', role: 'TM', phone: '+919876543210', client_id: '{{client_id}}' } },
   'PUT /users/:id': { schema: { type: 'object', properties: { name: { type: 'string' }, phone: { type: 'string' } } }, example: { name: 'Updated Name', phone: '+919876543211' } },
@@ -145,6 +148,14 @@ const BODIES = {
   'POST /mobile/offline/surveys': { schema: { type: 'object', properties: { surveys: { type: 'array', items: { type: 'object', properties: { job_id: { type: 'string' }, gps_latitude: { type: 'number' }, gps_longitude: { type: 'number' }, survey_statement: { type: 'string' } } } } } }, example: { surveys: [{ job_id: '{{job_id}}', gps_latitude: 1.35, gps_longitude: 103.81, survey_statement: 'Offline survey data' }] } },
   'POST /system/maintenance/:action': { schema: { type: 'object' }, example: {} },
   'POST /notifications/rules': { schema: { type: 'object' }, example: {} },
+  'POST /support': {
+    schema: { type: 'object', required: ['subject', 'description'], properties: { subject: { type: 'string' }, description: { type: 'string' }, priority: { type: 'string', enum: ['LOW', 'MEDIUM', 'HIGH'] } } },
+    example: { subject: 'Cannot login', description: 'I am getting 401 even with correct password', priority: 'HIGH' }
+  },
+  'PUT /support/:id/status': {
+    schema: { type: 'object', required: ['status'], properties: { status: { type: 'string', enum: ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'] }, internal_note: { type: 'string' } } },
+    example: { status: 'RESOLVED', internal_note: 'User error. Reset password.' }
+  },
 };
 
 function getRequestBody(method, path) {
@@ -196,6 +207,9 @@ const adminApis = [
   api('GET', '/certificate-templates/:id', 'Get Template'),
   api('PUT', '/certificate-templates/:id', 'Update Template'),
   api('DELETE', '/certificate-templates/:id', 'Delete Template'),
+  api('POST', '/compliance/anonymize/:id', 'Anonymize Compliance Data'),
+  api('GET', '/compliance/export/:id', 'Export Compliance Data'),
+  api('PUT', '/support/:id/status', 'Update Support Ticket Status'),
 ];
 
 const gmApis = [
@@ -236,6 +250,7 @@ const gmApis = [
   api('GET', '/customer-feedback', 'List Feedback'),
   api('POST', '/providers', 'Create Provider'),
   api('PUT', '/providers/:id/status', 'Update Provider Status'),
+  api('PUT', '/support/:id/status', 'Update Support Ticket Status'),
 ];
 
 const tmApis = [
@@ -310,6 +325,10 @@ const sharedAuthApis = [
   api('POST', '/mobile/sync', 'Mobile Sync'),
   api('GET', '/mobile/offline/jobs', 'Offline Jobs'),
   api('POST', '/mobile/offline/surveys', 'Offline Surveys'),
+  api('GET', '/search', 'Global Search'),
+  api('POST', '/support', 'Create Support Ticket'),
+  api('GET', '/support', 'List Support Tickets'),
+  api('GET', '/support/:id', 'Get Support Ticket'),
 ];
 
 const surveyorApis = [
@@ -375,6 +394,7 @@ const clientApis = [
   api('POST', '/mobile/sync', 'Mobile Sync'),
   api('GET', '/mobile/offline/jobs', 'Offline Jobs'),
   api('POST', '/mobile/offline/surveys', 'Offline Surveys'),
+  api('GET', '/compliance/export/:id', 'Export Compliance Data'),
 ];
 
 // Role -> list of { method, path, summary }
@@ -440,7 +460,7 @@ ROLES_ORDER.forEach((role) => {
   opMap.forEach((op) => {
     if (op.roles.has(role)) mods.add(getModuleName(op.path));
   });
-  const modOrder = ['Users', 'System', 'Health & Readiness', 'Flags', 'Clients', 'Vessels', 'Jobs', 'Surveys', 'Certificates', 'Payments', 'Documents', 'Reports', 'Change Requests', 'Certificate Templates', 'Incidents', 'Activity Requests', 'Notifications', 'Providers', 'Customer Feedback', 'Approvals', 'TOCA', 'Non-Conformities', 'Surveyors', 'Mobile', 'Client Portal', 'Dashboard', 'Other'];
+  const modOrder = ['Users', 'System', 'Health & Readiness', 'Flags', 'Clients', 'Vessels', 'Jobs', 'Surveys', 'Certificates', 'Payments', 'Documents', 'Reports', 'Change Requests', 'Certificate Templates', 'Incidents', 'Activity Requests', 'Notifications', 'Providers', 'Customer Feedback', 'Approvals', 'TOCA', 'Non-Conformities', 'Surveyors', 'Mobile', 'Support', 'Search', 'Compliance', 'Client Portal', 'Dashboard', 'Other'];
   modOrder.forEach((m) => {
     if (mods.has(m)) tagOrder.push(`${role} » ${m}`);
   });
@@ -620,7 +640,7 @@ ROLES_ORDER.forEach((role) => {
     });
   });
 
-  const modOrder = ['Public', 'Authentication', 'Users', 'System', 'Health & Readiness', 'Flags', 'Clients', 'Vessels', 'Jobs', 'Surveys', 'Certificates', 'Payments', 'Documents', 'Reports', 'Change Requests', 'Certificate Templates', 'Incidents', 'Activity Requests', 'Notifications', 'Providers', 'Customer Feedback', 'Approvals', 'TOCA', 'Non-Conformities', 'Surveyors', 'Mobile', 'Client Portal', 'Dashboard', 'Other'];
+  const modOrder = ['Public', 'Authentication', 'Users', 'System', 'Health & Readiness', 'Flags', 'Clients', 'Vessels', 'Jobs', 'Surveys', 'Certificates', 'Payments', 'Documents', 'Reports', 'Change Requests', 'Certificate Templates', 'Incidents', 'Activity Requests', 'Notifications', 'Providers', 'Customer Feedback', 'Approvals', 'TOCA', 'Non-Conformities', 'Surveyors', 'Mobile', 'Support', 'Search', 'Compliance', 'Client Portal', 'Dashboard', 'Other'];
   const tagsForRole = [...new Set(Object.values(rolePaths).flatMap((m) => Object.values(m).flatMap((o) => o.tags)))];
   const tagOrder = modOrder.filter((t) => tagsForRole.includes(t));
 

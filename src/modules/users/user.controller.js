@@ -1,5 +1,12 @@
 import * as userService from './user.service.js';
 
+export const getProfile = async (req, res, next) => {
+    try {
+        const user = await userService.getProfile(req.user.id, req.user.role);
+        res.json({ success: true, data: user });
+    } catch (e) { next(e); }
+};
+
 export const getUsers = async (req, res, next) => {
     try {
         const users = await userService.getUsers(req.query, req.user.id);
@@ -8,9 +15,7 @@ export const getUsers = async (req, res, next) => {
             message: 'Users fetched successfully',
             data: users
         });
-    } catch (error) {
-        next(error);
-    }
+    } catch (error) { next(error); }
 };
 
 export const createUser = async (req, res, next) => {
@@ -21,9 +26,7 @@ export const createUser = async (req, res, next) => {
             message: 'User created successfully',
             data: user
         });
-    } catch (error) {
-        next(error);
-    }
+    } catch (error) { next(error); }
 };
 
 export const updateUser = async (req, res, next) => {
@@ -34,9 +37,7 @@ export const updateUser = async (req, res, next) => {
             message: 'User updated successfully',
             data: user
         });
-    } catch (error) {
-        next(error);
-    }
+    } catch (error) { next(error); }
 };
 
 export const updateStatus = async (req, res, next) => {
@@ -47,9 +48,7 @@ export const updateStatus = async (req, res, next) => {
             message: `User status updated to ${req.body.status} successfully`,
             data: user
         });
-    } catch (error) {
-        next(error);
-    }
+    } catch (error) { next(error); }
 };
 
 export const deleteUser = async (req, res, next) => {
@@ -60,7 +59,5 @@ export const deleteUser = async (req, res, next) => {
             message: 'User deleted successfully',
             data: result
         });
-    } catch (error) {
-        next(error);
-    }
+    } catch (error) { next(error); }
 };

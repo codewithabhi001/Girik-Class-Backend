@@ -1016,7 +1016,7 @@
                   "email": {
                     "type": "string",
                     "format": "email",
-                    "example": "user@example.com"
+                    "example": "admin@gmail.com"
                   },
                   "password": {
                     "type": "string",

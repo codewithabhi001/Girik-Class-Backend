@@ -1,0 +1,51 @@
+paths:
+  /compliance/export/{id}:
+    get:
+      summary: Export Data
+      description: Export user or compliance data for GDPR/Audit purposes.
+      tags: [Compliance]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, CLIENT]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: format
+          schema:
+            type: string
+            enum: [json, csv, pdf]
+      responses:
+        '200':
+          description: Exported data or download URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /compliance/anonymize/{id}:
+    post:
+      summary: Anonymize Data
+      description: Anonymize user data upon request (Right to be Forgotten).
+      tags: [Compliance]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User data anonymized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

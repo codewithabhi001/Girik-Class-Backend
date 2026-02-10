@@ -1,50 +1,39 @@
-
 import * as activityService from './activity_request.service.js';
 
-export const createActivityRequest = async (req, res, next) => {
-    try {
-        const request = await activityService.createActivityRequest(req.body, req.user);
-        res.status(201).json(request);
-    } catch (error) {
-        next(error);
+const getScopeFilters = (user) => {
+    const scopeFilters = {};
+    if (user.role === 'CLIENT') {
+        scopeFilters.requested_by = user.id;
     }
+    return scopeFilters;
 };
 
-export const getActivityRequests = async (req, res, next) => {
+export const createRequest = async (req, res, next) => {
     try {
-        const result = await activityService.getActivityRequests(req.query);
-        res.json(result);
-    } catch (error) {
-        next(error);
-    }
+        const result = await activityService.createActivityRequest(req.body, req.user.id);
+        res.status(201).json({ success: true, data: result });
+    } catch (e) { next(e); }
 };
 
-export const approveActivityRequest = async (req, res, next) => {
+export const getRequests = async (req, res, next) => {
     try {
-        const result = await activityService.approveActivityRequest(req.params.id, req.user);
-        res.json(result);
-    } catch (error) {
-        next(error);
-    }
+        const scopeFilters = getScopeFilters(req.user);
+        const result = await activityService.getActivityRequests(req.query, scopeFilters);
+        res.json({ success: true, data: result });
+    } catch (e) { next(e); }
 };
 
-export const rejectActivityRequest = async (req, res, next) => {
+export const getRequestById = async (req, res, next) => {
     try {
-        const { reason } = req.body;
-        if (!reason) throw { statusCode: 400, message: 'Rejection reason is required' };
-
-        const result = await activityService.rejectActivityRequest(req.params.id, reason, req.user);
-        res.json(result);
-    } catch (error) {
-        next(error);
-    }
+        const scopeFilters = getScopeFilters(req.user);
+        const result = await activityService.getActivityRequestById(req.params.id, scopeFilters);
+        res.json({ success: true, data: result });
+    } catch (e) { next(e); }
 };
 
-export const getActivityRequestById = async (req, res, next) => {
+export const updateStatus = async (req, res, next) => {
     try {
-        const request = await activityService.getActivityRequestById(req.params.id);
-        res.json(request);
-    } catch (error) {
-        next(error);
-    }
+        const result = await activityService.updateActivityStatus(req.params.id, req.body.status, req.body.remarks);
+        res.json({ success: true, data: result });
+    } catch (e) { next(e); }
 };

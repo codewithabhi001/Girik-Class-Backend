@@ -53,6 +53,14 @@
       "description": "APIs for Admin » Notifications"
     },
     {
+      "name": "Admin » Support",
+      "description": "APIs for Admin » Support"
+    },
+    {
+      "name": "Admin » Compliance",
+      "description": "APIs for Admin » Compliance"
+    },
+    {
       "name": "GM » System",
       "description": "APIs for GM » System"
     },
@@ -133,6 +141,14 @@
       "description": "APIs for GM » Mobile"
     },
     {
+      "name": "GM » Support",
+      "description": "APIs for GM » Support"
+    },
+    {
+      "name": "GM » Search",
+      "description": "APIs for GM » Search"
+    },
+    {
       "name": "GM » Client Portal",
       "description": "APIs for GM » Client Portal"
     },
@@ -203,6 +219,14 @@
     {
       "name": "TM » Mobile",
       "description": "APIs for TM » Mobile"
+    },
+    {
+      "name": "TM » Support",
+      "description": "APIs for TM » Support"
+    },
+    {
+      "name": "TM » Search",
+      "description": "APIs for TM » Search"
     },
     {
       "name": "TM » Client Portal",
@@ -281,6 +305,14 @@
       "description": "APIs for TO » Mobile"
     },
     {
+      "name": "TO » Support",
+      "description": "APIs for TO » Support"
+    },
+    {
+      "name": "TO » Search",
+      "description": "APIs for TO » Search"
+    },
+    {
       "name": "TO » Client Portal",
       "description": "APIs for TO » Client Portal"
     },
@@ -339,6 +371,14 @@
     {
       "name": "TA » Mobile",
       "description": "APIs for TA » Mobile"
+    },
+    {
+      "name": "TA » Support",
+      "description": "APIs for TA » Support"
+    },
+    {
+      "name": "TA » Search",
+      "description": "APIs for TA » Search"
     },
     {
       "name": "TA » Client Portal",
@@ -413,6 +453,14 @@
       "description": "APIs for Surveyor » Mobile"
     },
     {
+      "name": "Surveyor » Support",
+      "description": "APIs for Surveyor » Support"
+    },
+    {
+      "name": "Surveyor » Search",
+      "description": "APIs for Surveyor » Search"
+    },
+    {
       "name": "Surveyor » Client Portal",
       "description": "APIs for Surveyor » Client Portal"
     },
@@ -485,6 +533,18 @@
       "description": "APIs for Client » Mobile"
     },
     {
+      "name": "Client » Support",
+      "description": "APIs for Client » Support"
+    },
+    {
+      "name": "Client » Search",
+      "description": "APIs for Client » Search"
+    },
+    {
+      "name": "Client » Compliance",
+      "description": "APIs for Client » Compliance"
+    },
+    {
       "name": "Client » Client Portal",
       "description": "APIs for Client » Client Portal"
     },
@@ -543,6 +603,14 @@
     {
       "name": "Flag Admin » Mobile",
       "description": "APIs for Flag Admin » Mobile"
+    },
+    {
+      "name": "Flag Admin » Support",
+      "description": "APIs for Flag Admin » Support"
+    },
+    {
+      "name": "Flag Admin » Search",
+      "description": "APIs for Flag Admin » Search"
     },
     {
       "name": "Flag Admin » Client Portal",
@@ -850,12 +918,12 @@
                 "properties": {
                   "email": {
                     "type": "string",
-                    "example": "user@example.com"
+                    "example": "admin@gmail.com"
                   }
                 }
               },
               "example": {
-                "email": "user@example.com"
+                "email": "admin@gmail.com"
               }
             }
           }
@@ -1925,6 +1993,156 @@
             "description": "id"
           }
         ]
+      }
+    },
+    "/compliance/anonymize/{id}": {
+      "post": {
+        "tags": [
+          "Admin » Compliance"
+        ],
+        "summary": "Anonymize Compliance Data",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "id"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/compliance/export/{id}": {
+      "get": {
+        "tags": [
+          "Admin » Compliance",
+          "Client » Compliance"
+        ],
+        "summary": "Export Compliance Data",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "id"
+          }
+        ]
+      }
+    },
+    "/support/{id}/status": {
+      "put": {
+        "tags": [
+          "Admin » Support",
+          "GM » Support"
+        ],
+        "summary": "Update Support Ticket Status",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "id"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "status"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "OPEN",
+                      "IN_PROGRESS",
+                      "RESOLVED",
+                      "CLOSED"
+                    ]
+                  },
+                  "internal_note": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "status": "RESOLVED",
+                "internal_note": "User error. Reset password."
+              }
+            }
+          }
+        }
       }
     },
     "/clients": {
@@ -5341,6 +5559,173 @@
             }
           }
         }
+      }
+    },
+    "/search": {
+      "get": {
+        "tags": [
+          "GM » Search",
+          "TM » Search",
+          "TO » Search",
+          "TA » Search",
+          "Surveyor » Search",
+          "Client » Search",
+          "Flag Admin » Search"
+        ],
+        "summary": "Global Search",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/support": {
+      "post": {
+        "tags": [
+          "GM » Support",
+          "TM » Support",
+          "TO » Support",
+          "TA » Support",
+          "Surveyor » Support",
+          "Client » Support",
+          "Flag Admin » Support"
+        ],
+        "summary": "Create Support Ticket",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "subject",
+                  "description"
+                ],
+                "properties": {
+                  "subject": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "enum": [
+                      "LOW",
+                      "MEDIUM",
+                      "HIGH"
+                    ]
+                  }
+                }
+              },
+              "example": {
+                "subject": "Cannot login",
+                "description": "I am getting 401 even with correct password",
+                "priority": "HIGH"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "GM » Support",
+          "TM » Support",
+          "TO » Support",
+          "TA » Support",
+          "Surveyor » Support",
+          "Client » Support",
+          "Flag Admin » Support"
+        ],
+        "summary": "List Support Tickets",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/support/{id}": {
+      "get": {
+        "tags": [
+          "GM » Support",
+          "TM » Support",
+          "TO » Support",
+          "TA » Support",
+          "Surveyor » Support",
+          "Client » Support",
+          "Flag Admin » Support"
+        ],
+        "summary": "Get Support Ticket",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "id"
+          }
+        ]
       }
     },
     "/jobs/{id}/reassign": {

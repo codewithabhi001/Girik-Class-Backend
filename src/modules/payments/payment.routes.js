@@ -1,28 +1,37 @@
 import express from 'express';
 import * as paymentController from './payment.controller.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
-import { hasRole } from '../../middlewares/rbac.middleware.js';
+import { authorizeRoles } from '../../middlewares/rbac.middleware.js';
 
 const router = express.Router();
+
 router.use(authenticate);
 
+// List payments
+router.get('/', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM'), paymentController.getPayments);
+
+// Financial Summary
+router.get('/summary', authorizeRoles('CLIENT', 'ADMIN', 'GM'), paymentController.getFinancialSummary);
+
+// Get specific payment details
+router.get('/:id', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM'), paymentController.getPaymentById);
+
 // Create a new invoice
-// Access: ADMIN, GM, TM
-router.post('/invoice', hasRole('ADMIN', 'GM', 'TM'), paymentController.createInvoice);
+router.post('/invoice', authorizeRoles('ADMIN', 'GM', 'TM'), paymentController.createInvoice);
 
 // Mark an invoice as paid
-// Access: ADMIN, GM, TM
-router.put('/:id/pay', hasRole('ADMIN', 'GM', 'TM'), paymentController.markPaid);
+router.put('/:id/pay', authorizeRoles('ADMIN', 'GM', 'TM'), paymentController.markPaid);
 
-// Financial Compliance
+// Process Refund
+router.post('/:id/refund', authorizeRoles('ADMIN', 'GM'), paymentController.refund);
 
-// Get immutable financial ledger history
-// Access: ADMIN, GM
-router.get('/:id/ledger', hasRole('ADMIN', 'GM'), paymentController.getLedger);
+// Record Partial Payment
+router.post('/:id/partial', authorizeRoles('ADMIN', 'GM', 'TM'), paymentController.recordPartial);
 
-// Write off a bad debt/payment (Strict strict audit)
-// Access: ADMIN
-router.post('/writeoff', hasRole('ADMIN'), paymentController.writeOff);
+// Financial Compliance / Ledger
+router.get('/:id/ledger', authorizeRoles('ADMIN', 'GM'), paymentController.getLedger);
 
+// Write off
+router.post('/writeoff', authorizeRoles('ADMIN'), paymentController.writeOff);
 
 export default router;

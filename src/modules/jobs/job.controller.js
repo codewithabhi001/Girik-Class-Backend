@@ -1,103 +1,135 @@
 import * as jobService from './job.service.js';
+import * as jobMessagingService from './job.messaging.service.js';
+import db from '../../models/index.js';
+
+const getScopeFilters = async (user) => {
+    const scopeFilters = {};
+    if (user.role === 'CLIENT') {
+        const vessels = await db.Vessel.findAll({ where: { client_id: user.client_id }, attributes: ['id'] });
+        const vesselIds = vessels.map(v => v.id);
+        scopeFilters.vessel_id = vesselIds;
+    } else if (user.role === 'SURVEYOR') {
+        scopeFilters.gm_assigned_surveyor_id = user.id;
+    }
+    return scopeFilters;
+};
 
 export const createJob = async (req, res, next) => {
     try {
-        const job = await jobService.createJob(req.body, req.user);
-        res.status(201).json(job);
-    } catch (error) {
-        next(error);
-    }
+        let job;
+        if (req.user.role === 'CLIENT') {
+            job = await jobService.createJobForClient(req.body, req.user.client_id, req.user.id);
+        } else {
+            job = await jobService.createJob(req.body, req.user.id);
+        }
+        res.status(201).json({ success: true, data: job });
+    } catch (error) { next(error); }
 };
 
 export const getJobs = async (req, res, next) => {
     try {
-        const jobs = await jobService.getJobs(req.query, req.user);
-        res.json(jobs);
-    } catch (error) {
-        next(error);
-    }
+        const scopeFilters = await getScopeFilters(req.user);
+        const result = await jobService.getJobs(req.query, scopeFilters);
+        res.json({ success: true, data: result });
+    } catch (error) { next(error); }
 };
 
 export const getJobById = async (req, res, next) => {
     try {
-        const job = await jobService.getJobById(req.params.id);
-        res.json(job);
-    } catch (error) {
-        next(error);
-    }
+        const scopeFilters = await getScopeFilters(req.user);
+        const job = await jobService.getJobById(req.params.id, scopeFilters);
+        res.json({ success: true, data: job });
+    } catch (error) { next(error); }
 };
 
 export const updateJobStatus = async (req, res, next) => {
     try {
         const { status, remarks } = req.body;
-        const job = await jobService.updateJobStatus(req.params.id, status, remarks, req.user);
-        res.json(job);
-    } catch (error) {
-        next(error);
-    }
-}
+        const job = await jobService.updateJobStatus(req.params.id, status, remarks, req.user.id);
+        res.json({ success: true, data: job });
+    } catch (error) { next(error); }
+};
 
 export const assignSurveyor = async (req, res, next) => {
     try {
         const { surveyorId } = req.body;
-        const job = await jobService.assignSurveyor(req.params.id, surveyorId, req.user);
-        res.json(job);
-    } catch (error) {
-        next(error);
-    }
-}
+        const job = await jobService.assignSurveyor(req.params.id, surveyorId, req.user.id);
+        res.json({ success: true, data: job });
+    } catch (error) { next(error); }
+};
 
 export const reassignSurveyor = async (req, res, next) => {
     try {
-        const job = await jobService.reassignSurveyor(req.params.id, req.body.surveyorId, req.body.reason, req.user);
-        res.json(job);
-    } catch (error) {
-        next(error);
-    }
-}
-
+        const job = await jobService.reassignSurveyor(req.params.id, req.body.surveyorId, req.body.reason, req.user.id);
+        res.json({ success: true, data: job });
+    } catch (error) { next(error); }
+};
 
 export const escalateJob = async (req, res, next) => {
     try {
-        const job = await jobService.escalateJob(req.params.id, req.body.reason, req.body.target_role, req.user);
-        res.json(job);
-    } catch (error) {
-        next(error);
-    }
-}
+        const job = await jobService.escalateJob(req.params.id, req.body.reason, req.body.target_role, req.user.id);
+        res.json({ success: true, data: job });
+    } catch (error) { next(error); }
+};
 
 export const cancelJob = async (req, res, next) => {
     try {
-        const job = await jobService.cancelJob(req.params.id, req.body.reason, req.user);
-        res.json(job);
+        let job;
+        if (req.user.role === 'CLIENT') {
+            job = await jobService.cancelJobForClient(req.params.id, req.body.reason, req.user.client_id, req.user.id);
+        } else {
+            job = await jobService.cancelJob(req.params.id, req.body.reason, req.user.id);
+        }
+        res.json({ success: true, data: job });
     } catch (error) { next(error); }
 };
 
 export const holdJob = async (req, res, next) => {
     try {
-        const job = await jobService.holdJob(req.params.id, req.body.reason, req.user);
-        res.json(job);
+        const job = await jobService.holdJob(req.params.id, req.body.reason, req.user.id);
+        res.json({ success: true, data: job });
     } catch (error) { next(error); }
 };
 
 export const resumeJob = async (req, res, next) => {
     try {
-        const job = await jobService.resumeJob(req.params.id, req.body.reason, req.user);
-        res.json(job);
+        const job = await jobService.resumeJob(req.params.id, req.body.reason, req.user.id);
+        res.json({ success: true, data: job });
     } catch (error) { next(error); }
 };
 
 export const cloneJob = async (req, res, next) => {
     try {
-        const job = await jobService.cloneJob(req.params.id, req.user);
-        res.json(job);
+        const job = await jobService.cloneJob(req.params.id, req.user.id);
+        res.json({ success: true, data: job });
     } catch (error) { next(error); }
 };
 
 export const getHistory = async (req, res, next) => {
     try {
         const history = await jobService.getJobHistory(req.params.id);
-        res.json(history);
+        res.json({ success: true, data: history });
     } catch (error) { next(error); }
 };
 
+export const addInternalNote = async (req, res, next) => {
+    try {
+        const note = await jobService.addInternalNote(req.params.id, req.body.note_text, req.user.id);
+        res.status(201).json({ success: true, data: note });
+    } catch (error) { next(error); }
+};
+
+export const updatePriority = async (req, res, next) => {
+    try {
+        const job = await jobService.updatePriority(req.params.id, req.body.priority, req.body.reason, req.user.id);
+        res.json({ success: true, data: job });
+    } catch (error) { next(error); }
+};
+
+export const getJobMessages = async (jobId, isInternal) => {
+    return await jobMessagingService.getJobMessages(jobId, isInternal);
+};
+
+export const sendMessage = async (jobId, senderId, data, file) => {
+    return await jobMessagingService.sendMessage(jobId, senderId, data, file);
+};

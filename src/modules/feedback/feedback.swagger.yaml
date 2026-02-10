@@ -1,0 +1,71 @@
+paths:
+  /customer-feedback:
+    get:
+      summary: List all feedback
+      description: Retrieve all customer feedback submitted for jobs.
+      tags: [Feedback]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM]
+      responses:
+        '200':
+          description: List of feedback
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    post:
+      summary: Submit Feedback
+      description: Clients can submit feedback and ratings for a completed job.
+      tags: [Feedback]
+      security:
+        - bearerAuth: []
+      x-roles: [CLIENT]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [job_id, rating]
+              properties:
+                job_id:
+                  type: string
+                  format: uuid
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+      responses:
+        '201':
+          description: Feedback submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /customer-feedback/job/{jobId}:
+    get:
+      summary: Get Feedback by Job ID
+      description: Retrieve feedback associated with a specific job.
+      tags: [Feedback]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, CLIENT]
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Feedback details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

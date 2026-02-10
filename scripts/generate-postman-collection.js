@@ -10,7 +10,7 @@ const base = '{{base_url}}';
 const B = {
   login: { email: 'admin@girik.com', password: 'admin123' },
   refreshToken: { token: '{{refresh_token}}' },
-  forgotPassword: { email: 'user@example.com' },
+  forgotPassword: { email: 'admin@gmail.com' },
   resetPassword: { token: 'RESET_TOKEN_FROM_EMAIL', newPassword: 'NewSecurePass123!' },
 
   createUser: { name: 'Full Name', email: 'user@girik.com', password: 'Password123!', role: 'TM', phone: '+919876543210', client_id: '{{client_id}}' },

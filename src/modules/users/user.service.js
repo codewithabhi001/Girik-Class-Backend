@@ -21,6 +21,19 @@ export const getUsers = async (query, excludeId) => {
     });
 };
 
+export const getProfile = async (id, role) => {
+    const include = [];
+    if (role === 'CLIENT') {
+        include.push({ model: db.Client });
+    } else if (role === 'SURVEYOR') {
+        include.push({ model: db.SurveyorProfile });
+    }
+    return await User.findByPk(id, {
+        include,
+        attributes: { exclude: ['password_hash'] }
+    });
+};
+
 export const createUser = async (data) => {
     return await authService.register(data);
 };

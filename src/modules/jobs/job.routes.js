@@ -1,59 +1,69 @@
 import express from 'express';
+import multer from 'multer';
 import * as jobController from './job.controller.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
-import { hasRole } from '../../middlewares/rbac.middleware.js';
+import { authorizeRoles } from '../../middlewares/rbac.middleware.js';
 import { validate, schemas } from '../../middlewares/validate.middleware.js';
 
+const upload = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
 
 router.use(authenticate);
 
-// Create a new job request
-// Access: CLIENT, ADMIN, GM
-router.post('/', hasRole('CLIENT', 'ADMIN', 'GM'), validate(schemas.createJob), jobController.createJob);
+// List all jobs
+// CLIENT gets their own, others get filtered based on logic in service (for now)
+router.get('/', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), jobController.getJobs);
 
-// List all jobs (scoped by user role)
-// Access: All authenticated users
-router.get('/', jobController.getJobs);
+// Create a new job request
+router.post('/', authorizeRoles('CLIENT', 'ADMIN', 'GM'), validate(schemas.createJob), jobController.createJob);
 
 // Get specific job details
-router.get('/:id', jobController.getJobById);
+router.get('/:id', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), jobController.getJobById);
 
 // Update job status
-// Access: ADMIN, GM, TM, TO
-router.put('/:id/status', hasRole('ADMIN', 'GM', 'TM', 'TO'), jobController.updateJobStatus);
+router.put('/:id/status', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), jobController.updateJobStatus);
 
 // Assign a surveyor to a job
-// Access: ADMIN, GM
-router.put('/:id/assign', hasRole('ADMIN', 'GM'), jobController.assignSurveyor);
-
+router.put('/:id/assign', authorizeRoles('ADMIN', 'GM'), jobController.assignSurveyor);
 // Reassign a surveyor (with reason)
-// Access: GM, TM
-router.put('/:id/reassign', hasRole('GM', 'TM'), validate(schemas.reassignJob), jobController.reassignSurveyor);
+router.put('/:id/reassign', authorizeRoles('GM', 'TM'), validate(schemas.reassignJob), jobController.reassignSurveyor);
 
 // Escalate a job to a higher role
-// Access: GM, TM, TO
-router.put('/:id/escalate', hasRole('GM', 'TM', 'TO'), validate(schemas.escalateJob), jobController.escalateJob);
+router.put('/:id/escalate', authorizeRoles('GM', 'TM', 'TO'), validate(schemas.escalateJob), jobController.escalateJob);
 
 // Lifecycle Routes
+router.put('/:id/cancel', authorizeRoles('CLIENT', 'GM', 'TM', 'ADMIN'), jobController.cancelJob);
+router.put('/:id/hold', authorizeRoles('GM', 'TM', 'ADMIN'), jobController.holdJob);
+router.put('/:id/resume', authorizeRoles('GM', 'TM', 'ADMIN'), jobController.resumeJob);
+router.post('/:id/clone', authorizeRoles('GM', 'TM', 'ADMIN'), jobController.cloneJob);
 
-// Cancel a job
-// Access: GM, TM, ADMIN
-router.put('/:id/cancel', hasRole('GM', 'TM', 'ADMIN'), jobController.cancelJob);
+// Priority
+router.put('/:id/priority', authorizeRoles('ADMIN', 'GM', 'TM'), jobController.updatePriority);
 
-// Put a job on hold
-// Access: GM, TM, ADMIN
-router.put('/:id/hold', hasRole('GM', 'TM', 'ADMIN'), jobController.holdJob);
+// History & Notes
+router.get('/:id/history', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), jobController.getHistory);
+router.post('/:id/notes', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), jobController.addInternalNote);
 
-// Resume a job from hold
-// Access: GM, TM, ADMIN
-router.put('/:id/resume', hasRole('GM', 'TM', 'ADMIN'), jobController.resumeJob);
+// Messaging
+router.get('/:id/messages/external', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), async (req, res, next) => {
+    try {
+        const messages = await jobController.getJobMessages(req.params.id, false);
+        res.json({ success: true, data: messages });
+    } catch (e) { next(e); }
+});
 
-// Clone an existing job
-// Access: GM, TM, ADMIN
-router.post('/:id/clone', hasRole('GM', 'TM', 'ADMIN'), jobController.cloneJob);
+router.get('/:id/messages/internal', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), async (req, res, next) => {
+    try {
+        const messages = await jobController.getJobMessages(req.params.id, true);
+        res.json({ success: true, data: messages });
+    } catch (e) { next(e); }
+});
 
-// Get job history and status changes
-router.get('/:id/history', jobController.getHistory);
+router.post('/:id/messages', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), upload.single('attachment'), async (req, res, next) => {
+    try {
+        const message = await jobController.sendMessage(req.params.id, req.user.id, req.body, req.file);
+        res.status(201).json({ success: true, data: message });
+    } catch (e) { next(e); }
+});
 
 export default router;

@@ -1,78 +1,54 @@
 import express from 'express';
 import * as certController from './certificate.controller.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
-
-import { hasRole } from '../../middlewares/rbac.middleware.js';
+import { authorizeRoles } from '../../middlewares/rbac.middleware.js';
 import { validate, schemas } from '../../middlewares/validate.middleware.js';
 
-
 const router = express.Router();
+
+// Public Verification - No Auth
+router.get('/verify/:number', certController.verifyCertificate);
+
 router.use(authenticate);
 
-// List certificate types (for Create Job dropdown) – all authenticated including CLIENT
-router.get('/types', certController.getCertificateTypes);
-
-// Generate a new certificate
-// Access: ADMIN, GM, TM
-router.post('/', hasRole('ADMIN', 'GM', 'TM'), certController.generateCertificate);
+// Metadata
+router.get('/types', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), certController.getCertificateTypes);
 
 // List all certificates
-// Access: All authenticated users
-router.get('/', certController.getCertificates);
+router.get('/', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), certController.getCertificates);
 
 // Get certificates expiring within a range
-// Access: ADMIN, GM, TM, CLIENT
-router.get('/expiring', hasRole('ADMIN', 'GM', 'TM', 'CLIENT'), certController.getExpiringCertificates);
+router.get('/expiring', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), certController.getExpiringCertificates);
 
-// Suspend a certificate
-// Access: ADMIN, TM
-router.put('/:id/suspend', hasRole('ADMIN', 'TM'), validate(schemas.certAction), certController.suspendCertificate);
+// Generate a new certificate
+router.post('/', authorizeRoles('ADMIN', 'GM', 'TM'), certController.generateCertificate);
 
-// Revoke a certificate permanently
-// Access: ADMIN, TM
-router.put('/:id/revoke', hasRole('ADMIN', 'TM'), validate(schemas.certAction), certController.revokeCertificate);
+// Get specific certificate details
+router.get('/:id', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), certController.getCertificateById);
 
-// Restore a suspended/revoked certificate
-// Access: ADMIN, TM
-router.put('/:id/restore', hasRole('ADMIN', 'TM'), validate(schemas.certAction), certController.restoreCertificate);
+// Suspend/Revoke/Restore
+router.put('/:id/suspend', authorizeRoles('ADMIN', 'TM'), validate(schemas.certAction), certController.suspendCertificate);
+router.put('/:id/revoke', authorizeRoles('ADMIN', 'TM'), validate(schemas.certAction), certController.revokeCertificate);
+router.put('/:id/restore', authorizeRoles('ADMIN', 'TM'), validate(schemas.certAction), certController.restoreCertificate);
 
-// Renew a certificate
-// Access: ADMIN, TM
-router.put('/:id/renew', hasRole('ADMIN', 'TM'), validate(schemas.renewCert), certController.renewCertificate);
+// Renew
+router.put('/:id/renew', authorizeRoles('ADMIN', 'TM'), validate(schemas.renewCert), certController.renewCertificate);
+router.post('/bulk-renew', authorizeRoles('ADMIN', 'TM'), certController.bulkRenew);
 
-// Reissue a certificate (new version)
-// Access: ADMIN, TM
-router.post('/:id/reissue', hasRole('ADMIN', 'TM'), validate(schemas.certAction), certController.reissueCertificate);
+// Reissue
+router.post('/:id/reissue', authorizeRoles('ADMIN', 'TM'), validate(schemas.certAction), certController.reissueCertificate);
 
-// Preview certificate document
-// Access: All authenticated users
-router.get('/:id/preview', certController.previewCertificate);
+// Preview & Signature
+router.get('/:id/preview', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), certController.previewCertificate);
+router.post('/:id/sign', authorizeRoles('ADMIN', 'GM'), certController.signCertificate);
+router.get('/:id/signature', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), certController.getSignature);
 
-// Sign a certificate
-// Access: ADMIN, GM
-router.post('/:id/sign', hasRole('ADMIN', 'GM'), certController.signCertificate);
-
-// Get certificate signature
-// Access: All authenticated users
-router.get('/:id/signature', certController.getSignature);
-
-// Get certificate history
-// Access: All authenticated users
-router.get('/:id/history', certController.getHistory);
+// History
+router.get('/:id/history', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), certController.getHistory);
 
 // Advanced Management
-
-// Transfer certificate to another vessel/owner
-// Access: ADMIN, GM
-router.post('/:id/transfer', hasRole('ADMIN', 'GM'), validate(schemas.certAction), certController.transferCertificate);
-
-// Extend certificate validity
-// Access: ADMIN, GM
-router.post('/:id/extend', hasRole('ADMIN', 'GM'), validate(schemas.certAction), certController.extendCertificate);
-
-// Downgrade certificate to a lower type
-// Access: ADMIN, GM
-router.put('/:id/downgrade', hasRole('ADMIN', 'GM'), validate(schemas.certAction), certController.downgradeCertificate);
-
+router.post('/:id/transfer', authorizeRoles('ADMIN', 'GM'), validate(schemas.certAction), certController.transferCertificate);
+router.post('/:id/extend', authorizeRoles('ADMIN', 'GM'), validate(schemas.certAction), certController.extendCertificate);
+router.put('/:id/downgrade', authorizeRoles('ADMIN', 'GM'), validate(schemas.certAction), certController.downgradeCertificate);
 
 export default router;

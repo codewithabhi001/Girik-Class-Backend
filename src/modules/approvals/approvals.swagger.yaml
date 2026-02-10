@@ -1,0 +1,67 @@
+paths:
+  /approvals:
+    post:
+      summary: Create Approval Request
+      description: Initiate a multi-step approval workflow for an entity.
+      tags: [Approvals]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [entity_type, entity_id, approval_type]
+              properties:
+                entity_type:
+                  type: string
+                entity_id:
+                  type: string
+                  format: uuid
+                approval_type:
+                  type: string
+      responses:
+        '201':
+          description: Approval initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /approvals/{id}/step:
+    put:
+      summary: Update Approval Step
+      description: Approve or reject the current step in the workflow.
+      tags: [Approvals]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action:
+                  type: string
+                  enum: [APPROVE, REJECT]
+                comments:
+                  type: string
+      responses:
+        '200':
+          description: Step updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

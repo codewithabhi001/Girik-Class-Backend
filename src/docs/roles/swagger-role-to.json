@@ -93,6 +93,14 @@
       "description": "Mobile"
     },
     {
+      "name": "Support",
+      "description": "Support"
+    },
+    {
+      "name": "Search",
+      "description": "Search"
+    },
+    {
       "name": "Client Portal",
       "description": "Client Portal"
     },
@@ -1604,6 +1612,149 @@
         }
       }
     },
+    "/search": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Global Search",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/support": {
+      "post": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Create Support Ticket",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "subject",
+                  "description"
+                ],
+                "properties": {
+                  "subject": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "enum": [
+                      "LOW",
+                      "MEDIUM",
+                      "HIGH"
+                    ]
+                  }
+                }
+              },
+              "example": {
+                "subject": "Cannot login",
+                "description": "I am getting 401 even with correct password",
+                "priority": "HIGH"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "List Support Tickets",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/support/{id}": {
+      "get": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Get Support Ticket",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "id"
+          }
+        ]
+      }
+    },
     "/jobs/{id}/escalate": {
       "put": {
         "tags": [
@@ -2055,12 +2206,12 @@
                 "properties": {
                   "email": {
                     "type": "string",
-                    "example": "user@example.com"
+                    "example": "admin@gmail.com"
                   }
                 }
               },
               "example": {
-                "email": "user@example.com"
+                "email": "admin@gmail.com"
               }
             }
           }

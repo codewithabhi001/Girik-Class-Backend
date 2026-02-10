@@ -1,0 +1,207 @@
+paths:
+  /clients:
+    get:
+      summary: List all clients
+      description: Retrieve a list of all client companies.
+      tags: [Clients]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM, TO]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: List of clients
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginationResponse'
+
+    post:
+      summary: Create Client
+      description: Create a new client company profile.
+      tags: [Clients]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [company_name, company_code, email]
+              properties:
+                company_name:
+                  type: string
+                company_code:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                address:
+                  type: string
+                country:
+                  type: string
+                phone:
+                  type: string
+                contact_person_name:
+                  type: string
+                contact_person_email:
+                  type: string
+      responses:
+        '201':
+          description: Client created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /clients/profile:
+    get:
+      summary: Get Client Profile
+      description: Retrieve the currently logged-in client's company profile.
+      tags: [Clients]
+      security:
+        - bearerAuth: []
+      x-roles: [CLIENT]
+      responses:
+        '200':
+          description: Client profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    put:
+      summary: Update Client Profile
+      description: Update the currently logged-in client's company profile.
+      tags: [Clients]
+      security:
+        - bearerAuth: []
+      x-roles: [CLIENT]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address:
+                  type: string
+                phone:
+                  type: string
+                contact_person_name:
+                  type: string
+                contact_person_email:
+                  type: string
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /clients/dashboard:
+    get:
+      summary: Get Client Dashboard Data
+      description: Retrieve summary data for the client dashboard.
+      tags: [Clients]
+      security:
+        - bearerAuth: []
+      x-roles: [CLIENT]
+      responses:
+        '200':
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /clients/{id}:
+    get:
+      summary: Get Client by ID
+      description: Retrieve details of a specific client company.
+      tags: [Clients]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM, TO]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Client details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    put:
+      summary: Update Client
+      description: Update details of an existing client company.
+      tags: [Clients]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                company_name:
+                  type: string
+                address:
+                  type: string
+                phone:
+                  type: string
+      responses:
+        '200':
+          description: Client updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    delete:
+      summary: Delete Client
+      description: Permanently remove a client company profile.
+      tags: [Clients]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Client deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

@@ -1,0 +1,103 @@
+paths:
+  /certificate-templates:
+    get:
+      summary: List Templates
+      description: Retrieve a list of all certificate and checklist templates.
+      tags: [Certificate Templates]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      responses:
+        '200':
+          description: List of templates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    post:
+      summary: Create Template
+      description: Create a new certificate or checklist template.
+      tags: [Certificate Templates]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, type, fields]
+              properties:
+                name: [type: string]
+                type: [type: string, enum: [CERTIFICATE, CHECKLIST]]
+                fields: [type: array, items: {type: object}]
+      responses:
+        '201':
+          description: Template created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /certificate-templates/{id}:
+    get:
+      summary: Get Template by ID
+      description: Retrieve details of a specific template.
+      tags: [Certificate Templates]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: [type: string, format: uuid]
+      responses:
+        '200':
+          description: Template details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    put:
+      summary: Update Template
+      description: Update details of an existing template.
+      tags: [Certificate Templates]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: [type: string, format: uuid]
+      responses:
+        '200':
+          description: Template updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    delete:
+      summary: Delete Template
+      description: Permanently remove a template.
+      tags: [Certificate Templates]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: [type: string, format: uuid]
+      responses:
+        '200':
+          description: Template deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

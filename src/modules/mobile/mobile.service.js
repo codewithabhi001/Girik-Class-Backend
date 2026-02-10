@@ -1,6 +1,6 @@
 import db from '../../models/index.js';
 
-const { Job, Survey, User } = db;
+const { JobRequest, SurveyReport } = db;
 
 export const syncOfflineData = async (userId, offlineData) => {
     const results = { synced: 0, failed: 0 };
@@ -8,10 +8,9 @@ export const syncOfflineData = async (userId, offlineData) => {
     for (const data of offlineData) {
         try {
             if (data.type === 'survey') {
-                await Survey.create({ ...data.payload, surveyor_id: userId });
-            } else if (data.type === 'gps') {
-                // Handle GPS data
+                await SurveyReport.create({ ...data.payload, surveyor_id: userId });
             }
+            // Handle other types
             results.synced++;
         } catch (error) {
             results.failed++;
@@ -22,11 +21,11 @@ export const syncOfflineData = async (userId, offlineData) => {
 };
 
 export const getOfflineJobs = async (userId) => {
-    return await Job.findAll({
+    return await JobRequest.findAll({
         where: {
             gm_assigned_surveyor_id: userId,
             job_status: ['ASSIGNED', 'SURVEY_DONE']
         },
-        include: ['vessel', 'certificateType']
+        include: ['Vessel', 'CertificateType']
     });
 };

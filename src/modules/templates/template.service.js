@@ -19,28 +19,28 @@ export const getTemplates = async (filters = {}) => {
 
     return await CertificateTemplate.findAll({
         where,
-        include: ['certificateType']
+        include: ['CertificateType']
     });
 };
 
 export const getTemplateById = async (id) => {
     const template = await CertificateTemplate.findByPk(id, {
-        include: ['certificateType']
+        include: ['CertificateType']
     });
-    if (!template) throw new Error('Template not found');
+    if (!template) throw { statusCode: 404, message: 'Template not found' };
     return template;
 };
 
 export const updateTemplate = async (id, data) => {
     const template = await CertificateTemplate.findByPk(id);
-    if (!template) throw new Error('Template not found');
+    if (!template) throw { statusCode: 404, message: 'Template not found' };
 
     return await template.update(data);
 };
 
 export const deleteTemplate = async (id) => {
     const template = await CertificateTemplate.findByPk(id);
-    if (!template) throw new Error('Template not found');
+    if (!template) throw { statusCode: 404, message: 'Template not found' };
 
     await template.destroy();
     return { message: 'Template deleted successfully' };

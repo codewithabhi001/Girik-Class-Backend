@@ -13,11 +13,13 @@ const startServer = async () => {
         await db.sequelize.authenticate();
         logger.info('Database connected successfully.');
 
-        // Auto-sync models: Updates tables to match models
-        // For production, use migrations instead
-        logger.info('Syncing database models (alter mode)...');
-        await db.sequelize.sync({ alter: true });
-        logger.info('Database models synced successfully.');
+        // Production-ready: Don't alter tables, just validate connection
+        // Use migrations for schema changes in production
+        if (env.nodeEnv === 'development') {
+            logger.info('Skipping auto-sync in favor of manual migrations...');
+            // await db.sequelize.sync({ force: false }); // Only creates missing tables, doesn't alter
+        }
+        logger.info('Database models ready.');
 
         startMonitoring();
 

@@ -1,30 +1,28 @@
 import express from 'express';
 import * as userController from './user.controller.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
-import { hasRole } from '../../middlewares/rbac.middleware.js';
+import { authorizeRoles } from '../../middlewares/rbac.middleware.js';
 import { validate, schemas } from '../../middlewares/validate.middleware.js';
 
 const router = express.Router();
 router.use(authenticate);
 
-// List all users
-// Access: ADMIN
-router.get('/', hasRole('ADMIN'), userController.getUsers);
+// Get own profile
+router.get('/me', userController.getProfile);
 
-// Create a new user (Admin created)
-// Access: ADMIN
-router.post('/', hasRole('ADMIN'), validate(schemas.createUser), userController.createUser);
+// List all users
+router.get('/', authorizeRoles('ADMIN'), userController.getUsers);
+
+// Create a new user
+router.post('/', authorizeRoles('ADMIN'), validate(schemas.createUser), userController.createUser);
 
 // Update user details
-// Access: ADMIN
-router.put('/:id', hasRole('ADMIN'), validate(schemas.updateUser), userController.updateUser);
+router.put('/:id', authorizeRoles('ADMIN'), validate(schemas.updateUser), userController.updateUser);
 
-// Update user status (Active/Inactive/Suspended)
-// Access: ADMIN
-router.put('/:id/status', hasRole('ADMIN'), validate(schemas.updateUserStatus), userController.updateStatus);
+// Update user status
+router.put('/:id/status', authorizeRoles('ADMIN'), validate(schemas.updateUserStatus), userController.updateStatus);
 
-// Delete user (Soft delete)
-// Access: ADMIN
-router.delete('/:id', hasRole('ADMIN'), userController.deleteUser);
+// Delete user
+router.delete('/:id', authorizeRoles('ADMIN'), userController.deleteUser);
 
 export default router;

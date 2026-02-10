@@ -5,7 +5,7 @@ const Client = db.Client;
 
 export const createVessel = async (data) => {
     // Check if client exists
-    const client = await Client.findByPk(data.client_id);
+    const client = await Client.findByPk(data.client_id || data.vessel_owner_id);
     if (!client) {
         throw { statusCode: 400, message: 'Client not found' };
     }
@@ -18,38 +18,29 @@ export const createVessel = async (data) => {
     return await Vessel.create(data);
 };
 
-export const getVessels = async (query, user) => {
+export const getVessels = async (query, scopeFilters = {}) => {
     const { page = 1, limit = 10, ...filters } = query;
-    const where = { ...filters };
-
-    // Multi-tenancy: If role is CLIENT, only show their own vessels
-    if (user.role === 'CLIENT') {
-        where.client_id = user.client_id;
-    }
+    const where = { ...filters, ...scopeFilters };
 
     return await Vessel.findAndCountAll({
         where,
         limit: parseInt(limit),
         offset: (page - 1) * limit,
-        include: ['Client'] // Include client details
+        include: [{ model: Client, as: 'Client' }] // Explicit model reference
     });
 };
 
-export const getVesselById = async (id, user) => {
-    const where = { id };
-
-    // Restriction for CLIENT role
-    if (user.role === 'CLIENT') {
-        where.client_id = user.client_id;
-    }
-
-    const vessel = await Vessel.findOne({ where, include: ['Client'] });
+export const getVesselById = async (id, scopeFilters = {}) => {
+    const vessel = await Vessel.findOne({
+        where: { id, ...scopeFilters },
+        include: [{ model: Client, as: 'Client' }]
+    });
     if (!vessel) throw { statusCode: 404, message: 'Vessel not found' };
     return vessel;
 };
 
-export const updateVessel = async (id, data) => {
-    const vessel = await getVesselById(id);
+export const updateVessel = async (id, data, scopeFilters = {}) => {
+    const vessel = await getVesselById(id, scopeFilters);
 
     if (data.imo_number && data.imo_number !== vessel.imo_number) {
         const existing = await Vessel.findOne({ where: { imo_number: data.imo_number } });

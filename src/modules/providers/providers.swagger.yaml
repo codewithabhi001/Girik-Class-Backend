@@ -1,0 +1,140 @@
+paths:
+  /providers:
+    get:
+      summary: List Providers
+      description: List all service providers/suppliers.
+      tags: [Providers]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM, TO]
+      responses:
+        '200':
+          description: List of providers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    post:
+      summary: Register Provider
+      description: Onboard a new service provider.
+      tags: [Providers]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, serviceType]
+              properties:
+                name:
+                  type: string
+                serviceType:
+                  type: string
+                  enum: [LAB, WORKSHOP, SPARES, LOGISTICS]
+                contactEmail:
+                  type: string
+                  format: email
+      responses:
+        '201':
+          description: Provider registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /providers/{id}/status:
+    put:
+      summary: Update Status
+      description: Approve, suspend, or blacklist a provider.
+      tags: [Providers]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [APPROVED, SUSPENDED, BLACKLISTED]
+      responses:
+        '200':
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /providers/{id}/evaluations:
+    get:
+      summary: Get Evaluations
+      description: Retrieve performance evaluations for a provider.
+      tags: [Providers]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of evaluations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    post:
+      summary: Evaluate Provider
+      description: Submit a performance evaluation for a provider.
+      tags: [Providers]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating, comment]
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+      responses:
+        '201':
+          description: Evaluation submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

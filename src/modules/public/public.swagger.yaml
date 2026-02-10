@@ -1,0 +1,40 @@
+paths:
+  /public/certificate/verify/{number}:
+    get:
+      summary: Public Certificate Verification
+      description: Verify the authenticity of a certificate using its unique number. No authentication required.
+      tags: [Public]
+      parameters:
+        - in: path
+          name: number
+          required: true
+          schema:
+            type: string
+          description: Certificate Reference Number
+      responses:
+        '200':
+          description: Verification Details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /public/vessel/{imo}:
+    get:
+      summary: Verify Vessel IMO
+      description: Check if a vessel with the given IMO number is registered in the class.
+      tags: [Public]
+      parameters:
+        - in: path
+          name: imo
+          required: true
+          schema:
+            type: string
+          description: IMO Number
+      responses:
+        '200':
+          description: Vessel status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

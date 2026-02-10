@@ -1,4 +1,3 @@
-
 import db from '../../models/index.js';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -6,7 +5,7 @@ const Certificate = db.Certificate;
 const CertificateType = db.CertificateType;
 const JobRequest = db.JobRequest;
 
-/** List certificate types (for dropdowns / Create Job). All authenticated users including CLIENT. */
+/** List certificate types. */
 export const getCertificateTypes = async () => {
     return await CertificateType.findAll({
         where: { status: 'ACTIVE' },
@@ -15,7 +14,7 @@ export const getCertificateTypes = async () => {
     });
 };
 
-export const generateCertificate = async (data, user) => {
+export const generateCertificate = async (data, userId) => {
     const { job_id, validity_years } = data;
     const job = await JobRequest.findByPk(job_id);
     if (!job) throw { statusCode: 404, message: 'Job not found' };
@@ -31,7 +30,7 @@ export const generateCertificate = async (data, user) => {
         issue_date: issueDate,
         expiry_date: expiryDate,
         status: 'VALID',
-        issued_by_user_id: user.id
+        issued_by_user_id: userId
     });
 
     // Update Job
@@ -40,16 +39,9 @@ export const generateCertificate = async (data, user) => {
     return cert;
 };
 
-export const getCertificates = async (query, user) => {
+export const getCertificates = async (query, scopeFilters = {}) => {
     const { page = 1, limit = 10, ...filters } = query;
-    const where = { ...filters };
-
-    // Multi-tenancy
-    if (user.role === 'CLIENT') {
-        const vessels = await db.Vessel.findAll({ where: { client_id: user.client_id }, attributes: ['id'] });
-        const vesselIds = vessels.map(v => v.id);
-        where.vessel_id = vesselIds;
-    }
+    const where = { ...filters, ...scopeFilters };
 
     return await Certificate.findAndCountAll({
         where,
@@ -59,7 +51,16 @@ export const getCertificates = async (query, user) => {
     });
 };
 
-export const updateStatus = async (id, status, reason, user) => {
+export const getCertificateById = async (id, scopeFilters = {}) => {
+    const cert = await Certificate.findOne({
+        where: { id, ...scopeFilters },
+        include: [{ model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }, { model: db.CertificateType, attributes: ['name'] }]
+    });
+    if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
+    return cert;
+};
+
+export const updateStatus = async (id, status, reason, userId) => {
     const cert = await Certificate.findByPk(id);
     if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
 
@@ -68,7 +69,7 @@ export const updateStatus = async (id, status, reason, user) => {
     await db.CertificateHistory.create({
         certificate_id: cert.id,
         status: status,
-        changed_by: user.id,
+        changed_by: userId,
         change_reason: reason,
         change_date: new Date()
     });
@@ -76,7 +77,7 @@ export const updateStatus = async (id, status, reason, user) => {
     return cert;
 };
 
-export const renewCertificate = async (id, validityYears, reason, user) => {
+export const renewCertificate = async (id, validityYears, reason, userId) => {
     const oldCert = await Certificate.findByPk(id);
     if (!oldCert) throw { statusCode: 404, message: 'Certificate not found' };
 
@@ -93,13 +94,13 @@ export const renewCertificate = async (id, validityYears, reason, user) => {
         issue_date: issueDate,
         expiry_date: expiryDate,
         status: 'VALID',
-        issued_by_user_id: user.id
+        issued_by_user_id: userId
     });
 
     await db.CertificateHistory.create({
         certificate_id: oldCert.id,
         status: 'RENEWED',
-        changed_by: user.id,
+        changed_by: userId,
         change_reason: `Renewed. New Cert: ${newCert.certificate_number}`,
         change_date: new Date()
     });
@@ -107,12 +108,14 @@ export const renewCertificate = async (id, validityYears, reason, user) => {
     return newCert;
 };
 
-export const reissueCertificate = async (id, reason, user) => {
+export const reissueCertificate = async (id, reason, userId) => {
     const cert = await Certificate.findByPk(id);
+    if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
+
     await db.CertificateHistory.create({
         certificate_id: cert.id,
         status: cert.status,
-        changed_by: user.id,
+        changed_by: userId,
         change_reason: `Re-issued: ${reason}`,
         change_date: new Date()
     });
@@ -121,6 +124,7 @@ export const reissueCertificate = async (id, reason, user) => {
 
 export const previewCertificate = async (id) => {
     const cert = await Certificate.findByPk(id, { include: ['Vessel'] });
+    if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
     return { preview_url: `https://mock-pdf.com/preview/${id}`, data: cert };
 };
 
@@ -128,7 +132,7 @@ export const getHistory = async (id) => {
     return await db.CertificateHistory.findAll({ where: { certificate_id: id }, order: [['change_date', 'DESC']] });
 };
 
-export const transferCertificate = async (id, newOwnerId, reason, user) => {
+export const transferCertificate = async (id, newOwnerId, reason, userId) => {
     const cert = await Certificate.findByPk(id);
     if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
 
@@ -141,13 +145,13 @@ export const transferCertificate = async (id, newOwnerId, reason, user) => {
         issue_date: new Date(),
         expiry_date: cert.expiry_date,
         status: 'VALID',
-        issued_by_user_id: user.id
+        issued_by_user_id: userId
     });
 
     await db.CertificateHistory.create({
         certificate_id: cert.id,
         status: 'TRANSFERRED',
-        changed_by: user.id,
+        changed_by: userId,
         change_reason: `Transferred ownership. New Cert: ${newCert.certificate_number}. Reason: ${reason}`,
         change_date: new Date()
     });
@@ -155,7 +159,7 @@ export const transferCertificate = async (id, newOwnerId, reason, user) => {
     return newCert;
 };
 
-export const extendCertificate = async (id, extensionMonths, reason, user) => {
+export const extendCertificate = async (id, extensionMonths, reason, userId) => {
     const cert = await Certificate.findByPk(id);
     if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
 
@@ -167,7 +171,7 @@ export const extendCertificate = async (id, extensionMonths, reason, user) => {
     await db.CertificateHistory.create({
         certificate_id: cert.id,
         status: cert.status,
-        changed_by: user.id,
+        changed_by: userId,
         change_reason: `Extended by ${extensionMonths} months: ${reason}`,
         change_date: new Date()
     });
@@ -175,7 +179,7 @@ export const extendCertificate = async (id, extensionMonths, reason, user) => {
     return cert;
 };
 
-export const downgradeCertificate = async (id, newTypeId, reason, user) => {
+export const downgradeCertificate = async (id, newTypeId, reason, userId) => {
     const cert = await Certificate.findByPk(id);
     if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
 
@@ -188,13 +192,13 @@ export const downgradeCertificate = async (id, newTypeId, reason, user) => {
         issue_date: new Date(),
         expiry_date: cert.expiry_date,
         status: 'VALID',
-        issued_by_user_id: user.id
+        issued_by_user_id: userId
     });
 
     await db.CertificateHistory.create({
         certificate_id: cert.id,
         status: 'DOWNGRADED',
-        changed_by: user.id,
+        changed_by: userId,
         change_reason: `Downgraded to type ${newTypeId}. New Cert: ${newCert.certificate_number}. Reason: ${reason}`,
         change_date: new Date()
     });
@@ -202,7 +206,7 @@ export const downgradeCertificate = async (id, newTypeId, reason, user) => {
     return newCert;
 };
 
-export const getExpiringCertificates = async (days) => {
+export const getExpiringCertificates = async (days, scopeFilters = {}) => {
     const today = new Date();
     const target = new Date();
     target.setDate(today.getDate() + days);
@@ -211,6 +215,7 @@ export const getExpiringCertificates = async (days) => {
 
     return await Certificate.findAll({
         where: {
+            ...scopeFilters,
             status: 'VALID',
             expiry_date: {
                 [Op.between]: [today, target]
@@ -218,4 +223,29 @@ export const getExpiringCertificates = async (days) => {
         },
         include: ['Vessel']
     });
+};
+
+export const bulkRenew = async (ids, validityYears, reason, userId) => {
+    const results = [];
+    for (const id of ids) {
+        try {
+            const cert = await renewCertificate(id, validityYears, reason, userId);
+            results.push({ id, status: 'SUCCESS', cert });
+        } catch (e) {
+            results.push({ id, status: 'FAILED', error: e.message });
+        }
+    }
+    return results;
+};
+
+export const verifyCertificate = async (certificateNumber) => {
+    const cert = await Certificate.findOne({
+        where: { certificate_number: certificateNumber },
+        include: [{ model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }, { model: db.CertificateType, attributes: ['name'] }]
+    });
+    if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
+    return {
+        valid: cert.status === 'VALID' && new Date(cert.expiry_date) > new Date(),
+        certificate: cert
+    };
 };

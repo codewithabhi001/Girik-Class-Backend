@@ -1,0 +1,123 @@
+paths:
+  /vessels:
+    get:
+      summary: List all vessels
+      description: Retrieve a list of all vessels (scoped by client for CLIENT role).
+      tags: [Vessels]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: List of vessels
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginationResponse'
+
+    post:
+      summary: Create Vessel Registry
+      description: Register a new vessel in the system.
+      tags: [Vessels]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vessel_name, imo_number, client_id, flag_state]
+              properties:
+                vessel_name:
+                  type: string
+                imo_number:
+                  type: string
+                client_id:
+                  type: string
+                  format: uuid
+                flag_state:
+                  type: string
+                ship_type:
+                  type: string
+                call_sign:
+                  type: string
+                year_built:
+                  type: integer
+      responses:
+        '201':
+          description: Vessel created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /vessels/{id}:
+    get:
+      summary: Get Vessel by ID
+      description: Retrieve details of a specific vessel.
+      tags: [Vessels]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Vessel details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    put:
+      summary: Update Vessel
+      description: Update details of an existing vessel registry.
+      tags: [Vessels]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vessel_name:
+                  type: string
+                flag_state:
+                  type: string
+                status:
+                  type: string
+                  enum: [ACTIVE, INACTIVE, DRY_DOCK]
+      responses:
+        '200':
+          description: Vessel updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

@@ -9,7 +9,7 @@ export default (sequelize, DataTypes) => {
     }, {
         tableName: 'activity_plannings',
         underscored: true,
-        timestamps: false,
+        timestamps: true,
     });
 
     ActivityPlanning.associate = (models) => {

@@ -1,1664 +1,81 @@
 openapi: 3.0.0
 info:
-  title: GIRIK Backend API
+  title: Maritime Vessel Certification System API
   version: 1.0.0
   description: |
-    # 🚢 Marine Certification and Operations Management System
+    API documentation for the Maritime Vessel Certification and Survey Management System.
     
-    Welcome to the GIRIK Backend API. This documentation covers all interactions with the system.
+    ### Domain Driven Design
+    APIs are grouped by domain (Jobs, Vessels, Payments, etc).
     
-    ---
+    ### Authentication
+    All endpoints (except Auth) require Bearer JWT authentication.
     
-    ## 📋 Quick Start
-    
-    <details>
-    <summary>🔐 <b>Authentication Flow</b> (Click to expand)</summary>
-    
-    1. **Register** a new account or **Login** with existing credentials.
-    2. Receive a **JWT Token**.
-    3. Use the token in the `Authorization` header: `Bearer <token>`.
-    
-    </details>
-    
-    <details>
-    <summary>🌐 <b>Public Verification</b> (Click to expand)</summary>
-    
-    anyone can verify certificates and vessel details using the public endpoints without logging in.
-    
-    </details>
+    ### Roles & Permissions
+    RBAC is enforced via middleware using `x-roles` extension in documentation.
+    Allowed Roles: ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT.
 
 servers:
   - url: http://localhost:3000/api/v1
     description: Local Development Server
-  - url: https://api.girik.com/api/v1
-    description: Production Server
 
 tags:
-  - name: 🔐 Authentication
-    description: Public endpoints for user authentication and session management
-  - name: 🌐 Public Access
-    description: Publicly accessible endpoints for verification (No Auth Required)
-  - name: ⚙️ System
-    description: System health and status checks
-  - name: 👥 Users (Admin)
-    description: User management endpoints (Admin Only)
-  - name: 🔑 Roles (Admin)
-    description: Role and permission management (Admin Only)
-  - name: ⚙️ Settings (Admin)
-    description: System configuration and maintenance (Admin Only)
-  - name: 🔒 Security (Admin)
-    description: Security policies, sessions, and access control (Admin Only)
-  - name: 🚢 Vessels
-    description: Vessel registration and fleet management
-  - name: 🏢 Clients
-    description: Client/Owner management
-  - name: 📋 Jobs
-    description: Survey job creation, assignment, and tracking
-  - name: 🔍 Surveys
-    description: Survey execution, reporting, and evidence
-  - name: 📜 Certificates
-    description: Certificate issuance, renewal, and lifecycle management
-  - name: 💰 Payments
-    description: Invoicing and financial compliance
-  - name: 👷 Surveyors
-    description: Surveyor recruitment and profiles
-  - name: 📍 Geofence
-    description: GPS tracking and geofencing
-  - name: ✅ Checklists
-    description: Survey checklists
-  - name: 🚫 Non-Conformities
-    description: NC management
-  - name: 🚦 TOCA
+  - name: Auth
+    description: Authentication & Authorization
+  - name: Users
+    description: User Management
+  - name: Clients
+    description: Client & Company Management
+  - name: Vessels
+    description: Vessel Registry & Management
+  - name: Jobs
+    description: Survey & Certification Jobs
+  - name: Surveys
+    description: Survey Reports & Inspections
+  - name: Certificates
+    description: Certificate Issuance & Validation
+  - name: Payments
+    description: Invoicing & Payment Processing
+  - name: Notifications
+    description: System Notifications & Alerts
+  - name: Providers
+    description: Service Provider Management
+  - name: System
+    description: System Configuration & Logs
+  - name: Compliance
+    description: Regulatory Compliance & Rules
+  - name: Documents
+    description: Document Storage & Management
+  - name: Flags
+    description: Flag Management
+  - name: Incidents
+    description: Incident Reporting & Resolution
+  - name: Non-Conformities
+    description: Non-Conformity Management
+  - name: Activity Requests
+    description: Client Activity Request Management
+  - name: Approvals
+    description: Multi-level Approval Workflow
+  - name: Change Requests
+    description: System Entity Change Requests
+  - name: Checklists
+    description: Job Inspection Checklists
+  - name: Feedback
+    description: Customer Feedback & Ratings
+  - name: Support
+    description: Customer Support & Ticketing
+  - name: Search
+    description: Global Search
+  - name: Mobile
+    description: Mobile App Synchronization & Offline Data
+  - name: TOCA
     description: Transfer of Class Agreement
-  - name: 🚩 Flags
-    description: Flag state administration
-  - name: 👍 Approvals
-    description: Approval workflows
-  - name: 📜 Audit
-    description: System audit logs
-  - name: 🔔 Notifications
-    description: User notifications and preferences
-  - name: 🗂️ Evidence
-    description: Evidence and document management
-  - name: 📱 Mobile
-    description: Mobile app synchronization
-  - name: 🏢 Client Portal
-    description: Client dashboard and view
-  - name: 📊 Reports
-    description: System reports
-  - name: 🔄 Change Requests
-    description: Change request management
-  - name: 📄 Templates
-    description: Certificate templates
-  - name: 🚨 Incidents
-    description: Incident reporting
-  - name: 📅 Events
-    description: System events
-  - name: ⏱️ SLA
-    description: Service Level Agreements
-  - name: 📦 Bulk Operations
-    description: Bulk imports and updates
-  - name: 🔍 Search
-    description: Global search
-  - name: 🎣 Webhooks
-    description: Webhooks and callbacks
-  - name: ⚖️ Compliance
-    description: GDPR and legal hold
-  - name: 🤖 AI
-    description: AI features
-  - name: 📝 Activity Requests
-    description: Client activity requests
-  - name: 🏭 Providers
-    description: Service provider management
-  - name: 💬 Feedback
-    description: Customer feedback
-
-paths:
-  # =================================================================
-  # CORE: VESSELS
-  # =================================================================
-  /vessels:
-    get:
-      tags:
-        - 🚢 Vessels
-      summary: List Vessels
-      responses:
-        '200':
-          description: ✅ Vessels retrieved
-    post:
-      tags:
-        - 🚢 Vessels
-      summary: Register Vessel
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [name, imo, flag]
-              properties:
-                name: { type: string }
-                imo: { type: string }
-                flag: { type: string }
-                details: { type: object }
-      responses:
-        '201':
-          description: ✅ Vessel registered
-
-  /vessels/{id}:
-    get:
-      tags:
-        - 🚢 Vessels
-      summary: Get Vessel Details
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses:
-        '200':
-          description: ✅ Details retrieved
-    put:
-      tags:
-        - 🚢 Vessels
-      summary: Update Vessel
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses:
-        '200':
-          description: ✅ Vessel updated
-
-  # =================================================================
-  # CORE: CLIENTS
-  # =================================================================
-  /clients:
-    get:
-      tags:
-        - 🏢 Clients
-      summary: List Clients
-      responses:
-        '200':
-          description: ✅ Clients retrieved
-    post:
-      tags:
-        - 🏢 Clients
-      summary: Register Client
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [name, email]
-              properties:
-                name: { type: string }
-                email: { type: string }
-      responses:
-        '201':
-          description: ✅ Client registered
-
-  /clients/{id}:
-    get:
-      tags:
-        - 🏢 Clients
-      summary: Get Client
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses:
-        '200':
-          description: ✅ Client details
-    put:
-      tags:
-        - 🏢 Clients
-      summary: Update Client
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses:
-        '200':
-          description: ✅ Client updated
-    delete:
-      tags:
-        - 🏢 Clients
-      summary: Delete Client
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses:
-        '200':
-          description: ✅ Client deleted
-
-  # =================================================================
-  # CORE: JOBS
-  # =================================================================
-  /jobs:
-    get:
-      tags:
-        - 📋 Jobs
-      summary: List Jobs
-      description: Get all survey jobs with filters.
-      responses:
-        '200':
-          description: ✅ Jobs retrieved
-    post:
-      tags:
-        - 📋 Jobs
-      summary: Create Job
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [vesselId, surveyType]
-              properties:
-                vesselId: { type: string }
-                surveyType: { type: string }
-                port: { type: string }
-                date: { type: string, format: date }
-      responses:
-        '201':
-          description: ✅ Job created
-
-  /jobs/{id}:
-    get:
-      tags:
-        - 📋 Jobs
-      summary: Get Job Details
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses:
-        '200':
-          description: ✅ Job details
-
-  /jobs/{id}/assign:
-    put:
-      tags:
-        - 📋 Jobs
-      summary: Assign Surveyor
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [surveyorId]
-              properties:
-                surveyorId: { type: string }
-      responses:
-        '200':
-          description: ✅ Surveyor assigned
-
-  /jobs/{id}/status:
-    put:
-      tags:
-        - 📋 Jobs
-      summary: Update Job Status
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [status]
-              properties:
-                status: { type: string, enum: [PENDING, ASSIGNED, IN_PROGRESS, COMPLETED, CANCELLED] }
-      responses:
-        '200':
-          description: ✅ Status updated
-
-  /jobs/{id}/cancel:
-    put:
-      tags:
-        - 📋 Jobs
-      summary: Cancel Job
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses:
-        '200':
-          description: ✅ Job cancelled
-
-  # =================================================================
-  # CORE: SURVEYS
-  # =================================================================
-  /surveys/start:
-    post:
-      tags:
-        - 🔍 Surveys
-      summary: Start Survey
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [jobId]
-              properties:
-                jobId: { type: string }
-                location: { type: object }
-      responses:
-        '200':
-          description: ✅ Survey started
-
-  /surveys:
-    post:
-      tags:
-        - 🔍 Surveys
-      summary: Submit Report
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [jobId, content]
-      responses:
-        '201':
-          description: ✅ Report submitted
-    get:
-      tags:
-        - 🔍 Surveys
-      summary: List Reports
-      responses:
-        '200':
-          description: ✅ Reports retrieved
-
-  /surveys/{id}/location:
-    post:
-      tags:
-        - 🔍 Surveys
-      summary: Stream Location
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses:
-        '200':
-          description: ✅ Location updated
-
-  /surveys/{id}/proof:
-    post:
-      tags:
-        - 🔍 Surveys
-      summary: Upload Proof/Photo
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses:
-        '200':
-          description: ✅ Proof uploaded
-
-  /surveys/{id}/finalize:
-    put:
-      tags:
-        - 🔍 Surveys
-      summary: Finalize Survey
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses:
-        '200':
-          description: ✅ Survey finalized
-
-  # =================================================================
-  # CORE: CERTIFICATES
-  # =================================================================
-  /certificates:
-    get:
-      tags:
-        - 📜 Certificates
-      summary: List Certificates
-      responses:
-        '200':
-          description: ✅ Certificates retrieved
-    post:
-      tags:
-        - 📜 Certificates
-      summary: Generate Certificate
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [jobId, type]
-      responses:
-        '201':
-          description: ✅ Certificate generated
-
-  /certificates/{id}/preview:
-    get:
-      tags:
-        - 📜 Certificates
-      summary: Preview Certificate
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses:
-        '200':
-          description: ✅ Preview generated
-
-  /certificates/{id}/sign:
-    post:
-      tags:
-        - 📜 Certificates
-      summary: Sign Certificate
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses:
-        '200':
-          description: ✅ Certificate signed
-
-  /certificates/{id}/history:
-    get:
-      tags:
-        - 📜 Certificates
-      summary: Certificate History
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses:
-        '200':
-          description: ✅ History retrieved
-
-  /certificates/{id}/renew:
-    put:
-      tags:
-        - 📜 Certificates
-      summary: Renew Certificate
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses:
-        '200':
-          description: ✅ Renewed
-
-  /certificates/{id}/revoke:
-    put:
-      tags:
-        - 📜 Certificates
-      summary: Revoke Certificate
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses:
-        '200':
-          description: ✅ Revoked
-
-  /certificates/expiring:
-    get:
-      tags:
-        - 📜 Certificates
-      summary: Get Expiring Certificates
-      responses:
-        '200':
-          description: ✅ List retrieved
-
-
-  # =================================================================
-  # SYSTEM
-  # =================================================================
-  /health:
-    get:
-      tags:
-        - ⚙️ System
-      summary: System Health Check
-      description: Check if the API is running and database is connected.
-      security: []
-      responses:
-        '200':
-          description: ✅ System is healthy
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "UP"
-                  timestamp:
-                    type: string
-                    format: date-time
-        '503':
-          description: 💥 System is unhealthy
-
-  # =================================================================
-  # ADMIN: USER MANAGEMENT
-  # =================================================================
-  /users:
-    get:
-      tags:
-        - 👥 Users (Admin)
-      summary: List All Users
-      description: Retrieve a paginated list of all users.
-      responses:
-        '200':
-          description: ✅ User list retrieved
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
-    post:
-      tags:
-        - 👥 Users (Admin)
-      summary: Create New User
-      description: Create a new user (Admin, GM, Surveyor, etc.).
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [name, email, role]
-              properties:
-                name: { type: string }
-                email: { type: string, format: email }
-                password: { type: string }
-                role: { type: string, enum: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT] }
-                phone: { type: string }
-      responses:
-        '201':
-          description: ✅ User created
-
-  /users/{id}:
-    put:
-      tags:
-        - 👥 Users (Admin)
-      summary: Update User
-      description: Update user details.
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: string }
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name: { type: string }
-                role: { type: string }
-                status: { type: string, enum: [ACTIVE, INACTIVE, SUSPENDED] }
-      responses:
-        '200':
-          description: ✅ User updated
-    delete:
-      tags:
-        - 👥 Users (Admin)
-      summary: Delete User
-      description: Soft delete a user.
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: string }
-      responses:
-        '200':
-          description: ✅ User deleted
-
-  /users/{id}/status:
-    put:
-      tags:
-        - 👥 Users (Admin)
-      summary: Change User Status
-      description: Activate, suspend, or deactivate a user.
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: string }
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [status]
-              properties:
-                status: { type: string, enum: [ACTIVE, INACTIVE, SUSPENDED] }
-      responses:
-        '200':
-          description: ✅ Status updated
-
-  # =================================================================
-  # ADMIN: ROLE MANAGEMENT
-  # =================================================================
-  /roles:
-    get:
-      tags:
-        - 🔑 Roles (Admin)
-      summary: List Roles
-      responses:
-        '200':
-          description: ✅ Roles retrieved
-    post:
-      tags:
-        - 🔑 Roles (Admin)
-      summary: Create Custom Role
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [name, permissions]
-              properties:
-                name: { type: string }
-                permissions: { type: array, items: { type: string } }
-      responses:
-        '201':
-          description: ✅ Role created
-
-  /roles/{id}/permissions:
-    post:
-      tags:
-        - 🔑 Roles (Admin)
-      summary: Assign Permissions
-      description: Grant specific permissions to a custom role.
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: string }
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [permissions]
-              properties:
-                permissions: { type: array, items: { type: string } }
-      responses:
-        '200':
-          description: ✅ Permissions updated
-
-  # =================================================================
-  # ADMIN: SYSTEM SETTINGS
-  # =================================================================
-  /system/feature-flags:
-    get:
-      tags:
-        - ⚙️ Settings (Admin)
-      summary: Get Feature Flags
-      responses:
-        '200':
-          description: ✅ Flags retrieved
-  
-  /system/metrics:
-    get:
-      tags:
-        - ⚙️ Settings (Admin)
-      summary: System Metrics
-      description: Get server resource usage (CPU, RAM).
-      responses:
-        '200':
-          description: ✅ Metrics retrieved
-
-  /system/maintenance/{action}:
-    post:
-      tags:
-        - ⚙️ Settings (Admin)
-      summary: Trigger Maintenance
-      description: Enable/Disable maintenance mode.
-      parameters:
-        - in: path
-          name: action
-          schema: { type: string, enum: [enable, disable] }
-      responses:
-        '200':
-          description: ✅ Maintenance mode toggled
-
-  # =================================================================
-  # ADMIN: SECURITY
-  # =================================================================
-  /security/sessions:
-    get:
-      tags:
-        - 🔒 Security (Admin)
-      summary: Active Sessions
-      description: List all active user sessions with IP and location.
-      responses:
-        '200':
-          description: ✅ Sessions retrieved
-
-  /security/sessions/{id}:
-    delete:
-      tags:
-        - 🔒 Security (Admin)
-      summary: Revoke Session
-      description: Force logout a specific session.
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: { type: string }
-      responses:
-        '200':
-          description: ✅ Session revoked
-
-  /security/policies:
-    get:
-      tags:
-        - 🔒 Security (Admin)
-      summary: Security Policies
-      description: Get password policies and login rules.
-      responses:
-        '200':
-          description: ✅ Policies retrieved
-    post:
-      tags:
-        - 🔒 Security (Admin)
-      summary: Update Policies
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                maxLoginAttempts: { type: integer }
-                lockoutDuration: { type: integer }
-                require2FA: { type: boolean }
-      responses:
-        '200':
-          description: ✅ Policies updated
-
-  /security/block-ip:
-    post:
-      tags:
-        - 🔒 Security (Admin)
-      summary: Block IP Address
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [ip]
-              properties:
-                ip: { type: string }
-                reason: { type: string }
-      responses:
-        '200':
-          description: ✅ IP blocked
-
-  # =================================================================
-  # PUBLIC VERIFICATION
-  # =================================================================
-  /public/certificate/verify/{number}:
-    get:
-      tags:
-        - 🌐 Public Access
-      summary: Verify Certificate (Public)
-      description: Verify the validity of a certificate by its unique number. No login required.
-      security: []
-      parameters:
-        - in: path
-          name: number
-          schema:
-            type: string
-          required: true
-          description: Unique Certificate Number (e.g., CERT-2024-001)
-      responses:
-        '200':
-          description: ✅ Certificate found and valid
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  isValid:
-                    type: boolean
-                    example: true
-                  certificate:
-                    type: object
-                    properties:
-                      number:
-                        type: string
-                      vesselName:
-                        type: string
-                      issueDate:
-                        type: string
-                        format: date
-                      expiryDate:
-                        type: string
-                        format: date
-                      status:
-                        type: string
-                        example: "VALID"
-        '404':
-          description: 🔍 Certificate not found
-  
-  /public/vessel/{imo}:
-    get:
-      tags:
-        - 🌐 Public Access
-      summary: Verify Vessel (Public)
-      description: Get basic public details of a vessel by its IMO number.
-      security: []
-      parameters:
-        - in: path
-          name: imo
-          schema:
-            type: string
-          required: true
-          description: Vessel IMO Number
-      responses:
-        '200':
-          description: ✅ Vessel found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  name:
-                    type: string
-                  imo:
-                    type: string
-                  flag:
-                    type: string
-                  status:
-                    type: string
-        '404':
-          description: 🔍 Vessel not found
-
-  # =================================================================
-  # AUTHENTICATION
-  # =================================================================
-  /auth/login:
-    post:
-      tags:
-        - 🔐 Authentication
-      summary: User Login
-      description: Authenticate with email and password to receive a JWT access token.
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - email
-                - password
-              properties:
-                email:
-                  type: string
-                  format: email
-                  example: "admin@girik.com"
-                password:
-                  type: string
-                  format: password
-                  example: "password123"
-      responses:
-        '200':
-          description: ✅ Login successful
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  token:
-                    type: string
-                    description: JWT Access Token
-                  user:
-                    $ref: '#/components/schemas/User'
-        '401':
-          description: ❌ Invalid credentials
-
-  /auth/register:
-    post:
-      tags:
-        - 🔐 Authentication
-      summary: Register New User
-      description: Create a new user account.
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - name
-                - email
-                - password
-              properties:
-                name:
-                  type: string
-                  example: "New User"
-                email:
-                  type: string
-                  format: email
-                  example: "user@example.com"
-                password:
-                  type: string
-                  format: password
-                  example: "securePass123"
-                phone:
-                  type: string
-                  example: "+1234567890"
-                role:
-                  type: string
-                  enum: [CLIENT, SURVEYOR]
-                  default: CLIENT
-      responses:
-        '201':
-          description: ✅ User created successfully
-        '400':
-          description: ❌ Validation error or email exists
-
-  /auth/forgot-password:
-    post:
-      tags:
-        - 🔐 Authentication
-      summary: Forgot Password
-      description: Initiate password reset process via email.
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - email
-              properties:
-                email:
-                  type: string
-                  format: email
-                  example: "forgot@example.com"
-      responses:
-        '200':
-          description: ✅ Reset email sent
-
-  /auth/reset-password:
-    post:
-      tags:
-        - 🔐 Authentication
-      summary: Reset Password
-      description: Complete password reset using token received in email.
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - token
-                - newPassword
-              properties:
-                token:
-                  type: string
-                  description: Reset token from email
-                newPassword:
-                  type: string
-                  format: password
-      responses:
-        '200':
-          description: ✅ Password reset successful
-
-  /auth/refresh-token:
-    post:
-      tags:
-        - 🔐 Authentication
-      summary: Refresh Access Token
-      description: Get a new access token using a valid refresh token (usually via cookie or body).
-      security: []
-      responses:
-        '200':
-          description: ✅ Token refreshed
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-
-          description: ✅ Logged out successfully
-
-  # =================================================================
-  # PAYMENTS
-  # =================================================================
-  /payments/invoice:
-    post:
-      tags: [💰 Payments]
-      summary: Create Invoice
-      responses: { '201': { description: Created } }
-  /payments/{id}/pay:
-    put:
-      tags: [💰 Payments]
-      summary: Mark Invoice Paid
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
-  /payments/{id}/ledger:
-    get:
-      tags: [💰 Payments]
-      summary: Get Ledger
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
-  /payments/writeoff:
-    post:
-      tags: [💰 Payments]
-      summary: Write Off Debt
-      responses: { '200': { description: Success } }
-
-  # =================================================================
-  # SURVEYORS
-  # =================================================================
-  /surveyors/apply:
-    post:
-      tags: [👷 Surveyors]
-      summary: Apply as Surveyor
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                cv: { type: string, format: binary }
-                id_proof: { type: string, format: binary }
-                certificates: { type: array, items: { type: string, format: binary } }
-      responses: { '201': { description: Applied } }
-  /surveyors/applications:
-    get:
-      tags: [👷 Surveyors]
-      summary: List Applications
-      responses: { '200': { description: Success } }
-  /surveyors/applications/{id}/review:
-    put:
-      tags: [👷 Surveyors]
-      summary: Review Application
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
-  /surveyors/{id}/profile:
-    get:
-      tags: [👷 Surveyors]
-      summary: Get Profile
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
-    put:
-      tags: [👷 Surveyors]
-      summary: Update Profile
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Updated } }
-
-  # =================================================================
-  # GEOFENCE
-  # =================================================================
-  /geofence/gps/update:
-    post:
-      tags: [📍 Geofence]
-      summary: Update GPS
-      responses: { '200': { description: Updated } }
-  /geofence/geofence:
-    post:
-      tags: [📍 Geofence]
-      summary: Set Geofence
-      responses: { '200': { description: Set } }
-  /geofence/geofence/{vesselId}:
-    get:
-      tags: [📍 Geofence]
-      summary: Get Geofence
-      parameters: [{ name: vesselId, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
-
-  # =================================================================
-  # CHECKLISTS
-  # =================================================================
-  /jobs/{jobId}/checklist:
-    get:
-      tags: [✅ Checklists]
-      summary: Get Job Checklist
-      parameters: [{ name: jobId, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
-    put:
-      tags: [✅ Checklists]
-      summary: Submit Checklist
-      parameters: [{ name: jobId, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Submitted } }
-
-  # =================================================================
-  # NON-CONFORMITIES
-  # =================================================================
-  /non-conformities:
-    post:
-      tags: [🚫 Non-Conformities]
-      summary: Create Non-Conformity
-      responses: { '201': { description: Created } }
-  /non-conformities/{id}/close:
-    put:
-      tags: [🚫 Non-Conformities]
-      summary: Close NC
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Closed } }
-  /non-conformities/job/{jobId}:
-    get:
-      tags: [🚫 Non-Conformities]
-      summary: Get NCs by Job
-      parameters: [{ name: jobId, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
-
-  # =================================================================
-  # TOCA
-  # =================================================================
-  /toca:
-    post:
-      tags: [🚦 TOCA]
-      summary: Create TOCA
-      responses: { '201': { description: Created } }
-    get:
-      tags: [🚦 TOCA]
-      summary: List TOCAs
-      responses: { '200': { description: Success } }
-  /toca/{id}/status:
-    put:
-      tags: [🚦 TOCA]
-      summary: Update TOCA Status
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Updated } }
-
-  # =================================================================
-  # FLAGS
-  # =================================================================
-  /flags:
-    post:
-      tags: [🚩 Flags]
-      summary: Create Flag
-      responses: { '201': { description: Created } }
-    get:
-      tags: [🚩 Flags]
-      summary: List Flags
-      responses: { '200': { description: Success } }
-  /flags/{id}:
-    put:
-      tags: [🚩 Flags]
-      summary: Update Flag
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Updated } }
-
-  # =================================================================
-  # APPROVALS
-  # =================================================================
-  /approvals:
-    post:
-      tags: [👍 Approvals]
-      summary: Create Approval
-      responses: { '201': { description: Created } }
-  /approvals/{id}/step:
-    put:
-      tags: [👍 Approvals]
-      summary: Update Approval Step
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Updated } }
-
-  # =================================================================
-  # AUDIT
-  # =================================================================
-  /audit:
-    get:
-      tags: [📜 Audit]
-      summary: Get System Logs
-      responses: { '200': { description: Success } }
-
-  # =================================================================
-  # NOTIFICATIONS
-  # =================================================================
-  /notifications:
-    get:
-      tags: [🔔 Notifications]
-      summary: List Notifications
-      responses: { '200': { description: Success } }
-  /notifications/{id}/read:
-    put:
-      tags: [🔔 Notifications]
-      summary: Mark Read
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Updated } }
-  /notifications/preferences:
-    get:
-      tags: [🔔 Notifications]
-      summary: Get Preferences
-      responses: { '200': { description: Success } }
-    put:
-      tags: [🔔 Notifications]
-      summary: Update Preferences
-      responses: { '200': { description: Updated } }
-  /notifications/rules:
-    get:
-      tags: [🔔 Notifications]
-      summary: Get Notification Rules
-      responses: { '200': { description: Success } }
-    post:
-      tags: [🔔 Notifications]
-      summary: Create Rule
-      responses: { '201': { description: Created } }
-
-  # =================================================================
-  # EVIDENCE
-  # =================================================================
-  /evidence:
-    post:
-      tags: [🗂️ Evidence]
-      summary: Upload Evidence
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                file: { type: string, format: binary }
-      responses: { '201': { description: Uploaded } }
-  /evidence/{entity}/{id}:
-    get:
-      tags: [🗂️ Evidence]
-      summary: Get Evidence
-      parameters:
-        - { name: entity, in: path, required: true, schema: { type: string } }
-        - { name: id, in: path, required: true, schema: { type: string } }
-      responses: { '200': { description: Success } }
-  /evidence/{id}/chain:
-    get:
-      tags: [🗂️ Evidence]
-      summary: Chain of Custody
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
-  /evidence/verify:
-    post:
-      tags: [🗂️ Evidence]
-      summary: Verify Evidence
-      responses: { '200': { description: Verified } }
-  /evidence/{id}/lock:
-    put:
-      tags: [🗂️ Evidence]
-      summary: Lock Evidence
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Locked } }
-
-  # =================================================================
-  # MOBILE
-  # =================================================================
-  /mobile/sync:
-    post:
-      tags: [📱 Mobile]
-      summary: Sync Data
-      responses: { '200': { description: Synced } }
-  /mobile/offline/jobs:
-    get:
-      tags: [📱 Mobile]
-      summary: Get Offline Jobs
-      responses: { '200': { description: Success } }
-  /mobile/offline/surveys:
-    post:
-      tags: [📱 Mobile]
-      summary: Submit Offline Surveys
-      responses: { '200': { description: Submitted } }
-
-  # =================================================================
-  # CLIENT PORTAL
-  # =================================================================
-  /client/dashboard:
-    get:
-      tags: [🏢 Client Portal]
-      summary: Client Dashboard
-      responses: { '200': { description: Success } }
-  /client/jobs:
-    get:
-      tags: [🏢 Client Portal]
-      summary: Client Jobs
-      responses: { '200': { description: Success } }
-  /client/certificates:
-    get:
-      tags: [🏢 Client Portal]
-      summary: Client Certificates
-      responses: { '200': { description: Success } }
-
-  # =================================================================
-  # REPORTS
-  # =================================================================
-  /reports/certificates:
-    get:
-      tags: [📊 Reports]
-      summary: Certificate Reports
-      responses: { '200': { description: Success } }
-  /reports/surveyors:
-    get:
-      tags: [📊 Reports]
-      summary: Surveyor Reports
-      responses: { '200': { description: Success } }
-  /reports/non-conformities:
-    get:
-      tags: [📊 Reports]
-      summary: NC Reports
-      responses: { '200': { description: Success } }
-  /reports/financials:
-    get:
-      tags: [📊 Reports]
-      summary: Financial Reports
-      responses: { '200': { description: Success } }
-
-  # =================================================================
-  # CHANGE REQUESTS
-  # =================================================================
-  /change-requests:
-    post:
-      tags: [🔄 Change Requests]
-      summary: Create Change Request
-      responses: { '201': { description: Created } }
-    get:
-      tags: [🔄 Change Requests]
-      summary: List Change Requests
-      responses: { '200': { description: Success } }
-  /change-requests/{id}/approve:
-    put:
-      tags: [🔄 Change Requests]
-      summary: Approve Change Request
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Approved } }
-  /change-requests/{id}/reject:
-    put:
-      tags: [🔄 Change Requests]
-      summary: Reject Change Request
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Rejected } }
-
-  # =================================================================
-  # CERTIFICATE TEMPLATES
-  # =================================================================
-  /certificate-templates:
-    post:
-      tags: [📄 Templates]
-      summary: Create Template
-      responses: { '201': { description: Created } }
-    get:
-      tags: [📄 Templates]
-      summary: List Templates
-      responses: { '200': { description: Success } }
-  /certificate-templates/{id}:
-    get:
-      tags: [📄 Templates]
-      summary: Get Template
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
-    put:
-      tags: [📄 Templates]
-      summary: Update Template
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Updated } }
-    delete:
-      tags: [📄 Templates]
-      summary: Delete Template
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Deleted } }
-
-  # =================================================================
-  # INCIDENTS
-  # =================================================================
-  /incidents:
-    post:
-      tags: [🚨 Incidents]
-      summary: Report Incident
-      responses: { '201': { description: Reported } }
-    get:
-      tags: [🚨 Incidents]
-      summary: List Incidents
-      responses: { '200': { description: Success } }
-  /incidents/{id}/resolve:
-    put:
-      tags: [🚨 Incidents]
-      summary: Resolve Incident
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Resolved } }
-
-  # =================================================================
-  # EVENTS
-  # =================================================================
-  /events:
-    post:
-      tags: [📅 Events]
-      summary: Create Event
-      responses: { '201': { description: Created } }
-    get:
-      tags: [📅 Events]
-      summary: List Events
-      responses: { '200': { description: Success } }
-  /events/{entity}/{id}:
-    get:
-      tags: [📅 Events]
-      summary: Get Entity Events
-      parameters:
-        - { name: entity, in: path, required: true, schema: { type: string } }
-        - { name: id, in: path, required: true, schema: { type: string } }
-      responses: { '200': { description: Success } }
-
-  # =================================================================
-  # SLA
-  # =================================================================
-  /sla/rules:
-    post:
-      tags: [⏱️ SLA]
-      summary: Create SLA Rule
-      responses: { '201': { description: Created } }
-    get:
-      tags: [⏱️ SLA]
-      summary: List SLA Rules
-      responses: { '200': { description: Success } }
-  /sla/escalate/{id}:
-    post:
-      tags: [⏱️ SLA]
-      summary: Escalate SLA
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
-  /sla/jobs/{id}/override:
-    put:
-      tags: [⏱️ SLA]
-      summary: Override SLA
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
-  /sla/jobs/{id}/pause:
-    put:
-      tags: [⏱️ SLA]
-      summary: Pause SLA
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Paused } }
-  /sla/jobs/{id}/resume:
-    put:
-      tags: [⏱️ SLA]
-      summary: Resume SLA
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Resumed } }
-  /sla/evaluate:
-    post:
-      tags: [⏱️ SLA]
-      summary: Evaluate SLA Breaches
-      responses: { '200': { description: Evaluated } }
-  /sla/breaches:
-    get:
-      tags: [⏱️ SLA]
-      summary: Get Breaches
-      responses: { '200': { description: Success } }
-
-  # =================================================================
-  # BULK OPERATIONS
-  # =================================================================
-  /bulk/vessels:
-    post:
-      tags: [📦 Bulk Operations]
-      summary: Bulk Upload Vessels
-      responses: { '200': { description: Processed } }
-  /bulk/users:
-    post:
-      tags: [📦 Bulk Operations]
-      summary: Bulk Create Users
-      responses: { '200': { description: Processed } }
-  /bulk/certificates/renew:
-    post:
-      tags: [📦 Bulk Operations]
-      summary: Bulk Renew Certificates
-      responses: { '200': { description: Processed } }
-
-  # =================================================================
-  # SEARCH
-  # =================================================================
-  /search:
-    get:
-      tags: [🔍 Search]
-      summary: Global Search
-      parameters: [{ name: q, in: query, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
-  /search/vessels:
-    get:
-      tags: [🔍 Search]
-      summary: Search Vessels
-      parameters: [{ name: q, in: query, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
-  /search/certificates:
-    get:
-      tags: [🔍 Search]
-      summary: Search Certificates
-      parameters: [{ name: q, in: query, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
-
-  # =================================================================
-  # WEBHOOKS & COMPLIANCE & AI
-  # =================================================================
-  /callbacks/payment:
-    post:
-      tags: [🎣 Webhooks]
-      summary: Payment Callback
-      responses: { '200': { description: Received } }
-  /callbacks/flag:
-    post:
-      tags: [🎣 Webhooks]
-      summary: Flag Callback
-      responses: { '200': { description: Received } }
-  /webhooks/register:
-    post:
-      tags: [🎣 Webhooks]
-      summary: Register Webhook
-      responses: { '200': { description: Registered } }
-  /webhooks/trigger:
-    post:
-      tags: [🎣 Webhooks]
-      summary: Trigger Webhook
-      responses: { '200': { description: Triggered } }
-
-  /compliance/logs:
-    get:
-      tags: [⚖️ Compliance]
-      summary: Audit Logs
-      responses: { '200': { description: Success } }
-  /compliance/export_bundle:
-    post:
-      tags: [⚖️ Compliance]
-      summary: Export Data Bundle
-      responses: { '200': { description: Exported } }
-  /compliance/anonymize/{userId}:
-    post:
-      tags: [⚖️ Compliance]
-      summary: Anonymize User
-      parameters: [{ name: userId, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Anonymized } }
-  /compliance/retention-rules:
-    post:
-      tags: [⚖️ Compliance]
-      summary: Create Retention Rule
-      responses: { '201': { description: Created } }
-  /compliance/enforce-retention:
-    post:
-      tags: [⚖️ Compliance]
-      summary: Enforce Retention
-      responses: { '200': { description: Enforced } }
-  /compliance/legal-hold:
-    post:
-      tags: [⚖️ Compliance]
-      summary: Set Legal Hold
-      responses: { '200': { description: Set } }
-  /compliance/legal-hold/{entity}/{id}:
-    delete:
-      tags: [⚖️ Compliance]
-      summary: Release Legal Hold
-      parameters:
-        - { name: entity, in: path, required: true, schema: { type: string } }
-        - { name: id, in: path, required: true, schema: { type: string } }
-      responses: { '200': { description: Released } }
-  /compliance/retention:
-    get:
-      tags: [⚖️ Compliance]
-      summary: Get Retention Rules
-      responses: { '200': { description: Success } }
-
-  /ai/anomaly-detect:
-    get:
-      tags: [🤖 AI]
-      summary: Detect Anomalies
-      responses: { '200': { description: Success } }
-  /ai/survey-quality:
-    get:
-      tags: [🤖 AI]
-      summary: Survey Quality
-      responses: { '200': { description: Success } }
-  /ai/risk-score:
-    get:
-      tags: [🤖 AI]
-      summary: Risk Score
-      responses: { '200': { description: Success } }
-
-  # =================================================================
-  # ACTIVITY REQUESTS
-  # =================================================================
-  /activity-requests:
-    post:
-      tags: [📝 Activity Requests]
-      summary: Create Request
-      responses: { '201': { description: Created } }
-    get:
-      tags: [📝 Activity Requests]
-      summary: List Requests
-      responses: { '200': { description: Success } }
-  /activity-requests/{id}:
-    get:
-      tags: [📝 Activity Requests]
-      summary: Get Request
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
-  /activity-requests/{id}/approve:
-    post:
-      tags: [📝 Activity Requests]
-      summary: Approve Request
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Approved } }
-  /activity-requests/{id}/reject:
-    post:
-      tags: [📝 Activity Requests]
-      summary: Reject Request
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Rejected } }
-
-  # =================================================================
-  # PROVIDERS
-  # =================================================================
-  /providers:
-    get:
-      tags: [🏭 Providers]
-      summary: List Providers
-      responses: { '200': { description: Success } }
-    post:
-      tags: [🏭 Providers]
-      summary: Register Provider
-      responses: { '201': { description: Created } }
-  /providers/{id}/status:
-    put:
-      tags: [🏭 Providers]
-      summary: Update Provider Status
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Updated } }
-  /providers/{id}/evaluations:
-    post:
-      tags: [🏭 Providers]
-      summary: Add Evaluation
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '201': { description: Added } }
-    get:
-      tags: [🏭 Providers]
-      summary: Get Evaluations
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
-  /providers/{id}/legal-hold:
-    post:
-      tags: [🏭 Providers]
-      summary: Set Provider Legal Hold
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Set } }
-
-  # =================================================================
-  # CUSTOMER FEEDBACK
-  # =================================================================
-  /customer-feedback:
-    post:
-      tags: [💬 Feedback]
-      summary: Submit Feedback
-      responses: { '201': { description: Submitted } }
-    get:
-      tags: [💬 Feedback]
-      summary: Get All Feedback
-      responses: { '200': { description: Success } }
-  /customer-feedback/job/{jobId}:
-    get:
-      tags: [💬 Feedback]
-      summary: Get Job Feedback
-      parameters: [{ name: jobId, in: path, required: true, schema: { type: string } }]
-      responses: { '200': { description: Success } }
+  - name: Reports
+    description: Management Reports & Analytics
+  - name: Certificate Templates
+    description: Management of Certificate Templates
+  - name: Surveyors
+    description: Surveyor Management & Applications
 
 components:
   securitySchemes:
@@ -1668,16 +85,205 @@ components:
       bearerFormat: JWT
 
   schemas:
+    # --- Common Types ---
+    UUID:
+      type: string
+      format: uuid
+      example: "550e8400-e29b-41d4-a716-446655440000"
+    
+    Date:
+      type: string
+      format: date-time
+      example: "2023-10-27T10:00:00Z"
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Internal Server Error"
+        error:
+          type: object
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Operation successful"
+        data:
+          type: object
+
+    PaginationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              example: 1
+            limit:
+              type: integer
+              example: 10
+            total:
+              type: integer
+              example: 50
+            totalPages:
+              type: integer
+              example: 5
+        data:
+          type: array
+          items:
+            type: object
+          
+    # --- Domain Entities ---
     User:
       type: object
       properties:
         id:
-          type: string
-          format: uuid
-        name:
-          type: string
+          $ref: '#/components/schemas/UUID'
         email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
           type: string
         role:
           type: string
-          enum: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
+          enum: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT]
+        isActive:
+          type: boolean
+        createdAt:
+          $ref: '#/components/schemas/Date'
+
+    Vessel:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        name:
+          type: string
+        imoNumber:
+          type: string
+        flag:
+          type: string
+        type:
+          type: string
+        clientId:
+          $ref: '#/components/schemas/UUID'
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, DRY_DOCK]
+
+    Job:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        jobNumber:
+          type: string
+        vesselId:
+          $ref: '#/components/schemas/UUID'
+        surveyorId:
+          $ref: '#/components/schemas/UUID'
+        status:
+          type: string
+          enum: [PENDING, IN_PROGRESS, COMPLETED, CANCELLED]
+        scheduledDate:
+          $ref: '#/components/schemas/Date'
+
+    Survey:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        jobId:
+          $ref: '#/components/schemas/UUID'
+        findings:
+          type: array
+          items:
+            type: string
+        complianceStatus:
+          type: string
+        reportUrl:
+          type: string
+
+    Certificate:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        jobId:
+          $ref: '#/components/schemas/UUID'
+        certificateNumber:
+          type: string
+        issueDate:
+          $ref: '#/components/schemas/Date'
+        expiryDate:
+          $ref: '#/components/schemas/Date'
+        status:
+          type: string
+          enum: [DRAFT, ISSUED, REVOKED]
+
+    Payment:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        jobId:
+          $ref: '#/components/schemas/UUID'
+        amount:
+          type: number
+        currency:
+          type: string
+          default: "USD"
+        status:
+          type: string
+          enum: [PENDING, PAID, OVERDUE]
+        invoiceUrl:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Unauthorized Access
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+            example:
+              success: false
+              message: "Unauthorized - Token missing or invalid"
+
+    Forbidden:
+      description: Forbidden - Insufficient Permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+            example:
+              success: false
+              message: "Forbidden - You do not have the required role"
+
+    NotFound:
+      description: Resource Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+            example:
+              success: false
+              message: "Resource not found"
+
+security:
+  - bearerAuth: []

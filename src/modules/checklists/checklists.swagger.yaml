@@ -1,0 +1,64 @@
+paths:
+  /jobs/{jobId}/checklist:
+    get:
+      summary: Get Job Checklist
+      description: Retrieve the inspection checklist associated with a specific job.
+      tags: [Checklists]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Checklist details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    put:
+      summary: Submit Checklist
+      description: Submit completed checklist answers for a job.
+      tags: [Checklists]
+      security:
+        - bearerAuth: []
+      x-roles: [SURVEYOR]
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required: [question_code, answer]
+                    properties:
+                      question_code:
+                        type: string
+                      answer:
+                        type: string
+                      remarks:
+                        type: string
+      responses:
+        '200':
+          description: Checklist submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

@@ -1,0 +1,16 @@
+paths:
+  /dashboard:
+    get:
+      summary: Get Role-Specific Dashboard Data
+      description: Retrieve aggregated summary and metric data tailored for the logged-in user's role. Includes stats for Jobs, Vessels, Clients, and Alerts.
+      tags: [Dashboard]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
+      responses:
+        '200':
+          description: Dashboard summary data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

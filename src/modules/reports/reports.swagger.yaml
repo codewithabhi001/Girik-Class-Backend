@@ -1,0 +1,71 @@
+paths:
+  /reports/certificates:
+    get:
+      summary: Certificate Issuance Report
+      description: Generate a report of all certificates issued within a period.
+      tags: [Reports]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      parameters:
+        - in: query
+          name: from_date
+          schema: [type: string, format: date]
+        - in: query
+          name: to_date
+          schema: [type: string, format: date]
+      responses:
+        '200':
+          description: Report data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /reports/surveyors:
+    get:
+      summary: Surveyor Performance Report
+      description: Analytics on surveyor workload and performance.
+      tags: [Reports]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      responses:
+        '200':
+          description: Report data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /reports/non-conformities:
+    get:
+      summary: NC Trends Report
+      description: Analytics on non-conformities across vessels and jobs.
+      tags: [Reports]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      responses:
+        '200':
+          description: Report data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /reports/financials:
+    get:
+      summary: Financial Summary Report
+      description: Overview of payments and billing.
+      tags: [Reports]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      responses:
+        '200':
+          description: Report data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

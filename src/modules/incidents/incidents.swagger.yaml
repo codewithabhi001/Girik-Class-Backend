@@ -1,0 +1,111 @@
+paths:
+  /incidents:
+    get:
+      summary: List all incidents
+      description: Retrieve a list of reported incidents.
+      tags: [Incidents]
+      security:
+        - bearerAuth: []
+      x-roles: [CLIENT, ADMIN, GM, TM, TO]
+      responses:
+        '200':
+          description: List of incidents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+    post:
+      summary: Report Incident
+      description: Report a new incident related to a job or vessel.
+      tags: [Incidents]
+      security:
+        - bearerAuth: []
+      x-roles: [CLIENT, ADMIN, GM, TM]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [incident_type, entity_type, entity_id, description, severity]
+              properties:
+                incident_type:
+                  type: string
+                entity_type:
+                  type: string
+                  enum: [JOB, VESSEL, OTHER]
+                entity_id:
+                  type: string
+                  format: uuid
+                description:
+                  type: string
+                severity:
+                  type: string
+                  enum: [LOW, MEDIUM, HIGH, CRITICAL]
+      responses:
+        '201':
+          description: Incident reported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /incidents/{id}:
+    get:
+      summary: Get Incident by ID
+      description: Retrieve details of a specific incident.
+      tags: [Incidents]
+      security:
+        - bearerAuth: []
+      x-roles: [CLIENT, ADMIN, GM, TM, TO]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Incident details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /incidents/{id}/status:
+    put:
+      summary: Update Incident Status/Resolution
+      description: Update the status or resolution of an incident.
+      tags: [Incidents]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [OPEN, INVESTIGATING, RESOLVED, CLOSED]
+                resolution:
+                  type: string
+      responses:
+        '200':
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

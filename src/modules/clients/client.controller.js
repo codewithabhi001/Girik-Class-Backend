@@ -8,9 +8,7 @@ export const createClient = async (req, res, next) => {
             message: 'Client created successfully',
             data: client
         });
-    } catch (error) {
-        next(error);
-    }
+    } catch (error) { next(error); }
 };
 
 export const getClients = async (req, res, next) => {
@@ -21,9 +19,7 @@ export const getClients = async (req, res, next) => {
             message: 'Clients fetched successfully',
             data: clients
         });
-    } catch (error) {
-        next(error);
-    }
+    } catch (error) { next(error); }
 };
 
 export const getClientById = async (req, res, next) => {
@@ -34,9 +30,7 @@ export const getClientById = async (req, res, next) => {
             message: 'Client details fetched successfully',
             data: client
         });
-    } catch (error) {
-        next(error);
-    }
+    } catch (error) { next(error); }
 };
 
 export const updateClient = async (req, res, next) => {
@@ -47,9 +41,7 @@ export const updateClient = async (req, res, next) => {
             message: 'Client updated successfully',
             data: client
         });
-    } catch (error) {
-        next(error);
-    }
+    } catch (error) { next(error); }
 };
 
 export const deleteClient = async (req, res, next) => {
@@ -59,7 +51,27 @@ export const deleteClient = async (req, res, next) => {
             success: true,
             message: 'Client deleted/deactivated successfully'
         });
-    } catch (error) {
-        next(error);
-    }
+    } catch (error) { next(error); }
+};
+
+// --- Self Service (CLIENT role) ---
+export const getProfile = async (req, res, next) => {
+    try {
+        const profile = await clientService.getProfile(req.user.id);
+        res.json({ success: true, data: profile });
+    } catch (e) { next(e); }
+};
+
+export const updateProfile = async (req, res, next) => {
+    try {
+        const profile = await clientService.updateProfile(req.user.id, req.body);
+        res.json({ success: true, data: profile });
+    } catch (e) { next(e); }
+};
+
+export const getDashboard = async (req, res, next) => {
+    try {
+        const data = await clientService.getDashboardData(req.user.client_id);
+        res.json({ success: true, data });
+    } catch (e) { next(e); }
 };

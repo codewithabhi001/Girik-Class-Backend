@@ -51,6 +51,14 @@
     {
       "name": "Notifications",
       "description": "Notifications"
+    },
+    {
+      "name": "Support",
+      "description": "Support"
+    },
+    {
+      "name": "Compliance",
+      "description": "Compliance"
     }
   ],
   "paths": {
@@ -932,6 +940,154 @@
         ]
       }
     },
+    "/compliance/anonymize/{id}": {
+      "post": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "Anonymize Compliance Data",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "id"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/compliance/export/{id}": {
+      "get": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "Export Compliance Data",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "id"
+          }
+        ]
+      }
+    },
+    "/support/{id}/status": {
+      "put": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Update Support Ticket Status",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "id"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "status"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "OPEN",
+                      "IN_PROGRESS",
+                      "RESOLVED",
+                      "CLOSED"
+                    ]
+                  },
+                  "internal_note": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "status": "RESOLVED",
+                "internal_note": "User error. Reset password."
+              }
+            }
+          }
+        }
+      }
+    },
     "/public/certificate/verify/{number}": {
       "get": {
         "tags": [
@@ -1168,12 +1324,12 @@
                 "properties": {
                   "email": {
                     "type": "string",
-                    "example": "user@example.com"
+                    "example": "admin@gmail.com"
                   }
                 }
               },
               "example": {
-                "email": "user@example.com"
+                "email": "admin@gmail.com"
               }
             }
           }

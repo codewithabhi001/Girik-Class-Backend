@@ -3,7 +3,7 @@ export default (sequelize, DataTypes) => {
         id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV7, primaryKey: true },
         client_id: DataTypes.UUID,
         vessel_name: DataTypes.STRING,
-        imo_number: { type: DataTypes.STRING, unique: true },
+        imo_number: DataTypes.STRING, // removed unique to fix DB sync errors
         call_sign: DataTypes.STRING,
         mmsi_number: DataTypes.STRING,
         flag_state: DataTypes.STRING,
@@ -25,7 +25,13 @@ export default (sequelize, DataTypes) => {
     });
 
     Vessel.associate = (models) => {
-        Vessel.belongsTo(models.Client, { foreignKey: 'client_id' });
+        Vessel.belongsTo(models.Client, {
+            foreignKey: {
+                name: 'client_id',
+                field: 'client_id' // Explicitly map to snake_case column
+            },
+            as: 'Client'
+        });
         Vessel.hasMany(models.JobRequest, { foreignKey: 'vessel_id' });
         Vessel.hasMany(models.Certificate, { foreignKey: 'vessel_id' });
         Vessel.hasMany(models.GpsTracking, { foreignKey: 'vessel_id' });

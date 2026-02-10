@@ -1,0 +1,69 @@
+paths:
+  /mobile/sync:
+    post:
+      summary: Mobile Data Sync
+      description: Synchronize master data for offline mobile use.
+      tags: [Mobile]
+      security:
+        - bearerAuth: []
+      x-roles: [SURVEYOR]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                last_sync_time:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Sync data returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /mobile/offline/jobs:
+    get:
+      summary: Get Offline Jobs
+      description: Retrieve list of assigned jobs for offline caching.
+      tags: [Mobile]
+      security:
+        - bearerAuth: []
+      x-roles: [SURVEYOR]
+      responses:
+        '200':
+          description: List of jobs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /mobile/offline/surveys:
+    post:
+      summary: Submit Offline Surveys
+      description: Batch upload survey reports completed while offline.
+      tags: [Mobile]
+      security:
+        - bearerAuth: []
+      x-roles: [SURVEYOR]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [surveys]
+              properties:
+                surveys:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: Batch results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'

@@ -1,53 +1,16 @@
 import db from '../../models/index.js';
 import { Op } from 'sequelize';
-import * as clientPortalService from '../client_portal/client.portal.service.js';
 
-const { User, Client, Vessel, JobRequest, SurveyorProfile, Certificate, Payment, FlagAdministration, SurveyReport } = db;
+const { User, Client, Vessel, JobRequest, SurveyorProfile, Certificate, FlagAdministration, SurveyReport, CertificateType, Payment } = db;
 
-/** User attributes to expose (no password) */
 const userSafeAttrs = ['id', 'name', 'email', 'role', 'phone', 'status', 'client_id', 'last_login_at', 'createdAt'];
 
-/**
- * Get dashboard data based on user role
- */
-export const getDashboard = async (user) => {
-    switch (user.role) {
-        case 'ADMIN':
-            return getAdminDashboard();
-        case 'GM':
-            return getGMDashboard();
-        case 'TM':
-            return getTMDashboard();
-        case 'TO':
-            return getTODashboard(user);
-        case 'TA':
-            return getTADashboard(user);
-        case 'SURVEYOR':
-            return getSurveyorDashboard(user);
-        case 'CLIENT':
-            return clientPortalService.getClientDashboard(user.id);
-        case 'FLAG_ADMIN':
-            return getFlagAdminDashboard();
-        default:
-            return getDefaultDashboard(user);
-    }
-};
-
-/** Admin: all users by role, surveyors, clients, vessels, clients with their users */
-async function getAdminDashboard() {
-    const [usersByRole, clientsWithUsers, vesselsCount, jobsCount, certificatesCount, surveyorProfiles] = await Promise.all([
-        User.findAll({
-            attributes: ['role'],
-            raw: true,
-        }),
+export const getAdminDashboard = async () => {
+    const [usersByRole, clientsWithVessels, vesselsCount, jobsCount, certificatesCount, surveyorProfiles] = await Promise.all([
+        User.findAll({ attributes: ['role'], raw: true }),
         Client.findAll({
             where: { status: 'ACTIVE' },
-            include: [{
-                model: User,
-                as: 'Users',
-                required: false,
-                attributes: userSafeAttrs,
-            }],
+            include: [{ model: Vessel, as: 'Vessels', required: false, attributes: userSafeAttrs }],
             order: [['company_name', 'ASC']],
         }),
         Vessel.count(),
@@ -61,18 +24,18 @@ async function getAdminDashboard() {
         return acc;
     }, {});
 
-    const clients = clientsWithUsers.map((c) => ({
+    const clients = clientsWithVessels.map((c) => ({
         id: c.id,
         company_name: c.company_name,
         company_code: c.company_code,
         email: c.email,
         status: c.status,
-        users: (c.Users || []).map((u) => ({
-            id: u.id,
-            name: u.name,
-            email: u.email,
-            role: u.role,
-            status: u.status,
+        vessels: (c.Vessels || []).map((v) => ({
+            id: v.id,
+            vessel_name: v.vessel_name,
+            imo_number: v.imo_number,
+            flag: v.flag,
+            status: v.status,
         })),
     }));
 
@@ -110,29 +73,28 @@ async function getAdminDashboard() {
             jobs: { total: jobsCount, by_status: jobsByStatus },
             certificates: { total: certificatesCount, by_status: certsByStatus },
         },
-        clients_with_users: clients,
+        client_with_vessels: clients,
     };
 }
 
-/** GM: same structure as admin but can be scoped later if needed */
-async function getGMDashboard() {
+export const getGMDashboard = async () => {
     const admin = await getAdminDashboard();
     return { ...admin, role: 'GM' };
 }
 
-/** TM: same as GM for now */
-async function getTMDashboard() {
+export const getTMDashboard = async () => {
     const admin = await getAdminDashboard();
     return { ...admin, role: 'TM' };
 }
 
-/** TO: jobs they can work on, survey reports, NCs, etc. */
-async function getTODashboard(user) {
+export const getTODashboard = async (user) => {
+    // user argument kept for potential future filtering logic if needed, although current implementation doesn't strictly depend on user.id heavily for count beyond role logic? 
+    // Wait, getTODashboard logic uses JobRequest.count() globally? 
+    // "JobRequest.count({ where: { job_status: { [Op.notIn]: ... } } })"
+    // It seems global. If TO sees everything, that is fine.
     const [jobsCount, myInvolvedJobs, vesselsCount, clientsCount] = await Promise.all([
         JobRequest.count(),
-        JobRequest.count({
-            where: { job_status: { [Op.notIn]: ['CERTIFIED', 'REJECTED', 'CANCELLED'] } },
-        }),
+        JobRequest.count({ where: { job_status: { [Op.notIn]: ['CERTIFIED', 'REJECTED', 'CANCELLED'] } } }),
         Vessel.count(),
         Client.count({ where: { status: 'ACTIVE' } }),
     ]);
@@ -151,8 +113,7 @@ async function getTODashboard(user) {
     };
 }
 
-/** TA: minimal overview */
-async function getTADashboard(user) {
+export const getTADashboard = async (user) => {
     const [jobsCount, vesselsCount, clientsCount] = await Promise.all([
         JobRequest.count(),
         Vessel.count(),
@@ -169,8 +130,7 @@ async function getTADashboard(user) {
     };
 }
 
-/** Surveyor: my assigned jobs, my surveys, profile */
-async function getSurveyorDashboard(user) {
+export const getSurveyorDashboard = async (user) => {
     const [assignedJobsCount, assignedJobs, completedSurveys, profile] = await Promise.all([
         JobRequest.count({ where: { gm_assigned_surveyor_id: user.id } }),
         JobRequest.findAll({
@@ -206,8 +166,72 @@ async function getSurveyorDashboard(user) {
     };
 }
 
-/** Flag admin: flags and minimal stats */
-async function getFlagAdminDashboard() {
+export const getClientDashboard = async (clientId) => {
+    if (!clientId) throw { statusCode: 403, message: 'User is not associated with a client' };
+
+    // Get all vessels for this client
+    const vessels = await Vessel.findAll({ where: { client_id: clientId } });
+    const vesselIds = vessels.map(v => v.id);
+
+    // Get jobs for all vessels of this client
+    const jobs = await JobRequest.findAll({
+        where: { vessel_id: vesselIds },
+        include: [
+            { model: Vessel, attributes: ['vessel_name'] },
+            { model: CertificateType, attributes: ['name'] }
+        ],
+        order: [['created_at', 'DESC']]
+    });
+
+    // Get certificates for all vessels
+    const certificates = await Certificate.findAll({
+        where: { vessel_id: vesselIds },
+        include: [{ model: Vessel, attributes: ['vessel_name'] }]
+    });
+
+    // Get payments for these jobs
+    const jobIds = jobs.map(j => j.id);
+    const payments = await Payment.findAll({
+        where: { job_id: jobIds }
+    });
+
+    // Calculate statistics
+    const stats = {
+        total_vessels: vessels.length,
+        active_jobs: jobs.filter(j => !['CERTIFIED', 'REJECTED'].includes(j.job_status)).length,
+        expiring_soon: certificates.filter(c => {
+            const daysToExpiry = Math.floor((new Date(c.expiry_date) - new Date()) / (1000 * 60 * 60 * 24));
+            return daysToExpiry <= 60 && daysToExpiry > 0;
+        }).length,
+        pending_payments: payments.filter(p => p.payment_status === 'UNPAID').length,
+    };
+
+    return {
+        role: 'CLIENT',
+        stats,
+        recent_jobs: jobs.slice(0, 5).map(j => ({
+            id: j.id,
+            vessel_name: j.Vessel?.vessel_name,
+            type: j.CertificateType?.name,
+            status: j.job_status,
+            date: j.created_at
+        })),
+        expiring_certificates: certificates
+            .filter(c => {
+                const daysToExpiry = Math.floor((new Date(c.expiry_date) - new Date()) / (1000 * 60 * 60 * 24));
+                return daysToExpiry <= 60 && daysToExpiry > 0;
+            })
+            .slice(0, 5)
+            .map(c => ({
+                id: c.id,
+                name: c.certificate_name,
+                vessel: c.Vessel?.vessel_name,
+                expiry_date: c.expiry_date
+            }))
+    };
+};
+
+export const getFlagAdminDashboard = async () => {
     const [flags, flagsActive] = await Promise.all([
         FlagAdministration.count(),
         FlagAdministration.count({ where: { status: 'ACTIVE' } }),
@@ -226,8 +250,7 @@ async function getFlagAdminDashboard() {
     };
 }
 
-/** Fallback for unknown role */
-async function getDefaultDashboard(user) {
+export const getDefaultDashboard = async (user) => {
     return {
         role: user.role,
         user: { id: user.id, name: user.name, email: user.email },

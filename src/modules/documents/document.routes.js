@@ -1,20 +1,15 @@
 import express from 'express';
 import multer from 'multer';
-import * as docController from './document.controller.js';
+import * as documentController from './document.controller.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
-import { validate, schemas } from '../../middlewares/validate.middleware.js';
+import { authorizeRoles } from '../../middlewares/rbac.middleware.js';
 
 const upload = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
 router.use(authenticate);
 
-// Upload a new document/file
-router.post('/upload', upload.single('file'), validate(schemas.uploadDocument), docController.uploadDocument);
-
-// Get list of documents for a specific entity
-router.get('/:entity/:id', docController.getDocuments);
-
-// Delete a document
-router.delete('/:id', docController.deleteDocument);
+router.get('/:entityType/:entityId', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), documentController.getDocuments);
+router.post('/:entityType/:entityId', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM'), upload.single('file'), documentController.uploadDocument);
+router.delete('/:id', authorizeRoles('ADMIN', 'GM'), documentController.deleteDocument);
 
 export default router;
