@@ -492,11 +492,33 @@ opMap.forEach((op) => {
   };
   if (pathParams.length) paths[openPath][method].parameters = pathParams;
 
-  if (op.path.includes('/upload') || op.path === '/surveyors/apply') {
+  if (op.path.includes('/upload')) {
     paths[openPath][method].requestBody = {
       content: {
         'multipart/form-data': {
           schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' }, entity_type: { type: 'string' }, entity_id: { type: 'string' }, document_type: { type: 'string' }, description: { type: 'string' } } },
+        },
+      },
+    };
+  } else if (op.path === '/surveyors/apply') {
+    paths[openPath][method].requestBody = {
+      content: {
+        'multipart/form-data': {
+          schema: {
+            type: 'object',
+            required: ['full_name', 'email', 'phone', 'nationality', 'qualification', 'years_of_experience'],
+            properties: {
+              full_name: { type: 'string', example: 'John Doe' },
+              email: { type: 'string', format: 'email', example: 'john.doe@example.com' },
+              phone: { type: 'string', example: '+1-234-567-8900' },
+              nationality: { type: 'string', example: 'United Kingdom' },
+              qualification: { type: 'string', example: 'Master Mariner (Class 1)' },
+              years_of_experience: { type: 'integer', example: 12 },
+              cv: { type: 'string', format: 'binary' },
+              id_proof: { type: 'string', format: 'binary' },
+              certificates: { type: 'array', items: { type: 'string', format: 'binary' } }
+            }
+          },
         },
       },
     };
@@ -603,11 +625,34 @@ ROLES_ORDER.forEach((role) => {
       responses: { '200': { description: 'Success' }, '201': { description: 'Created' }, '400': { description: 'Bad Request' }, '401': { description: 'Unauthorized' }, '404': { description: 'Not Found' } },
     };
     if (pathParams.length) rolePaths[openPath][method].parameters = pathParams;
-    if (op.path.includes('/upload') || op.path === '/surveyors/apply') {
+    if (op.path.includes('/upload')) {
       rolePaths[openPath][method].requestBody = {
         content: { 'multipart/form-data': { schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } } },
       };
+    } else if (op.path === '/surveyors/apply') {
+      rolePaths[openPath][method].requestBody = {
+        content: {
+          'multipart/form-data': {
+            schema: {
+              type: 'object',
+              required: ['full_name', 'email', 'phone', 'nationality', 'qualification', 'years_of_experience'],
+              properties: {
+                full_name: { type: 'string', example: 'John Doe' },
+                email: { type: 'string', format: 'email', example: 'john.doe@example.com' },
+                phone: { type: 'string', example: '+1-234-567-8900' },
+                nationality: { type: 'string', example: 'United Kingdom' },
+                qualification: { type: 'string', example: 'Master Mariner (Class 1)' },
+                years_of_experience: { type: 'integer', example: 12 },
+                cv: { type: 'string', format: 'binary' },
+                id_proof: { type: 'string', format: 'binary' },
+                certificates: { type: 'array', items: { type: 'string', format: 'binary' } }
+              }
+            },
+          },
+        },
+      };
     } else if (bodySpec) {
+
       rolePaths[openPath][method].requestBody = {
         content: { 'application/json': { schema: bodySpec.schema, example: bodySpec.example } },
       };

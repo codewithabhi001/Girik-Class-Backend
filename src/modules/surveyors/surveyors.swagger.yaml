@@ -10,14 +10,41 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [firstName, lastName, email, cv]
+              required: [full_name, email, phone, nationality, qualification, years_of_experience]
               properties:
-                firstName: [type: string]
-                lastName: [type: string]
-                email: [type: string, format: email]
-                cv: [type: string, format: binary]
-                id_proof: [type: string, format: binary]
-                certificates: [type: array, items: {type: string, format: binary}]
+                full_name: 
+                  type: string
+                  example: "John Doe"
+                email: 
+                  type: string
+                  format: email
+                  example: "john.doe@example.com"
+                phone: 
+                  type: string
+                  example: "+1-234-567-8900"
+                nationality: 
+                  type: string
+                  example: "United Kingdom"
+                qualification: 
+                  type: string
+                  example: "Master Mariner (Class 1)"
+                years_of_experience: 
+                  type: integer
+                  example: 12
+                cv: 
+                  type: string
+                  format: binary
+                  description: "Curriculum Vitae (PDF/DOCX)"
+                id_proof: 
+                  type: string
+                  format: binary
+                  description: "Government ID Proof"
+                certificates: 
+                  type: array
+                  items: 
+                    type: string
+                    format: binary
+                  description: "Professional Certificates"
       responses:
         '201':
           description: Application submitted successfully

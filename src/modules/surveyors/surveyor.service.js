@@ -115,10 +115,10 @@ export const updateProfile = async (id, data) => {
     return await profile.update(data);
 };
 
-export const updateAvailability = async (userId, isOnline) => {
+export const updateAvailability = async (userId, isAvailable) => {
     const profile = await SurveyorProfile.findOne({ where: { user_id: userId } });
     if (!profile) throw { statusCode: 404, message: 'Surveyor profile not found' };
-    return await profile.update({ status: isOnline ? 'ACTIVE' : 'OFFLINE' });
+    return await profile.update({ is_available: isAvailable });
 };
 
 export const reportLocation = async (userId, locationData) => {

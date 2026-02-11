@@ -75,6 +75,7 @@ export const schemas = {
     submitChecklist: Joi.object({
         items: Joi.array().items(Joi.object({
             question_code: Joi.string().required(),
+            question_text: Joi.string().required(),
             answer: Joi.string().valid('YES', 'NO', 'NA').required(),
             remarks: Joi.string().allow('').optional()
         })).required()
@@ -196,6 +197,38 @@ export const schemas = {
         name: Joi.string().optional(),
         code: Joi.string().optional(),
         description: Joi.string().optional(),
+        sections: Joi.array().items(Joi.object({
+            title: Joi.string().required(),
+            items: Joi.array().items(Joi.object({
+                code: Joi.string().required(),
+                text: Joi.string().required(),
+                type: Joi.string().valid('YES_NO_NA', 'TEXT', 'NUMBER').default('YES_NO_NA')
+            })).required()
+        })).optional(),
+        status: Joi.string().valid('ACTIVE', 'INACTIVE', 'DRAFT').optional(),
+        metadata: Joi.object().optional()
+    }),
+    createChecklistTemplate: Joi.object({
+        name: Joi.string().required(),
+        code: Joi.string().required(),
+        description: Joi.string().optional().allow(''),
+        certificate_type_id: Joi.string().guid().optional().allow(null),
+        sections: Joi.array().items(Joi.object({
+            title: Joi.string().required(),
+            items: Joi.array().items(Joi.object({
+                code: Joi.string().required(),
+                text: Joi.string().required(),
+                type: Joi.string().valid('YES_NO_NA', 'TEXT', 'NUMBER').default('YES_NO_NA')
+            })).required()
+        })).required(),
+        status: Joi.string().valid('ACTIVE', 'INACTIVE', 'DRAFT').optional(),
+        metadata: Joi.object().optional()
+    }),
+    updateChecklistTemplate: Joi.object({
+        name: Joi.string().optional(),
+        code: Joi.string().optional(),
+        description: Joi.string().optional().allow(''),
+        certificate_type_id: Joi.string().guid().optional().allow(null),
         sections: Joi.array().items(Joi.object({
             title: Joi.string().required(),
             items: Joi.array().items(Joi.object({

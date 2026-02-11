@@ -5,6 +5,11 @@ export default (sequelize, DataTypes) => {
         name: { type: DataTypes.STRING, allowNull: false },
         code: { type: DataTypes.STRING, unique: true, allowNull: false },
         description: DataTypes.TEXT,
+        certificate_type_id: {
+            type: DataTypes.UUID,
+            allowNull: true,
+            comment: 'Links template to a specific certificate type (e.g., Load Line, Safety Equipment)'
+        },
         sections: {
             type: DataTypes.JSON,
             allowNull: false,
@@ -28,6 +33,7 @@ export default (sequelize, DataTypes) => {
     ChecklistTemplate.associate = (models) => {
         ChecklistTemplate.belongsTo(models.User, { as: 'Creator', foreignKey: 'created_by' });
         ChecklistTemplate.belongsTo(models.User, { as: 'Updater', foreignKey: 'updated_by' });
+        ChecklistTemplate.belongsTo(models.CertificateType, { foreignKey: 'certificate_type_id' });
     };
 
     return ChecklistTemplate;

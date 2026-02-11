@@ -8,6 +8,7 @@ export default (sequelize, DataTypes) => {
         valid_from: DataTypes.DATEONLY,
         valid_to: DataTypes.DATEONLY,
         status: { type: DataTypes.ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED'), defaultValue: 'ACTIVE' },
+        is_available: { type: DataTypes.BOOLEAN, defaultValue: false },
     }, {
         tableName: 'surveyor_profiles',
         underscored: true,

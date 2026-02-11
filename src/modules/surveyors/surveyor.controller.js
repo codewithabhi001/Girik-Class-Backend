@@ -69,7 +69,7 @@ export const createSurveyor = async (req, res, next) => {
 
 export const updateAvailability = async (req, res, next) => {
     try {
-        const profile = await surveyorService.updateAvailability(req.user.id, req.body.isOnline);
+        const profile = await surveyorService.updateAvailability(req.user.id, req.body.is_available);
         res.json({ success: true, data: profile });
     } catch (e) { next(e); }
 };
