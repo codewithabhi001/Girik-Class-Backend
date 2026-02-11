@@ -2827,3 +2827,89 @@
 {"duration":"28ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":500,"timestamp":"2026-02-09T04:59:15.442Z","url":"/api/v1/dashboard","user":"admin@gmail.com"}
 {"duration":"29ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":500,"timestamp":"2026-02-09T04:59:15.443Z","url":"/api/v1/dashboard","user":"admin@gmail.com"}
 {"level":"info","message":"::1 - - [09/Feb/2026:04:59:15 +0000] \"GET /api/v1/dashboard HTTP/1.1\" 500 1114 \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-09T04:59:15.445Z"}
+{"level":"info","message":"Database connected successfully.","timestamp":"2026-02-11T04:17:22.731Z"}
+{"level":"info","message":"Skipping auto-sync in favor of manual migrations...","timestamp":"2026-02-11T04:17:22.731Z"}
+{"level":"info","message":"Database models ready.","timestamp":"2026-02-11T04:17:22.731Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2026-02-11T04:17:22.755Z"}
+{"level":"info","message":"Swagger API Docs: http://localhost:3000/api-docs","timestamp":"2026-02-11T04:17:22.755Z"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:17:27 +0000] \"GET /api-docs/ HTTP/1.1\" 304 - \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:17:27.620Z"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:17:27 +0000] \"GET /api-docs-json HTTP/1.1\" 304 - \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:17:27.702Z"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:17:27 +0000] \"GET /favicon.ico HTTP/1.1\" 404 150 \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:17:27.723Z"}
+{"duration":"181ms","ip":"::1","level":"info","message":"API Request","method":"POST","statusCode":200,"timestamp":"2026-02-11T04:17:36.059Z","url":"/api/v1/auth/login","user":"Anonymous"}
+{"duration":"182ms","ip":"::1","level":"info","message":"API Request","method":"POST","statusCode":200,"timestamp":"2026-02-11T04:17:36.059Z","url":"/api/v1/auth/login","user":"Anonymous"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:17:36 +0000] \"POST /api/v1/auth/login HTTP/1.1\" 200 362 \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:17:36.059Z"}
+{"duration":"29ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:17:45.125Z","url":"/api/v1/clients?page=1&limit=10","user":"admin@gmail.com"}
+{"duration":"29ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:17:45.126Z","url":"/api/v1/clients?page=1&limit=10","user":"admin@gmail.com"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:17:45 +0000] \"GET /api/v1/clients?page=1&limit=10 HTTP/1.1\" 304 - \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:17:45.126Z"}
+{"duration":"4ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":403,"timestamp":"2026-02-11T04:18:14.905Z","url":"/api/v1/clients/profile","user":"admin@gmail.com"}
+{"duration":"5ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":403,"timestamp":"2026-02-11T04:18:14.905Z","url":"/api/v1/clients/profile","user":"admin@gmail.com"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:18:14 +0000] \"GET /api/v1/clients/profile HTTP/1.1\" 403 68 \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:18:14.905Z"}
+{"duration":"3ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":403,"timestamp":"2026-02-11T04:18:27.672Z","url":"/api/v1/clients/dashboard","user":"admin@gmail.com"}
+{"duration":"4ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":403,"timestamp":"2026-02-11T04:18:27.672Z","url":"/api/v1/clients/dashboard","user":"admin@gmail.com"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:18:27 +0000] \"GET /api/v1/clients/dashboard HTTP/1.1\" 403 68 \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:18:27.672Z"}
+{"duration":"11ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:19:00.774Z","url":"/api/v1/clients/019c3774-7288-7270-8037-7c1d1df8bc50","user":"admin@gmail.com"}
+{"duration":"12ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:19:00.774Z","url":"/api/v1/clients/019c3774-7288-7270-8037-7c1d1df8bc50","user":"admin@gmail.com"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:19:00 +0000] \"GET /api/v1/clients/019c3774-7288-7270-8037-7c1d1df8bc50 HTTP/1.1\" 304 - \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:19:00.775Z"}
+{"duration":"16ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:19:14.275Z","url":"/api/v1/vessels?page=1&limit=10","user":"admin@gmail.com"}
+{"duration":"17ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:19:14.276Z","url":"/api/v1/vessels?page=1&limit=10","user":"admin@gmail.com"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:19:14 +0000] \"GET /api/v1/vessels?page=1&limit=10 HTTP/1.1\" 304 - \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:19:14.276Z"}
+{"level":"info","message":"Database connected successfully.","timestamp":"2026-02-11T04:22:01.136Z"}
+{"level":"info","message":"Skipping auto-sync in favor of manual migrations...","timestamp":"2026-02-11T04:22:01.137Z"}
+{"level":"info","message":"Database models ready.","timestamp":"2026-02-11T04:22:01.137Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2026-02-11T04:22:01.143Z"}
+{"level":"info","message":"Swagger API Docs: http://localhost:3000/api-docs","timestamp":"2026-02-11T04:22:01.143Z"}
+{"level":"info","message":"Database connected successfully.","timestamp":"2026-02-11T04:22:11.760Z"}
+{"level":"info","message":"Skipping auto-sync in favor of manual migrations...","timestamp":"2026-02-11T04:22:11.761Z"}
+{"level":"info","message":"Database models ready.","timestamp":"2026-02-11T04:22:11.761Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2026-02-11T04:22:11.766Z"}
+{"level":"info","message":"Swagger API Docs: http://localhost:3000/api-docs","timestamp":"2026-02-11T04:22:11.766Z"}
+{"duration":"26ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:22:17.410Z","url":"/api/v1/vessels?page=1&limit=10","user":"admin@gmail.com"}
+{"duration":"27ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:22:17.411Z","url":"/api/v1/vessels?page=1&limit=10","user":"admin@gmail.com"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:22:17 +0000] \"GET /api/v1/vessels?page=1&limit=10 HTTP/1.1\" 200 4531 \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:22:17.413Z"}
+{"level":"info","message":"Database connected successfully.","timestamp":"2026-02-11T04:23:28.373Z"}
+{"level":"info","message":"Skipping auto-sync in favor of manual migrations...","timestamp":"2026-02-11T04:23:28.373Z"}
+{"level":"info","message":"Database models ready.","timestamp":"2026-02-11T04:23:28.374Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2026-02-11T04:23:28.380Z"}
+{"level":"info","message":"Swagger API Docs: http://localhost:3000/api-docs","timestamp":"2026-02-11T04:23:28.380Z"}
+{"level":"info","message":"Database connected successfully.","timestamp":"2026-02-11T04:23:41.530Z"}
+{"level":"info","message":"Skipping auto-sync in favor of manual migrations...","timestamp":"2026-02-11T04:23:41.530Z"}
+{"level":"info","message":"Database models ready.","timestamp":"2026-02-11T04:23:41.530Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2026-02-11T04:23:41.536Z"}
+{"level":"info","message":"Swagger API Docs: http://localhost:3000/api-docs","timestamp":"2026-02-11T04:23:41.536Z"}
+{"level":"info","message":"Database connected successfully.","timestamp":"2026-02-11T04:23:55.599Z"}
+{"level":"info","message":"Skipping auto-sync in favor of manual migrations...","timestamp":"2026-02-11T04:23:55.600Z"}
+{"level":"info","message":"Database models ready.","timestamp":"2026-02-11T04:23:55.600Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2026-02-11T04:23:55.606Z"}
+{"level":"info","message":"Swagger API Docs: http://localhost:3000/api-docs","timestamp":"2026-02-11T04:23:55.606Z"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:24:02 +0000] \"GET /health HTTP/1.1\" 404 145 \"-\" \"curl/8.7.1\"","timestamp":"2026-02-11T04:24:02.548Z"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:24:16 +0000] \"GET /api-docs/ HTTP/1.1\" 200 5742 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:24:16.451Z"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:24:17 +0000] \"GET /favicon.ico HTTP/1.1\" 404 150 \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:24:17.227Z"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:24:17 +0000] \"GET /api-docs-json HTTP/1.1\" 200 74336 \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:24:17.234Z"}
+{"duration":"40ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:24:57.400Z","url":"/api/v1/clients?page=1&limit=10","user":"admin@gmail.com"}
+{"duration":"41ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:24:57.400Z","url":"/api/v1/clients?page=1&limit=10","user":"admin@gmail.com"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:24:57 +0000] \"GET /api/v1/clients?page=1&limit=10 HTTP/1.1\" 304 - \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:24:57.400Z"}
+{"duration":"6ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:25:11.638Z","url":"/api/v1/clients/019c373e-8d97-742c-af25-66f1619bfd5a","user":"admin@gmail.com"}
+{"duration":"7ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:25:11.639Z","url":"/api/v1/clients/019c373e-8d97-742c-af25-66f1619bfd5a","user":"admin@gmail.com"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:25:11 +0000] \"GET /api/v1/clients/019c373e-8d97-742c-af25-66f1619bfd5a HTTP/1.1\" 200 346 \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:25:11.639Z"}
+{"duration":"6ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:26:32.974Z","url":"/api/v1/clients/019c373e-8d97-742c-af25-66f1619bfd5a","user":"admin@gmail.com"}
+{"duration":"6ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:26:32.975Z","url":"/api/v1/clients/019c373e-8d97-742c-af25-66f1619bfd5a","user":"admin@gmail.com"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:26:32 +0000] \"GET /api/v1/clients/019c373e-8d97-742c-af25-66f1619bfd5a HTTP/1.1\" 304 - \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:26:32.976Z"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:26:57 +0000] \"GET /api-docs/ HTTP/1.1\" 304 - \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:26:57.576Z"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:26:57 +0000] \"GET /api-docs-json HTTP/1.1\" 304 - \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:26:57.700Z"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:28:00 +0000] \"GET /api-docs/ HTTP/1.1\" 200 5742 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:28:00.157Z"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:28:00 +0000] \"GET /api-docs-json HTTP/1.1\" 200 74336 \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:28:00.542Z"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:28:00 +0000] \"GET /favicon.ico HTTP/1.1\" 404 150 \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:28:00.543Z"}
+{"level":"info","message":"Database connected successfully.","timestamp":"2026-02-11T04:28:06.035Z"}
+{"level":"info","message":"Skipping auto-sync in favor of manual migrations...","timestamp":"2026-02-11T04:28:06.036Z"}
+{"level":"info","message":"Database models ready.","timestamp":"2026-02-11T04:28:06.036Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2026-02-11T04:28:06.042Z"}
+{"level":"info","message":"Swagger API Docs: http://localhost:3000/api-docs","timestamp":"2026-02-11T04:28:06.042Z"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:28:08 +0000] \"GET /api-docs/ HTTP/1.1\" 200 5742 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:28:08.986Z"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:28:09 +0000] \"GET /api-docs-json HTTP/1.1\" 200 75723 \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:28:09.635Z"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:28:09 +0000] \"GET /favicon.ico HTTP/1.1\" 404 150 \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:28:09.637Z"}
+{"duration":"34ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:28:27.385Z","url":"/api/v1/clients?page=1&limit=10","user":"admin@gmail.com"}
+{"duration":"34ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:28:27.385Z","url":"/api/v1/clients?page=1&limit=10","user":"admin@gmail.com"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:28:27 +0000] \"GET /api/v1/clients?page=1&limit=10 HTTP/1.1\" 304 - \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:28:27.386Z"}
+{"duration":"16ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:28:41.690Z","url":"/api/v1/vessels/client/019c373e-8d97-742c-af25-66f1619bfd5a","user":"admin@gmail.com"}
+{"duration":"16ms","ip":"::1","level":"info","message":"API Request","method":"GET","statusCode":200,"timestamp":"2026-02-11T04:28:41.690Z","url":"/api/v1/vessels/client/019c373e-8d97-742c-af25-66f1619bfd5a","user":"admin@gmail.com"}
+{"level":"info","message":"::1 - - [11/Feb/2026:04:28:41 +0000] \"GET /api/v1/vessels/client/019c373e-8d97-742c-af25-66f1619bfd5a HTTP/1.1\" 200 852 \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-11T04:28:41.691Z"}

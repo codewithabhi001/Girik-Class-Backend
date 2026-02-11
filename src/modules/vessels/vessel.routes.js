@@ -11,6 +11,9 @@ router.use(authenticate);
 // List all vessels (scoped by client_id for CLIENT)
 router.get('/', authorizeRoles('ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR', 'CLIENT'), vesselController.getVessels);
 
+// Get all vessels of a specific client (for management)
+router.get('/client/:clientId', authorizeRoles('ADMIN', 'GM', 'TM'), vesselController.getVesselsByClientId);
+
 // Create a new vessel
 router.post('/', authorizeRoles('ADMIN', 'GM', 'TM'), validate(schemas.createVessel), vesselController.createVessel);
 

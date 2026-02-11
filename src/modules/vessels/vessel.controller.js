@@ -22,7 +22,7 @@ export const createVessel = async (req, res, next) => {
 export const getVessels = async (req, res, next) => {
     try {
         const scopeFilters = getScopeFilters(req.user);
-        const vessels = await vesselService.getVessels(req.query, scopeFilters);
+        const vessels = await vesselService.getVessels(req.query, scopeFilters, req.user.role);
         res.json({
             success: true,
             message: 'Vessels fetched successfully',
@@ -39,6 +39,17 @@ export const getVesselById = async (req, res, next) => {
             success: true,
             message: 'Vessel details fetched successfully',
             data: vessel
+        });
+    } catch (error) { next(error); }
+};
+
+export const getVesselsByClientId = async (req, res, next) => {
+    try {
+        const result = await vesselService.getVesselsByClientId(req.params.clientId);
+        res.json({
+            success: true,
+            message: 'Client vessels fetched successfully',
+            data: result
         });
     } catch (error) { next(error); }
 };

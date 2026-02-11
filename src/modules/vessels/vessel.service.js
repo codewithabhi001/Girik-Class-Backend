@@ -18,16 +18,64 @@ export const createVessel = async (data) => {
     return await Vessel.create(data);
 };
 
-export const getVessels = async (query, scopeFilters = {}) => {
+export const getVessels = async (query, scopeFilters = {}, userRole = null) => {
     const { page = 1, limit = 10, ...filters } = query;
     const where = { ...filters, ...scopeFilters };
 
-    return await Vessel.findAndCountAll({
+    // For CLIENT role, return paginated vessels as before
+    if (userRole === 'CLIENT') {
+        return await Vessel.findAndCountAll({
+            where,
+            limit: parseInt(limit),
+            offset: (page - 1) * limit,
+            include: [{ model: Client, as: 'Client' }],
+            order: [['created_at', 'DESC']]
+        });
+    }
+
+    // For other roles, group by company name
+    const vessels = await Vessel.findAll({
         where,
-        limit: parseInt(limit),
-        offset: (page - 1) * limit,
-        include: [{ model: Client, as: 'Client' }] // Explicit model reference
+        include: [{
+            model: Client,
+            as: 'Client',
+            attributes: ['id', 'company_name', 'company_code', 'email', 'phone', 'status']
+        }],
+        order: [['created_at', 'DESC']]
     });
+
+    // Group vessels by company
+    const groupedByCompany = vessels.reduce((acc, vessel) => {
+        const companyName = vessel.Client?.company_name || 'Unknown Company';
+        const companyId = vessel.Client?.id || 'unknown';
+
+        if (!acc[companyId]) {
+            acc[companyId] = {
+                company: {
+                    id: vessel.Client?.id,
+                    name: companyName,
+                    code: vessel.Client?.company_code,
+                    email: vessel.Client?.email,
+                    phone: vessel.Client?.phone,
+                    status: vessel.Client?.status
+                },
+                vessels: []
+            };
+        }
+
+        acc[companyId].vessels.push(vessel);
+        return acc;
+    }, {});
+
+    // Convert to array and sort companies alphabetically
+    const result = Object.values(groupedByCompany).sort((a, b) =>
+        a.company.name.localeCompare(b.company.name)
+    );
+
+    return {
+        count: vessels.length,
+        rows: result
+    };
 };
 
 export const getVesselById = async (id, scopeFilters = {}) => {
@@ -37,6 +85,37 @@ export const getVesselById = async (id, scopeFilters = {}) => {
     });
     if (!vessel) throw { statusCode: 404, message: 'Vessel not found' };
     return vessel;
+};
+
+export const getVesselsByClientId = async (clientId) => {
+    // Check if client exists
+    const client = await Client.findByPk(clientId);
+    if (!client) {
+        throw { statusCode: 404, message: 'Client not found' };
+    }
+
+    const vessels = await Vessel.findAll({
+        where: { client_id: clientId },
+        include: [{
+            model: Client,
+            as: 'Client',
+            attributes: ['id', 'company_name', 'company_code', 'email', 'phone', 'status']
+        }],
+        order: [['created_at', 'DESC']]
+    });
+
+    return {
+        client: {
+            id: client.id,
+            name: client.company_name,
+            code: client.company_code,
+            email: client.email,
+            phone: client.phone,
+            status: client.status
+        },
+        vessels,
+        count: vessels.length
+    };
 };
 
 export const updateVessel = async (id, data, scopeFilters = {}) => {

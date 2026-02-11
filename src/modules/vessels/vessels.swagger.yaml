@@ -25,7 +25,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginationResponse'
-
     post:
       summary: Create Vessel Registry
       description: Register a new vessel in the system.
@@ -63,6 +62,110 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
+
+  /vessels/client/{clientId}:
+    get:
+      summary: Get all vessels of a specific client
+      description: Retrieve all vessels belonging to a specific client/company (for management roles only).
+      tags: [Vessels]
+      security:
+        - bearerAuth: []
+      x-roles: [ADMIN, GM, TM]
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the client
+      responses:
+        '200':
+          description: Client vessels fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Client vessels fetched successfully
+                  data:
+                    type: object
+                    properties:
+                      client:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                          name:
+                            type: string
+                            example: ABC Shipping Ltd
+                          code:
+                            type: string
+                            example: ABC001
+                          email:
+                            type: string
+                            example: contact@abc.com
+                          phone:
+                            type: string
+                            example: +1234567890
+                          status:
+                            type: string
+                            enum: [ACTIVE, INACTIVE]
+                            example: ACTIVE
+                      vessels:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                            vessel_name:
+                              type: string
+                            imo_number:
+                              type: string
+                            call_sign:
+                              type: string
+                            ship_type:
+                              type: string
+                            created_at:
+                              type: string
+                              format: date-time
+                      count:
+                        type: integer
+                        example: 5
+        '404':
+          description: Client not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Client not found
+        '403':
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Access denied
 
   /vessels/{id}:
     get:
