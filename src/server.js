@@ -16,17 +16,22 @@ const startServer = async () => {
         // Production-ready: Don't alter tables, just validate connection
         // Use migrations for schema changes in production
         if (env.nodeEnv === 'development') {
-            logger.info('Skipping auto-sync in favor of manual migrations...');
-            // await db.sequelize.sync({ force: false }); // Only creates missing tables, doesn't alter
+            logger.info('Syncing database models...');
+            await db.sequelize.sync({ alter: true });
         }
         logger.info('Database models ready.');
 
         startMonitoring();
 
 
+
+        const isProduction = env.nodeEnv === 'production';
+        const SERVER_IP = '13.239.63.143';
+        const host = (isProduction || process.env.USE_SERVER_IP === 'true') ? SERVER_IP : 'localhost';
+
         app.listen(PORT, () => {
             logger.info(`Server is running on port ${PORT}`);
-            logger.info(`Swagger API Docs: http://localhost:${PORT}/api-docs`);
+            logger.info(`Swagger API Docs: http://${host}:${PORT}/api-docs`);
         });
     } catch (error) {
         logger.error('Unable to connect to the database:', error);

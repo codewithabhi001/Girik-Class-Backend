@@ -15,7 +15,13 @@ const dbConfig = env.database;
 
 const sequelize = new Sequelize(dbConfig.name, dbConfig.username, dbConfig.password, {
     host: dbConfig.host,
+    port: dbConfig.port,
     dialect: dbConfig.dialect,
+    dialectOptions: dbConfig.sslCa ? {
+        ssl: {
+            ca: fs.readFileSync(path.resolve(dbConfig.sslCa))
+        }
+    } : {},
     logging: console.log, // set to console.log to see SQL queries
 });
 
