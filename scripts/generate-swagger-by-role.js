@@ -399,7 +399,7 @@ const clientApis = [
 
 // Role -> list of { method, path, summary }
 const roleToApis = {
-  Admin: adminApis,
+  Admin: [...adminApis, ...gmApis, ...toApis],
   GM: gmApis,
   TM: [...tmApis],
   TO: [...toApis],
@@ -409,8 +409,8 @@ const roleToApis = {
   'Flag Admin': [],
 };
 
-// Add shared auth APIs to GM, TM, TO, TA, Surveyor, Client, Flag Admin
-['GM', 'TM', 'TO', 'TA', 'Surveyor', 'Client', 'Flag Admin'].forEach((role) => {
+// Add shared auth APIs to Admin, GM, TM, TO, TA, Surveyor, Client, Flag Admin
+['Admin', 'GM', 'TM', 'TO', 'TA', 'Surveyor', 'Client', 'Flag Admin'].forEach((role) => {
   const list = roleToApis[role] || [];
   roleToApis[role] = list;
   sharedAuthApis.forEach((a) => {

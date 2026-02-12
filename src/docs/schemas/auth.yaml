@@ -1,0 +1,71 @@
+# Auth schemas
+UserCreateRequest:
+  type: object
+  required:
+    - name
+    - email
+    - password
+    - role
+  properties:
+    name:
+      type: string
+      example: "John Doe"
+    email:
+      type: string
+      format: email
+      example: "user@girik.com"
+    password:
+      type: string
+      format: password
+      example: "Password123!"
+    role:
+      type: string
+      enum: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
+      example: "SURVEYOR"
+    phone:
+      type: string
+      example: "+919876543210"
+    client_id:
+      $ref: '#/components/schemas/UUID'
+
+LoginRequest:
+  type: object
+  required:
+    - email
+    - password
+  properties:
+    email:
+      type: string
+      format: email
+      example: "admin@girik.com"
+    password:
+      type: string
+      format: password
+      example: "admin123"
+
+LoginResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+      example: true
+    data:
+      type: object
+      properties:
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        refreshToken:
+          type: string
+        user:
+          type: object
+          properties:
+            id:
+              $ref: '#/components/schemas/UUID'
+            email:
+              type: string
+            name:
+              type: string
+            role:
+              type: string
+              enum: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]

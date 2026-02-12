@@ -1,292 +1,435 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "GIRIK API - Surveyor",
+    "title": "Girik Marine API - Surveyor",
     "version": "1.0.0",
-    "description": "APIs for **Surveyor** role. Sections are grouped by module (Users, Clients, Vessels, Jobs, etc.). Use `POST /auth/login` first and set the token in Authorize."
+    "description": "APIs for **SURVEYOR** role. Use POST /auth/login first, then Authorize with the token."
   },
   "servers": [
     {
       "url": "http://localhost:3000/api/v1",
-      "description": "Local"
+      "description": "Local Development"
     },
     {
-      "url": "https://api.girik.com/api/v1",
-      "description": "Production"
+      "url": "/api/v1",
+      "description": "Current Host (Relative)"
     }
   ],
   "tags": [
     {
-      "name": "Public",
-      "description": "Public"
-    },
-    {
-      "name": "Authentication",
-      "description": "Authentication"
-    },
-    {
-      "name": "System",
-      "description": "System"
-    },
-    {
-      "name": "Health & Readiness",
-      "description": "Health & Readiness"
-    },
-    {
-      "name": "Flags",
-      "description": "Flags"
-    },
-    {
-      "name": "Vessels",
-      "description": "Vessels"
+      "name": "Auth",
+      "description": "Authentication & Authorization"
     },
     {
       "name": "Jobs",
-      "description": "Jobs"
+      "description": "Job lifecycle management"
     },
     {
-      "name": "Surveys",
-      "description": "Surveys"
+      "name": "Vessels",
+      "description": "Vessel registry & management"
     },
     {
       "name": "Certificates",
-      "description": "Certificates"
+      "description": "Certificate issuance & validation"
     },
     {
-      "name": "Documents",
-      "description": "Documents"
-    },
-    {
-      "name": "Change Requests",
-      "description": "Change Requests"
-    },
-    {
-      "name": "Incidents",
-      "description": "Incidents"
-    },
-    {
-      "name": "Notifications",
-      "description": "Notifications"
-    },
-    {
-      "name": "Approvals",
-      "description": "Approvals"
-    },
-    {
-      "name": "TOCA",
-      "description": "TOCA"
-    },
-    {
-      "name": "Non-Conformities",
-      "description": "Non-Conformities"
-    },
-    {
-      "name": "Surveyors",
-      "description": "Surveyors"
-    },
-    {
-      "name": "Mobile",
-      "description": "Mobile"
-    },
-    {
-      "name": "Support",
-      "description": "Support"
-    },
-    {
-      "name": "Search",
-      "description": "Search"
-    },
-    {
-      "name": "Client Portal",
-      "description": "Client Portal"
+      "name": "Payments",
+      "description": "Invoicing & payment processing"
     },
     {
       "name": "Dashboard",
-      "description": "Dashboard"
+      "description": "Role-specific dashboards"
+    },
+    {
+      "name": "Clients",
+      "description": "Client & company management"
+    },
+    {
+      "name": "Public",
+      "description": "Public verification endpoints (no auth)"
+    },
+    {
+      "name": "Surveyors",
+      "description": "Surveyor applications & profile"
+    },
+    {
+      "name": "Surveys",
+      "description": "Survey reports & inspections"
+    },
+    {
+      "name": "Checklists",
+      "description": "Job inspection checklists"
+    },
+    {
+      "name": "Users",
+      "description": "User management"
+    },
+    {
+      "name": "Non-Conformities",
+      "description": "NC management"
+    },
+    {
+      "name": "TOCA",
+      "description": "Transfer of Class Agreement"
+    },
+    {
+      "name": "Flags",
+      "description": "Flag administration"
+    },
+    {
+      "name": "Approvals",
+      "description": "Approval workflow"
+    },
+    {
+      "name": "Notifications",
+      "description": "System notifications"
+    },
+    {
+      "name": "Documents",
+      "description": "Document storage"
+    },
+    {
+      "name": "System",
+      "description": "System config & admin"
+    },
+    {
+      "name": "Reports",
+      "description": "Management reports"
+    },
+    {
+      "name": "Activity Requests",
+      "description": "Client activity requests"
+    },
+    {
+      "name": "Providers",
+      "description": "Service providers"
+    },
+    {
+      "name": "Feedback",
+      "description": "Customer feedback"
+    },
+    {
+      "name": "Change Requests",
+      "description": "Entity change requests"
+    },
+    {
+      "name": "Certificate Templates",
+      "description": "Certificate templates"
+    },
+    {
+      "name": "Incidents",
+      "description": "Incident reporting"
+    },
+    {
+      "name": "Support",
+      "description": "Support tickets"
+    },
+    {
+      "name": "Search",
+      "description": "Global search"
+    },
+    {
+      "name": "Compliance",
+      "description": "Compliance & GDPR"
+    },
+    {
+      "name": "Mobile",
+      "description": "Mobile app sync"
     }
   ],
   "paths": {
-    "/vessels": {
-      "get": {
+    "/auth/login": {
+      "post": {
         "tags": [
-          "Vessels"
+          "Auth"
         ],
-        "summary": "List Vessels",
+        "summary": "Login",
+        "description": "Authenticate and receive JWT token",
+        "x-roles": [
+          "PUBLIC"
+        ],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              },
+              "example": {
+                "email": "admin@girik.com",
+                "password": "admin123"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "refreshToken": "refresh_token_here",
+                    "user": {
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "email": "admin@girik.com",
+                      "name": "Admin User",
+                      "role": "ADMIN"
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Invalid email or password"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/vessels/{id}": {
-      "get": {
+    "/auth/logout": {
+      "post": {
         "tags": [
-          "Vessels"
+          "Auth"
         ],
-        "summary": "Get Vessel",
+        "summary": "Logout",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "TA",
+          "SURVEYOR",
+          "CLIENT"
+        ],
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
+            "description": "Logged out"
           },
           "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "id"
-          }
-        ]
-      }
-    },
-    "/dashboard": {
-      "get": {
-        "tags": [
-          "Dashboard"
-        ],
-        "summary": "Dashboard (role-specific summary)",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
+            "$ref": "#/components/responses/Unauthorized"
           }
         }
       }
     },
-    "/jobs": {
-      "get": {
+    "/auth/forgot-password": {
+      "post": {
         "tags": [
-          "Jobs"
+          "Auth"
         ],
-        "summary": "List Jobs",
+        "summary": "Forgot Password",
+        "x-roles": [
+          "PUBLIC"
+        ],
+        "security": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              },
+              "example": {
+                "email": "admin@girik.com"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
+            "description": "Reset link sent"
           },
           "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
+            "$ref": "#/components/responses/BadRequest"
           }
         }
       }
     },
-    "/jobs/{id}": {
-      "get": {
+    "/auth/reset-password": {
+      "post": {
         "tags": [
-          "Jobs"
+          "Auth"
         ],
-        "summary": "Get Job",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
+        "summary": "Reset Password",
+        "x-roles": [
+          "PUBLIC"
+        ],
+        "security": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "token",
+                  "newPassword"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "format": "password"
+                  }
+                }
+              },
+              "example": {
+                "token": "RESET_TOKEN_FROM_EMAIL",
+                "newPassword": "NewSecurePass123!"
+              }
+            }
           }
         },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "id"
+        "responses": {
+          "200": {
+            "description": "Password reset"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           }
-        ]
+        }
       }
     },
-    "/jobs/{id}/history": {
-      "get": {
+    "/auth/refresh-token": {
+      "post": {
         "tags": [
-          "Jobs"
+          "Auth"
         ],
-        "summary": "Job History",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
+        "summary": "Refresh Token",
+        "x-roles": [
+          "PUBLIC"
+        ],
+        "security": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "token"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "token": "{{refresh_token}}"
+              }
+            }
           }
         },
+        "responses": {
+          "200": {
+            "description": "New tokens"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/certificates/verify/{number}": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Verify Certificate (Public)",
+        "description": "Public endpoint - no auth required",
+        "x-roles": [
+          "PUBLIC"
+        ],
+        "security": [],
         "parameters": [
           {
-            "name": "id",
+            "name": "number",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            },
-            "description": "id"
+              "type": "string",
+              "example": "GIR-CERT-2026-001"
+            }
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Certificate valid"
+          },
+          "404": {
+            "description": "Certificate not found"
+          }
+        }
+      }
+    },
+    "/certificates/types": {
+      "get": {
+        "tags": [
+          "Certificates"
+        ],
+        "summary": "Get Certificate Types",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of certificate types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "success": true,
+                  "data": [
+                    {
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "name": "Annual Survey",
+                      "code": "ANNUAL"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
       }
     },
     "/certificates": {
@@ -295,21 +438,91 @@
           "Certificates"
         ],
         "summary": "List Certificates",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "VALID",
+                "EXPIRED",
+                "SUSPENDED",
+                "REVOKED"
+              ]
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
+            "description": "List of certificates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
           },
           "401": {
-            "description": "Unauthorized"
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/certificates/{id}": {
+      "get": {
+        "tags": [
+          "Certificates"
+        ],
+        "summary": "Get Certificate by ID",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Certificate details"
           },
           "404": {
-            "description": "Not Found"
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -320,70 +533,33 @@
           "Certificates"
         ],
         "summary": "Certificate Preview",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "id"
-          }
-        ]
-      }
-    },
-    "/certificates/{id}/signature": {
-      "get": {
-        "tags": [
-          "Certificates"
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
         ],
-        "summary": "Certificate Signature",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            },
-            "description": "id"
+              "type": "string",
+              "format": "uuid"
+            }
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Preview URL or HTML"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
       }
     },
     "/certificates/{id}/history": {
@@ -392,884 +568,31 @@
           "Certificates"
         ],
         "summary": "Certificate History",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            },
-            "description": "id"
-          }
-        ]
-      }
-    },
-    "/documents/upload": {
-      "post": {
-        "tags": [
-          "Documents"
-        ],
-        "summary": "Upload Document",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                }
-              }
+              "type": "string",
+              "format": "uuid"
             }
           }
-        }
-      }
-    },
-    "/documents/{entity}/{id}": {
-      "get": {
-        "tags": [
-          "Documents"
         ],
-        "summary": "Get Documents",
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
+            "description": "Certificate change history"
           },
           "404": {
-            "description": "Not Found"
-          }
-        },
-        "parameters": [
-          {
-            "name": "entity",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "entity"
-          },
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "id"
-          }
-        ]
-      }
-    },
-    "/documents/{id}": {
-      "delete": {
-        "tags": [
-          "Documents"
-        ],
-        "summary": "Delete Document",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "id"
-          }
-        ]
-      }
-    },
-    "/health": {
-      "get": {
-        "tags": [
-          "Health & Readiness"
-        ],
-        "summary": "System Health",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/system/readiness": {
-      "get": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Readiness",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/system/version": {
-      "get": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Version",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/system/feature-flags": {
-      "get": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Feature Flags",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/system/locales": {
-      "get": {
-        "tags": [
-          "System"
-        ],
-        "summary": "Locales",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/approvals": {
-      "post": {
-        "tags": [
-          "Approvals"
-        ],
-        "summary": "Create Approval",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "entity_type": {
-                    "type": "string"
-                  },
-                  "entity_id": {
-                    "type": "string"
-                  },
-                  "approval_type": {
-                    "type": "string"
-                  },
-                  "requested_by": {
-                    "type": "string"
-                  }
-                }
-              },
-              "example": {
-                "entity_type": "CERTIFICATE",
-                "entity_id": "{{id}}",
-                "approval_type": "SIGN_OFF",
-                "requested_by": "{{target_user_id}}"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/approvals/{id}/step": {
-      "put": {
-        "tags": [
-          "Approvals"
-        ],
-        "summary": "Approval Step",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "id"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "status": {
-                    "type": "string",
-                    "enum": [
-                      "APPROVED",
-                      "REJECTED"
-                    ]
-                  }
-                }
-              },
-              "example": {
-                "status": "APPROVED"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/notifications": {
-      "get": {
-        "tags": [
-          "Notifications"
-        ],
-        "summary": "List Notifications",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/notifications/{id}/read": {
-      "put": {
-        "tags": [
-          "Notifications"
-        ],
-        "summary": "Mark Read",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "id"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              }
-            }
-          }
-        }
-      }
-    },
-    "/notifications/preferences": {
-      "get": {
-        "tags": [
-          "Notifications"
-        ],
-        "summary": "Get Preferences",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Notifications"
-        ],
-        "summary": "Update Preferences",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "email_enabled": {
-                    "type": "boolean"
-                  },
-                  "app_enabled": {
-                    "type": "boolean"
-                  },
-                  "alert_types": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                }
-              },
-              "example": {
-                "email_enabled": true,
-                "app_enabled": true,
-                "alert_types": [
-                  "JOB_ASSIGNED",
-                  "CERTIFICATE_EXPIRY",
-                  "PAYMENT_DUE"
-                ]
-              }
-            }
-          }
-        }
-      }
-    },
-    "/change-requests": {
-      "post": {
-        "tags": [
-          "Change Requests"
-        ],
-        "summary": "Create Change Request",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "entity_type": {
-                    "type": "string"
-                  },
-                  "entity_id": {
-                    "type": "string"
-                  },
-                  "change_description": {
-                    "type": "string"
-                  },
-                  "old_value": {
-                    "type": "string"
-                  },
-                  "new_value": {
-                    "type": "string"
-                  },
-                  "priority": {
-                    "type": "string"
-                  }
-                }
-              },
-              "example": {
-                "entity_type": "VESSEL",
-                "entity_id": "{{vessel_id}}",
-                "change_description": "Update vessel flag state",
-                "old_value": "Panama",
-                "new_value": "Liberia",
-                "priority": "MEDIUM"
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "Change Requests"
-        ],
-        "summary": "List Change Requests",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/incidents": {
-      "post": {
-        "tags": [
-          "Incidents"
-        ],
-        "summary": "Create Incident",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "incident_type": {
-                    "type": "string"
-                  },
-                  "entity_type": {
-                    "type": "string"
-                  },
-                  "entity_id": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "severity": {
-                    "type": "string"
-                  }
-                }
-              },
-              "example": {
-                "incident_type": "SAFETY",
-                "entity_type": "JOB",
-                "entity_id": "{{job_id}}",
-                "description": "Minor injury during survey",
-                "severity": "LOW"
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "Incidents"
-        ],
-        "summary": "List Incidents",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/incidents/{id}/resolve": {
-      "put": {
-        "tags": [
-          "Incidents"
-        ],
-        "summary": "Resolve Incident",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "id"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "resolution": {
-                    "type": "string"
-                  }
-                }
-              },
-              "example": {
-                "resolution": "Closed. No further action required."
-              }
-            }
-          }
-        }
-      }
-    },
-    "/client/dashboard": {
-      "get": {
-        "tags": [
-          "Client Portal"
-        ],
-        "summary": "Client Dashboard",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/client/jobs": {
-      "get": {
-        "tags": [
-          "Client Portal"
-        ],
-        "summary": "Client Jobs",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/client/certificates": {
-      "get": {
-        "tags": [
-          "Client Portal"
-        ],
-        "summary": "Client Certificates",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/toca": {
-      "get": {
-        "tags": [
-          "TOCA"
-        ],
-        "summary": "List TOCAs",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/flags": {
-      "get": {
-        "tags": [
-          "Flags"
-        ],
-        "summary": "List Flags",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -1277,87 +600,89 @@
     "/jobs/{jobId}/checklist": {
       "get": {
         "tags": [
-          "Jobs"
+          "Checklists"
         ],
         "summary": "Get Checklist",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
         "parameters": [
           {
             "name": "jobId",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            },
-            "description": "jobId"
+              "type": "string",
+              "format": "uuid"
+            }
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Checklist for job"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
       },
       "put": {
         "tags": [
-          "Jobs"
+          "Checklists"
         ],
         "summary": "Submit Checklist",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
+        "x-roles": [
+          "SURVEYOR"
+        ],
         "parameters": [
           {
             "name": "jobId",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            },
-            "description": "jobId"
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "items"
+                ],
                 "properties": {
                   "items": {
                     "type": "array",
                     "items": {
                       "type": "object",
+                      "required": [
+                        "question_code",
+                        "question_text",
+                        "answer"
+                      ],
                       "properties": {
                         "question_code": {
                           "type": "string"
                         },
-                        "answer": {
+                        "question_text": {
                           "type": "string"
+                        },
+                        "answer": {
+                          "type": "string",
+                          "enum": [
+                            "YES",
+                            "NO",
+                            "NA"
+                          ]
                         },
                         "remarks": {
                           "type": "string"
@@ -1371,11 +696,13 @@
                 "items": [
                   {
                     "question_code": "Q1",
+                    "question_text": "Hull condition",
                     "answer": "YES",
                     "remarks": "All OK"
                   },
                   {
                     "question_code": "Q2",
+                    "question_text": "Life saving equipment",
                     "answer": "NO",
                     "remarks": "Minor defect"
                   }
@@ -1383,43 +710,359 @@
               }
             }
           }
+        },
+        "responses": {
+          "200": {
+            "description": "Checklist submitted"
+          }
         }
       }
     },
-    "/non-conformities/job/{jobId}": {
+    "/dashboard": {
       "get": {
         "tags": [
-          "Non-Conformities"
+          "Dashboard"
         ],
-        "summary": "NC by Job",
+        "summary": "Get Dashboard",
+        "description": "Role-specific dashboard summary (jobs pending, certificates expiring, etc.)",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
+            "description": "Dashboard data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardResponse"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "jobsPending": 5,
+                    "jobsInProgress": 3,
+                    "certificatesExpiring": 2,
+                    "paymentsDue": 1
+                  }
+                }
+              }
+            }
           },
           "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
+            "$ref": "#/components/responses/Unauthorized"
           }
-        },
+        }
+      }
+    },
+    "/documents/{entityType}/{entityId}": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Get Documents",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
         "parameters": [
           {
-            "name": "jobId",
+            "name": "entityType",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            },
-            "description": "jobId"
+              "type": "string",
+              "example": "JOB"
+            }
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "List of documents"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Health Check",
+        "description": "System health - no auth required",
+        "x-roles": [
+          "PUBLIC"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service is UP",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "UP"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "UP",
+                  "timestamp": "2026-02-12T10:00:00.000Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs": {
+      "get": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "List Jobs",
+        "description": "List jobs (filtered by role - CLIENT sees own, SURVEYOR sees assigned)",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CREATED",
+                "GM_APPROVED",
+                "TM_PRE_APPROVED",
+                "ASSIGNED",
+                "SURVEY_DONE",
+                "TO_APPROVED",
+                "TM_FINAL",
+                "PAYMENT_DONE",
+                "CERTIFIED",
+                "REJECTED"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of jobs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "success": true,
+                  "data": [
+                    {
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "vessel_id": "660e8400-e29b-41d4-a716-446655440001",
+                      "job_status": "ASSIGNED",
+                      "target_date": "2026-03-15",
+                      "vessel": {
+                        "vessel_name": "SEA MAJESTY",
+                        "imo_number": "IMO9876543"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/jobs/{id}": {
+      "get": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "Get Job by ID",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "vessel_id": "660e8400-e29b-41d4-a716-446655440001",
+                    "job_status": "ASSIGNED",
+                    "reason": "Annual survey",
+                    "target_port": "Port of Singapore",
+                    "target_date": "2026-03-15",
+                    "vessel": {
+                      "vessel_name": "SEA MAJESTY",
+                      "imo_number": "IMO9876543"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/jobs/{id}/messages/external": {
+      "get": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "Get External Messages",
+        "x-roles": [
+          "CLIENT",
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "External messages"
+          }
+        }
+      }
+    },
+    "/jobs/{id}/messages": {
+      "post": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "Send Message",
+        "x-roles": [
+          "CLIENT",
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  },
+                  "attachment": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Message sent"
+          }
+        }
       }
     },
     "/mobile/sync": {
@@ -1427,24 +1070,10 @@
         "tags": [
           "Mobile"
         ],
-        "summary": "Mobile Sync",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
+        "summary": "Sync Data",
+        "x-roles": [
+          "SURVEYOR"
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1452,7 +1081,8 @@
                 "type": "object",
                 "properties": {
                   "last_sync_timestamp": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "date-time"
                   },
                   "offline_data": {
                     "type": "object"
@@ -1460,10 +1090,15 @@
                 }
               },
               "example": {
-                "last_sync_timestamp": "2025-02-07T10:00:00.000Z",
+                "last_sync_timestamp": "2026-02-12T10:00:00.000Z",
                 "offline_data": {}
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sync completed"
           }
         }
       }
@@ -1473,22 +1108,13 @@
         "tags": [
           "Mobile"
         ],
-        "summary": "Offline Jobs",
+        "summary": "Get Offline Jobs",
+        "x-roles": [
+          "SURVEYOR"
+        ],
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
+            "description": "Jobs for offline use"
           }
         }
       }
@@ -1498,24 +1124,10 @@
         "tags": [
           "Mobile"
         ],
-        "summary": "Offline Surveys",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
+        "summary": "Submit Offline Surveys",
+        "x-roles": [
+          "SURVEYOR"
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1543,18 +1155,236 @@
                     }
                   }
                 }
-              },
-              "example": {
-                "surveys": [
-                  {
-                    "job_id": "{{job_id}}",
-                    "gps_latitude": 1.35,
-                    "gps_longitude": 103.81,
-                    "survey_statement": "Offline survey data"
-                  }
-                ]
               }
             }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Surveys submitted"
+          }
+        }
+      }
+    },
+    "/non-conformities": {
+      "post": {
+        "tags": [
+          "Non-Conformities"
+        ],
+        "summary": "Create NC",
+        "x-roles": [
+          "SURVEYOR",
+          "TO"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "job_id",
+                  "description",
+                  "severity"
+                ],
+                "properties": {
+                  "job_id": {
+                    "$ref": "#/components/schemas/UUID"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": [
+                      "MINOR",
+                      "MAJOR",
+                      "CRITICAL"
+                    ]
+                  }
+                }
+              },
+              "example": {
+                "job_id": "550e8400-e29b-41d4-a716-446655440000",
+                "description": "Crack found on hull plate",
+                "severity": "MAJOR"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "NC created"
+          }
+        }
+      }
+    },
+    "/non-conformities/job/{jobId}": {
+      "get": {
+        "tags": [
+          "Non-Conformities"
+        ],
+        "summary": "Get NCs by Job",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "NCs for job"
+          }
+        }
+      }
+    },
+    "/notifications": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "List Notifications",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of notifications"
+          }
+        }
+      }
+    },
+    "/notifications/{id}/read": {
+      "put": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Mark Notification Read",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Marked as read"
+          }
+        }
+      }
+    },
+    "/notifications/read-all": {
+      "put": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Mark All Read",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
+        "responses": {
+          "200": {
+            "description": "All marked as read"
+          }
+        }
+      }
+    },
+    "/public/certificate/verify/{number}": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Verify Certificate (Public)",
+        "description": "No auth. Verify certificate by number.",
+        "x-roles": [
+          "PUBLIC"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "GIR-CERT-2026-001"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Certificate valid"
+          },
+          "404": {
+            "description": "Certificate not found"
+          }
+        }
+      }
+    },
+    "/public/vessel/{imo}": {
+      "get": {
+        "tags": [
+          "Public"
+        ],
+        "summary": "Verify Vessel (Public)",
+        "description": "No auth. Verify vessel by IMO number.",
+        "x-roles": [
+          "PUBLIC"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "imo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "IMO9876543"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vessel details"
+          },
+          "404": {
+            "description": "Vessel not found"
           }
         }
       }
@@ -1565,21 +1395,35 @@
           "Search"
         ],
         "summary": "Global Search",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search query"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by type (vessels, jobs, etc.)"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
+            "description": "Search results"
           }
         }
       }
@@ -1590,24 +1434,16 @@
           "Support"
         ],
         "summary": "Create Support Ticket",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -1618,10 +1454,12 @@
                 ],
                 "properties": {
                   "subject": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Cannot login"
                   },
                   "description": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "I am getting 401 even with correct password"
                   },
                   "priority": {
                     "type": "string",
@@ -1640,6 +1478,11 @@
               }
             }
           }
+        },
+        "responses": {
+          "201": {
+            "description": "Ticket created"
+          }
         }
       },
       "get": {
@@ -1647,21 +1490,17 @@
           "Support"
         ],
         "summary": "List Support Tickets",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
+            "description": "List of tickets"
           }
         }
       }
@@ -1672,34 +1511,125 @@
           "Support"
         ],
         "summary": "Get Support Ticket",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            },
-            "description": "id"
+              "type": "string",
+              "format": "uuid"
+            }
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Ticket details"
+          }
+        }
+      }
+    },
+    "/surveyors/apply": {
+      "post": {
+        "tags": [
+          "Surveyors"
+        ],
+        "summary": "Surveyor Apply",
+        "description": "Public endpoint - Apply to become a surveyor. Upload CV, ID proof, certificates.",
+        "x-roles": [
+          "PUBLIC"
+        ],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "full_name",
+                  "email",
+                  "phone",
+                  "nationality",
+                  "qualification",
+                  "years_of_experience"
+                ],
+                "properties": {
+                  "full_name": {
+                    "type": "string",
+                    "example": "John Doe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "john.doe@example.com"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "example": "+1-234-567-8900"
+                  },
+                  "nationality": {
+                    "type": "string",
+                    "example": "United Kingdom"
+                  },
+                  "qualification": {
+                    "type": "string",
+                    "example": "Master Mariner (Class 1)"
+                  },
+                  "years_of_experience": {
+                    "type": "integer",
+                    "example": 12
+                  },
+                  "cv": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "CV/Resume PDF"
+                  },
+                  "id_proof": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "ID proof document"
+                  },
+                  "certificates": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Qualification certificates (max 5)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Application submitted",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "status": "PENDING"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
       }
     },
     "/surveyors/{id}/profile": {
@@ -1708,87 +1638,86 @@
           "Surveyors"
         ],
         "summary": "Get Surveyor Profile",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
+        "x-roles": [
+          "ADMIN",
+          "TM",
+          "SURVEYOR"
+        ],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            },
-            "description": "id"
+              "type": "string",
+              "format": "uuid"
+            }
           }
-        ]
-      }
-    },
-    "/non-conformities": {
-      "post": {
-        "tags": [
-          "Non-Conformities"
         ],
-        "summary": "Create NC",
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
+            "description": "Surveyor profile"
           },
           "404": {
-            "description": "Not Found"
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/surveyors/availability": {
+      "post": {
+        "tags": [
+          "Surveyors"
+        ],
+        "summary": "Update Availability",
+        "x-roles": [
+          "SURVEYOR"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
           }
         },
+        "responses": {
+          "200": {
+            "description": "Availability updated"
+          }
+        }
+      }
+    },
+    "/surveyors/location": {
+      "post": {
+        "tags": [
+          "Surveyors"
+        ],
+        "summary": "Report Location",
+        "x-roles": [
+          "SURVEYOR"
+        ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "job_id": {
-                    "type": "string"
+                  "latitude": {
+                    "type": "number"
                   },
-                  "description": {
-                    "type": "string"
-                  },
-                  "severity": {
-                    "type": "string",
-                    "enum": [
-                      "MINOR",
-                      "MAJOR",
-                      "CRITICAL"
-                    ]
+                  "longitude": {
+                    "type": "number"
                   }
                 }
-              },
-              "example": {
-                "job_id": "{{job_id}}",
-                "description": "Crack found on hull plate",
-                "severity": "MAJOR"
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Location reported"
           }
         }
       }
@@ -1799,46 +1728,48 @@
           "Surveys"
         ],
         "summary": "Start Survey",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
+        "x-roles": [
+          "SURVEYOR"
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "job_id",
+                  "latitude",
+                  "longitude"
+                ],
                 "properties": {
                   "job_id": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/UUID"
                   },
                   "latitude": {
-                    "type": "number"
+                    "type": "number",
+                    "example": 1.3521
                   },
                   "longitude": {
-                    "type": "number"
+                    "type": "number",
+                    "example": 103.8198
                   }
                 }
               },
               "example": {
-                "job_id": "{{job_id}}",
+                "job_id": "550e8400-e29b-41d4-a716-446655440000",
                 "latitude": 1.3521,
                 "longitude": 103.8198
               }
             }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Survey started"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           }
         }
       }
@@ -1849,31 +1780,43 @@
           "Surveys"
         ],
         "summary": "Submit Survey Report",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
+        "x-roles": [
+          "SURVEYOR"
+        ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "job_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "gps_latitude": {
+                    "type": "number"
+                  },
+                  "gps_longitude": {
+                    "type": "number"
+                  },
+                  "survey_statement": {
+                    "type": "string"
+                  },
+                  "reason_if_outside": {
+                    "type": "string"
+                  },
+                  "photo": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
               }
             }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Report submitted"
           }
         }
       }
@@ -1884,42 +1827,23 @@
           "Surveys"
         ],
         "summary": "Finalize Survey",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
+        "x-roles": [
+          "SURVEYOR"
+        ],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            },
-            "description": "id"
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              }
-            }
+        "responses": {
+          "200": {
+            "description": "Survey finalized"
           }
         }
       }
@@ -1930,32 +1854,18 @@
           "Surveys"
         ],
         "summary": "Stream Location",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
+        "x-roles": [
+          "SURVEYOR"
+        ],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            },
-            "description": "id"
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "requestBody": {
@@ -1963,6 +1873,10 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "latitude",
+                  "longitude"
+                ],
                 "properties": {
                   "latitude": {
                     "type": "number"
@@ -1971,12 +1885,13 @@
                     "type": "number"
                   }
                 }
-              },
-              "example": {
-                "latitude": 1.3521,
-                "longitude": 103.8198
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Location updated"
           }
         }
       }
@@ -1987,335 +1902,236 @@
           "Surveys"
         ],
         "summary": "Upload Proof",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
+        "x-roles": [
+          "SURVEYOR"
+        ],
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            },
-            "description": "id"
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "properties": {
+                  "proof": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
               }
             }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Proof uploaded"
           }
         }
       }
     },
-    "/public/certificate/verify/{number}": {
+    "/system/health": {
       "get": {
         "tags": [
-          "Public"
+          "System"
         ],
-        "summary": "Verify Certificate",
+        "summary": "System Health",
+        "x-roles": [
+          "PUBLIC"
+        ],
         "security": [],
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
+            "description": "Health status"
           }
-        },
+        }
+      }
+    },
+    "/system/readiness": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Readiness Check",
+        "x-roles": [
+          "PUBLIC"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Ready status"
+          }
+        }
+      }
+    },
+    "/system/version": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "API Version",
+        "x-roles": [
+          "PUBLIC"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Version info"
+          }
+        }
+      }
+    },
+    "/users/me": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get My Profile",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "TA",
+          "SURVEYOR",
+          "CLIENT"
+        ],
+        "responses": {
+          "200": {
+            "description": "Current user profile"
+          }
+        }
+      }
+    },
+    "/vessels": {
+      "get": {
+        "tags": [
+          "Vessels"
+        ],
+        "summary": "List Vessels",
+        "description": "List vessels (CLIENT sees only their vessels)",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
         "parameters": [
           {
-            "name": "number",
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "client_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of vessels",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "success": true,
+                  "data": [
+                    {
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "vessel_name": "SEA MAJESTY",
+                      "imo_number": "IMO9876543",
+                      "flag_state": "Panama",
+                      "ship_type": "Cargo"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/vessels/{id}": {
+      "get": {
+        "tags": [
+          "Vessels"
+        ],
+        "summary": "Get Vessel by ID",
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
+        "parameters": [
+          {
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            },
-            "description": "number"
-          }
-        ]
-      }
-    },
-    "/public/vessel/{imo}": {
-      "get": {
-        "tags": [
-          "Public"
-        ],
-        "summary": "Verify Vessel",
-        "security": [],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          }
-        },
-        "parameters": [
-          {
-            "name": "imo",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "imo"
-          }
-        ]
-      }
-    },
-    "/surveyors/apply": {
-      "post": {
-        "tags": [
-          "Public"
-        ],
-        "summary": "Surveyor Apply (multipart)",
-        "security": [],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object"
-              }
+              "type": "string",
+              "format": "uuid"
             }
           }
-        }
-      }
-    },
-    "/auth/login": {
-      "post": {
-        "tags": [
-          "Authentication"
         ],
-        "summary": "Login",
-        "security": [],
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "email",
-                  "password"
-                ],
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "example": "admin@girik.com"
-                  },
-                  "password": {
-                    "type": "string",
-                    "example": "admin123"
+            "description": "Vessel details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "vessel_name": "SEA MAJESTY",
+                    "imo_number": "IMO9876543",
+                    "flag_state": "Panama",
+                    "ship_type": "Cargo",
+                    "Client": {
+                      "company_name": "Acme Shipping Ltd"
+                    }
                   }
                 }
-              },
-              "example": {
-                "email": "admin@girik.com",
-                "password": "admin123"
               }
             }
-          }
-        }
-      }
-    },
-    "/auth/logout": {
-      "post": {
-        "tags": [
-          "Authentication"
-        ],
-        "summary": "Logout",
-        "security": [],
-        "responses": {
-          "200": {
-            "description": "Success"
           },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/auth/refresh-token": {
-      "post": {
-        "tags": [
-          "Authentication"
-        ],
-        "summary": "Refresh Token",
-        "security": [],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "token"
-                ],
-                "properties": {
-                  "token": {
-                    "type": "string"
-                  }
-                }
-              },
-              "example": {
-                "token": "{{refresh_token}}"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/auth/forgot-password": {
-      "post": {
-        "tags": [
-          "Authentication"
-        ],
-        "summary": "Forgot Password",
-        "security": [],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "email"
-                ],
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "example": "admin@gmail.com"
-                  }
-                }
-              },
-              "example": {
-                "email": "admin@gmail.com"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/auth/reset-password": {
-      "post": {
-        "tags": [
-          "Authentication"
-        ],
-        "summary": "Reset Password",
-        "security": [],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "token",
-                  "newPassword"
-                ],
-                "properties": {
-                  "token": {
-                    "type": "string"
-                  },
-                  "newPassword": {
-                    "type": "string"
-                  }
-                }
-              },
-              "example": {
-                "token": "RESET_TOKEN_FROM_EMAIL",
-                "newPassword": "NewSecurePass123!"
-              }
-            }
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -2327,7 +2143,880 @@
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT",
-        "description": "Token from POST /auth/login"
+        "description": "Use token from POST /auth/login"
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Unauthorized - Token missing or invalid",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "message": "Unauthorized - Token missing or invalid"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Forbidden - Insufficient role",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "message": "Forbidden - You do not have the required role"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "message": "Resource not found"
+            }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "Validation error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "message": "Validation Error",
+              "error": "vessel_id is required"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "UserCreateRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "email",
+          "password",
+          "role"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "user@girik.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "Password123!"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "GM",
+              "TM",
+              "TO",
+              "TA",
+              "SURVEYOR",
+              "CLIENT",
+              "FLAG_ADMIN"
+            ],
+            "example": "SURVEYOR"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+919876543210"
+          },
+          "client_id": {
+            "$ref": "#/components/schemas/UUID"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "admin@girik.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "admin123"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "token": {
+                "type": "string",
+                "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+              },
+              "refreshToken": {
+                "type": "string"
+              },
+              "user": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "$ref": "#/components/schemas/UUID"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "ADMIN",
+                      "GM",
+                      "TM",
+                      "TO",
+                      "TA",
+                      "SURVEYOR",
+                      "CLIENT",
+                      "FLAG_ADMIN"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "CertificateGenerateRequest": {
+        "type": "object",
+        "required": [
+          "job_id"
+        ],
+        "properties": {
+          "job_id": {
+            "$ref": "#/components/schemas/UUID",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "validity_years": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "example": 1
+          }
+        }
+      },
+      "CertificateActionRequest": {
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "Administrative suspension"
+          }
+        }
+      },
+      "CertificateRenewRequest": {
+        "type": "object",
+        "required": [
+          "validity_years",
+          "reason"
+        ],
+        "properties": {
+          "validity_years": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "example": 2
+          },
+          "reason": {
+            "type": "string",
+            "example": "Standard renewal"
+          }
+        }
+      },
+      "CertificateResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "job_id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "vessel_id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "certificate_type_id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "certificate_number": {
+            "type": "string",
+            "example": "GIR-CERT-2026-001"
+          },
+          "issue_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "expiry_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "VALID",
+              "EXPIRED",
+              "SUSPENDED",
+              "REVOKED"
+            ]
+          },
+          "qr_code_url": {
+            "type": "string"
+          },
+          "pdf_file_url": {
+            "type": "string"
+          }
+        }
+      },
+      "CertificateTypeResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "UUID": {
+        "type": "string",
+        "format": "uuid",
+        "example": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "Date": {
+        "type": "string",
+        "format": "date",
+        "example": "2026-03-15"
+      },
+      "DateTime": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2026-03-15T10:00:00.000Z"
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "example": "Internal Server Error"
+          },
+          "error": {
+            "type": "string",
+            "description": "Validation or error detail"
+          }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "description": "Response payload"
+          },
+          "message": {
+            "type": "string",
+            "example": "Operation successful"
+          }
+        }
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "example": 1
+          },
+          "limit": {
+            "type": "integer",
+            "example": 10
+          },
+          "total": {
+            "type": "integer",
+            "example": 50
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 5
+          }
+        }
+      },
+      "PaginationResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "array",
+            "items": {}
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        }
+      },
+      "DashboardResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "data": {
+            "type": "object",
+            "description": "Role-specific dashboard summary",
+            "properties": {
+              "jobsPending": {
+                "type": "integer",
+                "example": 5
+              },
+              "jobsInProgress": {
+                "type": "integer",
+                "example": 3
+              },
+              "certificatesExpiring": {
+                "type": "integer",
+                "example": 2
+              },
+              "paymentsDue": {
+                "type": "integer",
+                "example": 1
+              }
+            }
+          }
+        }
+      },
+      "JobCreateRequest": {
+        "type": "object",
+        "required": [
+          "vessel_id",
+          "certificate_type_id",
+          "reason",
+          "target_port",
+          "target_date"
+        ],
+        "properties": {
+          "vessel_id": {
+            "$ref": "#/components/schemas/UUID",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "certificate_type_id": {
+            "$ref": "#/components/schemas/UUID",
+            "example": "660e8400-e29b-41d4-a716-446655440001"
+          },
+          "reason": {
+            "type": "string",
+            "example": "Annual survey and class renewal"
+          },
+          "target_port": {
+            "type": "string",
+            "example": "Port of Singapore"
+          },
+          "target_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-03-15"
+          }
+        }
+      },
+      "JobAssignRequest": {
+        "type": "object",
+        "required": [
+          "surveyorId"
+        ],
+        "properties": {
+          "surveyorId": {
+            "$ref": "#/components/schemas/UUID",
+            "example": "770e8400-e29b-41d4-a716-446655440002"
+          }
+        }
+      },
+      "JobStatusUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "GM_APPROVED",
+              "TM_PRE_APPROVED",
+              "ASSIGNED",
+              "SURVEY_DONE",
+              "TO_APPROVED",
+              "TM_FINAL",
+              "PAYMENT_DONE",
+              "CERTIFIED",
+              "REJECTED"
+            ],
+            "example": "ASSIGNED"
+          },
+          "remarks": {
+            "type": "string",
+            "example": "Job assigned to surveyor"
+          }
+        }
+      },
+      "JobReassignRequest": {
+        "type": "object",
+        "required": [
+          "surveyorId",
+          "reason"
+        ],
+        "properties": {
+          "surveyorId": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "reason": {
+            "type": "string",
+            "example": "Original surveyor unavailable"
+          }
+        }
+      },
+      "JobEscalateRequest": {
+        "type": "object",
+        "required": [
+          "reason",
+          "target_role"
+        ],
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "Urgent client request"
+          },
+          "target_role": {
+            "type": "string",
+            "enum": [
+              "GM",
+              "ADMIN"
+            ],
+            "example": "GM"
+          }
+        }
+      },
+      "JobActionRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "Client requested cancellation"
+          }
+        }
+      },
+      "VesselSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "vessel_name": {
+            "type": "string",
+            "example": "SEA MAJESTY"
+          },
+          "imo_number": {
+            "type": "string",
+            "example": "IMO9876543"
+          },
+          "flag_state": {
+            "type": "string",
+            "example": "Panama"
+          }
+        }
+      },
+      "JobResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "vessel_id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "certificate_type_id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "target_port": {
+            "type": "string"
+          },
+          "target_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "job_status": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "GM_APPROVED",
+              "TM_PRE_APPROVED",
+              "ASSIGNED",
+              "SURVEY_DONE",
+              "TO_APPROVED",
+              "TM_FINAL",
+              "PAYMENT_DONE",
+              "CERTIFIED",
+              "REJECTED"
+            ]
+          },
+          "vessel": {
+            "$ref": "#/components/schemas/VesselSummary"
+          },
+          "surveyor": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/UUID"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/DateTime"
+          }
+        }
+      },
+      "PaymentInvoiceRequest": {
+        "type": "object",
+        "required": [
+          "job_id",
+          "amount"
+        ],
+        "properties": {
+          "job_id": {
+            "$ref": "#/components/schemas/UUID",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double",
+            "example": 3500
+          },
+          "currency": {
+            "type": "string",
+            "default": "USD",
+            "example": "USD"
+          }
+        }
+      },
+      "PaymentWriteoffRequest": {
+        "type": "object",
+        "required": [
+          "paymentId",
+          "reason"
+        ],
+        "properties": {
+          "paymentId": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "reason": {
+            "type": "string",
+            "example": "Bad debt"
+          }
+        }
+      },
+      "PaymentResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "job_id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "invoice_number": {
+            "type": "string",
+            "example": "INV-2026-001"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "payment_status": {
+            "type": "string",
+            "enum": [
+              "UNPAID",
+              "PAID",
+              "ON_HOLD"
+            ]
+          },
+          "payment_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "receipt_url": {
+            "type": "string"
+          }
+        }
+      },
+      "VesselCreateRequest": {
+        "type": "object",
+        "required": [
+          "client_id",
+          "vessel_name",
+          "imo_number",
+          "flag_state",
+          "ship_type"
+        ],
+        "properties": {
+          "client_id": {
+            "$ref": "#/components/schemas/UUID",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "vessel_name": {
+            "type": "string",
+            "example": "SEA MAJESTY"
+          },
+          "imo_number": {
+            "type": "string",
+            "example": "IMO9876543"
+          },
+          "call_sign": {
+            "type": "string",
+            "example": "HPAB"
+          },
+          "mmsi_number": {
+            "type": "string",
+            "example": "370961000"
+          },
+          "flag_state": {
+            "type": "string",
+            "example": "Panama"
+          },
+          "port_of_registry": {
+            "type": "string"
+          },
+          "year_built": {
+            "type": "integer",
+            "example": 2015
+          },
+          "ship_type": {
+            "type": "string",
+            "example": "Cargo"
+          },
+          "gross_tonnage": {
+            "type": "number",
+            "example": 25000
+          },
+          "net_tonnage": {
+            "type": "number",
+            "example": 12000
+          },
+          "deadweight": {
+            "type": "number"
+          },
+          "class_status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED",
+              "WITHDRAWN"
+            ]
+          },
+          "current_class_society": {
+            "type": "string"
+          },
+          "engine_type": {
+            "type": "string"
+          },
+          "builder_name": {
+            "type": "string"
+          }
+        }
+      },
+      "VesselUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "vessel_name": {
+            "type": "string"
+          },
+          "imo_number": {
+            "type": "string"
+          },
+          "call_sign": {
+            "type": "string"
+          },
+          "mmsi_number": {
+            "type": "string"
+          },
+          "flag_state": {
+            "type": "string"
+          },
+          "port_of_registry": {
+            "type": "string"
+          },
+          "year_built": {
+            "type": "integer"
+          },
+          "ship_type": {
+            "type": "string"
+          },
+          "gross_tonnage": {
+            "type": "number"
+          },
+          "net_tonnage": {
+            "type": "number"
+          },
+          "deadweight": {
+            "type": "number"
+          },
+          "class_status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED",
+              "WITHDRAWN"
+            ]
+          },
+          "current_class_society": {
+            "type": "string"
+          },
+          "engine_type": {
+            "type": "string"
+          },
+          "builder_name": {
+            "type": "string"
+          }
+        }
+      },
+      "VesselResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "client_id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "vessel_name": {
+            "type": "string"
+          },
+          "imo_number": {
+            "type": "string"
+          },
+          "call_sign": {
+            "type": "string"
+          },
+          "mmsi_number": {
+            "type": "string"
+          },
+          "flag_state": {
+            "type": "string"
+          },
+          "port_of_registry": {
+            "type": "string"
+          },
+          "year_built": {
+            "type": "integer"
+          },
+          "ship_type": {
+            "type": "string"
+          },
+          "gross_tonnage": {
+            "type": "number"
+          },
+          "net_tonnage": {
+            "type": "number"
+          },
+          "deadweight": {
+            "type": "number"
+          },
+          "class_status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED",
+              "WITHDRAWN"
+            ]
+          },
+          "current_class_society": {
+            "type": "string"
+          },
+          "engine_type": {
+            "type": "string"
+          },
+          "builder_name": {
+            "type": "string"
+          },
+          "Client": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/UUID"
+              },
+              "company_name": {
+                "type": "string"
+              }
+            }
+          }
+        }
       }
     }
   },

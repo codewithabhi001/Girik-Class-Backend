@@ -1,0 +1,110 @@
+/users/me:
+  get:
+    tags: [Users]
+    summary: Get My Profile
+    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT]
+    responses:
+      '200':
+        description: Current user profile
+
+/users:
+  get:
+    tags: [Users]
+    summary: List Users
+    x-roles: [ADMIN]
+    responses:
+      '200':
+        description: List of users
+  post:
+    tags: [Users]
+    summary: Create User
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserCreateRequest'
+          example:
+            name: "Full Name"
+            email: "user@girik.com"
+            password: "Password123!"
+            role: "TM"
+            phone: "+919876543210"
+    responses:
+      '201':
+        description: User created
+
+/users/{id}:
+  put:
+    tags: [Users]
+    summary: Update User
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              email:
+                type: string
+              role:
+                type: string
+              phone:
+                type: string
+              status:
+                type: string
+    responses:
+      '200':
+        description: User updated
+  delete:
+    tags: [Users]
+    summary: Delete User
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: User deleted
+
+/users/{id}/status:
+  put:
+    tags: [Users]
+    summary: Update User Status
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status:
+                type: string
+                enum: [ACTIVE, SUSPENDED, INACTIVE]
+          example:
+            status: "SUSPENDED"
+    responses:
+      '200':
+        description: Status updated

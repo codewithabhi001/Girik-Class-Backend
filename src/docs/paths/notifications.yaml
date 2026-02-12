@@ -1,0 +1,33 @@
+/notifications:
+  get:
+    tags: [Notifications]
+    summary: List Notifications
+    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    responses:
+      '200':
+        description: List of notifications
+
+/notifications/{id}/read:
+  put:
+    tags: [Notifications]
+    summary: Mark Notification Read
+    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Marked as read
+
+/notifications/read-all:
+  put:
+    tags: [Notifications]
+    summary: Mark All Read
+    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    responses:
+      '200':
+        description: All marked as read

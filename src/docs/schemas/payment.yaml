@@ -1,0 +1,53 @@
+# Payment schemas
+PaymentInvoiceRequest:
+  type: object
+  required:
+    - job_id
+    - amount
+  properties:
+    job_id:
+      $ref: '#/components/schemas/UUID'
+      example: "550e8400-e29b-41d4-a716-446655440000"
+    amount:
+      type: number
+      format: double
+      example: 3500
+    currency:
+      type: string
+      default: "USD"
+      example: "USD"
+
+PaymentWriteoffRequest:
+  type: object
+  required:
+    - paymentId
+    - reason
+  properties:
+    paymentId:
+      $ref: '#/components/schemas/UUID'
+    reason:
+      type: string
+      example: "Bad debt"
+
+PaymentResponse:
+  type: object
+  properties:
+    id:
+      $ref: '#/components/schemas/UUID'
+    job_id:
+      $ref: '#/components/schemas/UUID'
+    invoice_number:
+      type: string
+      example: "INV-2026-001"
+    amount:
+      type: number
+    currency:
+      type: string
+    payment_status:
+      type: string
+      enum: [UNPAID, PAID, ON_HOLD]
+    payment_date:
+      type: string
+      format: date-time
+    receipt_url:
+      type: string

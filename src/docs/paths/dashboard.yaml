@@ -1,0 +1,22 @@
+/dashboard:
+  get:
+    tags: [Dashboard]
+    summary: Get Dashboard
+    description: Role-specific dashboard summary (jobs pending, certificates expiring, etc.)
+    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    responses:
+      '200':
+        description: Dashboard data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardResponse'
+            example:
+              success: true
+              data:
+                jobsPending: 5
+                jobsInProgress: 3
+                certificatesExpiring: 2
+                paymentsDue: 1
+      '401':
+        $ref: '#/components/responses/Unauthorized'

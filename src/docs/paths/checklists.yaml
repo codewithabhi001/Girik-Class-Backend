@@ -1,0 +1,65 @@
+/jobs/{jobId}/checklist:
+  get:
+    tags: [Checklists]
+    summary: Get Checklist
+    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    parameters:
+      - name: jobId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Checklist for job
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+  put:
+    tags: [Checklists]
+    summary: Submit Checklist
+    x-roles: [SURVEYOR]
+    parameters:
+      - name: jobId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [items]
+            properties:
+              items:
+                type: array
+                items:
+                  type: object
+                  required: [question_code, question_text, answer]
+                  properties:
+                    question_code:
+                      type: string
+                    question_text:
+                      type: string
+                    answer:
+                      type: string
+                      enum: [YES, NO, NA]
+                    remarks:
+                      type: string
+          example:
+            items:
+              - question_code: "Q1"
+                question_text: "Hull condition"
+                answer: "YES"
+                remarks: "All OK"
+              - question_code: "Q2"
+                question_text: "Life saving equipment"
+                answer: "NO"
+                remarks: "Minor defect"
+    responses:
+      '200':
+        description: Checklist submitted

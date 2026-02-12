@@ -1,0 +1,136 @@
+# Vessel schemas
+VesselCreateRequest:
+  type: object
+  required:
+    - client_id
+    - vessel_name
+    - imo_number
+    - flag_state
+    - ship_type
+  properties:
+    client_id:
+      $ref: '#/components/schemas/UUID'
+      example: "550e8400-e29b-41d4-a716-446655440000"
+    vessel_name:
+      type: string
+      example: "SEA MAJESTY"
+    imo_number:
+      type: string
+      example: "IMO9876543"
+    call_sign:
+      type: string
+      example: "HPAB"
+    mmsi_number:
+      type: string
+      example: "370961000"
+    flag_state:
+      type: string
+      example: "Panama"
+    port_of_registry:
+      type: string
+    year_built:
+      type: integer
+      example: 2015
+    ship_type:
+      type: string
+      example: "Cargo"
+    gross_tonnage:
+      type: number
+      example: 25000
+    net_tonnage:
+      type: number
+      example: 12000
+    deadweight:
+      type: number
+    class_status:
+      type: string
+      enum: [ACTIVE, SUSPENDED, WITHDRAWN]
+    current_class_society:
+      type: string
+    engine_type:
+      type: string
+    builder_name:
+      type: string
+
+VesselUpdateRequest:
+  type: object
+  properties:
+    client_id:
+      $ref: '#/components/schemas/UUID'
+    vessel_name:
+      type: string
+    imo_number:
+      type: string
+    call_sign:
+      type: string
+    mmsi_number:
+      type: string
+    flag_state:
+      type: string
+    port_of_registry:
+      type: string
+    year_built:
+      type: integer
+    ship_type:
+      type: string
+    gross_tonnage:
+      type: number
+    net_tonnage:
+      type: number
+    deadweight:
+      type: number
+    class_status:
+      type: string
+      enum: [ACTIVE, SUSPENDED, WITHDRAWN]
+    current_class_society:
+      type: string
+    engine_type:
+      type: string
+    builder_name:
+      type: string
+
+VesselResponse:
+  type: object
+  properties:
+    id:
+      $ref: '#/components/schemas/UUID'
+    client_id:
+      $ref: '#/components/schemas/UUID'
+    vessel_name:
+      type: string
+    imo_number:
+      type: string
+    call_sign:
+      type: string
+    mmsi_number:
+      type: string
+    flag_state:
+      type: string
+    port_of_registry:
+      type: string
+    year_built:
+      type: integer
+    ship_type:
+      type: string
+    gross_tonnage:
+      type: number
+    net_tonnage:
+      type: number
+    deadweight:
+      type: number
+    class_status:
+      type: string
+      enum: [ACTIVE, SUSPENDED, WITHDRAWN]
+    current_class_society:
+      type: string
+    engine_type:
+      type: string
+    builder_name:
+      type: string
+    Client:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        company_name:
+          type: string

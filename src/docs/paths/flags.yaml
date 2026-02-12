@@ -1,0 +1,71 @@
+/flags:
+  post:
+    tags: [Flags]
+    summary: Create Flag
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [flag_name, country, authority_name, contact_email]
+            properties:
+              flag_name:
+                type: string
+                example: "Panama"
+              country:
+                type: string
+                example: "Panama"
+              authority_name:
+                type: string
+                example: "Panama Maritime Authority"
+              contact_email:
+                type: string
+                format: email
+                example: "pma@panama.gob.pa"
+          example:
+            flag_name: "Panama"
+            country: "Panama"
+            authority_name: "Panama Maritime Authority"
+            contact_email: "pma@panama.gob.pa"
+    responses:
+      '201':
+        description: Flag created
+  get:
+    tags: [Flags]
+    summary: List Flags
+    x-roles: [ADMIN, GM, TM]
+    responses:
+      '200':
+        description: List of flags
+
+/flags/{id}:
+  put:
+    tags: [Flags]
+    summary: Update Flag
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              flag_name:
+                type: string
+              country:
+                type: string
+              authority_name:
+                type: string
+              contact_email:
+                type: string
+    responses:
+      '200':
+        description: Flag updated

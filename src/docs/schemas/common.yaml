@@ -1,0 +1,69 @@
+# Common schemas - referenced across all modules
+UUID:
+  type: string
+  format: uuid
+  example: "550e8400-e29b-41d4-a716-446655440000"
+
+Date:
+  type: string
+  format: date
+  example: "2026-03-15"
+
+DateTime:
+  type: string
+  format: date-time
+  example: "2026-03-15T10:00:00.000Z"
+
+ErrorResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+      example: false
+    message:
+      type: string
+      example: "Internal Server Error"
+    error:
+      type: string
+      description: "Validation or error detail"
+
+SuccessResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+      example: true
+    data:
+      type: object
+      description: Response payload
+    message:
+      type: string
+      example: "Operation successful"
+
+PaginationMeta:
+  type: object
+  properties:
+    page:
+      type: integer
+      example: 1
+    limit:
+      type: integer
+      example: 10
+    total:
+      type: integer
+      example: 50
+    totalPages:
+      type: integer
+      example: 5
+
+PaginationResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+      example: true
+    data:
+      type: array
+      items: {}
+    meta:
+      $ref: '#/components/schemas/PaginationMeta'

@@ -4,13 +4,22 @@ import s3Client from '../config/aws.js';
 import env from '../config/env.js';
 import { v4 as uuidv4 } from 'uuid';
 
-export const uploadFile = async (fileBuffer, fileName, mimeType) => {
+/**
+ * Upload file to S3 with optional folder prefix.
+ * @param {Buffer} fileBuffer - File content
+ * @param {string} fileName - Original filename
+ * @param {string} mimeType - MIME type
+ * @param {string} [folder] - Folder prefix (e.g. 'certificates', 'surveyor', 'documents/job')
+ */
+export const uploadFile = async (fileBuffer, fileName, mimeType, folder = '') => {
     if (!env.aws.bucketName || !env.aws.accessKeyId) {
         console.warn('AWS Credentials missing, returning mock URL');
-        return `https://mock-s3.com/${fileName}`;
+        const path = folder ? `${folder}/${fileName}` : fileName;
+        return `https://mock-s3.com/${path}`;
     }
 
-    const key = `${uuidv4()}-${fileName}`;
+    const prefix = folder ? folder.replace(/\/$/, '') + '/' : '';
+    const key = `${prefix}${uuidv4()}-${fileName}`;
     const command = new PutObjectCommand({
         Bucket: env.aws.bucketName,
         Key: key,
@@ -20,6 +29,17 @@ export const uploadFile = async (fileBuffer, fileName, mimeType) => {
 
     await s3Client.send(command);
     return `https://${env.aws.bucketName}.s3.${env.aws.region}.amazonaws.com/${key}`;
+};
+
+/** Folder constants for organized uploads */
+export const UPLOAD_FOLDERS = {
+    SURVEYOR: 'surveyor',
+    DOCUMENTS: 'documents',
+    SURVEYS: 'surveys',
+    SURVEYS_PROOF: 'surveys/proofs',
+    SURVEYS_PHOTO: 'surveys/photos',
+    JOBS_ATTACHMENTS: 'jobs/attachments',
+    CERTIFICATES: 'certificates',
 };
 
 export const getSignedFileUrl = async (key) => {

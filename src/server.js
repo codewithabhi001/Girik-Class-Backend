@@ -30,8 +30,20 @@ const startServer = async () => {
         const host = (isProduction || process.env.USE_SERVER_IP === 'true') ? SERVER_IP : 'localhost';
 
         app.listen(PORT, () => {
+            const baseUrl = `http://${host}:${PORT}`;
             logger.info(`Server is running on port ${PORT}`);
-            logger.info(`Swagger API Docs: http://${host}:${PORT}/api-docs`);
+            logger.info(`Swagger API Docs: ${baseUrl}/api-docs`);
+            // Always show in console for visibility
+            console.log('\n' + '='.repeat(60));
+            console.log(`🚀 Server running at ${baseUrl}`);
+            console.log(`📚 API Docs: ${baseUrl}/api-docs`);
+            console.log(`   - Admin:    ${baseUrl}/api-docs/admin`);
+            console.log(`   - GM:       ${baseUrl}/api-docs/gm`);
+            console.log(`   - TM:       ${baseUrl}/api-docs/tm`);
+            console.log(`   - TO:       ${baseUrl}/api-docs/to`);
+            console.log(`   - Surveyor: ${baseUrl}/api-docs/surveyor`);
+            console.log(`   - Client:   ${baseUrl}/api-docs/client`);
+            console.log('='.repeat(60) + '\n');
         });
     } catch (error) {
         logger.error('Unable to connect to the database:', error);

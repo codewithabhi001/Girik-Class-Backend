@@ -1,0 +1,24 @@
+/health:
+  get:
+    tags: [Public]
+    summary: Health Check
+    description: System health - no auth required
+    x-roles: [PUBLIC]
+    security: []
+    responses:
+      '200':
+        description: Service is UP
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "UP"
+                timestamp:
+                  type: string
+                  format: date-time
+            example:
+              status: "UP"
+              timestamp: "2026-02-12T10:00:00.000Z"

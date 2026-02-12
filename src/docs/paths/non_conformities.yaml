@@ -1,0 +1,71 @@
+/non-conformities:
+  post:
+    tags: [Non-Conformities]
+    summary: Create NC
+    x-roles: [SURVEYOR, TO]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [job_id, description, severity]
+            properties:
+              job_id:
+                $ref: '#/components/schemas/UUID'
+              description:
+                type: string
+              severity:
+                type: string
+                enum: [MINOR, MAJOR, CRITICAL]
+          example:
+            job_id: "550e8400-e29b-41d4-a716-446655440000"
+            description: "Crack found on hull plate"
+            severity: "MAJOR"
+    responses:
+      '201':
+        description: NC created
+
+/non-conformities/{id}/close:
+  put:
+    tags: [Non-Conformities]
+    summary: Close NC
+    x-roles: [TM, TO]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [closure_remarks]
+            properties:
+              closure_remarks:
+                type: string
+          example:
+            closure_remarks: "Repair completed and verified"
+    responses:
+      '200':
+        description: NC closed
+
+/non-conformities/job/{jobId}:
+  get:
+    tags: [Non-Conformities]
+    summary: Get NCs by Job
+    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    parameters:
+      - name: jobId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: NCs for job

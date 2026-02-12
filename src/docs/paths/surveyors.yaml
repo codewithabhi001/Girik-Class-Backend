@@ -1,0 +1,220 @@
+# Surveyor Apply - PUBLIC (no auth), multipart
+/surveyors/apply:
+  post:
+    tags: [Surveyors]
+    summary: Surveyor Apply
+    description: "Public endpoint - Apply to become a surveyor. Upload CV, ID proof, certificates."
+    x-roles: [PUBLIC]
+    security: []
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required:
+              - full_name
+              - email
+              - phone
+              - nationality
+              - qualification
+              - years_of_experience
+            properties:
+              full_name:
+                type: string
+                example: "John Doe"
+              email:
+                type: string
+                format: email
+                example: "john.doe@example.com"
+              phone:
+                type: string
+                example: "+1-234-567-8900"
+              nationality:
+                type: string
+                example: "United Kingdom"
+              qualification:
+                type: string
+                example: "Master Mariner (Class 1)"
+              years_of_experience:
+                type: integer
+                example: 12
+              cv:
+                type: string
+                format: binary
+                description: CV/Resume PDF
+              id_proof:
+                type: string
+                format: binary
+                description: ID proof document
+              certificates:
+                type: array
+                items:
+                  type: string
+                  format: binary
+                description: Qualification certificates (max 5)
+    responses:
+      '201':
+        description: Application submitted
+        content:
+          application/json:
+            example:
+              success: true
+              data:
+                id: "550e8400-e29b-41d4-a716-446655440000"
+                status: "PENDING"
+      '400':
+        $ref: '#/components/responses/BadRequest'
+
+/surveyors:
+  post:
+    tags: [Surveyors]
+    summary: Create Surveyor
+    x-roles: [ADMIN, TM]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserCreateRequest'
+    responses:
+      '201':
+        description: Surveyor created
+      '400':
+        $ref: '#/components/responses/BadRequest'
+
+/surveyors/applications:
+  get:
+    tags: [Surveyors]
+    summary: List Surveyor Applications
+    x-roles: [ADMIN, TM]
+    responses:
+      '200':
+        description: List of applications
+
+/surveyors/applications/{id}/review:
+  put:
+    tags: [Surveyors]
+    summary: Review Application
+    x-roles: [ADMIN, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status:
+                type: string
+                enum: [APPROVED, REJECTED, DOCUMENTS_REQUIRED]
+              remarks:
+                type: string
+          example:
+            status: "APPROVED"
+            remarks: "Documents verified"
+    responses:
+      '200':
+        description: Application reviewed
+
+/surveyors/{id}/profile:
+  get:
+    tags: [Surveyors]
+    summary: Get Surveyor Profile
+    x-roles: [ADMIN, TM, SURVEYOR]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Surveyor profile
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+  put:
+    tags: [Surveyors]
+    summary: Update Surveyor Profile
+    x-roles: [ADMIN, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              license_number:
+                type: string
+              status:
+                type: string
+                enum: [ACTIVE, INACTIVE]
+          example:
+            license_number: "SURV-002"
+            status: "ACTIVE"
+    responses:
+      '200':
+        description: Profile updated
+
+/surveyors/availability:
+  post:
+    tags: [Surveyors]
+    summary: Update Availability
+    x-roles: [SURVEYOR]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+    responses:
+      '200':
+        description: Availability updated
+
+/surveyors/location:
+  post:
+    tags: [Surveyors]
+    summary: Report Location
+    x-roles: [SURVEYOR]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              latitude:
+                type: number
+              longitude:
+                type: number
+    responses:
+      '200':
+        description: Location reported
+
+/surveyors/{id}/location-history:
+  get:
+    tags: [Surveyors]
+    summary: Get GPS History
+    x-roles: [ADMIN, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Location history

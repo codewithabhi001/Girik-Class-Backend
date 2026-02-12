@@ -11,7 +11,8 @@ export const getEntityDocuments = async (entityType, entityId) => {
 };
 
 export const uploadEntityDocument = async (entityType, entityId, file, userId) => {
-    const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype);
+    const folder = `${s3Service.UPLOAD_FOLDERS.DOCUMENTS}/${String(entityType).toLowerCase()}`;
+    const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, folder);
 
     return await Document.create({
         entity_type: entityType,

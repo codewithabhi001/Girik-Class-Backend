@@ -1,0 +1,129 @@
+/auth/login:
+  post:
+    tags: [Auth]
+    summary: Login
+    description: Authenticate and receive JWT token
+    x-roles: [PUBLIC]
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoginRequest'
+          example:
+            email: "admin@girik.com"
+            password: "admin123"
+    responses:
+      '200':
+        description: Login successful
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginResponse'
+            example:
+              success: true
+              data:
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                refreshToken: "refresh_token_here"
+                user:
+                  id: "550e8400-e29b-41d4-a716-446655440000"
+                  email: "admin@girik.com"
+                  name: "Admin User"
+                  role: "ADMIN"
+      '401':
+        description: Invalid credentials
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            example:
+              success: false
+              message: "Invalid email or password"
+      '400':
+        $ref: '#/components/responses/BadRequest'
+
+/auth/logout:
+  post:
+    tags: [Auth]
+    summary: Logout
+    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT]
+    responses:
+      '200':
+        description: Logged out
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+/auth/forgot-password:
+  post:
+    tags: [Auth]
+    summary: Forgot Password
+    x-roles: [PUBLIC]
+    security: []
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [email]
+            properties:
+              email:
+                type: string
+                format: email
+          example:
+            email: "admin@girik.com"
+    responses:
+      '200':
+        description: Reset link sent
+      '400':
+        $ref: '#/components/responses/BadRequest'
+
+/auth/reset-password:
+  post:
+    tags: [Auth]
+    summary: Reset Password
+    x-roles: [PUBLIC]
+    security: []
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [token, newPassword]
+            properties:
+              token:
+                type: string
+              newPassword:
+                type: string
+                format: password
+          example:
+            token: "RESET_TOKEN_FROM_EMAIL"
+            newPassword: "NewSecurePass123!"
+    responses:
+      '200':
+        description: Password reset
+      '400':
+        $ref: '#/components/responses/BadRequest'
+
+/auth/refresh-token:
+  post:
+    tags: [Auth]
+    summary: Refresh Token
+    x-roles: [PUBLIC]
+    security: []
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [token]
+            properties:
+              token:
+                type: string
+          example:
+            token: "{{refresh_token}}"
+    responses:
+      '200':
+        description: New tokens
+      '401':
+        $ref: '#/components/responses/Unauthorized'

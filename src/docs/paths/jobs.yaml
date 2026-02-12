@@ -1,0 +1,440 @@
+/jobs:
+  get:
+    tags: [Jobs]
+    summary: List Jobs
+    description: List jobs (filtered by role - CLIENT sees own, SURVEYOR sees assigned)
+    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 10
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum: [CREATED, GM_APPROVED, TM_PRE_APPROVED, ASSIGNED, SURVEY_DONE, TO_APPROVED, TM_FINAL, PAYMENT_DONE, CERTIFIED, REJECTED]
+    responses:
+      '200':
+        description: List of jobs
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuccessResponse'
+            example:
+              success: true
+              data:
+                - id: "550e8400-e29b-41d4-a716-446655440000"
+                  vessel_id: "660e8400-e29b-41d4-a716-446655440001"
+                  job_status: "ASSIGNED"
+                  target_date: "2026-03-15"
+                  vessel:
+                    vessel_name: "SEA MAJESTY"
+                    imo_number: "IMO9876543"
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+
+  post:
+    tags: [Jobs]
+    summary: Create Job
+    x-roles: [ADMIN, GM, CLIENT]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/JobCreateRequest'
+          example:
+            vessel_id: "550e8400-e29b-41d4-a716-446655440000"
+            certificate_type_id: "660e8400-e29b-41d4-a716-446655440001"
+            reason: "Annual survey and class renewal"
+            target_port: "Port of Singapore"
+            target_date: "2026-03-15"
+    responses:
+      '201':
+        description: Job created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuccessResponse'
+            example:
+              success: true
+              data:
+                id: "770e8400-e29b-41d4-a716-446655440002"
+                vessel_id: "550e8400-e29b-41d4-a716-446655440000"
+                certificate_type_id: "660e8400-e29b-41d4-a716-446655440001"
+                job_status: "CREATED"
+                target_port: "Port of Singapore"
+                target_date: "2026-03-15"
+      '400':
+        $ref: '#/components/responses/BadRequest'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+/jobs/{id}:
+  get:
+    tags: [Jobs]
+    summary: Get Job by ID
+    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Job details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuccessResponse'
+            example:
+              success: true
+              data:
+                id: "550e8400-e29b-41d4-a716-446655440000"
+                vessel_id: "660e8400-e29b-41d4-a716-446655440001"
+                job_status: "ASSIGNED"
+                reason: "Annual survey"
+                target_port: "Port of Singapore"
+                target_date: "2026-03-15"
+                vessel:
+                  vessel_name: "SEA MAJESTY"
+                  imo_number: "IMO9876543"
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/jobs/{id}/status:
+  put:
+    tags: [Jobs]
+    summary: Update Job Status
+    x-roles: [ADMIN, GM, TM, TO]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/JobStatusUpdateRequest'
+          example:
+            status: "ASSIGNED"
+            remarks: "Job assigned to surveyor"
+    responses:
+      '200':
+        description: Status updated
+      '400':
+        $ref: '#/components/responses/BadRequest'
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/jobs/{id}/assign:
+  put:
+    tags: [Jobs]
+    summary: Assign Surveyor
+    x-roles: [ADMIN, GM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/JobAssignRequest'
+          example:
+            surveyorId: "770e8400-e29b-41d4-a716-446655440002"
+    responses:
+      '200':
+        description: Surveyor assigned
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/jobs/{id}/reassign:
+  put:
+    tags: [Jobs]
+    summary: Reassign Surveyor
+    x-roles: [GM, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/JobReassignRequest'
+          example:
+            surveyorId: "770e8400-e29b-41d4-a716-446655440002"
+            reason: "Original surveyor unavailable"
+    responses:
+      '200':
+        description: Surveyor reassigned
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/jobs/{id}/escalate:
+  put:
+    tags: [Jobs]
+    summary: Escalate Job
+    x-roles: [GM, TM, TO]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/JobEscalateRequest'
+          example:
+            reason: "Urgent client request"
+            target_role: "GM"
+    responses:
+      '200':
+        description: Job escalated
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/jobs/{id}/cancel:
+  put:
+    tags: [Jobs]
+    summary: Cancel Job
+    x-roles: [ADMIN, GM, TM, CLIENT]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/JobActionRequest'
+          example:
+            reason: "Client requested cancellation"
+    responses:
+      '200':
+        description: Job cancelled
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/jobs/{id}/hold:
+  put:
+    tags: [Jobs]
+    summary: Hold Job
+    x-roles: [ADMIN, GM, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/JobActionRequest'
+          example:
+            reason: "Awaiting documents"
+    responses:
+      '200':
+        description: Job held
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/jobs/{id}/resume:
+  put:
+    tags: [Jobs]
+    summary: Resume Job
+    x-roles: [ADMIN, GM, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/JobActionRequest'
+          example:
+            reason: "Documents received"
+    responses:
+      '200':
+        description: Job resumed
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/jobs/{id}/clone:
+  post:
+    tags: [Jobs]
+    summary: Clone Job
+    x-roles: [ADMIN, GM, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '201':
+        description: Job cloned
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/jobs/{id}/priority:
+  put:
+    tags: [Jobs]
+    summary: Update Job Priority
+    x-roles: [ADMIN, GM, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              priority:
+                type: string
+    responses:
+      '200':
+        description: Priority updated
+
+/jobs/{id}/notes:
+  post:
+    tags: [Jobs]
+    summary: Add Internal Note
+    x-roles: [ADMIN, GM, TM, TO]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              note:
+                type: string
+    responses:
+      '201':
+        description: Note added
+
+/jobs/{id}/messages/external:
+  get:
+    tags: [Jobs]
+    summary: Get External Messages
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: External messages
+
+/jobs/{id}/messages/internal:
+  get:
+    tags: [Jobs]
+    summary: Get Internal Messages
+    x-roles: [ADMIN, GM, TM, TO]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Internal messages
+
+/jobs/{id}/messages:
+  post:
+    tags: [Jobs]
+    summary: Send Message
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              attachment:
+                type: string
+                format: binary
+    responses:
+      '201':
+        description: Message sent
+
+/jobs/{id}/history:
+  get:
+    tags: [Jobs]
+    summary: Get Job History
+    x-roles: [ADMIN, GM, TM, TO]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Job status history
+      '404':
+        $ref: '#/components/responses/NotFound'

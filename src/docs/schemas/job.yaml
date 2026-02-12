@@ -1,0 +1,125 @@
+# Job schemas
+JobCreateRequest:
+  type: object
+  required:
+    - vessel_id
+    - certificate_type_id
+    - reason
+    - target_port
+    - target_date
+  properties:
+    vessel_id:
+      $ref: '#/components/schemas/UUID'
+      example: "550e8400-e29b-41d4-a716-446655440000"
+    certificate_type_id:
+      $ref: '#/components/schemas/UUID'
+      example: "660e8400-e29b-41d4-a716-446655440001"
+    reason:
+      type: string
+      example: "Annual survey and class renewal"
+    target_port:
+      type: string
+      example: "Port of Singapore"
+    target_date:
+      type: string
+      format: date
+      example: "2026-03-15"
+
+JobAssignRequest:
+  type: object
+  required:
+    - surveyorId
+  properties:
+    surveyorId:
+      $ref: '#/components/schemas/UUID'
+      example: "770e8400-e29b-41d4-a716-446655440002"
+
+JobStatusUpdateRequest:
+  type: object
+  properties:
+    status:
+      type: string
+      enum: [CREATED, GM_APPROVED, TM_PRE_APPROVED, ASSIGNED, SURVEY_DONE, TO_APPROVED, TM_FINAL, PAYMENT_DONE, CERTIFIED, REJECTED]
+      example: "ASSIGNED"
+    remarks:
+      type: string
+      example: "Job assigned to surveyor"
+
+JobReassignRequest:
+  type: object
+  required:
+    - surveyorId
+    - reason
+  properties:
+    surveyorId:
+      $ref: '#/components/schemas/UUID'
+    reason:
+      type: string
+      example: "Original surveyor unavailable"
+
+JobEscalateRequest:
+  type: object
+  required:
+    - reason
+    - target_role
+  properties:
+    reason:
+      type: string
+      example: "Urgent client request"
+    target_role:
+      type: string
+      enum: [GM, ADMIN]
+      example: "GM"
+
+JobActionRequest:
+  type: object
+  properties:
+    reason:
+      type: string
+      example: "Client requested cancellation"
+
+VesselSummary:
+  type: object
+  properties:
+    id:
+      $ref: '#/components/schemas/UUID'
+    vessel_name:
+      type: string
+      example: "SEA MAJESTY"
+    imo_number:
+      type: string
+      example: "IMO9876543"
+    flag_state:
+      type: string
+      example: "Panama"
+
+JobResponse:
+  type: object
+  properties:
+    id:
+      $ref: '#/components/schemas/UUID'
+    vessel_id:
+      $ref: '#/components/schemas/UUID'
+    certificate_type_id:
+      $ref: '#/components/schemas/UUID'
+    reason:
+      type: string
+    target_port:
+      type: string
+    target_date:
+      type: string
+      format: date
+    job_status:
+      type: string
+      enum: [CREATED, GM_APPROVED, TM_PRE_APPROVED, ASSIGNED, SURVEY_DONE, TO_APPROVED, TM_FINAL, PAYMENT_DONE, CERTIFIED, REJECTED]
+    vessel:
+      $ref: '#/components/schemas/VesselSummary'
+    surveyor:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        name:
+          type: string
+    createdAt:
+      $ref: '#/components/schemas/DateTime'

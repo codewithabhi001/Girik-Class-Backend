@@ -1,0 +1,78 @@
+# Certificate schemas
+CertificateGenerateRequest:
+  type: object
+  required:
+    - job_id
+  properties:
+    job_id:
+      $ref: '#/components/schemas/UUID'
+      example: "550e8400-e29b-41d4-a716-446655440000"
+    validity_years:
+      type: integer
+      minimum: 1
+      maximum: 5
+      example: 1
+
+CertificateActionRequest:
+  type: object
+  required:
+    - reason
+  properties:
+    reason:
+      type: string
+      example: "Administrative suspension"
+
+CertificateRenewRequest:
+  type: object
+  required:
+    - validity_years
+    - reason
+  properties:
+    validity_years:
+      type: integer
+      minimum: 1
+      maximum: 5
+      example: 2
+    reason:
+      type: string
+      example: "Standard renewal"
+
+CertificateResponse:
+  type: object
+  properties:
+    id:
+      $ref: '#/components/schemas/UUID'
+    job_id:
+      $ref: '#/components/schemas/UUID'
+    vessel_id:
+      $ref: '#/components/schemas/UUID'
+    certificate_type_id:
+      $ref: '#/components/schemas/UUID'
+    certificate_number:
+      type: string
+      example: "GIR-CERT-2026-001"
+    issue_date:
+      type: string
+      format: date
+    expiry_date:
+      type: string
+      format: date
+    status:
+      type: string
+      enum: [VALID, EXPIRED, SUSPENDED, REVOKED]
+    qr_code_url:
+      type: string
+    pdf_file_url:
+      type: string
+
+CertificateTypeResponse:
+  type: object
+  properties:
+    id:
+      $ref: '#/components/schemas/UUID'
+    name:
+      type: string
+    code:
+      type: string
+    description:
+      type: string

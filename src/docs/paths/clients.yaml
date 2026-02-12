@@ -1,0 +1,141 @@
+/clients/profile:
+  get:
+    tags: [Clients]
+    summary: Get Client Profile
+    x-roles: [CLIENT]
+    responses:
+      '200':
+        description: Client profile
+  put:
+    tags: [Clients]
+    summary: Update Client Profile
+    x-roles: [CLIENT]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+    responses:
+      '200':
+        description: Profile updated
+
+/clients/dashboard:
+  get:
+    tags: [Clients]
+    summary: Client Dashboard
+    x-roles: [CLIENT]
+    responses:
+      '200':
+        description: Client dashboard data
+
+/clients:
+  post:
+    tags: [Clients]
+    summary: Create Client
+    x-roles: [ADMIN, GM, TM]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [company_name, company_code, email]
+            properties:
+              company_name:
+                type: string
+                example: "Acme Shipping Ltd"
+              company_code:
+                type: string
+                example: "ACME-01"
+              email:
+                type: string
+                format: email
+              address:
+                type: string
+              country:
+                type: string
+              phone:
+                type: string
+              contact_person_name:
+                type: string
+              contact_person_email:
+                type: string
+              status:
+                type: string
+                enum: [ACTIVE, INACTIVE]
+              user:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  email:
+                    type: string
+                  password:
+                    type: string
+                  role:
+                    type: string
+          example:
+            company_name: "Acme Shipping Ltd"
+            company_code: "ACME-01"
+            email: "contact@acme.com"
+            address: "123 Harbour Road"
+            country: "Singapore"
+    responses:
+      '201':
+        description: Client created
+  get:
+    tags: [Clients]
+    summary: List Clients
+    x-roles: [ADMIN, GM, TM, TO]
+    responses:
+      '200':
+        description: List of clients
+
+/clients/{id}:
+  get:
+    tags: [Clients]
+    summary: Get Client by ID
+    x-roles: [ADMIN, GM, TM, TO]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Client details
+  put:
+    tags: [Clients]
+    summary: Update Client
+    x-roles: [ADMIN, GM, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+    responses:
+      '200':
+        description: Client updated
+  delete:
+    tags: [Clients]
+    summary: Delete Client
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Client deleted

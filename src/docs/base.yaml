@@ -1,0 +1,133 @@
+openapi: 3.0.0
+info:
+  title: Girik Marine Backend API
+  version: 1.0.0
+  description: |
+    Production API documentation for the Girik Marine Vessel Certification and Survey Management System.
+
+    ## Authentication
+    All endpoints (except Auth and Public) require Bearer JWT. Use `POST /auth/login` and set the token in **Authorize**.
+
+    ## Role-Based Access
+    Each endpoint shows `x-roles` — the roles allowed to call it. Your Swagger view is filtered to your role.
+
+    ## Copy-Paste Ready
+    Every request body includes an **example** you can copy and modify for "Try it out".
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local Development
+  - url: /api/v1
+    description: Current Host (Relative)
+
+tags:
+  - name: Auth
+    description: Authentication & Authorization
+  - name: Jobs
+    description: Job lifecycle management
+  - name: Vessels
+    description: Vessel registry & management
+  - name: Certificates
+    description: Certificate issuance & validation
+  - name: Payments
+    description: Invoicing & payment processing
+  - name: Dashboard
+    description: Role-specific dashboards
+  - name: Clients
+    description: Client & company management
+  - name: Public
+    description: Public verification endpoints (no auth)
+  - name: Surveyors
+    description: Surveyor applications & profile
+  - name: Surveys
+    description: Survey reports & inspections
+  - name: Checklists
+    description: Job inspection checklists
+  - name: Users
+    description: User management
+  - name: Non-Conformities
+    description: NC management
+  - name: TOCA
+    description: Transfer of Class Agreement
+  - name: Flags
+    description: Flag administration
+  - name: Approvals
+    description: Approval workflow
+  - name: Notifications
+    description: System notifications
+  - name: Documents
+    description: Document storage
+  - name: System
+    description: System config & admin
+  - name: Reports
+    description: Management reports
+  - name: Activity Requests
+    description: Client activity requests
+  - name: Providers
+    description: Service providers
+  - name: Feedback
+    description: Customer feedback
+  - name: Change Requests
+    description: Entity change requests
+  - name: Certificate Templates
+    description: Certificate templates
+  - name: Incidents
+    description: Incident reporting
+  - name: Support
+    description: Support tickets
+  - name: Search
+    description: Global search
+  - name: Compliance
+    description: Compliance & GDPR
+  - name: Mobile
+    description: Mobile app sync
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Use token from POST /auth/login
+
+  responses:
+    Unauthorized:
+      description: Unauthorized - Token missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "Unauthorized - Token missing or invalid"
+    Forbidden:
+      description: Forbidden - Insufficient role
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "Forbidden - You do not have the required role"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "Resource not found"
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "Validation Error"
+            error: "vessel_id is required"
+
+security:
+  - bearerAuth: []

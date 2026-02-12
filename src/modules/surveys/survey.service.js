@@ -20,7 +20,7 @@ export const submitSurveyReport = async (data, file, userId) => {
     // Upload Photo
     let photoUrl = null;
     if (file) {
-        photoUrl = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype);
+        photoUrl = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PHOTO);
     }
 
     // Save Report
@@ -93,7 +93,7 @@ export const streamLocation = async (jobId, data, userId) => {
 };
 
 export const uploadProof = async (jobId, file, userId) => {
-    const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype);
+    const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PROOF);
     return { url };
 };
 

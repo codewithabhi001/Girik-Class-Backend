@@ -1,0 +1,59 @@
+/mobile/sync:
+  post:
+    tags: [Mobile]
+    summary: Sync Data
+    x-roles: [SURVEYOR]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              last_sync_timestamp:
+                type: string
+                format: date-time
+              offline_data:
+                type: object
+          example:
+            last_sync_timestamp: "2026-02-12T10:00:00.000Z"
+            offline_data: {}
+    responses:
+      '200':
+        description: Sync completed
+
+/mobile/offline/jobs:
+  get:
+    tags: [Mobile]
+    summary: Get Offline Jobs
+    x-roles: [SURVEYOR]
+    responses:
+      '200':
+        description: Jobs for offline use
+
+/mobile/offline/surveys:
+  post:
+    tags: [Mobile]
+    summary: Submit Offline Surveys
+    x-roles: [SURVEYOR]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              surveys:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    job_id:
+                      type: string
+                    gps_latitude:
+                      type: number
+                    gps_longitude:
+                      type: number
+                    survey_statement:
+                      type: string
+    responses:
+      '201':
+        description: Surveys submitted

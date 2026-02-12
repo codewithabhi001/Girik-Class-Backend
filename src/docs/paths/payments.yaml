@@ -1,0 +1,152 @@
+/payments:
+  get:
+    tags: [Payments]
+    summary: List Payments
+    x-roles: [ADMIN, GM, TM, CLIENT]
+    parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+      - name: limit
+        in: query
+        schema:
+          type: integer
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum: [UNPAID, PAID, ON_HOLD]
+    responses:
+      '200':
+        description: List of payments
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuccessResponse'
+            example:
+              success: true
+              data:
+                - id: "550e8400-e29b-41d4-a716-446655440000"
+                  invoice_number: "INV-2026-001"
+                  amount: 3500
+                  payment_status: "UNPAID"
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+/payments/summary:
+  get:
+    tags: [Payments]
+    summary: Financial Summary
+    x-roles: [ADMIN, GM, CLIENT]
+    responses:
+      '200':
+        description: Financial summary
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+/payments/invoice:
+  post:
+    tags: [Payments]
+    summary: Create Invoice
+    x-roles: [ADMIN, GM, TM]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PaymentInvoiceRequest'
+          example:
+            job_id: "550e8400-e29b-41d4-a716-446655440000"
+            amount: 3500
+            currency: "USD"
+    responses:
+      '201':
+        description: Invoice created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuccessResponse'
+            example:
+              success: true
+              data:
+                id: "660e8400-e29b-41d4-a716-446655440001"
+                invoice_number: "INV-2026-001"
+                amount: 3500
+                payment_status: "UNPAID"
+      '400':
+        $ref: '#/components/responses/BadRequest'
+
+/payments/writeoff:
+  post:
+    tags: [Payments]
+    summary: Write Off Payment
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PaymentWriteoffRequest'
+          example:
+            paymentId: "550e8400-e29b-41d4-a716-446655440000"
+            reason: "Bad debt"
+    responses:
+      '200':
+        description: Payment written off
+      '400':
+        $ref: '#/components/responses/BadRequest'
+
+/payments/{id}:
+  get:
+    tags: [Payments]
+    summary: Get Payment by ID
+    x-roles: [ADMIN, GM, TM, CLIENT]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Payment details
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/payments/{id}/pay:
+  put:
+    tags: [Payments]
+    summary: Mark Payment as Paid
+    x-roles: [ADMIN, GM, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Payment marked as paid
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+/payments/{id}/ledger:
+  get:
+    tags: [Payments]
+    summary: Get Payment Ledger
+    x-roles: [ADMIN, GM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Ledger entries
+      '404':
+        $ref: '#/components/responses/NotFound'

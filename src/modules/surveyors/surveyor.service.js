@@ -21,13 +21,14 @@ export const applySurveyor = async (data, files) => {
     });
     if (existingApp) throw { statusCode: 400, message: 'An application is already under review.' };
 
-    const cvUrl = await s3Service.uploadFile(files.cv[0].buffer, files.cv[0].originalname, files.cv[0].mimetype);
-    const idProofUrl = await s3Service.uploadFile(files.id_proof[0].buffer, files.id_proof[0].originalname, files.id_proof[0].mimetype);
+    const folder = s3Service.UPLOAD_FOLDERS.SURVEYOR;
+    const cvUrl = await s3Service.uploadFile(files.cv[0].buffer, files.cv[0].originalname, files.cv[0].mimetype, `${folder}/cv`);
+    const idProofUrl = await s3Service.uploadFile(files.id_proof[0].buffer, files.id_proof[0].originalname, files.id_proof[0].mimetype, `${folder}/id-proof`);
 
     let certUrls = [];
     if (files.certificates) {
         for (const file of files.certificates) {
-            const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype);
+            const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, `${folder}/certificates`);
             certUrls.push(url);
         }
     }
@@ -69,13 +70,17 @@ export const reviewApplication = async (id, status, remarks, reviewerUserId) => 
 
         await SurveyorProfile.create({
             user_id: user.id,
+            surveyor_application_id: app.id,
             license_number: `SURV-${uuidv4().substring(0, 6).toUpperCase()}`,
             valid_from: new Date(),
             status: 'ACTIVE'
         });
 
+        await app.update({ status, tm_remarks: remarks, approved_user_id: user.id });
+
         // Log credentials for demo/dev purposes if no mailer configured
         console.log(`Surveyor Approved: ${app.email} / ${randomPassword}`);
+        return app;
     }
 
     await app.update({ status, tm_remarks: remarks });
@@ -104,7 +109,18 @@ export const createSurveyor = async (data) => {
 };
 
 export const getProfile = async (id) => {
-    const profile = await SurveyorProfile.findOne({ where: { user_id: id }, include: ['User'] });
+    const profile = await SurveyorProfile.findOne({
+        where: { user_id: id },
+        include: [
+            { model: User, attributes: ['id', 'name', 'email', 'phone', 'role', 'status'] },
+            {
+                model: SurveyorApplication,
+                as: 'application',
+                required: false,
+                attributes: ['id', 'full_name', 'email', 'phone', 'nationality', 'qualification', 'years_of_experience', 'cv_file_url', 'id_proof_url', 'certificate_files_url', 'status', 'tm_remarks']
+            }
+        ]
+    });
     if (!profile) throw { statusCode: 404, message: 'Profile not found' };
     return profile;
 };

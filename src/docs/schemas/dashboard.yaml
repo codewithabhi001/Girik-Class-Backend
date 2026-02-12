@@ -1,0 +1,23 @@
+# Dashboard schemas
+DashboardResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+      example: true
+    data:
+      type: object
+      description: Role-specific dashboard summary
+      properties:
+        jobsPending:
+          type: integer
+          example: 5
+        jobsInProgress:
+          type: integer
+          example: 3
+        certificatesExpiring:
+          type: integer
+          example: 2
+        paymentsDue:
+          type: integer
+          example: 1

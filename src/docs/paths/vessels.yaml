@@ -1,0 +1,134 @@
+/vessels:
+  get:
+    tags: [Vessels]
+    summary: List Vessels
+    description: List vessels (CLIENT sees only their vessels)
+    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 10
+      - name: client_id
+        in: query
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: List of vessels
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuccessResponse'
+            example:
+              success: true
+              data:
+                - id: "550e8400-e29b-41d4-a716-446655440000"
+                  vessel_name: "SEA MAJESTY"
+                  imo_number: "IMO9876543"
+                  flag_state: "Panama"
+                  ship_type: "Cargo"
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+  post:
+    tags: [Vessels]
+    summary: Create Vessel
+    x-roles: [ADMIN, GM, TM]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/VesselCreateRequest'
+          example:
+            client_id: "550e8400-e29b-41d4-a716-446655440000"
+            vessel_name: "SEA MAJESTY"
+            imo_number: "IMO9876543"
+            flag_state: "Panama"
+            ship_type: "Cargo"
+            year_built: 2015
+            gross_tonnage: 25000
+            net_tonnage: 12000
+    responses:
+      '201':
+        description: Vessel created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuccessResponse'
+            example:
+              success: true
+              data:
+                id: "660e8400-e29b-41d4-a716-446655440001"
+                vessel_name: "SEA MAJESTY"
+                imo_number: "IMO9876543"
+                flag_state: "Panama"
+      '400':
+        $ref: '#/components/responses/BadRequest'
+
+/vessels/{id}:
+  get:
+    tags: [Vessels]
+    summary: Get Vessel by ID
+    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Vessel details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuccessResponse'
+            example:
+              success: true
+              data:
+                id: "550e8400-e29b-41d4-a716-446655440000"
+                vessel_name: "SEA MAJESTY"
+                imo_number: "IMO9876543"
+                flag_state: "Panama"
+                ship_type: "Cargo"
+                Client:
+                  company_name: "Acme Shipping Ltd"
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+  put:
+    tags: [Vessels]
+    summary: Update Vessel
+    x-roles: [ADMIN, GM, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/VesselUpdateRequest'
+          example:
+            vessel_name: "SEA MAJESTY II"
+            flag_state: "Liberia"
+    responses:
+      '200':
+        description: Vessel updated
+      '400':
+        $ref: '#/components/responses/BadRequest'
+      '404':
+        $ref: '#/components/responses/NotFound'
