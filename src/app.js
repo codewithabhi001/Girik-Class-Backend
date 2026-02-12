@@ -24,8 +24,9 @@ const app = express();
 // app.use(helmet()); 
 
 // CORS
+// CORS
 app.use(cors({
-    origin: 'http://localhost:5173', // Adjust to frontend URL
+    origin: ['http://localhost:5173', 'http://13.239.63.143:5173'], // Allow Local & Production Frontend
     credentials: true
 }));
 

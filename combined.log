@@ -3364,3 +3364,29 @@
 {"level":"info","message":"Syncing database models...","timestamp":"2026-02-12T12:32:00.973Z"}
 {"level":"info","message":"Database connected successfully.","timestamp":"2026-02-12T12:32:22.105Z"}
 {"level":"info","message":"Syncing database models...","timestamp":"2026-02-12T12:32:22.107Z"}
+{"level":"info","message":"Database models ready.","timestamp":"2026-02-12T12:34:38.419Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2026-02-12T12:34:38.436Z"}
+{"level":"info","message":"Swagger API Docs: http://localhost:3000/api-docs","timestamp":"2026-02-12T12:34:38.436Z"}
+{"level":"info","message":"Database connected successfully.","timestamp":"2026-02-12T12:34:52.392Z"}
+{"level":"info","message":"Syncing database models...","timestamp":"2026-02-12T12:34:52.394Z"}
+{"level":"info","message":"Database models ready.","timestamp":"2026-02-12T12:35:10.393Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2026-02-12T12:35:10.412Z"}
+{"level":"info","message":"Swagger API Docs: http://localhost:3000/api-docs","timestamp":"2026-02-12T12:35:10.412Z"}
+{"level":"info","message":"::1 - - [12/Feb/2026:12:35:23 +0000] \"GET /api-docs/ HTTP/1.1\" 304 - \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-12T12:35:23.757Z"}
+{"level":"info","message":"::1 - - [12/Feb/2026:12:35:23 +0000] \"GET /api-docs-json HTTP/1.1\" 304 - \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-12T12:35:23.984Z"}
+{"level":"info","message":"::1 - - [12/Feb/2026:12:36:19 +0000] \"GET /api-docs/ HTTP/1.1\" 304 - \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-12T12:36:19.762Z"}
+{"level":"info","message":"::1 - - [12/Feb/2026:12:36:19 +0000] \"GET /api-docs-json HTTP/1.1\" 304 - \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-12T12:36:19.824Z"}
+{"level":"info","message":"Database connected successfully.","timestamp":"2026-02-12T12:37:45.969Z"}
+{"level":"info","message":"Syncing database models...","timestamp":"2026-02-12T12:37:45.970Z"}
+{"level":"info","message":"Database connected successfully.","timestamp":"2026-02-12T12:38:33.090Z"}
+{"level":"info","message":"Syncing database models...","timestamp":"2026-02-12T12:38:33.092Z"}
+{"level":"info","message":"Database connected successfully.","timestamp":"2026-02-12T12:38:52.514Z"}
+{"level":"info","message":"Syncing database models...","timestamp":"2026-02-12T12:38:52.516Z"}
+{"level":"info","message":"Database connected successfully.","timestamp":"2026-02-12T12:39:22.963Z"}
+{"level":"info","message":"Syncing database models...","timestamp":"2026-02-12T12:39:22.965Z"}
+{"level":"info","message":"Database models ready.","timestamp":"2026-02-12T12:39:53.802Z"}
+{"level":"info","message":"Server is running on port 3000","timestamp":"2026-02-12T12:39:53.820Z"}
+{"level":"info","message":"Swagger API Docs: http://localhost:3000/api-docs","timestamp":"2026-02-12T12:39:53.820Z"}
+{"level":"info","message":"::1 - - [12/Feb/2026:12:39:59 +0000] \"GET /api-docs/ HTTP/1.1\" 200 5742 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-12T12:39:59.708Z"}
+{"level":"info","message":"::1 - - [12/Feb/2026:12:39:59 +0000] \"GET /api-docs-json HTTP/1.1\" 200 85033 \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-12T12:39:59.796Z"}
+{"level":"info","message":"::1 - - [12/Feb/2026:12:39:59 +0000] \"GET /favicon.ico HTTP/1.1\" 404 150 \"http://localhost:3000/api-docs/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36\"","timestamp":"2026-02-12T12:39:59.802Z"}

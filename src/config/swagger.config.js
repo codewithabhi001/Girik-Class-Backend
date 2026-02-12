@@ -23,6 +23,10 @@ if (isProduction || process.env.USE_SERVER_IP === 'true') {
         {
             url: `http://${SERVER_IP}:${PORT}/api/v1`,
             description: 'Production Server'
+        },
+        {
+            url: '/api/v1',
+            description: 'Current Host (Relative)'
         }
     ];
 } else {
@@ -30,6 +34,10 @@ if (isProduction || process.env.USE_SERVER_IP === 'true') {
         {
             url: `http://localhost:${PORT}/api/v1`,
             description: 'Local Development Server'
+        },
+        {
+            url: '/api/v1',
+            description: 'Current Host (Relative)'
         }
     ];
 }

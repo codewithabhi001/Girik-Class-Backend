@@ -17,7 +17,7 @@ const startServer = async () => {
         // Use migrations for schema changes in production
         if (env.nodeEnv === 'development') {
             logger.info('Syncing database models...');
-            await db.sequelize.sync({ alter: true });
+            await db.sequelize.sync({ alter: false });
         }
         logger.info('Database models ready.');
 
