@@ -1,0 +1,155 @@
+/api/v1/checklist-templates:
+  post:
+    tags: [Checklist Templates]
+    summary: Create checklist template
+    operationId: createChecklistTemplate
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name, code, sections]
+            properties:
+              name: { type: string }
+              code: { type: string }
+              description: { type: string }
+              certificate_type_id: { type: string, format: uuid }
+              sections: { type: array }
+              status: { type: string, enum: [ACTIVE, INACTIVE, DRAFT] }
+          example:
+            name: "Safety Equipment Inspection"
+            code: "SAFETY_EQUIP_001"
+            description: "Standard safety equipment checklist"
+            certificate_type_id: "01933c5e-7f2b-7a00-8000-1a2b3c4d5e6f"
+            sections:
+              - title: "Life-Saving Equipment"
+                items:
+                  - code: "LSE001"
+                    text: "Are life jackets available?"
+                    type: "YES_NO_NA"
+                  - code: "LSE002"
+                    text: "Number of life jackets"
+                    type: "NUMBER"
+            status: "ACTIVE"
+    responses:
+      "201": { description: Template created }
+      "403": { description: Forbidden }
+
+  get:
+    tags: [Checklist Templates]
+    summary: Get checklist templates
+    operationId: getChecklistTemplates
+    x-roles: [ADMIN, GM, TM, SURVEYOR]
+    parameters:
+      - name: status
+        in: query
+        schema: { type: string }
+      - name: certificate_type_id
+        in: query
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: List of templates }
+      "403": { description: Forbidden }
+
+/api/v1/checklist-templates/job/{jobId}:
+  get:
+    tags: [Checklist Templates]
+    summary: Get template for job
+    operationId: getChecklistTemplateForJob
+    x-roles: [SURVEYOR, ADMIN, GM, TM, TO]
+    parameters:
+      - name: jobId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: Template for job }
+      "403": { description: Forbidden }
+
+/api/v1/checklist-templates/{id}:
+  get:
+    tags: [Checklist Templates]
+    summary: Get template by ID
+    operationId: getChecklistTemplateById
+    x-roles: [ADMIN, GM, TM, SURVEYOR]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: Template details }
+      "403": { description: Forbidden }
+
+  put:
+    tags: [Checklist Templates]
+    summary: Update template
+    operationId: updateChecklistTemplate
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name: { type: string }
+              code: { type: string }
+              description: { type: string }
+              status: { type: string, enum: [ACTIVE, INACTIVE, DRAFT] }
+          example:
+            name: "Safety Equipment Inspection (Updated)"
+            status: "ACTIVE"
+    responses:
+      "200": { description: Template updated }
+      "403": { description: Forbidden }
+
+  delete:
+    tags: [Checklist Templates]
+    summary: Delete template
+    operationId: deleteChecklistTemplate
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: Template deleted }
+      "403": { description: Forbidden }
+
+/api/v1/checklist-templates/{id}/activate:
+  put:
+    tags: [Checklist Templates]
+    summary: Activate template
+    operationId: activateChecklistTemplate
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: Template activated }
+      "403": { description: Forbidden }
+
+/api/v1/checklist-templates/{id}/clone:
+  post:
+    tags: [Checklist Templates]
+    summary: Clone template
+    operationId: cloneChecklistTemplate
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "201": { description: Template cloned }
+      "403": { description: Forbidden }

@@ -1,0 +1,74 @@
+/api/v1/activity-requests:
+  post:
+    tags: [Activity Requests]
+    summary: Create activity request
+    operationId: createActivityRequest
+    x-roles: [CLIENT, ADMIN, GM, TM]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              job_id: { type: string, format: uuid }
+              activity_type: { type: string }
+              requested_date: { type: string, format: date }
+              notes: { type: string }
+          example:
+            job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+            activity_type: "SURVEY"
+            requested_date: "2026-03-20"
+            notes: "Prefer morning slot"
+    responses:
+      "201": { description: Request created }
+      "403": { description: Forbidden }
+
+  get:
+    tags: [Activity Requests]
+    summary: Get activity requests
+    operationId: getActivityRequests
+    x-roles: [CLIENT, ADMIN, GM, TM, TO]
+    responses:
+      "200": { description: List of requests }
+      "403": { description: Forbidden }
+
+/api/v1/activity-requests/{id}:
+  get:
+    tags: [Activity Requests]
+    summary: Get request by ID
+    operationId: getActivityRequestById
+    x-roles: [CLIENT, ADMIN, GM, TM, TO]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: Request details }
+      "403": { description: Forbidden }
+
+  put:
+    tags: [Activity Requests]
+    summary: Update request status
+    operationId: updateActivityRequestStatus
+    x-roles: [ADMIN, GM, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status: { type: string, enum: [PENDING, APPROVED, REJECTED, COMPLETED] }
+              remarks: { type: string }
+          example:
+            status: "APPROVED"
+            remarks: "Surveyor assigned"
+    responses:
+      "200": { description: Status updated }
+      "403": { description: Forbidden }

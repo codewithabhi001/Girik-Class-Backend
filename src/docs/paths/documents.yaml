@@ -1,0 +1,64 @@
+/api/v1/documents/{entityType}/{entityId}:
+  get:
+    tags: [Documents]
+    summary: Get documents
+    operationId: getDocuments
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
+    parameters:
+      - name: entityType
+        in: path
+        required: true
+        schema: { type: string }
+      - name: entityId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: List of documents }
+      "403": { description: Forbidden }
+
+  post:
+    tags: [Documents]
+    summary: Upload document
+    operationId: uploadDocument
+    x-roles: [CLIENT, ADMIN, GM, TM]
+    parameters:
+      - name: entityType
+        in: path
+        required: true
+        schema: { type: string }
+      - name: entityId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required: [file, document_type]
+            properties:
+              file: { type: string, format: binary }
+              document_type: { type: string }
+              description: { type: string }
+          example:
+            document_type: "INSPECTION_REPORT"
+            description: "Annual survey report 2026"
+    responses:
+      "201": { description: Document uploaded }
+      "403": { description: Forbidden }
+
+/api/v1/documents/{id}:
+  delete:
+    tags: [Documents]
+    summary: Delete document
+    operationId: deleteDocument
+    x-roles: [ADMIN, GM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: Document deleted }
+      "403": { description: Forbidden }

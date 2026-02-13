@@ -11,15 +11,17 @@
 import swaggerUi from 'swagger-ui-express';
 import { getSpecForRole } from '../docs/build-openapi.js';
 
-const ROLE_SLUGS = ['admin', 'gm', 'tm', 'to', 'surveyor', 'client'];
+const ROLE_SLUGS = ['admin', 'gm', 'tm', 'to', 'surveyor', 'client', 'ta', 'flag_admin'];
 
 const ROLE_MAP = {
   admin: 'ADMIN',
   gm: 'GM',
   tm: 'TM',
   to: 'TO',
+  ta: 'TA',
   surveyor: 'SURVEYOR',
   client: 'CLIENT',
+  flag_admin: 'FLAG_ADMIN',
 };
 
 /**

@@ -377,6 +377,8 @@
             properties:
               reason:
                 type: string
+          example:
+            reason: "Awaiting client confirmation"
     responses:
       "200":
         description: Job held
@@ -413,6 +415,8 @@
             properties:
               reason:
                 type: string
+          example:
+            reason: "Client confirmed. Resuming job."
     responses:
       "200":
         description: Job resumed
@@ -474,10 +478,13 @@
         application/json:
           schema:
             type: object
+            required: [priority]
             properties:
               priority:
                 type: string
                 enum: [LOW, NORMAL, HIGH, URGENT]
+          example:
+            priority: "HIGH"
     responses:
       "200":
         description: Priority updated

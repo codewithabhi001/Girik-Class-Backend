@@ -1,0 +1,62 @@
+/api/v1/flags:
+  post:
+    tags: [Flags]
+    summary: Create flag
+    operationId: createFlag
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [flag_name, country, authority_name, contact_email]
+            properties:
+              flag_name: { type: string }
+              country: { type: string }
+              authority_name: { type: string }
+              contact_email: { type: string, format: email }
+          example:
+            flag_name: "Singapore"
+            country: "Singapore"
+            authority_name: "Maritime and Port Authority"
+            contact_email: "mpa@gov.sg"
+    responses:
+      "201": { description: Flag created }
+      "403": { description: Forbidden }
+
+  get:
+    tags: [Flags]
+    summary: Get flags
+    operationId: getFlags
+    x-roles: [ADMIN, GM, TM]
+    responses:
+      "200": { description: List of flags }
+      "403": { description: Forbidden }
+
+/api/v1/flags/{id}:
+  put:
+    tags: [Flags]
+    summary: Update flag
+    operationId: updateFlag
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              flag_name: { type: string }
+              country: { type: string }
+              authority_name: { type: string }
+              contact_email: { type: string, format: email }
+          example:
+            authority_name: "Maritime and Port Authority of Singapore"
+    responses:
+      "200": { description: Flag updated }
+      "403": { description: Forbidden }

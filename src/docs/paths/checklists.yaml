@@ -1,0 +1,56 @@
+/api/v1/jobs/{jobId}/checklist:
+  get:
+    tags: [Checklists]
+    summary: Get checklist for job
+    operationId: getChecklist
+    x-roles: [ADMIN, GM, TM, TO, SURVEYOR]
+    parameters:
+      - name: jobId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: Checklist data }
+      "403": { description: Forbidden }
+
+  put:
+    tags: [Checklists]
+    summary: Submit checklist
+    operationId: submitChecklist
+    x-roles: [SURVEYOR]
+    parameters:
+      - name: jobId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [items]
+            properties:
+              items:
+                type: array
+                items:
+                  type: object
+                  required: [question_code, question_text, answer]
+                  properties:
+                    question_code: { type: string }
+                    question_text: { type: string }
+                    answer: { type: string, enum: [YES, NO, NA] }
+                    remarks: { type: string }
+          example:
+            items:
+              - question_code: "LSE001"
+                question_text: "Are life jackets available?"
+                answer: "YES"
+                remarks: ""
+              - question_code: "LSE002"
+                question_text: "Number of life jackets"
+                answer: "YES"
+                remarks: "24 units"
+    responses:
+      "200": { description: Checklist submitted }
+      "403": { description: Forbidden }

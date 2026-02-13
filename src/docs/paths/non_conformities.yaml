@@ -1,0 +1,65 @@
+/api/v1/non-conformities:
+  post:
+    tags: [Non-Conformities]
+    summary: Create NC
+    operationId: createNC
+    x-roles: [SURVEYOR, TO]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [job_id, description, severity]
+            properties:
+              job_id: { type: string, format: uuid }
+              description: { type: string }
+              severity: { type: string, enum: [MINOR, MAJOR, CRITICAL] }
+          example:
+            job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+            description: "Life jacket expiry date exceeded. Replacement required."
+            severity: "MAJOR"
+    responses:
+      "201": { description: NC created }
+      "403": { description: Forbidden }
+
+/api/v1/non-conformities/{id}/close:
+  put:
+    tags: [Non-Conformities]
+    summary: Close NC
+    operationId: closeNC
+    x-roles: [TO, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [closure_remarks]
+            properties:
+              closure_remarks: { type: string }
+          example:
+            closure_remarks: "Life jackets replaced. NC closed after verification."
+    responses:
+      "200": { description: NC closed }
+      "403": { description: Forbidden }
+
+/api/v1/non-conformities/job/{jobId}:
+  get:
+    tags: [Non-Conformities]
+    summary: Get NCs by job
+    operationId: getNCsByJob
+    x-roles: [ADMIN, GM, TM, TO, SURVEYOR]
+    parameters:
+      - name: jobId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: List of NCs }
+      "403": { description: Forbidden }

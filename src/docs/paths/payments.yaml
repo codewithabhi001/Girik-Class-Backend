@@ -162,6 +162,9 @@
                 format: date
               receipt_url:
                 type: string
+          example:
+            payment_date: "2026-02-13"
+            receipt_url: "https://storage.example.com/receipts/receipt-123.pdf"
     responses:
       "200":
         description: Payment marked as paid
@@ -200,6 +203,9 @@
                 type: number
               reason:
                 type: string
+          example:
+            amount: 500.00
+            reason: "Duplicate payment. Refund requested by client."
     responses:
       "200":
         description: Refund processed

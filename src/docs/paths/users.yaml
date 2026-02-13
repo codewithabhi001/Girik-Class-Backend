@@ -1,0 +1,110 @@
+/api/v1/users:
+  get:
+    tags: [Users]
+    summary: Get all users
+    operationId: getUsers
+    x-roles: [ADMIN]
+    responses:
+      "200": { description: List of users }
+      "403": { description: Forbidden }
+
+  post:
+    tags: [Users]
+    summary: Create user
+    operationId: createUser
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name, email, password, role]
+            properties:
+              name: { type: string }
+              email: { type: string, format: email }
+              password: { type: string }
+              role: { type: string, enum: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN] }
+              phone: { type: string }
+              client_id: { type: string, format: uuid }
+          example:
+            name: "John Doe"
+            email: "john@girik.com"
+            password: "SecurePass123!"
+            role: "TM"
+            phone: "+65 9123 4567"
+            client_id: null
+    responses:
+      "201": { description: User created }
+      "403": { description: Forbidden }
+
+/api/v1/users/{id}:
+  put:
+    tags: [Users]
+    summary: Update user
+    operationId: updateUser
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name: { type: string }
+              email: { type: string, format: email }
+              role: { type: string }
+              phone: { type: string }
+              status: { type: string }
+              client_id: { type: string, format: uuid }
+          example:
+            name: "John Doe"
+            email: "john.updated@girik.com"
+            phone: "+65 9876 5432"
+    responses:
+      "200": { description: User updated }
+      "403": { description: Forbidden }
+
+  delete:
+    tags: [Users]
+    summary: Delete user
+    operationId: deleteUser
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: User deleted }
+      "403": { description: Forbidden }
+
+/api/v1/users/{id}/status:
+  put:
+    tags: [Users]
+    summary: Update user status
+    operationId: updateUserStatus
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status: { type: string, enum: [ACTIVE, SUSPENDED, INACTIVE] }
+          example:
+            status: "ACTIVE"
+    responses:
+      "200": { description: Status updated }
+      "403": { description: Forbidden }

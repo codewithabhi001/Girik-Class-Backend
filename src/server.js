@@ -39,6 +39,8 @@ const startServer = async () => {
             console.log(`   Admin:   ${baseUrl}/api-docs/admin`);
             console.log(`   GM:      ${baseUrl}/api-docs/gm`);
             console.log(`   TM:      ${baseUrl}/api-docs/tm`);
+            console.log(`   TO:      ${baseUrl}/api-docs/to`);
+            console.log(`   Surveyor:${baseUrl}/api-docs/surveyor`);
             console.log(`   Client:  ${baseUrl}/api-docs/client`);
             console.log('='.repeat(60) + '\n');
         });

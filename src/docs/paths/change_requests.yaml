@@ -1,0 +1,66 @@
+/api/v1/change-requests:
+  post:
+    tags: [Change Requests]
+    summary: Create change request
+    operationId: createChangeRequest
+    x-roles: [CLIENT, ADMIN, GM, TM]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              entity_type: { type: string }
+              entity_id: { type: string, format: uuid }
+              change_type: { type: string }
+              description: { type: string }
+              requested_changes: { type: object }
+          example:
+            entity_type: "VESSEL"
+            entity_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+            change_type: "UPDATE"
+            description: "Request to update vessel IMO number"
+            requested_changes:
+              imo_number: "9123457"
+    responses:
+      "201": { description: Change request created }
+      "403": { description: Forbidden }
+
+  get:
+    tags: [Change Requests]
+    summary: Get change requests
+    operationId: getChangeRequests
+    x-roles: [ADMIN, GM, TM]
+    responses:
+      "200": { description: List of change requests }
+      "403": { description: Forbidden }
+
+/api/v1/change-requests/{id}/approve:
+  put:
+    tags: [Change Requests]
+    summary: Approve change request
+    operationId: approveChangeRequest
+    x-roles: [ADMIN, GM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: Request approved }
+      "403": { description: Forbidden }
+
+/api/v1/change-requests/{id}/reject:
+  put:
+    tags: [Change Requests]
+    summary: Reject change request
+    operationId: rejectChangeRequest
+    x-roles: [ADMIN, GM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: Request rejected }
+      "403": { description: Forbidden }

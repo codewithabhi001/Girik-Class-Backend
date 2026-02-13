@@ -1,0 +1,76 @@
+/api/v1/incidents:
+  post:
+    tags: [Incidents]
+    summary: Report incident
+    operationId: reportIncident
+    x-roles: [CLIENT, ADMIN, GM, TM]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [description]
+            properties:
+              job_id: { type: string, format: uuid }
+              vessel_id: { type: string, format: uuid }
+              title: { type: string }
+              description: { type: string }
+              severity: { type: string, enum: [LOW, MEDIUM, HIGH, CRITICAL] }
+          example:
+            job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+            title: "Equipment malfunction"
+            description: "Lifeboat davit not functioning properly during drill"
+            severity: "HIGH"
+    responses:
+      "201": { description: Incident reported }
+      "403": { description: Forbidden }
+
+  get:
+    tags: [Incidents]
+    summary: Get incidents
+    operationId: getIncidents
+    x-roles: [CLIENT, ADMIN, GM, TM, TO]
+    responses:
+      "200": { description: List of incidents }
+      "403": { description: Forbidden }
+
+/api/v1/incidents/{id}:
+  get:
+    tags: [Incidents]
+    summary: Get incident by ID
+    operationId: getIncidentById
+    x-roles: [CLIENT, ADMIN, GM, TM, TO]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: Incident details }
+      "403": { description: Forbidden }
+
+  put:
+    tags: [Incidents]
+    summary: Update incident status
+    operationId: updateIncidentStatus
+    x-roles: [ADMIN, GM, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status: { type: string, enum: [REPORTED, UNDER_REVIEW, RESOLVED, CLOSED] }
+              resolution_notes: { type: string }
+          example:
+            status: "RESOLVED"
+            resolution_notes: "Davits repaired. Verified during re-inspection."
+    responses:
+      "200": { description: Status updated }
+      "403": { description: Forbidden }

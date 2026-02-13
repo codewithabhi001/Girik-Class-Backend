@@ -1,0 +1,31 @@
+/api/v1/notifications:
+  get:
+    tags: [Notifications]
+    summary: Get notifications
+    operationId: getNotifications
+    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
+    responses:
+      "200": { description: List of notifications }
+
+/api/v1/notifications/{id}/read:
+  put:
+    tags: [Notifications]
+    summary: Mark as read
+    operationId: markNotificationRead
+    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: Marked as read }
+
+/api/v1/notifications/read-all:
+  put:
+    tags: [Notifications]
+    summary: Mark all as read
+    operationId: markAllNotificationsRead
+    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
+    responses:
+      "200": { description: All marked as read }

@@ -1,0 +1,35 @@
+/api/v1/public/certificate/verify/{number}:
+  get:
+    tags: [Public]
+    summary: Verify certificate (public)
+    description: Public verification - no auth required
+    security: []
+    operationId: verifyCertificatePublic
+    x-roles: [PUBLIC]
+    parameters:
+      - name: number
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Certificate verification result
+
+/api/v1/public/vessel/{imo}:
+  get:
+    tags: [Public]
+    summary: Verify vessel by IMO (public)
+    description: Public vessel verification - no auth required
+    security: []
+    operationId: verifyVesselPublic
+    x-roles: [PUBLIC]
+    parameters:
+      - name: imo
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        description: Vessel verification result

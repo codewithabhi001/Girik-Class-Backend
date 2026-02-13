@@ -121,6 +121,11 @@
                 type: string
               phone:
                 type: string
+          example:
+            company_name: "Marine Shipping Co"
+            contact_person_name: "John Smith"
+            contact_person_email: "john@marineshipping.com"
+            phone: "+65 6123 4567"
     responses:
       "200":
         description: Profile updated
@@ -222,6 +227,11 @@
               status:
                 type: string
                 enum: [ACTIVE, INACTIVE]
+          example:
+            company_name: "Marine Shipping Co Ltd"
+            address: "123 Harbour Road"
+            country: "Singapore"
+            status: "ACTIVE"
     responses:
       "200":
         description: Client updated

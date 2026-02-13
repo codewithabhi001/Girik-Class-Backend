@@ -1,0 +1,29 @@
+/api/v1/compliance/export/{id}:
+  get:
+    tags: [Compliance]
+    summary: Export data
+    operationId: complianceExport
+    x-roles: [ADMIN, CLIENT]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    responses:
+      "200": { description: Export data }
+      "403": { description: Forbidden }
+
+/api/v1/compliance/anonymize/{id}:
+  post:
+    tags: [Compliance]
+    summary: Anonymize data
+    operationId: complianceAnonymize
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    responses:
+      "200": { description: Data anonymized }
+      "403": { description: Forbidden }

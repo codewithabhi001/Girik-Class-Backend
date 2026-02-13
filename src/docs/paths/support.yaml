@@ -1,0 +1,68 @@
+/api/v1/support:
+  post:
+    tags: [Support]
+    summary: Create support ticket
+    operationId: createSupportTicket
+    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [subject, message]
+            properties:
+              subject: { type: string }
+              message: { type: string }
+              priority: { type: string, enum: [LOW, MEDIUM, HIGH, URGENT] }
+          example:
+            subject: "Unable to submit survey"
+            message: "Getting 500 error when submitting survey for job XYZ"
+            priority: "HIGH"
+    responses:
+      "201": { description: Ticket created }
+
+  get:
+    tags: [Support]
+    summary: Get support tickets
+    operationId: getSupportTickets
+    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
+    responses:
+      "200": { description: List of tickets }
+
+/api/v1/support/{id}:
+  get:
+    tags: [Support]
+    summary: Get ticket by ID
+    operationId: getSupportTicketById
+    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: Ticket details }
+
+  put:
+    tags: [Support]
+    summary: Update ticket status
+    operationId: updateSupportTicketStatus
+    x-roles: [ADMIN, GM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status: { type: string, enum: [OPEN, IN_PROGRESS, RESOLVED, CLOSED] }
+          example:
+            status: "RESOLVED"
+    responses:
+      "200": { description: Status updated }
+      "403": { description: Forbidden }

@@ -1,0 +1,47 @@
+/api/v1/customer-feedback:
+  post:
+    tags: [Feedback]
+    summary: Submit feedback
+    operationId: submitFeedback
+    x-roles: [CLIENT]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [rating]
+            properties:
+              job_id: { type: string, format: uuid }
+              rating: { type: number, minimum: 1, maximum: 5 }
+              comment: { type: string }
+          example:
+            job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+            rating: 5
+            comment: "Surveyor was professional. Job completed on time."
+    responses:
+      "201": { description: Feedback submitted }
+      "403": { description: Forbidden }
+
+  get:
+    tags: [Feedback]
+    summary: Get all feedback
+    operationId: getAllFeedback
+    x-roles: [ADMIN, GM]
+    responses:
+      "200": { description: List of feedback }
+      "403": { description: Forbidden }
+
+/api/v1/customer-feedback/job/{jobId}:
+  get:
+    tags: [Feedback]
+    summary: Get feedback for job
+    operationId: getFeedbackForJob
+    x-roles: [ADMIN, GM, CLIENT]
+    parameters:
+      - name: jobId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: Job feedback }
+      "403": { description: Forbidden }

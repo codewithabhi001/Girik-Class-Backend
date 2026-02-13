@@ -1,0 +1,50 @@
+/api/v1/approvals:
+  post:
+    tags: [Approvals]
+    summary: Create approval
+    operationId: createApproval
+    x-roles: [ADMIN, GM, TM]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              job_id: { type: string, format: uuid }
+              step: { type: string }
+              action: { type: string, enum: [APPROVE, REJECT] }
+              remarks: { type: string }
+          example:
+            job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+            step: "GM_APPROVAL"
+            action: "APPROVE"
+            remarks: "Approved for survey"
+    responses:
+      "201": { description: Approval created }
+      "403": { description: Forbidden }
+
+/api/v1/approvals/{id}/step:
+  put:
+    tags: [Approvals]
+    summary: Update approval step
+    operationId: updateApprovalStep
+    x-roles: [ADMIN, GM, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              action: { type: string, enum: [APPROVE, REJECT] }
+              remarks: { type: string }
+          example:
+            action: "APPROVE"
+            remarks: "Step completed"
+    responses:
+      "200": { description: Step updated }
+      "403": { description: Forbidden }

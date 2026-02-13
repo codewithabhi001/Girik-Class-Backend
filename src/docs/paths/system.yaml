@@ -1,0 +1,104 @@
+/api/v1/system/metrics:
+  get:
+    tags: [System]
+    summary: Get system metrics
+    operationId: getSystemMetrics
+    x-roles: [ADMIN]
+    responses:
+      "200": { description: System metrics }
+      "403": { description: Forbidden }
+
+/api/v1/system/audit-logs:
+  get:
+    tags: [System]
+    summary: Get audit logs
+    operationId: getAuditLogs
+    x-roles: [ADMIN]
+    responses:
+      "200": { description: Audit logs }
+      "403": { description: Forbidden }
+
+/api/v1/system/users/{id}/logout:
+  post:
+    tags: [System]
+    summary: Force user logout
+    operationId: forceLogout
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: User logged out }
+      "403": { description: Forbidden }
+
+/api/v1/system/migrations:
+  get:
+    tags: [System]
+    summary: Get migrations
+    operationId: getMigrations
+    x-roles: [ADMIN]
+    responses:
+      "200": { description: Migration status }
+      "403": { description: Forbidden }
+
+/api/v1/system/jobs/failed:
+  get:
+    tags: [System]
+    summary: Get failed jobs
+    operationId: getFailedJobs
+    x-roles: [ADMIN]
+    responses:
+      "200": { description: Failed jobs }
+      "403": { description: Forbidden }
+
+/api/v1/system/jobs/{id}/retry:
+  post:
+    tags: [System]
+    summary: Retry failed job
+    operationId: retryJob
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    responses:
+      "200": { description: Job retried }
+      "403": { description: Forbidden }
+
+/api/v1/system/maintenance/{action}:
+  post:
+    tags: [System]
+    summary: Maintenance action
+    operationId: maintenanceAction
+    x-roles: [ADMIN]
+    parameters:
+      - name: action
+        in: path
+        required: true
+        schema: { type: string }
+    responses:
+      "200": { description: Action executed }
+      "403": { description: Forbidden }
+
+/api/v1/system/feature-flags:
+  get:
+    tags: [System]
+    summary: Get feature flags
+    operationId: getFeatureFlags
+    x-roles: [ADMIN]
+    responses:
+      "200": { description: Feature flags }
+      "403": { description: Forbidden }
+
+/api/v1/system/locales:
+  get:
+    tags: [System]
+    summary: Get locales
+    operationId: getLocales
+    x-roles: [ADMIN]
+    responses:
+      "200": { description: Locales }
+      "403": { description: Forbidden }

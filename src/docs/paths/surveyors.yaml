@@ -1,0 +1,170 @@
+/api/v1/surveyors:
+  post:
+    tags: [Surveyors]
+    summary: Create surveyor
+    operationId: createSurveyor
+    x-roles: [ADMIN, TM]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name, email, password]
+            properties:
+              name: { type: string }
+              email: { type: string, format: email }
+              password: { type: string }
+              role: { type: string, enum: [SURVEYOR] }
+              phone: { type: string }
+          example:
+            name: "John Surveyor"
+            email: "surveyor@girik.com"
+            password: "SecurePass123!"
+            phone: "+65 9123 4567"
+    responses:
+      "201": { description: Surveyor created }
+      "403": { description: Forbidden }
+
+/api/v1/surveyors/applications:
+  get:
+    tags: [Surveyors]
+    summary: Get surveyor applications
+    operationId: getSurveyorApplications
+    x-roles: [ADMIN, TM]
+    responses:
+      "200": { description: List of applications }
+      "403": { description: Forbidden }
+
+/api/v1/surveyors/applications/{id}/review:
+  put:
+    tags: [Surveyors]
+    summary: Review application
+    operationId: reviewSurveyorApplication
+    x-roles: [ADMIN, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status: { type: string, enum: [APPROVED, REJECTED, DOCUMENTS_REQUIRED] }
+              remarks: { type: string }
+          example:
+            status: "APPROVED"
+            remarks: "Documents verified. Eligible for assignment."
+    responses:
+      "200": { description: Application reviewed }
+      "403": { description: Forbidden }
+
+/api/v1/surveyors/{id}/profile:
+  get:
+    tags: [Surveyors]
+    summary: Get surveyor profile
+    operationId: getSurveyorProfile
+    x-roles: [ADMIN, TM, SURVEYOR]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: Surveyor profile }
+      "403": { description: Forbidden }
+
+  put:
+    tags: [Surveyors]
+    summary: Update surveyor profile
+    operationId: updateSurveyorProfile
+    x-roles: [ADMIN, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              full_name: { type: string }
+              phone: { type: string }
+              nationality: { type: string }
+              qualification: { type: string }
+              years_of_experience: { type: integer }
+          example:
+            full_name: "John Surveyor"
+            phone: "+65 9123 4567"
+            nationality: "Singapore"
+            qualification: "IACS Certified"
+            years_of_experience: 5
+    responses:
+      "200": { description: Profile updated }
+      "403": { description: Forbidden }
+
+/api/v1/surveyors/availability:
+  post:
+    tags: [Surveyors]
+    summary: Update availability
+    operationId: updateSurveyorAvailability
+    x-roles: [SURVEYOR]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              available_from: { type: string, format: date }
+              available_to: { type: string, format: date }
+              status: { type: string, enum: [AVAILABLE, UNAVAILABLE, ON_LEAVE] }
+          example:
+            available_from: "2026-03-01"
+            available_to: "2026-03-31"
+            status: "AVAILABLE"
+    responses:
+      "200": { description: Availability updated }
+      "403": { description: Forbidden }
+
+/api/v1/surveyors/location:
+  post:
+    tags: [Surveyors]
+    summary: Report location
+    operationId: reportSurveyorLocation
+    x-roles: [SURVEYOR]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [latitude, longitude]
+            properties:
+              latitude: { type: number }
+              longitude: { type: number }
+          example:
+            latitude: 1.3521
+            longitude: 103.8198
+    responses:
+      "200": { description: Location reported }
+      "403": { description: Forbidden }
+
+/api/v1/surveyors/{id}/location-history:
+  get:
+    tags: [Surveyors]
+    summary: Get GPS history
+    operationId: getSurveyorGPSHistory
+    x-roles: [ADMIN, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200": { description: Location history }
+      "403": { description: Forbidden }

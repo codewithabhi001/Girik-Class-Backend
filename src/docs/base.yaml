@@ -20,6 +20,8 @@ security:
 tags:
   - name: Auth
     description: Authentication and session management
+  - name: Public
+    description: Public APIs (no auth)
   - name: Jobs
     description: Job lifecycle management
   - name: Vessels
@@ -34,6 +36,52 @@ tags:
     description: Client management
   - name: Health
     description: Health check
+  - name: Surveys
+    description: Survey management
+  - name: Surveyors
+    description: Surveyor management
+  - name: Checklists
+    description: Checklist operations
+  - name: Checklist Templates
+    description: Checklist template management
+  - name: Support
+    description: Support tickets
+  - name: Search
+    description: Global search
+  - name: Compliance
+    description: Compliance and data export
+  - name: Notifications
+    description: User notifications
+  - name: Users
+    description: User management
+  - name: Documents
+    description: Document upload and management
+  - name: System
+    description: System administration
+  - name: Reports
+    description: Reports
+  - name: Non-Conformities
+    description: NC management
+  - name: TOCA
+    description: Transfer of Class
+  - name: Flags
+    description: Flag administration
+  - name: Approvals
+    description: Approval workflows
+  - name: Change Requests
+    description: Change requests
+  - name: Certificate Templates
+    description: Certificate template management
+  - name: Incidents
+    description: Incident reporting
+  - name: Activity Requests
+    description: Activity planning requests
+  - name: Providers
+    description: Service provider management
+  - name: Feedback
+    description: Customer feedback
+  - name: Mobile
+    description: Mobile app sync
 
 components:
   securitySchemes:

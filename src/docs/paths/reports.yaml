@@ -1,0 +1,39 @@
+/api/v1/reports/certificates:
+  get:
+    tags: [Reports]
+    summary: Certificate report
+    operationId: getCertificateReport
+    x-roles: [ADMIN, GM, TM]
+    responses:
+      "200": { description: Certificate report }
+      "403": { description: Forbidden }
+
+/api/v1/reports/surveyors:
+  get:
+    tags: [Reports]
+    summary: Surveyor report
+    operationId: getSurveyorReport
+    x-roles: [ADMIN, GM, TM]
+    responses:
+      "200": { description: Surveyor report }
+      "403": { description: Forbidden }
+
+/api/v1/reports/non-conformities:
+  get:
+    tags: [Reports]
+    summary: Non-conformity report
+    operationId: getNonConformityReport
+    x-roles: [ADMIN, GM, TM]
+    responses:
+      "200": { description: NC report }
+      "403": { description: Forbidden }
+
+/api/v1/reports/financials:
+  get:
+    tags: [Reports]
+    summary: Financial report
+    operationId: getFinancialReport
+    x-roles: [ADMIN, GM, TM]
+    responses:
+      "200": { description: Financial report }
+      "403": { description: Forbidden }

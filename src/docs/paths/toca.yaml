@@ -1,0 +1,61 @@
+/api/v1/toca:
+  post:
+    tags: [TOCA]
+    summary: Create TOCA
+    operationId: createToca
+    x-roles: [TM]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [vessel_id, losing_class_society, gaining_class_society, request_date]
+            properties:
+              vessel_id: { type: string, format: uuid }
+              losing_class_society: { type: string }
+              gaining_class_society: { type: string }
+              request_date: { type: string, format: date }
+          example:
+            vessel_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+            losing_class_society: "DNV"
+            gaining_class_society: "BV"
+            request_date: "2026-03-15"
+    responses:
+      "201": { description: TOCA created }
+      "403": { description: Forbidden }
+
+  get:
+    tags: [TOCA]
+    summary: Get TOCAs
+    operationId: getTocas
+    x-roles: [ADMIN, GM, TM]
+    responses:
+      "200": { description: List of TOCAs }
+      "403": { description: Forbidden }
+
+/api/v1/toca/{id}/status:
+  put:
+    tags: [TOCA]
+    summary: Update TOCA status
+    operationId: updateTocaStatus
+    x-roles: [TM, ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status: { type: string, enum: [ACCEPTED, REJECTED] }
+          example:
+            status: "ACCEPTED"
+    responses:
+      "200": { description: Status updated }
+      "403": { description: Forbidden }

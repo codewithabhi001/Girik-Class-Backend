@@ -1,0 +1,60 @@
+/api/v1/mobile/sync:
+  post:
+    tags: [Mobile]
+    summary: Sync data
+    operationId: mobileSync
+    x-roles: [SURVEYOR]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [last_sync_timestamp]
+            properties:
+              last_sync_timestamp: { type: string, format: date-time }
+              offline_data: { type: object }
+          example:
+            last_sync_timestamp: "2026-02-13T10:00:00.000Z"
+            offline_data:
+              surveys: []
+              checklists: []
+    responses:
+      "200": { description: Sync complete }
+      "403": { description: Forbidden }
+
+/api/v1/mobile/offline/jobs:
+  get:
+    tags: [Mobile]
+    summary: Get offline jobs
+    operationId: getOfflineJobs
+    x-roles: [SURVEYOR]
+    responses:
+      "200": { description: Jobs for offline }
+      "403": { description: Forbidden }
+
+/api/v1/mobile/offline/surveys:
+  post:
+    tags: [Mobile]
+    summary: Submit offline surveys
+    operationId: submitOfflineSurveys
+    x-roles: [SURVEYOR]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                job_id: { type: string }
+                gps_latitude: { type: number }
+                gps_longitude: { type: number }
+                survey_statement: { type: string }
+          example:
+            - job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+              gps_latitude: 1.3521
+              gps_longitude: 103.8198
+              survey_statement: "Offline survey submitted"
+    responses:
+      "200": { description: Surveys submitted }
+      "403": { description: Forbidden }

@@ -1,0 +1,15 @@
+/api/v1/search:
+  get:
+    tags: [Search]
+    summary: Global search
+    operationId: globalSearch
+    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
+    parameters:
+      - name: q
+        in: query
+        schema: { type: string }
+      - name: type
+        in: query
+        schema: { type: string }
+    responses:
+      "200": { description: Search results }
