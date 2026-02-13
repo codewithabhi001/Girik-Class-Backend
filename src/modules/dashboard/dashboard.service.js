@@ -3,14 +3,14 @@ import { Op } from 'sequelize';
 
 const { User, Client, Vessel, JobRequest, SurveyorProfile, Certificate, FlagAdministration, SurveyReport, CertificateType, Payment } = db;
 
-const userSafeAttrs = ['id', 'name', 'email', 'role', 'phone', 'status', 'client_id', 'last_login_at', 'createdAt'];
+const vesselAttrs = ['id', 'vessel_name', 'imo_number', 'flag_state', 'class_status'];
 
 export const getAdminDashboard = async () => {
     const [usersByRole, clientsWithVessels, vesselsCount, jobsCount, certificatesCount, surveyorProfiles] = await Promise.all([
         User.findAll({ attributes: ['role'], raw: true }),
         Client.findAll({
             where: { status: 'ACTIVE' },
-            include: [{ model: Vessel, as: 'Vessels', required: false, attributes: userSafeAttrs }],
+            include: [{ model: Vessel, as: 'Vessels', required: false, attributes: vesselAttrs }],
             order: [['company_name', 'ASC']],
         }),
         Vessel.count(),
@@ -34,8 +34,8 @@ export const getAdminDashboard = async () => {
             id: v.id,
             vessel_name: v.vessel_name,
             imo_number: v.imo_number,
-            flag: v.flag,
-            status: v.status,
+            flag: v.flag_state,
+            status: v.class_status,
         })),
     }));
 
@@ -180,7 +180,7 @@ export const getClientDashboard = async (clientId) => {
             { model: Vessel, attributes: ['vessel_name'] },
             { model: CertificateType, attributes: ['name'] }
         ],
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
     });
 
     // Get certificates for all vessels
@@ -214,7 +214,7 @@ export const getClientDashboard = async (clientId) => {
             vessel_name: j.Vessel?.vessel_name,
             type: j.CertificateType?.name,
             status: j.job_status,
-            date: j.created_at
+            date: j.createdAt
         })),
         expiring_certificates: certificates
             .filter(c => {
@@ -232,21 +232,30 @@ export const getClientDashboard = async (clientId) => {
 };
 
 export const getFlagAdminDashboard = async () => {
-    const [flags, flagsActive] = await Promise.all([
-        FlagAdministration.count(),
-        FlagAdministration.count({ where: { status: 'ACTIVE' } }),
-    ]);
+    let flags = 0, flagsActive = 0;
+    try {
+        [flags, flagsActive] = await Promise.all([
+            FlagAdministration.count(),
+            FlagAdministration.count({ where: { status: 'ACTIVE' } }),
+        ]);
+    } catch (_) {
+        // FlagAdministration table may not exist or be empty
+    }
 
+    let flagList = [];
+    try {
+        flagList = await FlagAdministration.findAll({
+            attributes: ['id', 'flag_name', 'country', 'status'],
+            raw: true,
+        });
+    } catch (_) {}
     return {
         role: 'FLAG_ADMIN',
         summary: {
             flags_total: flags,
             flags_active: flagsActive,
         },
-        flags: await FlagAdministration.findAll({
-            attributes: ['id', 'flag_name', 'country', 'status'],
-            raw: true,
-        }),
+        flags: flagList,
     };
 }
 

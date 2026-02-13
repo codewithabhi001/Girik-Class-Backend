@@ -32,7 +32,7 @@ export const getPayments = async (query, scopeFilters = {}) => {
         limit: parseInt(limit),
         offset: (page - 1) * limit,
         include: [{ model: JobRequest, include: [{ model: Vessel, attributes: ['vessel_name'] }] }],
-        order: [['created_at', 'DESC']]
+        order: [['payment_date', 'DESC']]
     });
 };
 
@@ -67,7 +67,7 @@ export const markPaid = async (paymentId, userId) => {
 export const getLedger = async (paymentId) => {
     return await FinancialLedger.findAll({
         where: { invoice_id: paymentId },
-        order: [['created_at', 'ASC']]
+        order: [['createdAt', 'ASC']]
     });
 };
 

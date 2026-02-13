@@ -24,13 +24,13 @@ export const getTickets = async (query, user) => {
 
     return await SupportTicket.findAndCountAll({
         where,
-        include: [{ model: User, attributes: ['name', 'email'] }],
-        order: [['created_at', 'DESC']]
+        include: [{ model: User, as: 'Creator', attributes: ['name', 'email'] }],
+        order: [['createdAt', 'DESC']]
     });
 };
 
 export const getTicketById = async (id, user) => {
-    const ticket = await SupportTicket.findByPk(id, { include: [User] });
+    const ticket = await SupportTicket.findByPk(id, { include: [{ model: User, as: 'Creator', attributes: ['name', 'email'] }] });
     if (!ticket) throw { statusCode: 404, message: 'Ticket not found' };
 
     if (user.role !== 'ADMIN' && user.role !== 'GM' && ticket.user_id !== user.id) {

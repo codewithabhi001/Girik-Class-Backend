@@ -37,7 +37,7 @@ export const getChangeRequests = async (filters = {}) => {
             { model: User, as: 'requester', attributes: ['id', 'name', 'email'] },
             { model: User, as: 'approver', attributes: ['id', 'name', 'email'] }
         ],
-        order: [['created_at', 'DESC']]
+        order: [['createdAt', 'DESC']]
     });
 
     return changeRequests;
@@ -50,11 +50,11 @@ export const approveChangeRequest = async (id, approvedBy, remarks) => {
     const changeRequest = await ChangeRequest.findByPk(id);
 
     if (!changeRequest) {
-        throw new Error('Change request not found');
+        throw { statusCode: 404, message: 'Change request not found' };
     }
 
     if (changeRequest.status !== 'PENDING') {
-        throw new Error('Change request has already been processed');
+        throw { statusCode: 400, message: 'Change request has already been processed' };
     }
 
     await changeRequest.update({
@@ -77,11 +77,11 @@ export const rejectChangeRequest = async (id, rejectedBy, remarks) => {
     const changeRequest = await ChangeRequest.findByPk(id);
 
     if (!changeRequest) {
-        throw new Error('Change request not found');
+        throw { statusCode: 404, message: 'Change request not found' };
     }
 
     if (changeRequest.status !== 'PENDING') {
-        throw new Error('Change request has already been processed');
+        throw { statusCode: 400, message: 'Change request has already been processed' };
     }
 
     await changeRequest.update({

@@ -119,8 +119,8 @@ export const getSurveyReports = async (query) => {
         limit: parseInt(limit),
         offset: (page - 1) * limit,
         include: [
-            { model: JobRequest, include: ['Vessel'] },
-            { model: db.User, as: 'surveyor', attributes: ['name', 'email'] }
+            { model: JobRequest, include: [{ model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }] },
+            { model: db.User, attributes: ['name', 'email'] }
         ]
     });
 };

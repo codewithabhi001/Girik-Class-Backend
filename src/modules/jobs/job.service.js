@@ -44,7 +44,7 @@ export const getJobs = async (query, scopeFilters = {}) => {
 export const getJobById = async (id, scopeFilters = {}) => {
     const job = await JobRequest.findOne({
         where: { id, ...scopeFilters },
-        include: ['Vessel', 'CertificateType', 'JobStatusHistory']
+        include: ['Vessel', 'CertificateType', 'JobStatusHistories']
     });
     if (!job) throw { statusCode: 404, message: 'Job not found' };
     return job;
@@ -197,8 +197,8 @@ export const cloneJob = async (id, userId) => {
 export const getJobHistory = async (id) => {
     return await JobStatusHistory.findAll({
         where: { job_id: id },
-        order: [['created_at', 'ASC']],
-        include: [{ model: User, as: 'Modifier', attributes: ['name', 'email', 'role'] }]
+        order: [['changed_at', 'ASC']],
+        include: [{ model: User, attributes: ['name', 'email', 'role'] }]
     });
 };
 

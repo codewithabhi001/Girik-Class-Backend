@@ -1,7 +1,7 @@
 import db from '../../models/index.js';
 import { Op } from 'sequelize';
 
-const { Certificate, Job, NonConformity, Payment, Survey } = db;
+const { Certificate, NonConformity, Payment, SurveyReport, JobRequest } = db;
 
 export const getCertificateReport = async (filters = {}) => {
     const where = {};
@@ -14,7 +14,11 @@ export const getCertificateReport = async (filters = {}) => {
 
     const certificates = await Certificate.findAll({
         where,
-        include: ['vessel', 'certificateType', 'issuer']
+        include: [
+            { model: db.Vessel, attributes: ['vessel_name', 'imo_number'] },
+            { model: db.CertificateType, attributes: ['name'] },
+            { model: db.User, as: 'issuer', attributes: ['name', 'email'] }
+        ]
     });
 
     const stats = {
@@ -26,7 +30,7 @@ export const getCertificateReport = async (filters = {}) => {
 
     certificates.forEach(cert => {
         stats.by_status[cert.status] = (stats.by_status[cert.status] || 0) + 1;
-        const typeName = cert.certificateType?.name || 'Unknown';
+        const typeName = cert.CertificateType?.name || 'Unknown';
         stats.by_type[typeName] = (stats.by_type[typeName] || 0) + 1;
 
         const daysToExpiry = Math.floor((new Date(cert.expiry_date) - new Date()) / (1000 * 60 * 60 * 24));
@@ -39,14 +43,17 @@ export const getCertificateReport = async (filters = {}) => {
 export const getSurveyorPerformanceReport = async (filters = {}) => {
     const where = {};
     if (filters.from_date && filters.to_date) {
-        where.created_at = {
+        where.createdAt = {
             [Op.between]: [filters.from_date, filters.to_date]
         };
     }
 
-    const surveys = await Survey.findAll({
+    const surveys = await SurveyReport.findAll({
         where,
-        include: ['surveyor', 'job']
+        include: [
+            { model: db.User, attributes: ['id', 'name', 'email'] },
+            { model: JobRequest, attributes: ['id', 'job_status'] }
+        ]
     });
 
     const performance = {};
@@ -54,7 +61,7 @@ export const getSurveyorPerformanceReport = async (filters = {}) => {
         const surveyorId = survey.surveyor_id;
         if (!performance[surveyorId]) {
             performance[surveyorId] = {
-                surveyor: survey.surveyor,
+                surveyor: survey.User,
                 total_surveys: 0,
                 avg_completion_time: 0
             };
@@ -72,7 +79,7 @@ export const getNonConformityReport = async (filters = {}) => {
 
     const ncs = await NonConformity.findAll({
         where,
-        include: ['job']
+        include: [{ model: JobRequest, attributes: ['id', 'job_status', 'vessel_id'] }]
     });
 
     const stats = {
@@ -94,14 +101,14 @@ export const getNonConformityReport = async (filters = {}) => {
 export const getFinancialReport = async (filters = {}) => {
     const where = {};
     if (filters.from_date && filters.to_date) {
-        where.created_at = {
+        where.payment_date = {
             [Op.between]: [filters.from_date, filters.to_date]
         };
     }
 
     const payments = await Payment.findAll({
         where,
-        include: ['job']
+        include: [{ model: JobRequest, attributes: ['id', 'job_status', 'vessel_id'] }]
     });
 
     const stats = {

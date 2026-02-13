@@ -138,13 +138,12 @@ export const updateAvailability = async (userId, isAvailable) => {
 };
 
 export const reportLocation = async (userId, locationData) => {
-    const { latitude, longitude, accuracy } = locationData;
-    await db.GPSTracking.create({
-        user_id: userId,
+    const { latitude, longitude } = locationData;
+    await db.GpsTracking.create({
+        surveyor_id: userId,
         latitude,
         longitude,
-        accuracy,
-        recorded_at: new Date()
+        timestamp: new Date()
     });
 
     await SurveyorProfile.update(
@@ -156,9 +155,9 @@ export const reportLocation = async (userId, locationData) => {
 };
 
 export const getGPSHistory = async (userId) => {
-    return await db.GPSTracking.findAll({
-        where: { user_id: userId },
-        order: [['recorded_at', 'DESC']],
+    return await db.GpsTracking.findAll({
+        where: { surveyor_id: userId },
+        order: [['timestamp', 'DESC']],
         limit: 100
     });
 };

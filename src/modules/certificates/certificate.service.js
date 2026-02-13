@@ -129,7 +129,7 @@ export const previewCertificate = async (id) => {
 };
 
 export const getHistory = async (id) => {
-    return await db.CertificateHistory.findAll({ where: { certificate_id: id }, order: [['change_date', 'DESC']] });
+    return await db.CertificateHistory.findAll({ where: { certificate_id: id }, order: [['changed_at', 'DESC']] });
 };
 
 export const transferCertificate = async (id, newOwnerId, reason, userId) => {
