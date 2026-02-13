@@ -1,100 +1,167 @@
-/clients/profile:
+/api/v1/clients:
   get:
     tags: [Clients]
-    summary: Get Client Profile
-    x-roles: [CLIENT]
+    summary: List clients
+    description: List all clients. ADMIN, GM, TM, TO only.
+    operationId: getClients
+    x-roles: [ADMIN, GM, TM, TO]
+    parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 20
     responses:
-      '200':
-        description: Client profile
-  put:
-    tags: [Clients]
-    summary: Update Client Profile
-    x-roles: [CLIENT]
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-    responses:
-      '200':
-        description: Profile updated
+      "200":
+        description: List of clients
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ClientResponse'
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
 
-/clients/dashboard:
-  get:
-    tags: [Clients]
-    summary: Client Dashboard
-    x-roles: [CLIENT]
-    responses:
-      '200':
-        description: Client dashboard data
-
-/clients:
   post:
     tags: [Clients]
-    summary: Create Client
+    summary: Create client
+    description: Create a new client. ADMIN, GM, TM only.
+    operationId: createClient
     x-roles: [ADMIN, GM, TM]
     requestBody:
       required: true
       content:
         application/json:
           schema:
+            $ref: '#/components/schemas/ClientCreateRequest'
+          example:
+            company_name: "Marine Shipping Co"
+            company_code: "MSC001"
+            email: "contact@marineshipping.com"
+    responses:
+      "201":
+        description: Client created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: '#/components/schemas/ClientResponse'
+      "400":
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+
+/api/v1/clients/profile:
+  get:
+    tags: [Clients]
+    summary: Get client profile
+    description: Get current user's client profile. CLIENT role only.
+    operationId: getClientProfile
+    x-roles: [CLIENT]
+    responses:
+      "200":
+        description: Client profile
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: '#/components/schemas/ClientResponse'
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+
+  put:
+    tags: [Clients]
+    summary: Update client profile
+    description: Update current user's client profile. CLIENT role only.
+    operationId: updateClientProfile
+    x-roles: [CLIENT]
+    requestBody:
+      content:
+        application/json:
+          schema:
             type: object
-            required: [company_name, company_code, email]
             properties:
               company_name:
-                type: string
-                example: "Acme Shipping Ltd"
-              company_code:
-                type: string
-                example: "ACME-01"
-              email:
-                type: string
-                format: email
-              address:
-                type: string
-              country:
-                type: string
-              phone:
                 type: string
               contact_person_name:
                 type: string
               contact_person_email:
                 type: string
-              status:
+              phone:
                 type: string
-                enum: [ACTIVE, INACTIVE]
-              user:
-                type: object
-                properties:
-                  name:
-                    type: string
-                  email:
-                    type: string
-                  password:
-                    type: string
-                  role:
-                    type: string
-          example:
-            company_name: "Acme Shipping Ltd"
-            company_code: "ACME-01"
-            email: "contact@acme.com"
-            address: "123 Harbour Road"
-            country: "Singapore"
     responses:
-      '201':
-        description: Client created
-  get:
-    tags: [Clients]
-    summary: List Clients
-    x-roles: [ADMIN, GM, TM, TO]
-    responses:
-      '200':
-        description: List of clients
+      "200":
+        description: Profile updated
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: '#/components/schemas/ClientResponse'
 
-/clients/{id}:
+/api/v1/clients/dashboard:
   get:
     tags: [Clients]
-    summary: Get Client by ID
+    summary: Get client dashboard
+    description: Get dashboard for client users. CLIENT role only.
+    operationId: getClientDashboard
+    x-roles: [CLIENT]
+    responses:
+      "200":
+        description: Client dashboard data
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+
+/api/v1/clients/{id}:
+  get:
+    tags: [Clients]
+    summary: Get client by ID
+    description: Get client details by ID. ADMIN, GM, TM, TO only.
+    operationId: getClientById
     x-roles: [ADMIN, GM, TM, TO]
     parameters:
       - name: id
@@ -104,11 +171,30 @@
           type: string
           format: uuid
     responses:
-      '200':
+      "200":
         description: Client details
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: '#/components/schemas/ClientResponse'
+      "404":
+        description: Client not found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+
   put:
     tags: [Clients]
-    summary: Update Client
+    summary: Update client
+    description: Update client details. ADMIN, GM, TM only.
+    operationId: updateClient
     x-roles: [ADMIN, GM, TM]
     parameters:
       - name: id
@@ -122,12 +208,39 @@
         application/json:
           schema:
             type: object
+            properties:
+              company_name:
+                type: string
+              company_code:
+                type: string
+              email:
+                type: string
+              address:
+                type: string
+              country:
+                type: string
+              status:
+                type: string
+                enum: [ACTIVE, INACTIVE]
     responses:
-      '200':
+      "200":
         description: Client updated
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: '#/components/schemas/ClientResponse'
+
   delete:
     tags: [Clients]
-    summary: Delete Client
+    summary: Delete client
+    description: Delete a client. ADMIN only.
+    operationId: deleteClient
     x-roles: [ADMIN]
     parameters:
       - name: id
@@ -137,5 +250,21 @@
           type: string
           format: uuid
     responses:
-      '200':
+      "200":
         description: Client deleted
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'

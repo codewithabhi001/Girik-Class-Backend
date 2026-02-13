@@ -12,8 +12,6 @@ This is the production-ready backend for the Girik Marine Certification and Oper
 *   **Email:** Nodemailer
 *   **Scheduling:** Node-cron
 *   **Validation:** Joi
-*   **Documentation:** Swagger / OpenAPI
-
 ## 📂 Folder Structure
 
 ```

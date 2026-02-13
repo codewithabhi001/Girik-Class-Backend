@@ -26,23 +26,20 @@ const startServer = async () => {
 
 
         const isProduction = env.nodeEnv === 'production';
-        const SERVER_IP = '13.239.63.143';
-        const host = (isProduction || process.env.USE_SERVER_IP === 'true') ? SERVER_IP : 'localhost';
+        const host = env.serverHost || (isProduction || process.env.USE_SERVER_IP === 'true' ? '13.239.63.143' : 'localhost');
+        const baseUrl = `http://${host}:${PORT}`;
 
         app.listen(PORT, () => {
-            const baseUrl = `http://${host}:${PORT}`;
             logger.info(`Server is running on port ${PORT}`);
-            logger.info(`Swagger API Docs: ${baseUrl}/api-docs`);
-            // Always show in console for visibility
             console.log('\n' + '='.repeat(60));
             console.log(`🚀 Server running at ${baseUrl}`);
-            console.log(`📚 API Docs: ${baseUrl}/api-docs`);
-            console.log(`   - Admin:    ${baseUrl}/api-docs/admin`);
-            console.log(`   - GM:       ${baseUrl}/api-docs/gm`);
-            console.log(`   - TM:       ${baseUrl}/api-docs/tm`);
-            console.log(`   - TO:       ${baseUrl}/api-docs/to`);
-            console.log(`   - Surveyor: ${baseUrl}/api-docs/surveyor`);
-            console.log(`   - Client:   ${baseUrl}/api-docs/client`);
+            console.log('');
+            console.log('📚 API Documentation (Swagger):');
+            console.log(`   Full:    ${baseUrl}/api-docs`);
+            console.log(`   Admin:   ${baseUrl}/api-docs/admin`);
+            console.log(`   GM:      ${baseUrl}/api-docs/gm`);
+            console.log(`   TM:      ${baseUrl}/api-docs/tm`);
+            console.log(`   Client:  ${baseUrl}/api-docs/client`);
             console.log('='.repeat(60) + '\n');
         });
     } catch (error) {

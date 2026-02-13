@@ -1,13 +1,14 @@
-/health:
+/api/v1/health:
   get:
-    tags: [Public]
-    summary: Health Check
-    description: System health - no auth required
-    x-roles: [PUBLIC]
+    tags: [Health]
+    summary: Health check
+    description: Returns server health status. No authentication required.
     security: []
+    operationId: getHealth
+    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
     responses:
-      '200':
-        description: Service is UP
+      "200":
+        description: Server is healthy
         content:
           application/json:
             schema:
@@ -21,4 +22,4 @@
                   format: date-time
             example:
               status: "UP"
-              timestamp: "2026-02-12T10:00:00.000Z"
+              timestamp: "2026-02-13T10:00:00.000Z"

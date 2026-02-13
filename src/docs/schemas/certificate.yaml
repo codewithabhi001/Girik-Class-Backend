@@ -1,48 +1,7 @@
-# Certificate schemas
-CertificateGenerateRequest:
-  type: object
-  required:
-    - job_id
-  properties:
-    job_id:
-      $ref: '#/components/schemas/UUID'
-      example: "550e8400-e29b-41d4-a716-446655440000"
-    validity_years:
-      type: integer
-      minimum: 1
-      maximum: 5
-      example: 1
-
-CertificateActionRequest:
-  type: object
-  required:
-    - reason
-  properties:
-    reason:
-      type: string
-      example: "Administrative suspension"
-
-CertificateRenewRequest:
-  type: object
-  required:
-    - validity_years
-    - reason
-  properties:
-    validity_years:
-      type: integer
-      minimum: 1
-      maximum: 5
-      example: 2
-    reason:
-      type: string
-      example: "Standard renewal"
-
 CertificateResponse:
   type: object
   properties:
     id:
-      $ref: '#/components/schemas/UUID'
-    job_id:
       $ref: '#/components/schemas/UUID'
     vessel_id:
       $ref: '#/components/schemas/UUID'
@@ -50,7 +9,7 @@ CertificateResponse:
       $ref: '#/components/schemas/UUID'
     certificate_number:
       type: string
-      example: "GIR-CERT-2026-001"
+      example: "GIR-CERT-2026-001234"
     issue_date:
       type: string
       format: date
@@ -60,19 +19,61 @@ CertificateResponse:
     status:
       type: string
       enum: [VALID, EXPIRED, SUSPENDED, REVOKED]
+      example: "VALID"
     qr_code_url:
       type: string
+      format: uri
     pdf_file_url:
       type: string
+      format: uri
+  example:
+    id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+    certificate_number: "GIR-CERT-2026-001234"
+    status: "VALID"
+    issue_date: "2026-01-15"
+    expiry_date: "2027-01-14"
 
-CertificateTypeResponse:
+GenerateCertificateRequest:
   type: object
+  required:
+    - job_id
   properties:
-    id:
-      $ref: '#/components/schemas/UUID'
-    name:
+    job_id:
       type: string
-    code:
+      format: uuid
+      example: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+    validity_years:
+      type: integer
+      minimum: 1
+      maximum: 5
+      default: 1
+  example:
+    job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+    validity_years: 1
+
+CertActionRequest:
+  type: object
+  required:
+    - reason
+  properties:
+    reason:
       type: string
-    description:
+      example: "Administrative suspension"
+  example:
+    reason: "Administrative suspension"
+
+RenewCertRequest:
+  type: object
+  required:
+    - validity_years
+    - reason
+  properties:
+    validity_years:
+      type: integer
+      minimum: 1
+      maximum: 5
+    reason:
       type: string
+  example:
+    validity_years: 1
+    reason: "Standard renewal"

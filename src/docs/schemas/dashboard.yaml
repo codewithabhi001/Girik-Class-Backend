@@ -1,23 +1,37 @@
-# Dashboard schemas
 DashboardResponse:
   type: object
+  description: "Role-specific dashboard data. Structure varies by role (ADMIN, GM, TM, TO, SURVEYOR, CLIENT)"
   properties:
     success:
       type: boolean
       example: true
     data:
       type: object
-      description: Role-specific dashboard summary
       properties:
-        jobsPending:
-          type: integer
-          example: 5
-        jobsInProgress:
-          type: integer
-          example: 3
-        certificatesExpiring:
-          type: integer
-          example: 2
-        paymentsDue:
-          type: integer
-          example: 1
+        stats:
+          type: object
+          additionalProperties: true
+          description: "Key metrics (e.g. pendingJobs, totalCertificates)"
+        recentJobs:
+          type: array
+          items: {}
+        expiringCertificates:
+          type: array
+          items: {}
+        alerts:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              message:
+                type: string
+  example:
+    success: true
+    data:
+      stats:
+        pendingJobs: 5
+        totalCertificates: 120
+      recentJobs: []
+      expiringCertificates: []

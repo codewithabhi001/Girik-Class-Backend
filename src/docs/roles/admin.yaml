@@ -1,0 +1,4 @@
+# ADMIN role - Full system access
+# Endpoints filtered by x-roles containing ADMIN
+description: System administrator with full access to all management and operational APIs
+roles: [ADMIN]

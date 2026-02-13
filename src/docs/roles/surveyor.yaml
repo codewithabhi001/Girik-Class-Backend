@@ -1,0 +1,4 @@
+# SURVEYOR role
+# Endpoints filtered by x-roles containing SURVEYOR
+description: Surveyor - assigned jobs, survey submission, checklists, location reporting
+roles: [SURVEYOR]

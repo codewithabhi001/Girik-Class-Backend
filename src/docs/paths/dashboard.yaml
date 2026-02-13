@@ -1,11 +1,19 @@
-/dashboard:
+/api/v1/dashboard:
   get:
     tags: [Dashboard]
-    summary: Get Dashboard
-    description: Role-specific dashboard summary (jobs pending, certificates expiring, etc.)
-    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    summary: Get dashboard
+    description: |
+      Get role-specific dashboard data. Structure varies by user role:
+      - ADMIN: System-wide stats, pending approvals
+      - GM: Management dashboard
+      - TM: Technical manager view
+      - TO: Technical officer view
+      - SURVEYOR: Assigned jobs, availability
+      - CLIENT: Vessel/job overview
+    operationId: getDashboard
+    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
     responses:
-      '200':
+      "200":
         description: Dashboard data
         content:
           application/json:
@@ -14,9 +22,14 @@
             example:
               success: true
               data:
-                jobsPending: 5
-                jobsInProgress: 3
-                certificatesExpiring: 2
-                paymentsDue: 1
-      '401':
-        $ref: '#/components/responses/Unauthorized'
+                stats:
+                  pendingJobs: 5
+                  totalCertificates: 120
+                recentJobs: []
+                expiringCertificates: []
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'

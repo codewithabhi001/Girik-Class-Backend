@@ -1,107 +1,180 @@
-/certificates/verify/{number}:
+/api/v1/certificates/verify/{number}:
   get:
-    tags: [Public]
-    summary: Verify Certificate (Public)
-    description: Public endpoint - no auth required
-    x-roles: [PUBLIC]
+    tags: [Certificates]
+    summary: Verify certificate (public)
+    description: Public verification of certificate by number. No auth required.
     security: []
+    operationId: verifyCertificate
+    x-roles: [PUBLIC]
     parameters:
       - name: number
         in: path
         required: true
         schema:
           type: string
-          example: "GIR-CERT-2026-001"
+          example: "GIR-CERT-2026-001234"
     responses:
-      '200':
-        description: Certificate valid
-      '404':
-        description: Certificate not found
-
-/certificates/types:
-  get:
-    tags: [Certificates]
-    summary: Get Certificate Types
-    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
-    responses:
-      '200':
-        description: List of certificate types
+      "200":
+        description: Certificate verified
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SuccessResponse'
-            example:
-              success: true
-              data:
-                - id: "550e8400-e29b-41d4-a716-446655440000"
-                  name: "Annual Survey"
-                  code: "ANNUAL"
-      '401':
-        $ref: '#/components/responses/Unauthorized'
+              type: object
+              properties:
+                valid:
+                  type: boolean
+                certificate:
+                  $ref: '#/components/schemas/CertificateResponse'
+      "404":
+        description: Certificate not found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
 
-/certificates:
+/api/v1/certificates/types:
   get:
     tags: [Certificates]
-    summary: List Certificates
-    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    summary: Get certificate types
+    description: List available certificate types.
+    operationId: getCertificateTypes
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
+    responses:
+      "200":
+        description: Certificate types list
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+
+/api/v1/certificates:
+  get:
+    tags: [Certificates]
+    summary: List certificates
+    description: List certificates. CLIENT sees only their vessels' certificates.
+    operationId: getCertificates
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
     parameters:
       - name: page
         in: query
         schema:
           type: integer
+          default: 1
       - name: limit
         in: query
         schema:
           type: integer
-      - name: status
-        in: query
-        schema:
-          type: string
-          enum: [VALID, EXPIRED, SUSPENDED, REVOKED]
+          default: 20
     responses:
-      '200':
+      "200":
         description: List of certificates
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SuccessResponse'
-      '401':
-        $ref: '#/components/responses/Unauthorized'
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CertificateResponse'
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
 
   post:
     tags: [Certificates]
-    summary: Generate Certificate
+    summary: Generate certificate
+    description: Generate a new certificate for a completed job. ADMIN, GM, TM only.
+    operationId: generateCertificate
     x-roles: [ADMIN, GM, TM]
     requestBody:
       required: true
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CertificateGenerateRequest'
+            $ref: '#/components/schemas/GenerateCertificateRequest'
           example:
-            job_id: "550e8400-e29b-41d4-a716-446655440000"
+            job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
             validity_years: 1
     responses:
-      '201':
+      "201":
         description: Certificate generated
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SuccessResponse'
-            example:
-              success: true
-              data:
-                id: "660e8400-e29b-41d4-a716-446655440001"
-                certificate_number: "GIR-CERT-2026-001"
-                status: "VALID"
-      '400':
-        $ref: '#/components/responses/BadRequest'
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: "Certificate generated successfully"
+                data:
+                  $ref: '#/components/schemas/CertificateResponse'
+      "400":
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
 
-/certificates/{id}:
+/api/v1/certificates/expiring:
   get:
     tags: [Certificates]
-    summary: Get Certificate by ID
-    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    summary: Get expiring certificates
+    description: Get certificates expiring within a date range. ADMIN, GM, TM, TO, CLIENT.
+    operationId: getExpiringCertificates
+    x-roles: [CLIENT, ADMIN, GM, TM, TO]
+    parameters:
+      - name: days
+        in: query
+        schema:
+          type: integer
+          default: 90
+    responses:
+      "200":
+        description: Expiring certificates
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CertificateResponse'
+
+/api/v1/certificates/{id}:
+  get:
+    tags: [Certificates]
+    summary: Get certificate by ID
+    description: Get certificate details by ID.
+    operationId: getCertificateById
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
     parameters:
       - name: id
         in: path
@@ -110,58 +183,31 @@
           type: string
           format: uuid
     responses:
-      '200':
+      "200":
         description: Certificate details
-      '404':
-        $ref: '#/components/responses/NotFound'
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: '#/components/schemas/CertificateResponse'
+      "404":
+        description: Certificate not found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
 
-/certificates/{id}/preview:
-  get:
-    tags: [Certificates]
-    summary: Certificate Preview
-    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    responses:
-      '200':
-        description: Preview URL or HTML
-      '404':
-        $ref: '#/components/responses/NotFound'
-
-/certificates/{id}/sign:
-  post:
-    tags: [Certificates]
-    summary: Sign Certificate
-    x-roles: [ADMIN, GM]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    requestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CertificateActionRequest'
-          example:
-            reason: "Certificate approved"
-    responses:
-      '200':
-        description: Certificate signed
-      '404':
-        $ref: '#/components/responses/NotFound'
-
-/certificates/{id}/suspend:
+/api/v1/certificates/{id}/suspend:
   put:
     tags: [Certificates]
-    summary: Suspend Certificate
+    summary: Suspend certificate
+    description: Suspend a certificate. ADMIN, TM only.
+    operationId: suspendCertificate
     x-roles: [ADMIN, TM]
     parameters:
       - name: id
@@ -175,19 +221,37 @@
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CertificateActionRequest'
+            $ref: '#/components/schemas/CertActionRequest'
           example:
             reason: "Administrative suspension"
     responses:
-      '200':
+      "200":
         description: Certificate suspended
-      '404':
-        $ref: '#/components/responses/NotFound'
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/CertificateResponse'
+      "400":
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
 
-/certificates/{id}/revoke:
+/api/v1/certificates/{id}/revoke:
   put:
     tags: [Certificates]
-    summary: Revoke Certificate
+    summary: Revoke certificate
+    description: Revoke a certificate. ADMIN, TM only.
+    operationId: revokeCertificate
     x-roles: [ADMIN, TM]
     parameters:
       - name: id
@@ -201,124 +265,32 @@
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CertificateActionRequest'
-          example:
-            reason: "Non-compliance"
-    responses:
-      '200':
-        description: Certificate revoked
-      '404':
-        $ref: '#/components/responses/NotFound'
-
-/certificates/{id}/restore:
-  put:
-    tags: [Certificates]
-    summary: Restore Certificate
-    x-roles: [ADMIN, TM]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CertificateActionRequest'
-          example:
-            reason: "Restored"
-    responses:
-      '200':
-        description: Certificate restored
-      '404':
-        $ref: '#/components/responses/NotFound'
-
-/certificates/{id}/renew:
-  put:
-    tags: [Certificates]
-    summary: Renew Certificate
-    x-roles: [ADMIN, TM]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CertificateRenewRequest'
-          example:
-            validity_years: 2
-            reason: "Standard renewal"
-    responses:
-      '200':
-        description: Certificate renewed
-      '404':
-        $ref: '#/components/responses/NotFound'
-
-/certificates/{id}/reissue:
-  post:
-    tags: [Certificates]
-    summary: Reissue Certificate
-    x-roles: [ADMIN, TM]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    requestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CertificateActionRequest'
-          example:
-            reason: "Reissue"
-    responses:
-      '201':
-        description: Certificate reissued
-      '404':
-        $ref: '#/components/responses/NotFound'
-
-/certificates/{id}/transfer:
-  post:
-    tags: [Certificates]
-    summary: Transfer Certificate
-    x-roles: [ADMIN, GM]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CertificateActionRequest'
+            $ref: '#/components/schemas/CertActionRequest'
           example:
             reason: "Vessel sold"
     responses:
-      '200':
-        description: Certificate transferred
-      '404':
-        $ref: '#/components/responses/NotFound'
+      "200":
+        description: Certificate revoked
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/CertificateResponse'
 
-/certificates/{id}/extend:
-  post:
+/api/v1/certificates/{id}/restore:
+  put:
     tags: [Certificates]
-    summary: Extend Certificate
-    x-roles: [ADMIN, GM]
+    summary: Restore certificate
+    description: Restore a suspended certificate. ADMIN, TM only.
+    operationId: restoreCertificate
+    x-roles: [ADMIN, TM]
     parameters:
       - name: id
         in: path
@@ -331,20 +303,32 @@
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CertificateActionRequest'
+            $ref: '#/components/schemas/CertActionRequest'
           example:
-            reason: "Extension granted"
+            reason: "Issue resolved"
     responses:
-      '200':
-        description: Certificate extended
-      '404':
-        $ref: '#/components/responses/NotFound'
+      "200":
+        description: Certificate restored
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/CertificateResponse'
 
-/certificates/{id}/downgrade:
+/api/v1/certificates/{id}/renew:
   put:
     tags: [Certificates]
-    summary: Downgrade Certificate
-    x-roles: [ADMIN, GM]
+    summary: Renew certificate
+    description: Renew an expiring certificate. ADMIN, TM only.
+    operationId: renewCertificate
+    x-roles: [ADMIN, TM]
     parameters:
       - name: id
         in: path
@@ -356,27 +340,72 @@
       required: true
       content:
         application/json:
-          type: object
-          properties:
-            newTypeId:
-              type: string
-              format: uuid
-            reason:
-              type: string
+          schema:
+            $ref: '#/components/schemas/RenewCertRequest'
           example:
-            newTypeId: "660e8400-e29b-41d4-a716-446655440001"
-            reason: "Downgrade requested"
+            validity_years: 1
+            reason: "Standard renewal"
     responses:
-      '200':
-        description: Certificate downgraded
-      '404':
-        $ref: '#/components/responses/NotFound'
+      "200":
+        description: Certificate renewed
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/CertificateResponse'
 
-/certificates/{id}/history:
+/api/v1/certificates/{id}/reissue:
+  post:
+    tags: [Certificates]
+    summary: Reissue certificate
+    description: Reissue a certificate (e.g. after loss). ADMIN, TM only.
+    operationId: reissueCertificate
+    x-roles: [ADMIN, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CertActionRequest'
+          example:
+            reason: "Original lost"
+    responses:
+      "200":
+        description: Certificate reissued
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                data:
+                  $ref: '#/components/schemas/CertificateResponse'
+
+/api/v1/certificates/{id}/preview:
   get:
     tags: [Certificates]
-    summary: Certificate History
-    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    summary: Preview certificate
+    description: Get certificate preview/PDF. ADMIN, GM, TM, TO, SURVEYOR, CLIENT.
+    operationId: previewCertificate
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
     parameters:
       - name: id
         in: path
@@ -385,7 +414,93 @@
           type: string
           format: uuid
     responses:
-      '200':
-        description: Certificate change history
-      '404':
-        $ref: '#/components/responses/NotFound'
+      "200":
+        description: Certificate preview
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+
+/api/v1/certificates/{id}/sign:
+  post:
+    tags: [Certificates]
+    summary: Sign certificate
+    description: Digitally sign a certificate. ADMIN, GM only.
+    operationId: signCertificate
+    x-roles: [ADMIN, GM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: Certificate signed
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+
+/api/v1/certificates/{id}/signature:
+  get:
+    tags: [Certificates]
+    summary: Get certificate signature
+    description: Get signature details for a certificate.
+    operationId: getCertificateSignature
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: Signature details
+        content:
+          application/json:
+            schema:
+              type: object
+
+/api/v1/certificates/{id}/history:
+  get:
+    tags: [Certificates]
+    summary: Get certificate history
+    description: Get certificate change history.
+    operationId: getCertificateHistory
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: Certificate history
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array

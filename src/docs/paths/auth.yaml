@@ -1,10 +1,11 @@
-/auth/login:
+/api/v1/auth/login:
   post:
     tags: [Auth]
     summary: Login
-    description: Authenticate and receive JWT token
-    x-roles: [PUBLIC]
+    description: Authenticate with email and password. Returns user and JWT token.
     security: []
+    operationId: login
+    x-roles: [PUBLIC]
     requestBody:
       required: true
       content:
@@ -12,26 +13,23 @@
           schema:
             $ref: '#/components/schemas/LoginRequest'
           example:
-            email: "admin@girik.com"
-            password: "admin123"
+            email: "admin@gmail.com"
+            password: "admin123!"
     responses:
-      '200':
+      "200":
         description: Login successful
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/LoginResponse'
             example:
-              success: true
-              data:
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                refreshToken: "refresh_token_here"
-                user:
-                  id: "550e8400-e29b-41d4-a716-446655440000"
-                  email: "admin@girik.com"
-                  name: "Admin User"
-                  role: "ADMIN"
-      '401':
+              user:
+                id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                name: "John Doe"
+                email: "admin@gmail.com"
+                role: "CLIENT"
+              token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      "401":
         description: Invalid credentials
         content:
           application/json:
@@ -40,90 +38,142 @@
             example:
               success: false
               message: "Invalid email or password"
-      '400':
-        $ref: '#/components/responses/BadRequest'
+      "400":
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
 
-/auth/logout:
+/api/v1/auth/logout:
   post:
     tags: [Auth]
     summary: Logout
-    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT]
+    description: Invalidate current session. Requires authentication.
+    operationId: logout
+    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
     responses:
-      '200':
-        description: Logged out
-      '401':
-        $ref: '#/components/responses/Unauthorized'
+      "200":
+        description: Logged out successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "Logged out successfully"
+                token:
+                  type: "null"
+            example:
+              message: "Logged out successfully"
+              token: null
+      "401":
+        description: Not authenticated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
 
-/auth/forgot-password:
+/api/v1/auth/refresh-token:
   post:
     tags: [Auth]
-    summary: Forgot Password
-    x-roles: [PUBLIC]
+    summary: Refresh token
+    description: Get new access token using refresh token.
     security: []
+    operationId: refreshToken
+    x-roles: [PUBLIC]
     requestBody:
       content:
         application/json:
           schema:
-            type: object
-            required: [email]
-            properties:
-              email:
-                type: string
-                format: email
-          example:
-            email: "admin@girik.com"
+            $ref: '#/components/schemas/RefreshTokenRequest'
     responses:
-      '200':
-        description: Reset link sent
-      '400':
-        $ref: '#/components/responses/BadRequest'
+      "200":
+        description: Token refreshed
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  $ref: '#/components/schemas/UserSummary'
+                token:
+                  type: string
+      "401":
+        description: Invalid refresh token
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
 
-/auth/reset-password:
+/api/v1/auth/forgot-password:
   post:
     tags: [Auth]
-    summary: Reset Password
-    x-roles: [PUBLIC]
+    summary: Forgot password
+    description: Request password reset email.
     security: []
+    operationId: forgotPassword
+    x-roles: [PUBLIC]
     requestBody:
+      required: true
       content:
         application/json:
           schema:
-            type: object
-            required: [token, newPassword]
-            properties:
-              token:
-                type: string
-              newPassword:
-                type: string
-                format: password
+            $ref: '#/components/schemas/ForgotPasswordRequest'
           example:
-            token: "RESET_TOKEN_FROM_EMAIL"
+            email: "user@girik.com"
+    responses:
+      "200":
+        description: Password reset email sent
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "Password reset email sent"
+            example:
+              message: "Password reset email sent"
+      "400":
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+
+/api/v1/auth/reset-password:
+  post:
+    tags: [Auth]
+    summary: Reset password
+    description: Reset password using token from email.
+    security: []
+    operationId: resetPassword
+    x-roles: [PUBLIC]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResetPasswordRequest'
+          example:
+            token: "reset-token-from-email"
             newPassword: "NewSecurePass123!"
     responses:
-      '200':
-        description: Password reset
-      '400':
-        $ref: '#/components/responses/BadRequest'
-
-/auth/refresh-token:
-  post:
-    tags: [Auth]
-    summary: Refresh Token
-    x-roles: [PUBLIC]
-    security: []
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            required: [token]
-            properties:
-              token:
-                type: string
-          example:
-            token: "{{refresh_token}}"
-    responses:
-      '200':
-        description: New tokens
-      '401':
-        $ref: '#/components/responses/Unauthorized'
+      "200":
+        description: Password reset successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "Password reset successfully"
+      "400":
+        description: Invalid or expired token
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'

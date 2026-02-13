@@ -121,7 +121,6 @@ include: [{ model: Client, as: 'Client' }]  // ✅ Explicit model reference
 - [x] No foreign key constraint errors
 - [x] Vessel endpoints work correctly
 - [x] Client associations resolve properly
-- [x] Swagger UI loads with role buttons
 - [x] API authentication works
 
 ## Migration Strategy for Future Schema Changes

@@ -1,0 +1,4 @@
+# TM (Technical Manager) role
+# Endpoints filtered by x-roles containing TM
+description: Technical Manager - technical approvals, TOCA, certificates, vessel management
+roles: [TM]

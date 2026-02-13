@@ -1,0 +1,73 @@
+ClientCreateRequest:
+  type: object
+  required:
+    - company_name
+    - company_code
+    - email
+  properties:
+    company_name:
+      type: string
+      example: "Marine Shipping Co"
+    company_code:
+      type: string
+      example: "MSC001"
+    email:
+      type: string
+      format: email
+      example: "contact@marineshipping.com"
+    address:
+      type: string
+    country:
+      type: string
+    phone:
+      type: string
+    contact_person_name:
+      type: string
+    contact_person_email:
+      type: string
+      format: email
+    status:
+      type: string
+      enum: [ACTIVE, INACTIVE]
+    user:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 6
+        role:
+          type: string
+          enum: [CLIENT]
+          default: CLIENT
+        phone:
+          type: string
+  example:
+    company_name: "Marine Shipping Co"
+    company_code: "MSC001"
+    email: "contact@marineshipping.com"
+
+ClientResponse:
+  type: object
+  properties:
+    id:
+      $ref: '#/components/schemas/UUID'
+    company_name:
+      type: string
+    company_code:
+      type: string
+    email:
+      type: string
+      format: email
+    address:
+      type: string
+    country:
+      type: string
+    status:
+      type: string
+      enum: [ACTIVE, INACTIVE]

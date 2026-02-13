@@ -1,5 +1,22 @@
 # 🚀 Quick Start Guide - Checklist Template System
 
+## API Documentation (Swagger)
+
+Interactive OpenAPI docs are available at:
+
+| URL | Description |
+|-----|-------------|
+| http://localhost:3000/api-docs | Full API (all endpoints) |
+| http://localhost:3000/api-docs/admin | ADMIN role view |
+| http://localhost:3000/api-docs/gm | GM role view |
+| http://localhost:3000/api-docs/tm | TM role view |
+| http://localhost:3000/api-docs/surveyor | SURVEYOR role view |
+| http://localhost:3000/api-docs/client | CLIENT role view |
+
+**Try it out:** Log in via `/api/v1/auth/login`, then click **Authorize** and enter `Bearer <token>`.
+
+---
+
 ## Current Situation
 
 You have an empty database with no certificate types yet. This is normal! Follow these steps to get everything working.
@@ -85,11 +102,10 @@ curl -X POST http://localhost:3000/api/v1/checklist-templates \
   }'
 ```
 
-#### Option B: Using Postman/Thunder Client
+#### Option B: Using an API client (e.g. Thunder Client)
 
-1. Import the collection (if you have one)
-2. Set authentication (JWT cookie)
-3. Use the request body from Option A above
+1. Set base URL to your server and add authentication (JWT cookie)
+2. Use the request body from Option A above
 
 ---
 

@@ -1,107 +1,115 @@
-/payments:
+/api/v1/payments:
   get:
     tags: [Payments]
-    summary: List Payments
-    x-roles: [ADMIN, GM, TM, CLIENT]
+    summary: List payments
+    description: List payments. CLIENT sees only their payments.
+    operationId: getPayments
+    x-roles: [CLIENT, ADMIN, GM, TM]
     parameters:
       - name: page
         in: query
         schema:
           type: integer
+          default: 1
       - name: limit
         in: query
         schema:
           type: integer
-      - name: status
-        in: query
-        schema:
-          type: string
-          enum: [UNPAID, PAID, ON_HOLD]
+          default: 20
     responses:
-      '200':
+      "200":
         description: List of payments
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SuccessResponse'
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/PaymentResponse'
             example:
               success: true
               data:
-                - id: "550e8400-e29b-41d4-a716-446655440000"
-                  invoice_number: "INV-2026-001"
-                  amount: 3500
+                - id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                  invoice_number: "INV-2026-001234"
+                  amount: 1500.00
                   payment_status: "UNPAID"
-      '401':
-        $ref: '#/components/responses/Unauthorized'
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
 
-/payments/summary:
+/api/v1/payments/summary:
   get:
     tags: [Payments]
-    summary: Financial Summary
-    x-roles: [ADMIN, GM, CLIENT]
+    summary: Financial summary
+    description: Get financial summary. CLIENT, ADMIN, GM only.
+    operationId: getFinancialSummary
+    x-roles: [CLIENT, ADMIN, GM]
     responses:
-      '200':
+      "200":
         description: Financial summary
-      '401':
-        $ref: '#/components/responses/Unauthorized'
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: '#/components/schemas/FinancialSummaryResponse'
 
-/payments/invoice:
+/api/v1/payments/invoice:
   post:
     tags: [Payments]
-    summary: Create Invoice
+    summary: Create invoice
+    description: Create a new invoice for a job. ADMIN, GM, TM only.
+    operationId: createInvoice
     x-roles: [ADMIN, GM, TM]
     requestBody:
       required: true
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/PaymentInvoiceRequest'
+            $ref: '#/components/schemas/CreateInvoiceRequest'
           example:
-            job_id: "550e8400-e29b-41d4-a716-446655440000"
-            amount: 3500
+            job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+            amount: 1500.00
             currency: "USD"
     responses:
-      '201':
+      "201":
         description: Invoice created
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SuccessResponse'
-            example:
-              success: true
-              data:
-                id: "660e8400-e29b-41d4-a716-446655440001"
-                invoice_number: "INV-2026-001"
-                amount: 3500
-                payment_status: "UNPAID"
-      '400':
-        $ref: '#/components/responses/BadRequest'
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: '#/components/schemas/PaymentResponse'
+      "400":
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
 
-/payments/writeoff:
-  post:
-    tags: [Payments]
-    summary: Write Off Payment
-    x-roles: [ADMIN]
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/PaymentWriteoffRequest'
-          example:
-            paymentId: "550e8400-e29b-41d4-a716-446655440000"
-            reason: "Bad debt"
-    responses:
-      '200':
-        description: Payment written off
-      '400':
-        $ref: '#/components/responses/BadRequest'
-
-/payments/{id}:
+/api/v1/payments/{id}:
   get:
     tags: [Payments]
-    summary: Get Payment by ID
-    x-roles: [ADMIN, GM, TM, CLIENT]
+    summary: Get payment by ID
+    description: Get payment details by ID.
+    operationId: getPaymentById
+    x-roles: [CLIENT, ADMIN, GM, TM]
     parameters:
       - name: id
         in: path
@@ -110,15 +118,31 @@
           type: string
           format: uuid
     responses:
-      '200':
+      "200":
         description: Payment details
-      '404':
-        $ref: '#/components/responses/NotFound'
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: '#/components/schemas/PaymentResponse'
+      "404":
+        description: Payment not found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
 
-/payments/{id}/pay:
+/api/v1/payments/{id}/pay:
   put:
     tags: [Payments]
-    summary: Mark Payment as Paid
+    summary: Mark invoice as paid
+    description: Mark an invoice as paid. ADMIN, GM, TM only.
+    operationId: markPaymentPaid
     x-roles: [ADMIN, GM, TM]
     parameters:
       - name: id
@@ -127,16 +151,37 @@
         schema:
           type: string
           format: uuid
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              payment_date:
+                type: string
+                format: date
+              receipt_url:
+                type: string
     responses:
-      '200':
+      "200":
         description: Payment marked as paid
-      '404':
-        $ref: '#/components/responses/NotFound'
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: '#/components/schemas/PaymentResponse'
 
-/payments/{id}/ledger:
-  get:
+/api/v1/payments/{id}/refund:
+  post:
     tags: [Payments]
-    summary: Get Payment Ledger
+    summary: Process refund
+    description: Process a refund for a payment. ADMIN, GM only.
+    operationId: refundPayment
     x-roles: [ADMIN, GM]
     parameters:
       - name: id
@@ -145,8 +190,63 @@
         schema:
           type: string
           format: uuid
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              amount:
+                type: number
+              reason:
+                type: string
     responses:
-      '200':
-        description: Ledger entries
-      '404':
-        $ref: '#/components/responses/NotFound'
+      "200":
+        description: Refund processed
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+
+/api/v1/payments/{id}/partial:
+  post:
+    tags: [Payments]
+    summary: Record partial payment
+    description: Record a partial payment against an invoice. ADMIN, GM, TM only.
+    operationId: recordPartialPayment
+    x-roles: [ADMIN, GM, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PartialPaymentRequest'
+          example:
+            amount: 500.00
+            remarks: "First instalment"
+    responses:
+      "200":
+        description: Partial payment recorded
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: '#/components/schemas/PaymentResponse'

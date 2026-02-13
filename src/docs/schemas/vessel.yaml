@@ -1,4 +1,27 @@
-# Vessel schemas
+VesselSummary:
+  type: object
+  properties:
+    id:
+      $ref: '#/components/schemas/UUID'
+    vessel_name:
+      type: string
+      example: "Ocean Pioneer"
+    imo_number:
+      type: string
+      example: "9123456"
+    flag_state:
+      type: string
+      example: "Singapore"
+    ship_type:
+      type: string
+      example: "Cargo"
+  example:
+    id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+    vessel_name: "Ocean Pioneer"
+    imo_number: "9123456"
+    flag_state: "Singapore"
+    ship_type: "Cargo"
+
 VesselCreateRequest:
   type: object
   required:
@@ -9,25 +32,27 @@ VesselCreateRequest:
     - ship_type
   properties:
     client_id:
-      $ref: '#/components/schemas/UUID'
-      example: "550e8400-e29b-41d4-a716-446655440000"
+      type: string
+      format: uuid
+      example: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
     vessel_name:
       type: string
-      example: "SEA MAJESTY"
+      example: "Ocean Pioneer"
     imo_number:
       type: string
-      example: "IMO9876543"
+      example: "9123456"
     call_sign:
       type: string
-      example: "HPAB"
+      example: "9VSP"
     mmsi_number:
       type: string
-      example: "370961000"
+      example: "563123456"
     flag_state:
       type: string
-      example: "Panama"
+      example: "Singapore"
     port_of_registry:
       type: string
+      example: "Singapore"
     year_built:
       type: integer
       example: 2015
@@ -36,12 +61,13 @@ VesselCreateRequest:
       example: "Cargo"
     gross_tonnage:
       type: number
-      example: 25000
+      format: float
     net_tonnage:
       type: number
-      example: 12000
+      format: float
     deadweight:
       type: number
+      format: float
     class_status:
       type: string
       enum: [ACTIVE, SUSPENDED, WITHDRAWN]
@@ -51,12 +77,19 @@ VesselCreateRequest:
       type: string
     builder_name:
       type: string
+  example:
+    client_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+    vessel_name: "Ocean Pioneer"
+    imo_number: "9123456"
+    flag_state: "Singapore"
+    ship_type: "Cargo"
 
 VesselUpdateRequest:
   type: object
   properties:
     client_id:
-      $ref: '#/components/schemas/UUID'
+      type: string
+      format: uuid
     vessel_name:
       type: string
     imo_number:
@@ -90,47 +123,32 @@ VesselUpdateRequest:
       type: string
 
 VesselResponse:
-  type: object
-  properties:
-    id:
-      $ref: '#/components/schemas/UUID'
-    client_id:
-      $ref: '#/components/schemas/UUID'
-    vessel_name:
-      type: string
-    imo_number:
-      type: string
-    call_sign:
-      type: string
-    mmsi_number:
-      type: string
-    flag_state:
-      type: string
-    port_of_registry:
-      type: string
-    year_built:
-      type: integer
-    ship_type:
-      type: string
-    gross_tonnage:
-      type: number
-    net_tonnage:
-      type: number
-    deadweight:
-      type: number
-    class_status:
-      type: string
-      enum: [ACTIVE, SUSPENDED, WITHDRAWN]
-    current_class_society:
-      type: string
-    engine_type:
-      type: string
-    builder_name:
-      type: string
-    Client:
-      type: object
+  allOf:
+    - $ref: '#/components/schemas/VesselSummary'
+    - type: object
       properties:
-        id:
+        client_id:
           $ref: '#/components/schemas/UUID'
-        company_name:
+        call_sign:
+          type: string
+        mmsi_number:
+          type: string
+        port_of_registry:
+          type: string
+        year_built:
+          type: integer
+        gross_tonnage:
+          type: number
+        net_tonnage:
+          type: number
+        deadweight:
+          type: number
+        class_status:
+          type: string
+          enum: [ACTIVE, SUSPENDED, WITHDRAWN]
+        current_class_society:
+          type: string
+        engine_type:
+          type: string
+        builder_name:
           type: string

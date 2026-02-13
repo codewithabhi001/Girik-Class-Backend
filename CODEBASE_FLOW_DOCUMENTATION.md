@@ -202,7 +202,6 @@ src/
 │   ├── database.js           # Sequelize config
 │   ├── aws.js                # S3 client
 │   ├── mail.js               # Email transporter
-│   └── swagger.config.js     # API documentation
 │
 ├── middlewares/              # Express middlewares
 │   ├── auth.middleware.js    # JWT authentication

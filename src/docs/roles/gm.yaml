@@ -1,0 +1,4 @@
+# GM (General Manager) role
+# Endpoints filtered by x-roles containing GM
+description: General Manager - management dashboard, job approval, surveyor assignment, certificates
+roles: [GM]

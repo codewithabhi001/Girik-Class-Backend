@@ -1,0 +1,4 @@
+# CLIENT role
+# Endpoints filtered by x-roles containing CLIENT
+description: Client - own vessels, jobs, certificates, payments, profile
+roles: [CLIENT]
