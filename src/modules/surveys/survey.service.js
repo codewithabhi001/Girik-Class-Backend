@@ -5,6 +5,8 @@ import * as notificationService from '../../services/notification.service.js';
 const SurveyReport = db.SurveyReport;
 const JobRequest = db.JobRequest;
 const GpsTracking = db.GpsTracking;
+const ActivityPlanning = db.ActivityPlanning;
+const JobStatusHistory = db.JobStatusHistory;
 
 export const submitSurveyReport = async (data, file, userId) => {
     const { job_id, gps_latitude, gps_longitude, survey_statement } = data;
@@ -12,9 +14,17 @@ export const submitSurveyReport = async (data, file, userId) => {
     const job = await JobRequest.findByPk(job_id);
     if (!job) throw { statusCode: 404, message: 'Job not found' };
 
-    // Validate Surveyor Assignment (Service level check but not role-based)
     if (job.gm_assigned_surveyor_id !== userId) {
         throw { statusCode: 403, message: 'You are not assigned to this job' };
+    }
+
+    if (job.job_status !== 'IN_PROGRESS') {
+        throw { statusCode: 400, message: 'Survey report can only be submitted after starting the survey (job must be IN_PROGRESS)' };
+    }
+
+    const checklistCount = await ActivityPlanning.count({ where: { job_id } });
+    if (checklistCount === 0) {
+        throw { statusCode: 400, message: 'Checklist must be submitted before submitting the survey report' };
     }
 
     // Upload Photo
@@ -52,28 +62,47 @@ export const submitSurveyReport = async (data, file, userId) => {
 export const startSurvey = async (data, userId) => {
     const { job_id, latitude, longitude } = data;
     const job = await JobRequest.findByPk(job_id);
-    if (job) {
-        await GpsTracking.create({
-            surveyor_id: userId,
-            vessel_id: job.vessel_id,
-            job_id,
-            latitude,
-            longitude
-        });
+    if (!job) throw { statusCode: 404, message: 'Job not found' };
+    if (job.job_status !== 'ASSIGNED') {
+        throw { statusCode: 400, message: 'Survey can only be started when job is ASSIGNED' };
     }
+    if (job.gm_assigned_surveyor_id !== userId) {
+        throw { statusCode: 403, message: 'You are not assigned to this job' };
+    }
+
+    await job.update({ job_status: 'IN_PROGRESS' });
+    await JobStatusHistory.create({
+        job_id: job.id,
+        old_status: 'ASSIGNED',
+        new_status: 'IN_PROGRESS',
+        changed_by: userId,
+        change_reason: 'Survey started by surveyor'
+    });
+    await GpsTracking.create({
+        surveyor_id: userId,
+        vessel_id: job.vessel_id,
+        job_id,
+        latitude,
+        longitude
+    });
     return { message: 'Survey Started', job_id, started_at: new Date() };
 };
 
 export const finalizeSurvey = async (id, userId) => {
     const job = await JobRequest.findByPk(id);
     if (!job) throw { statusCode: 404, message: 'Job not found' };
+    if (job.job_status !== 'SURVEY_DONE') {
+        throw { statusCode: 400, message: 'Survey can only be finalized after the report is submitted (job must be SURVEY_DONE)' };
+    }
+    if (job.gm_assigned_surveyor_id !== userId) {
+        throw { statusCode: 403, message: 'You are not assigned to this job' };
+    }
 
     const survey = await SurveyReport.findOne({ where: { job_id: id } });
     if (!survey) {
-        throw { statusCode: 400, message: 'Survey Report (Evidence) not found. Cannot finalize.' };
+        throw { statusCode: 400, message: 'Survey Report not found. Cannot finalize.' };
     }
 
-    await survey.update({ status: 'FINALIZED' });
     await job.update({ job_status: 'TM_FINAL' });
 
     return { message: 'Survey Finalized.' };
@@ -82,6 +111,13 @@ export const finalizeSurvey = async (id, userId) => {
 export const streamLocation = async (jobId, data, userId) => {
     const { latitude, longitude } = data;
     const job = await JobRequest.findByPk(jobId);
+    if (!job) throw { statusCode: 404, message: 'Job not found' };
+    if (job.job_status !== 'IN_PROGRESS') {
+        throw { statusCode: 400, message: 'Location can only be streamed while survey is in progress' };
+    }
+    if (job.gm_assigned_surveyor_id !== userId) {
+        throw { statusCode: 403, message: 'You are not assigned to this job' };
+    }
     await GpsTracking.create({
         surveyor_id: userId,
         latitude,
@@ -93,6 +129,14 @@ export const streamLocation = async (jobId, data, userId) => {
 };
 
 export const uploadProof = async (jobId, file, userId) => {
+    const job = await JobRequest.findByPk(jobId);
+    if (!job) throw { statusCode: 404, message: 'Job not found' };
+    if (job.job_status !== 'IN_PROGRESS') {
+        throw { statusCode: 400, message: 'Evidence can only be uploaded while survey is in progress' };
+    }
+    if (job.gm_assigned_surveyor_id !== userId) {
+        throw { statusCode: 403, message: 'You are not assigned to this job' };
+    }
     const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PROOF);
     return { url };
 };

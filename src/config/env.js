@@ -15,7 +15,13 @@ export default {
         sslCa: process.env.DB_SSL_CA,
     },
     jwt: {
-        secret: process.env.JWT_SECRET || 'secret',
+        get secret() {
+            const secret = process.env.JWT_SECRET || 'secret';
+            if (process.env.NODE_ENV === 'production' && (!secret || secret === 'secret')) {
+                throw new Error('JWT_SECRET must be set to a strong value in production');
+            }
+            return secret;
+        },
         expiresIn: process.env.JWT_EXPIRES_IN || '1d',
     },
     aws: {
@@ -24,6 +30,8 @@ export default {
         region: process.env.AWS_REGION,
         bucketName: process.env.AWS_BUCKET_NAME,
     },
+    frontendUrl: process.env.FRONTEND_URL || process.env.CLIENT_URL || 'http://localhost:3000',
+    passwordResetExpiresIn: process.env.PASSWORD_RESET_EXPIRES_IN || '1h',
     mail: {
         host: process.env.SMTP_HOST,
         port: process.env.SMTP_PORT,

@@ -21,7 +21,6 @@ export default (sequelize, DataTypes) => {
         Certificate.belongsTo(models.CertificateType, { foreignKey: 'certificate_type_id' });
         Certificate.belongsTo(models.User, { foreignKey: 'issued_by_user_id', as: 'issuer' });
         Certificate.hasMany(models.CertificateHistory, { foreignKey: 'certificate_id' });
-        Certificate.hasMany(models.CertificateAlert, { foreignKey: 'certificate_id' });
     };
 
     return Certificate;

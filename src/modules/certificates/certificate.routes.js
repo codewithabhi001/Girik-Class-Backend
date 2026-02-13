@@ -11,12 +11,12 @@ router.get('/verify/:number', certController.verifyCertificate);
 
 router.use(authenticate);
 
-// Metadata
+// Metadata – certificate types
 router.get('/types', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), certController.getCertificateTypes);
+router.post('/types', authorizeRoles('ADMIN'), validate(schemas.createCertificateType), certController.createCertificateType);
 
 // List all certificates
 router.get('/', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), certController.getCertificates);
-
 // Get certificates expiring within a range
 router.get('/expiring', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), certController.getExpiringCertificates);
 
@@ -25,6 +25,8 @@ router.post('/', authorizeRoles('ADMIN', 'GM', 'TM'), certController.generateCer
 
 // Get specific certificate details
 router.get('/:id', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), certController.getCertificateById);
+// Download certificate PDF (redirects to pdf_file_url; CLIENT scoped to their vessels)
+router.get('/:id/download', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), certController.downloadCertificate);
 
 // Suspend/Revoke/Restore
 router.put('/:id/suspend', authorizeRoles('ADMIN', 'TM'), validate(schemas.certAction), certController.suspendCertificate);

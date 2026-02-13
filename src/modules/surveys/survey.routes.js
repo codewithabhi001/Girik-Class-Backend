@@ -13,8 +13,8 @@ router.use(authenticate);
 // Start a new survey (check-in)
 router.post('/start', authorizeRoles('SURVEYOR'), validate(schemas.startSurvey), surveyController.startSurvey);
 
-// Submit a survey report
-router.post('/', authorizeRoles('SURVEYOR'), upload.single('photo'), surveyController.submitSurveyReport);
+// Submit a survey report (requires survey started + checklist submitted)
+router.post('/', authorizeRoles('SURVEYOR'), validate(schemas.submitSurvey), upload.single('photo'), surveyController.submitSurveyReport);
 
 // Finalize a survey report
 router.put('/:id/finalize', authorizeRoles('SURVEYOR'), surveyController.finalizeSurvey);

@@ -15,7 +15,6 @@ export default (sequelize, DataTypes) => {
 
     Document.associate = (models) => {
         Document.belongsTo(models.User, { foreignKey: 'uploaded_by' });
-        Document.hasMany(models.DocumentVersion, { foreignKey: 'document_id' });
     };
 
     return Document;

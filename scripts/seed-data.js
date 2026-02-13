@@ -226,6 +226,45 @@ const seedData = async () => {
         }
         logger.info(`Seeded ${templatesData.length} Checklist Templates.`);
 
+        // 5. Create Certificate Templates
+        logger.info('Seeding Certificate Templates...');
+        const certTemplatesData = [
+            {
+                template_name: 'Safety Construction Certificate',
+                certificate_type_id: safetyConstCert?.id || createdCertTypes[0]?.id,
+                template_content: '<h1>CARGO SHIP SAFETY CONSTRUCTION CERTIFICATE</h1><p>This is to certify that the vessel <strong>{{vessel_name}}</strong> (IMO {{imo_number}}) has been surveyed and complies with SOLAS requirements.</p><p>Issued: {{issue_date}} | Valid until: {{expiry_date}}</p>',
+                variables: ['vessel_name', 'imo_number', 'issue_date', 'expiry_date'],
+                is_active: true
+            },
+            {
+                template_name: 'Load Line Certificate',
+                certificate_type_id: loadLineCert?.id || createdCertTypes[2]?.id,
+                template_content: '<h1>INTERNATIONAL LOAD LINE CERTIFICATE</h1><p>Certificate for vessel <strong>{{vessel_name}}</strong> (IMO {{imo_number}})</p><p>Load line marks have been verified as per 1966 Convention.</p><p>Valid until: {{expiry_date}}</p>',
+                variables: ['vessel_name', 'imo_number', 'expiry_date'],
+                is_active: true
+            },
+            {
+                template_name: 'Safety Equipment Certificate',
+                certificate_type_id: createdCertTypes.find(c => c.name?.includes('Safety Equipment'))?.id || createdCertTypes[1]?.id,
+                template_content: '<h1>CARGO SHIP SAFETY EQUIPMENT CERTIFICATE</h1><p>Vessel: {{vessel_name}} (IMO {{imo_number}})</p><p>Fire safety systems and life-saving appliances verified.</p><p>Issue date: {{issue_date}}</p>',
+                variables: ['vessel_name', 'imo_number', 'issue_date'],
+                is_active: true
+            }
+        ];
+
+        for (const data of certTemplatesData) {
+            if (data.certificate_type_id) {
+                const [certTemplate] = await db.CertificateTemplate.findOrCreate({
+                    where: {
+                        template_name: data.template_name,
+                        certificate_type_id: data.certificate_type_id
+                    },
+                    defaults: data
+                });
+            }
+        }
+        logger.info(`Seeded ${certTemplatesData.length} Certificate Templates.`);
+
         logger.info('Seeding completed successfully.');
         process.exit(0);
 

@@ -18,6 +18,16 @@ export const schemas = {
         email: Joi.string().email().required(),
         password: Joi.string().required(),
     }),
+    refreshToken: Joi.object({
+        token: Joi.string().required(),
+    }),
+    forgotPassword: Joi.object({
+        email: Joi.string().email().required(),
+    }),
+    resetPassword: Joi.object({
+        token: Joi.string().required(),
+        newPassword: Joi.string().min(6).required(),
+    }),
     register: Joi.object({
         name: Joi.string().required(),
         email: Joi.string().email().required(),
@@ -137,6 +147,13 @@ export const schemas = {
     renewCert: Joi.object({
         validity_years: Joi.number().integer().min(1).max(5).required(),
         reason: Joi.string().required(),
+    }),
+    createCertificateType: Joi.object({
+        name: Joi.string().required().trim(),
+        issuing_authority: Joi.string().valid('CLASS', 'FLAG').required(),
+        validity_years: Joi.number().integer().min(1).max(10).required(),
+        status: Joi.string().valid('ACTIVE', 'INACTIVE').optional().default('ACTIVE'),
+        description: Joi.string().allow('', null).optional(),
     }),
     uploadDocument: Joi.object({
         entity_type: Joi.string().required(),

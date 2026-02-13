@@ -16,7 +16,6 @@ export default (sequelize, DataTypes) => {
 
     Approval.associate = (models) => {
         Approval.belongsTo(models.User, { foreignKey: 'approved_by' });
-        Approval.hasMany(models.ApprovalStep, { foreignKey: 'approval_id' });
     };
 
     return Approval;

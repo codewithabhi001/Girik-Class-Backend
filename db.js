@@ -127,28 +127,6 @@ approvals[icon: check-circle, color: green] {
   approved_at DATETIME
 }
 
-approval_steps[icon: git-branch, color: green] {
-  id UUID PK
-  approval_id UUID
-  step_number INT
-  role_required VARCHAR
-  approved_by UUID
-  status ENUM(PENDING, APPROVED, REJECTED)
-  remarks TEXT
-  action_at DATETIME
-}
-
-approval_matrix[icon: grid, color: green] {
-  id UUID PK
-  context VARCHAR
-  criteria_json JSON
-  steps_json JSON
-  priority INT
-  is_active BOOLEAN
-  created_at DATETIME
-  updated_at DATETIME
-}
-
 survey_reports[icon: file-text, color: purple] {
   id UUID PK
   job_id UUID
@@ -228,14 +206,6 @@ certificate_history[icon: clock, color: purple] {
   changed_at DATETIME
 }
 
-certificate_alerts[icon: alert-octagon, color: red] {
-  id UUID PK
-  certificate_id UUID
-  alert_type ENUM(EXPIRY_REMINDER, SUSPENSION, REVOCATION)
-  triggered_at DATETIME
-  sent_to_role VARCHAR
-}
-
 flag_administrations[icon: flag, color: cyan] {
   id UUID PK
   flag_name VARCHAR UNIQUE
@@ -267,15 +237,6 @@ payments[icon: credit-card, color: yellow] {
   payment_date DATETIME
   receipt_url VARCHAR
   verified_by_user_id UUID
-}
-
-payment_transactions[icon: dollar-sign, color: yellow] {
-  id UUID PK
-  payment_id UUID
-  gateway VARCHAR
-  transaction_ref VARCHAR
-  status ENUM(INITIATED, SUCCESS, FAILED)
-  processed_at DATETIME
 }
 
 financial_ledgers[icon: book, color: yellow] {
@@ -328,15 +289,6 @@ documents[icon: paperclip, color: gray] {
   uploaded_at DATETIME
 }
 
-document_versions[icon: copy, color: gray] {
-  id UUID PK
-  document_id UUID
-  version_no INT
-  file_url VARCHAR
-  uploaded_by UUID
-  uploaded_at DATETIME
-}
-
 evidence_locks[icon: lock, color: gray] {
   id UUID PK
   document_id UUID
@@ -379,14 +331,6 @@ notification_preferences[icon: sliders, color: orange] {
   alert_types JSON
   created_at DATETIME
   updated_at DATETIME
-}
-
-email_logs[icon: mail, color: green] {
-  id UUID PK
-  recipient VARCHAR
-  subject VARCHAR
-  status ENUM(SENT, FAILED)
-  sent_at DATETIME
 }
 
 audit_logs[icon: activity, color: black] {
@@ -440,23 +384,6 @@ api_rate_limits[icon: activity, color: orange] {
   endpoint VARCHAR
   request_count INT
   last_request_at DATETIME
-}
-
-scheduled_tasks[icon: clock, color: orange] {
-  id UUID PK
-  task_type VARCHAR
-  related_entity VARCHAR
-  related_id UUID
-  scheduled_for DATETIME
-  status ENUM(PENDING, COMPLETED, FAILED)
-}
-
-system_settings[icon: settings, color: black] {
-  id UUID PK
-  setting_key VARCHAR UNIQUE
-  setting_value TEXT
-  updated_by UUID
-  updated_at DATETIME
 }
 
 ai_model_versions[icon: cpu, color: purple] {
@@ -529,35 +456,6 @@ checklist_templates[icon: list, color: blue] {
   updated_at DATETIME
 }
 
-service_providers[icon: truck, color: cyan] {
-  id UUID PK
-  company_name VARCHAR
-  service_type ENUM(DRY_DOCK, LAB, LOGISTICS, CRANE, OTHER)
-  contact_person VARCHAR
-  email VARCHAR
-  phone VARCHAR
-  status ENUM(PENDING, APPROVED, SUSPENDED, BLACKLISTED)
-  rating FLOAT
-  legal_hold_status BOOLEAN
-  created_at DATETIME
-  updated_at DATETIME
-}
-
-provider_evaluations[icon: check-square, color: cyan] {
-  id UUID PK
-  provider_id UUID
-  job_id UUID
-  evaluated_by UUID
-  punctuality_score FLOAT
-  quality_score FLOAT
-  documentation_score FLOAT
-  compliance_score FLOAT
-  average_rating FLOAT
-  remarks TEXT
-  result ENUM(PASS, FAIL, CONDITIONAL)
-  created_at DATETIME
-}
-
 customer_feedbacks[icon: star, color: yellow] {
   id UUID PK
   job_id UUID
@@ -575,21 +473,11 @@ entity_audit_trail.changed_by > users.id
 job_status_history.job_id > job_requests.id
 job_status_history.changed_by > users.id
 
-approval_steps.approval_id > approvals.id
-approval_steps.approved_by > users.id
 approvals.approved_by > users.id
 
 geo_fencing_rules.vessel_id > vessels.id
 
-certificate_alerts.certificate_id > certificates.id
-
-document_versions.document_id > documents.id
-document_versions.uploaded_by > users.id
 documents.uploaded_by > users.id
-
-system_settings.updated_by > users.id
-
-payment_transactions.payment_id > payments.id
 
 users.client_id > clients.id
 vessels.client_id > clients.id
@@ -650,10 +538,6 @@ activity_requests.linked_job_id > job_requests.id
 
 checklist_templates.created_by > users.id
 checklist_templates.updated_by > users.id
-
-provider_evaluations.provider_id > service_providers.id
-provider_evaluations.job_id > job_requests.id
-provider_evaluations.evaluated_by > users.id
 
 customer_feedbacks.job_id > job_requests.id
 customer_feedbacks.client_id > users.id

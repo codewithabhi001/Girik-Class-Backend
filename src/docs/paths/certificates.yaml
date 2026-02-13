@@ -202,6 +202,46 @@
             schema:
               $ref: '#/components/schemas/ErrorResponse'
 
+/api/v1/certificates/{id}/download:
+  get:
+    tags: [Certificates]
+    summary: Download certificate PDF
+    description: |
+      Redirects to the certificate PDF URL for download. If the certificate has a stored PDF (pdf_file_url), returns 302 redirect to that URL so the browser can open or download the file.
+      CLIENT can only download certificates for their vessels.
+    operationId: downloadCertificate
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Certificate ID
+    responses:
+      "302":
+        description: Redirect to certificate PDF URL
+        headers:
+          Location:
+            description: URL of the certificate PDF
+            schema:
+              type: string
+              example: "https://storage.example.com/certificates/abc-123.pdf"
+      "404":
+        description: Certificate not found or PDF not available
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: "Certificate PDF is not available for download yet."
+
 /api/v1/certificates/{id}/suspend:
   put:
     tags: [Certificates]

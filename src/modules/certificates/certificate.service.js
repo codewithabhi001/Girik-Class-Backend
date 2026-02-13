@@ -1,42 +1,97 @@
 import db from '../../models/index.js';
 import { v4 as uuidv4 } from 'uuid';
+import * as certificatePdfService from '../../services/certificate-pdf.service.js';
 
 const Certificate = db.Certificate;
 const CertificateType = db.CertificateType;
+const CertificateTemplate = db.CertificateTemplate;
 const JobRequest = db.JobRequest;
 
-/** List certificate types. */
-export const getCertificateTypes = async () => {
+/** List certificate types (active only by default; pass all for admin). */
+export const getCertificateTypes = async (includeInactive = false) => {
+    const where = includeInactive ? {} : { status: 'ACTIVE' };
     return await CertificateType.findAll({
-        where: { status: 'ACTIVE' },
-        attributes: ['id', 'name', 'issuing_authority', 'validity_years', 'description'],
+        where,
+        attributes: ['id', 'name', 'issuing_authority', 'validity_years', 'status', 'description'],
         order: [['name', 'ASC']],
+    });
+};
+
+/** Create a new certificate type (ADMIN). */
+export const createCertificateType = async (data) => {
+    const existing = await CertificateType.findOne({ where: { name: data.name } });
+    if (existing) throw { statusCode: 409, message: 'A certificate type with this name already exists' };
+    return await CertificateType.create({
+        name: data.name,
+        issuing_authority: data.issuing_authority,
+        validity_years: data.validity_years,
+        status: data.status ?? 'ACTIVE',
+        description: data.description ?? null,
     });
 };
 
 export const generateCertificate = async (data, userId) => {
     const { job_id, validity_years } = data;
-    const job = await JobRequest.findByPk(job_id);
+    const job = await JobRequest.findByPk(job_id, {
+        include: [
+            { model: db.Vessel, attributes: ['id', 'vessel_name', 'imo_number'] },
+            { model: db.CertificateType, attributes: ['id', 'name'] },
+        ],
+    });
     if (!job) throw { statusCode: 404, message: 'Job not found' };
 
     const issueDate = new Date();
     const expiryDate = new Date();
     expiryDate.setFullYear(issueDate.getFullYear() + (validity_years || 1));
 
+    const certificateNumber = `CERT-${uuidv4().substring(0, 8).toUpperCase()}`;
+
     const cert = await Certificate.create({
         vessel_id: job.vessel_id,
         certificate_type_id: job.certificate_type_id,
-        certificate_number: `CERT-${uuidv4().substring(0, 8).toUpperCase()}`,
+        certificate_number: certificateNumber,
         issue_date: issueDate,
         expiry_date: expiryDate,
         status: 'VALID',
-        issued_by_user_id: userId
+        issued_by_user_id: userId,
     });
 
-    // Update Job
+    // Fetch template for this certificate type and generate + upload PDF
+    const template = await CertificateTemplate.findOne({
+        where: { certificate_type_id: job.certificate_type_id, is_active: true },
+        order: [['createdAt', 'DESC']],
+    });
+
+    if (template?.template_content) {
+        const vessel = job.Vessel;
+        const variables = {
+            vessel_name: vessel?.vessel_name ?? '',
+            imo_number: vessel?.imo_number ?? '',
+            issue_date: issueDate,
+            expiry_date: expiryDate,
+            certificate_number: certificateNumber,
+            certificate_type: job.CertificateType?.name ?? '',
+        };
+        const filledHtml = certificatePdfService.fillTemplate(template.template_content, variables);
+        const fullHtml = certificatePdfService.wrapHtmlForPdf(filledHtml);
+        try {
+            const pdfBuffer = await certificatePdfService.htmlToPdfBuffer(fullHtml);
+            const pdfUrl = await certificatePdfService.uploadCertificatePdf(pdfBuffer, certificateNumber);
+            await cert.update({ pdf_file_url: pdfUrl });
+        } catch (err) {
+            // Cert already created; PDF generation/upload failed — keep cert, log and surface in response if needed
+            console.warn('Certificate PDF generation failed for', cert.id, err?.message || err);
+        }
+    }
+
     await job.update({ job_status: 'CERTIFIED' });
 
-    return cert;
+    return await Certificate.findByPk(cert.id, {
+        include: [
+            { model: db.Vessel, attributes: ['vessel_name', 'imo_number'] },
+            { model: db.CertificateType, attributes: ['name'] },
+        ],
+    });
 };
 
 export const getCertificates = async (query, scopeFilters = {}) => {

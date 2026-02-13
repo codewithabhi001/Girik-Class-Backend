@@ -46,6 +46,21 @@ export const getCertificateById = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
+/** Redirect to certificate PDF for download, or return download URL. CLIENT can only access certs for their vessels. */
+export const downloadCertificate = async (req, res, next) => {
+    try {
+        const scopeFilters = await getScopeFilters(req.user);
+        const cert = await certService.getCertificateById(req.params.id, scopeFilters);
+        if (cert.pdf_file_url) {
+            return res.redirect(302, cert.pdf_file_url);
+        }
+        res.status(404).json({
+            success: false,
+            message: 'Certificate PDF is not available for download yet.'
+        });
+    } catch (error) { next(error); }
+};
+
 export const suspendCertificate = async (req, res, next) => {
     try {
         const result = await certService.updateStatus(req.params.id, 'SUSPENDED', req.body.reason, req.user.id);
@@ -189,8 +204,16 @@ export const getExpiringCertificates = async (req, res, next) => {
 
 export const getCertificateTypes = async (req, res, next) => {
     try {
-        const types = await certService.getCertificateTypes();
+        const includeInactive = req.query.include_inactive === 'true' && ['ADMIN', 'GM'].includes(req.user?.role);
+        const types = await certService.getCertificateTypes(includeInactive);
         res.json({ success: true, data: types });
+    } catch (e) { next(e); }
+};
+
+export const createCertificateType = async (req, res, next) => {
+    try {
+        const type = await certService.createCertificateType(req.body);
+        res.status(201).json({ success: true, message: 'Certificate type created', data: type });
     } catch (e) { next(e); }
 };
 

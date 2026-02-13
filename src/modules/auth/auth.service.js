@@ -2,8 +2,12 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import db from '../../models/index.js';
 import env from '../../config/env.js';
+import * as emailService from '../../services/email.service.js';
+import { passwordReset as passwordResetTemplate } from '../../email-templates/index.js';
 
 const User = db.User;
+
+const PASSWORD_RESET_PURPOSE = 'password_reset';
 
 const generateToken = (user) => {
     return jwt.sign(
@@ -80,20 +84,53 @@ export const refreshToken = async (token) => {
     try {
         const decoded = jwt.verify(token, env.jwt.secret);
         const user = await User.findByPk(decoded.id);
-        if (!user) throw new Error('User not found');
-        return { token: generateToken(user) };
+        if (!user || user.status !== 'ACTIVE') throw new Error('User not found or inactive');
+        const newToken = generateToken(user);
+        const userObj = { id: user.id, name: user.name, email: user.email, role: user.role, client_id: user.client_id };
+        return { user: userObj, token: newToken };
     } catch (e) {
         throw { statusCode: 401, message: 'Invalid token' };
     }
 };
 
+const generatePasswordResetToken = (user) => {
+    return jwt.sign(
+        { purpose: PASSWORD_RESET_PURPOSE, userId: user.id, email: user.email },
+        env.jwt.secret,
+        { expiresIn: env.passwordResetExpiresIn }
+    );
+};
+
 export const forgotPassword = async (email) => {
     const user = await User.findOne({ where: { email } });
-    if (!user) throw { statusCode: 404, message: 'User not found' };
+    if (!user) {
+        // Always return same message to avoid revealing whether email exists
+        return;
+    }
+    const resetToken = generatePasswordResetToken(user);
+    const baseUrl = (env.frontendUrl || '').replace(/\/$/, '');
+    const resetLink = `${baseUrl}/reset-password?token=${encodeURIComponent(resetToken)}`;
+    const { subject, text, html } = passwordResetTemplate({ userName: user.name, resetLink });
+    await emailService.sendEmail(user.email, subject, text, html);
 };
 
 export const resetPassword = async (token, newPassword) => {
-    // Basic stub
+    let decoded;
+    try {
+        decoded = jwt.verify(token, env.jwt.secret);
+    } catch (e) {
+        throw { statusCode: 400, message: 'Invalid or expired reset link. Please request a new password reset.' };
+    }
+    if (decoded.purpose !== PASSWORD_RESET_PURPOSE || !decoded.userId) {
+        throw { statusCode: 400, message: 'Invalid reset token.' };
+    }
+    const user = await User.findByPk(decoded.userId);
+    if (!user) {
+        throw { statusCode: 400, message: 'User not found. Please request a new password reset.' };
+    }
+    const salt = await bcrypt.genSalt(env.bcrypt.saltRounds || 10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    await user.update({ password_hash: hashedPassword, force_password_reset: false });
 };
 
 

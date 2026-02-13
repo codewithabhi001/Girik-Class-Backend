@@ -18,7 +18,6 @@ export default (sequelize, DataTypes) => {
     Payment.associate = (models) => {
         Payment.belongsTo(models.JobRequest, { foreignKey: 'job_id' });
         Payment.belongsTo(models.User, { foreignKey: 'verified_by_user_id', as: 'verifier' });
-        Payment.hasMany(models.PaymentTransaction, { foreignKey: 'payment_id' });
     };
 
     return Payment;

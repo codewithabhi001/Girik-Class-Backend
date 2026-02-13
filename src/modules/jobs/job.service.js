@@ -4,10 +4,26 @@ import * as notificationService from '../../services/notification.service.js';
 const JobRequest = db.JobRequest;
 const JobStatusHistory = db.JobStatusHistory;
 const User = db.User;
+const CertificateType = db.CertificateType;
+const Vessel = db.Vessel;
 
 export const createJob = async (data, userId) => {
+    if (data.certificate_type_id) {
+        const certType = await CertificateType.findByPk(data.certificate_type_id);
+        if (!certType) {
+            throw { statusCode: 400, message: 'Invalid or unknown certificate_type_id. Please use a valid certificate type from /api/v1/certificates/types.' };
+        }
+    }
+    if (data.vessel_id) {
+        const vessel = await Vessel.findByPk(data.vessel_id);
+        if (!vessel) {
+            throw { statusCode: 400, message: 'Invalid or unknown vessel_id.' };
+        }
+    }
+
+    const { job_status: _omit, ...safeData } = data;
     const job = await JobRequest.create({
-        ...data,
+        ...safeData,
         requested_by_user_id: userId,
         job_status: 'CREATED'
     });
@@ -72,7 +88,7 @@ export const updateJobStatus = async (id, newStatus, remarks, userId) => {
 export const assignSurveyor = async (jobId, surveyorId, userId) => {
     const job = await JobRequest.findByPk(jobId);
     if (!job) throw { statusCode: 404, message: 'Job not found' };
-
+    const oldStatus = job.job_status;
     await job.update({
         gm_assigned_surveyor_id: surveyorId,
         job_status: 'ASSIGNED'
@@ -80,7 +96,7 @@ export const assignSurveyor = async (jobId, surveyorId, userId) => {
 
     await JobStatusHistory.create({
         job_id: job.id,
-        old_status: job.job_status,
+        old_status: oldStatus,
         new_status: 'ASSIGNED',
         changed_by: userId,
         change_reason: `Assigned surveyor ${surveyorId}`

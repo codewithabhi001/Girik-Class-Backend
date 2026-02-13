@@ -9,10 +9,14 @@ export default (sequelize, DataTypes) => {
         target_date: DataTypes.DATEONLY,
         job_status: {
             type: DataTypes.ENUM(
-                'CREATED', 'GM_APPROVED', 'TM_PRE_APPROVED', 'ASSIGNED', 'SURVEY_DONE',
+                'CREATED', 'GM_APPROVED', 'TM_PRE_APPROVED', 'ASSIGNED', 'IN_PROGRESS', 'SURVEY_DONE',
                 'TO_APPROVED', 'TM_FINAL', 'PAYMENT_DONE', 'CERTIFIED', 'REJECTED'
             ),
             defaultValue: 'CREATED',
+            get() {
+                const raw = this.getDataValue('job_status');
+                return (raw === null || raw === '') ? 'CREATED' : raw;
+            },
         },
         gm_assigned_surveyor_id: DataTypes.UUID,
         remarks: DataTypes.TEXT,

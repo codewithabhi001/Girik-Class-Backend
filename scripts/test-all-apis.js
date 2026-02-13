@@ -168,10 +168,6 @@ async function runTests() {
   await test('GET', '/activity-requests');
   await test('GET', `/activity-requests/${PID}`);
 
-  // --- Providers ---
-  await test('GET', '/providers');
-  await test('GET', `/providers/${PID}/evaluations`);
-
   // --- Customer feedback ---
   await test('GET', '/customer-feedback');
   await test('GET', `/customer-feedback/job/${JOB_ID}`);

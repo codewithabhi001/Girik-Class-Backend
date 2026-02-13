@@ -18,14 +18,14 @@ router.post('/logout', authenticate, authController.logout);
 
 // Refresh access token using refresh token
 // Access: Public (requires valid refresh token)
-router.post('/refresh-token', authController.refreshToken);
+router.post('/refresh-token', validate(schemas.refreshToken), authController.refreshToken);
 
 // Request password reset (Send OTP/Link)
 // Access: Public
-router.post('/forgot-password', authController.forgotPassword);
+router.post('/forgot-password', validate(schemas.forgotPassword), authController.forgotPassword);
 
 // Reset password using OTP/Token
 // Access: Public
-router.post('/reset-password', authController.resetPassword);
+router.post('/reset-password', validate(schemas.resetPassword), authController.resetPassword);
 
 export default router;
