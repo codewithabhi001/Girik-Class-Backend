@@ -45,14 +45,24 @@ export const createJobForClient = async (data, clientId, userId) => {
     return createJob(data, userId);
 };
 
+const ALLOWED_JOB_FILTERS = ['vessel_id', 'certificate_type_id', 'requested_by_user_id', 'gm_assigned_surveyor_id'];
+
 export const getJobs = async (query, scopeFilters = {}) => {
-    const { page = 1, limit = 10, ...filters } = query;
-    const whereClause = { ...filters, ...scopeFilters };
+    const { page = 1, limit = 10, status, ...rest } = query;
+    const whereClause = { ...scopeFilters };
+    if (status != null && status !== '') {
+        whereClause.job_status = status;
+    }
+    ALLOWED_JOB_FILTERS.forEach((key) => {
+        if (rest[key] != null && rest[key] !== '') {
+            whereClause[key] = rest[key];
+        }
+    });
 
     return await JobRequest.findAndCountAll({
         where: whereClause,
-        limit: parseInt(limit),
-        offset: (page - 1) * limit,
+        limit: parseInt(limit, 10),
+        offset: (Math.max(1, parseInt(page, 10)) - 1) * parseInt(limit, 10),
         include: ['Vessel', 'CertificateType']
     });
 };

@@ -1,15 +1,4 @@
 import * as certService from './certificate.service.js';
-import db from '../../models/index.js';
-
-const getScopeFilters = async (user) => {
-    const scopeFilters = {};
-    if (user.role === 'CLIENT') {
-        const vessels = await db.Vessel.findAll({ where: { client_id: user.client_id }, attributes: ['id'] });
-        const vesselIds = vessels.map(v => v.id);
-        scopeFilters.vessel_id = vesselIds;
-    }
-    return scopeFilters;
-};
 
 export const generateCertificate = async (req, res, next) => {
     try {
@@ -24,8 +13,7 @@ export const generateCertificate = async (req, res, next) => {
 
 export const getCertificates = async (req, res, next) => {
     try {
-        const scopeFilters = await getScopeFilters(req.user);
-        const certs = await certService.getCertificates(req.query, scopeFilters);
+        const certs = await certService.getCertificates(req.query, req.user);
         res.json({
             success: true,
             message: 'Certificates fetched successfully',
@@ -36,8 +24,7 @@ export const getCertificates = async (req, res, next) => {
 
 export const getCertificateById = async (req, res, next) => {
     try {
-        const scopeFilters = await getScopeFilters(req.user);
-        const cert = await certService.getCertificateById(req.params.id, scopeFilters);
+        const cert = await certService.getCertificateById(req.params.id, req.user);
         res.json({
             success: true,
             message: 'Certificate details fetched successfully',
@@ -46,11 +33,10 @@ export const getCertificateById = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
-/** Redirect to certificate PDF for download, or return download URL. CLIENT can only access certs for their vessels. */
+/** Redirect to certificate PDF for download. Scope enforced in service (403 if unauthorized). */
 export const downloadCertificate = async (req, res, next) => {
     try {
-        const scopeFilters = await getScopeFilters(req.user);
-        const cert = await certService.getCertificateById(req.params.id, scopeFilters);
+        const cert = await certService.getCertificateById(req.params.id, req.user);
         if (cert.pdf_file_url) {
             return res.redirect(302, cert.pdf_file_url);
         }
@@ -119,8 +105,7 @@ export const reissueCertificate = async (req, res, next) => {
 
 export const previewCertificate = async (req, res, next) => {
     try {
-        // You might want to add scope check here too
-        const result = await certService.previewCertificate(req.params.id);
+        const result = await certService.previewCertificate(req.params.id, req.user);
         res.json({
             success: true,
             message: 'Certificate preview data fetched',
@@ -147,7 +132,7 @@ export const getSignature = async (req, res, next) => {
 
 export const getHistory = async (req, res, next) => {
     try {
-        const history = await certService.getHistory(req.params.id);
+        const history = await certService.getHistory(req.params.id, req.user);
         res.json({
             success: true,
             message: 'Certificate history fetched',
@@ -191,9 +176,8 @@ export const downgradeCertificate = async (req, res, next) => {
 
 export const getExpiringCertificates = async (req, res, next) => {
     try {
-        const scopeFilters = await getScopeFilters(req.user);
-        const days = parseInt(req.query.days) || 30;
-        const certs = await certService.getExpiringCertificates(days, scopeFilters);
+        const days = parseInt(req.query.days, 10) || 30;
+        const certs = await certService.getExpiringCertificates(days, req.user);
         res.json({
             success: true,
             message: `Certificates expiring within ${days} days fetched successfully`,

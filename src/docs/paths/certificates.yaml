@@ -32,40 +32,17 @@
             schema:
               $ref: '#/components/schemas/ErrorResponse'
 
-/api/v1/certificates/types:
-  get:
-    tags: [Certificates]
-    summary: Get certificate types
-    description: List available certificate types.
-    operationId: getCertificateTypes
-    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
-    responses:
-      "200":
-        description: Certificate types list
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                        format: uuid
-                      name:
-                        type: string
-
 /api/v1/certificates:
   get:
     tags: [Certificates]
     summary: List certificates
-    description: List certificates. CLIENT sees only their vessels' certificates.
+    description: |
+      List certificates with strict RBAC and ownership filtering.
+      **Access:**
+      - **ADMIN / GM / TM / TO:** All certificates.
+      - **SURVEYOR:** Only certificates for vessels in jobs assigned to them.
+      - **CLIENT:** Only certificates for their own company vessels.
+    security: [{ bearerAuth: [] }]
     operationId: getCertificates
     x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
     parameters:
@@ -100,11 +77,18 @@
           application/json:
             schema:
               $ref: '#/components/schemas/ErrorResponse'
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
 
   post:
     tags: [Certificates]
     summary: Generate certificate
     description: Generate a new certificate for a completed job. ADMIN, GM, TM only.
+    security: [{ bearerAuth: [] }]
     operationId: generateCertificate
     x-roles: [ADMIN, GM, TM]
     requestBody:
@@ -139,6 +123,36 @@
             schema:
               $ref: '#/components/schemas/ErrorResponse'
 
+/api/v1/certificates/types:
+  get:
+    tags: [Certificates]
+    summary: Get certificate types
+    description: List available certificate types.
+    security: [{ bearerAuth: [] }]
+    operationId: getCertificateTypes
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
+    responses:
+      "200":
+        description: Certificate types list
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+
 /api/v1/certificates/expiring:
   get:
     tags: [Certificates]
@@ -172,7 +186,9 @@
   get:
     tags: [Certificates]
     summary: Get certificate by ID
-    description: Get certificate details by ID.
+    description: |
+      Get certificate details by ID. Same RBAC as list: ADMIN/GM/TM/TO see all; SURVEYOR only assigned jobs' vessels; CLIENT only own company. Returns 403 if certificate exists but user has no access.
+    security: [{ bearerAuth: [] }]
     operationId: getCertificateById
     x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
     parameters:
@@ -195,6 +211,12 @@
                   example: true
                 data:
                   $ref: '#/components/schemas/CertificateResponse'
+      "403":
+        description: Forbidden - certificate exists but user has no access
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
       "404":
         description: Certificate not found
         content:

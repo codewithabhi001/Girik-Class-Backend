@@ -1,11 +1,20 @@
 import db from '../../models/index.js';
 import { v4 as uuidv4 } from 'uuid';
 import * as certificatePdfService from '../../services/certificate-pdf.service.js';
+import logger from '../../utils/logger.js';
+import { buildCertificateScopeWhere } from './certificate-scope.js';
 
 const Certificate = db.Certificate;
 const CertificateType = db.CertificateType;
 const CertificateTemplate = db.CertificateTemplate;
 const JobRequest = db.JobRequest;
+const Vessel = db.Vessel;
+const { Op } = db.Sequelize;
+
+/** Reusable scope filter for certificate list/get by role. Used in getCertificates, getCertificateById, getExpiringCertificates, preview, getHistory, download. */
+export const getCertificateScopeFilter = async (user) => {
+    return buildCertificateScopeWhere(user, { JobRequest, Vessel });
+};
 
 /** List certificate types (active only by default; pass all for admin). */
 export const getCertificateTypes = async (includeInactive = false) => {
@@ -94,25 +103,40 @@ export const generateCertificate = async (data, userId) => {
     });
 };
 
-export const getCertificates = async (query, scopeFilters = {}) => {
-    const { page = 1, limit = 10, ...filters } = query;
-    const where = { ...filters, ...scopeFilters };
+const ALLOWED_CERT_LIST_FILTERS = ['vessel_id', 'certificate_type_id', 'status'];
+
+export const getCertificates = async (query, user) => {
+    const scopeWhere = await getCertificateScopeFilter(user);
+    const { page = 1, limit = 10, ...rest } = query;
+    const where = { ...scopeWhere };
+    ALLOWED_CERT_LIST_FILTERS.forEach((key) => {
+        if (rest[key] != null && rest[key] !== '') {
+            where[key] = rest[key];
+        }
+    });
 
     return await Certificate.findAndCountAll({
         where,
-        limit: parseInt(limit),
-        offset: (page - 1) * limit,
-        include: [{ model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }, { model: db.CertificateType, attributes: ['name'] }]
+        limit: Math.min(parseInt(limit, 10) || 10, 100),
+        offset: (Math.max(1, parseInt(page, 10)) - 1) * (parseInt(limit, 10) || 10),
+        include: [{ model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }, { model: db.CertificateType, attributes: ['name'] }],
     });
 };
 
-export const getCertificateById = async (id, scopeFilters = {}) => {
+/** Returns certificate by id. Throws 403 if certificate exists but user has no access (ownership scope). */
+export const getCertificateById = async (id, user) => {
+    const scopeWhere = await getCertificateScopeFilter(user);
     const cert = await Certificate.findOne({
-        where: { id, ...scopeFilters },
-        include: [{ model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }, { model: db.CertificateType, attributes: ['name'] }]
+        where: { id, ...scopeWhere },
+        include: [{ model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }, { model: db.CertificateType, attributes: ['name'] }],
     });
-    if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
-    return cert;
+    if (cert) return cert;
+    const exists = await Certificate.findByPk(id);
+    if (exists) {
+        logger.warn('Certificate access denied', { userId: user?.id, role: user?.role, certificateId: id });
+        throw { statusCode: 403, message: 'You do not have access to this certificate' };
+    }
+    throw { statusCode: 404, message: 'Certificate not found' };
 };
 
 export const updateStatus = async (id, status, reason, userId) => {
@@ -177,13 +201,13 @@ export const reissueCertificate = async (id, reason, userId) => {
     return { message: 'Certificate Re-issued', certificate: cert };
 };
 
-export const previewCertificate = async (id) => {
-    const cert = await Certificate.findByPk(id, { include: ['Vessel'] });
-    if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
+export const previewCertificate = async (id, user) => {
+    const cert = await getCertificateById(id, user);
     return { preview_url: `https://mock-pdf.com/preview/${id}`, data: cert };
 };
 
-export const getHistory = async (id) => {
+export const getHistory = async (id, user) => {
+    await getCertificateById(id, user);
     return await db.CertificateHistory.findAll({ where: { certificate_id: id }, order: [['changed_at', 'DESC']] });
 };
 
@@ -261,22 +285,21 @@ export const downgradeCertificate = async (id, newTypeId, reason, userId) => {
     return newCert;
 };
 
-export const getExpiringCertificates = async (days, scopeFilters = {}) => {
+export const getExpiringCertificates = async (days, user) => {
+    const scopeWhere = await getCertificateScopeFilter(user);
     const today = new Date();
     const target = new Date();
     target.setDate(today.getDate() + days);
 
-    const { Op } = db.Sequelize;
-
     return await Certificate.findAll({
         where: {
-            ...scopeFilters,
+            ...scopeWhere,
             status: 'VALID',
             expiry_date: {
-                [Op.between]: [today, target]
-            }
+                [Op.between]: [today, target],
+            },
         },
-        include: ['Vessel']
+        include: [{ model: db.Vessel, attributes: ['vessel_name', 'imo_number', 'client_id'] }],
     });
 };
 
