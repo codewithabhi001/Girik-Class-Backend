@@ -16,8 +16,8 @@ router.post('/start', authorizeRoles('SURVEYOR'), validate(schemas.startSurvey),
 // Submit a survey report (requires survey started + checklist submitted)
 router.post('/', authorizeRoles('SURVEYOR'), validate(schemas.submitSurvey), upload.single('photo'), surveyController.submitSurveyReport);
 
-// Finalize a survey report
-router.put('/:id/finalize', authorizeRoles('SURVEYOR'), surveyController.finalizeSurvey);
+// Finalize a survey report (TM only)
+router.put('/:id/finalize', authorizeRoles('TM'), surveyController.finalizeSurvey);
 
 // Realtime location
 router.post('/:id/location', authorizeRoles('SURVEYOR'), validate(schemas.updateGps), surveyController.streamLocation);

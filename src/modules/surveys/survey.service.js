@@ -94,9 +94,7 @@ export const finalizeSurvey = async (id, userId) => {
     if (job.job_status !== 'SURVEY_DONE') {
         throw { statusCode: 400, message: 'Survey can only be finalized after the report is submitted (job must be SURVEY_DONE)' };
     }
-    if (job.gm_assigned_surveyor_id !== userId) {
-        throw { statusCode: 403, message: 'You are not assigned to this job' };
-    }
+    // Finalization is performed by Technical Manager (TM). Role-based access is enforced in routes/middleware.
 
     const survey = await SurveyReport.findOne({ where: { job_id: id } });
     if (!survey) {
