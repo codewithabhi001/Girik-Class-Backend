@@ -89,5 +89,5 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: "JWT token from login. Use in header: Authorization: Bearer &lt;token&gt;"
+      description: "JWT access token from login or refresh-token. Use in header: Authorization: Bearer &lt;accessToken&gt;"
   schemas: {}

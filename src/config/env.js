@@ -22,6 +22,11 @@ export default {
             }
             return secret;
         },
+        /** Access token: short-lived, used for API auth (Bearer or cookie). */
+        accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
+        /** Refresh token: long-lived, used only to get new access token. */
+        refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+        /** Legacy: single-token expiry (used if you don’t use access/refresh split). */
         expiresIn: process.env.JWT_EXPIRES_IN || '1d',
     },
     aws: {

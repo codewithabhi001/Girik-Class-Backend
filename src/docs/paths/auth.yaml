@@ -2,7 +2,9 @@
   post:
     tags: [Auth]
     summary: Login
-    description: Authenticate with email and password. Returns user and JWT token.
+    description: |
+      Authenticate with email and password. Returns user, **accessToken** (short-lived, for API calls), and **refreshToken** (long-lived, for getting new access tokens).
+      Use **accessToken** in header: `Authorization: Bearer &lt;accessToken&gt;`. For mobile, store both tokens in secure storage.
     security: []
     operationId: login
     x-roles: [PUBLIC]
@@ -28,7 +30,8 @@
                 name: "John Doe"
                 email: "admin@gmail.com"
                 role: "CLIENT"
-              token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+              accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+              refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
       "401":
         description: Invalid credentials
         content:
@@ -49,7 +52,7 @@
   post:
     tags: [Auth]
     summary: Logout
-    description: Invalidate current session. Requires authentication.
+    description: Invalidate current session. Clears tokens; response includes accessToken and refreshToken as null for mobile.
     operationId: logout
     x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
     responses:
@@ -58,16 +61,11 @@
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                message:
-                  type: string
-                  example: "Logged out successfully"
-                token:
-                  type: "null"
+              $ref: '#/components/schemas/LogoutResponse'
             example:
               message: "Logged out successfully"
-              token: null
+              accessToken: null
+              refreshToken: null
       "401":
         description: Not authenticated
         content:
@@ -79,7 +77,8 @@
   post:
     tags: [Auth]
     summary: Refresh token
-    description: Get new access token using refresh token.
+    description: |
+      Get new **accessToken** and **refreshToken** using a valid refresh token. Send refresh token in body (`refreshToken` or `token`) or in cookie. Response returns both tokens for mobile and web.
     security: []
     operationId: refreshToken
     x-roles: [PUBLIC]
@@ -88,20 +87,25 @@
         application/json:
           schema:
             $ref: '#/components/schemas/RefreshTokenRequest'
+          example:
+            refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
     responses:
       "200":
-        description: Token refreshed
+        description: Tokens refreshed
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                user:
-                  $ref: '#/components/schemas/UserSummary'
-                token:
-                  type: string
+              $ref: '#/components/schemas/RefreshTokenResponse'
+            example:
+              user:
+                id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                name: "John Doe"
+                email: "admin@gmail.com"
+                role: "CLIENT"
+              accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+              refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
       "401":
-        description: Invalid refresh token
+        description: Invalid or expired refresh token
         content:
           application/json:
             schema:

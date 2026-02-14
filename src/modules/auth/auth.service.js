@@ -8,12 +8,24 @@ import { passwordReset as passwordResetTemplate } from '../../email-templates/in
 const User = db.User;
 
 const PASSWORD_RESET_PURPOSE = 'password_reset';
+const JWT_TYPE_ACCESS = 'access';
+const JWT_TYPE_REFRESH = 'refresh';
 
-const generateToken = (user) => {
+/** Short-lived token for API requests (Bearer / cookie). */
+const generateAccessToken = (user) => {
     return jwt.sign(
-        { id: user.id, role: user.role, email: user.email },
+        { id: user.id, role: user.role, email: user.email, type: JWT_TYPE_ACCESS },
         env.jwt.secret,
-        { expiresIn: env.jwt.expiresIn }
+        { expiresIn: env.jwt.accessExpiresIn }
+    );
+};
+
+/** Long-lived token used only to get new access token via POST /auth/refresh-token. */
+const generateRefreshToken = (user) => {
+    return jwt.sign(
+        { id: user.id, type: JWT_TYPE_REFRESH },
+        env.jwt.secret,
+        { expiresIn: env.jwt.refreshExpiresIn }
     );
 };
 
@@ -35,9 +47,12 @@ export const login = async (email, password) => {
 
     await user.update({ last_login_at: new Date() });
 
-    const token = generateToken(user);
     const userObj = { id: user.id, name: user.name, email: user.email, role: user.role };
-    return { user: userObj, token };
+    return {
+        user: userObj,
+        accessToken: generateAccessToken(user),
+        refreshToken: generateRefreshToken(user),
+    };
 };
 
 export const register = async (userData, options = {}) => {
@@ -71,25 +86,37 @@ export const register = async (userData, options = {}) => {
         transaction ? { transaction } : undefined
     );
 
-    const token = generateToken(user);
     const userObj = { id: user.id, name: user.name, email: user.email, role: user.role, client_id: user.client_id };
-    return { user: userObj, token };
+    return {
+        user: userObj,
+        accessToken: generateAccessToken(user),
+        refreshToken: generateRefreshToken(user),
+    };
 };
 
 export const logout = async (userId) => {
     return true;
 };
 
-export const refreshToken = async (token) => {
+/** Accepts refresh token (body or cookie), returns new accessToken + refreshToken. */
+export const refreshToken = async (refreshTokenPayload) => {
+    if (!refreshTokenPayload) throw { statusCode: 401, message: 'Refresh token required' };
     try {
-        const decoded = jwt.verify(token, env.jwt.secret);
+        const decoded = jwt.verify(refreshTokenPayload, env.jwt.secret);
+        if (decoded.type !== JWT_TYPE_REFRESH) {
+            throw { statusCode: 401, message: 'Invalid token type. Use refresh token.' };
+        }
         const user = await User.findByPk(decoded.id);
         if (!user || user.status !== 'ACTIVE') throw new Error('User not found or inactive');
-        const newToken = generateToken(user);
         const userObj = { id: user.id, name: user.name, email: user.email, role: user.role, client_id: user.client_id };
-        return { user: userObj, token: newToken };
+        return {
+            user: userObj,
+            accessToken: generateAccessToken(user),
+            refreshToken: generateRefreshToken(user),
+        };
     } catch (e) {
-        throw { statusCode: 401, message: 'Invalid token' };
+        if (e.statusCode) throw e;
+        throw { statusCode: 401, message: 'Invalid or expired refresh token' };
     }
 };
 

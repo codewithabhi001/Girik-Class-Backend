@@ -16,6 +16,10 @@ export const authenticate = async (req, res, next) => {
 
         const decoded = jwt.verify(token, env.jwt.secret);
 
+        if (decoded.type === 'refresh') {
+            return res.status(401).json({ message: 'Use access token for API calls. Use refresh token only at POST /auth/refresh-token.' });
+        }
+
         const user = await db.User.findByPk(decoded.id);
 
         if (!user || user.status !== 'ACTIVE') {

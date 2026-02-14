@@ -18,11 +18,17 @@ LoginRequest:
 
 LoginResponse:
   type: object
+  description: "Returns user and both tokens. Use accessToken for API calls (Bearer header); use refreshToken only at POST /auth/refresh-token. For mobile, store both in secure storage."
   properties:
     user:
       $ref: '#/components/schemas/UserSummary'
-    token:
+    accessToken:
       type: string
+      description: "Short-lived JWT for API auth. Send in header: Authorization Bearer &lt;accessToken&gt;"
+      example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    refreshToken:
+      type: string
+      description: "Long-lived JWT; use only to get new access token via POST /auth/refresh-token"
       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   example:
     user:
@@ -30,7 +36,21 @@ LoginResponse:
       name: "John Doe"
       email: "admin@gmail.com"
       role: "CLIENT"
-    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+LogoutResponse:
+  type: object
+  properties:
+    message:
+      type: string
+      example: "Logged out successfully"
+    accessToken:
+      type: "null"
+      description: "Always null after logout"
+    refreshToken:
+      type: "null"
+      description: "Always null after logout"
 
 UserSummary:
   type: object
@@ -78,7 +98,23 @@ ResetPasswordRequest:
 
 RefreshTokenRequest:
   type: object
+  description: "Send refresh token in body (refreshToken or token). Cookie refreshToken is also accepted."
   properties:
+    refreshToken:
+      type: string
+      description: "Refresh token from login/register or previous refresh"
     token:
       type: string
-      description: "Refresh token"
+      description: "Alias for refreshToken (legacy)"
+
+RefreshTokenResponse:
+  type: object
+  properties:
+    user:
+      $ref: '#/components/schemas/UserSummary'
+    accessToken:
+      type: string
+      description: "New short-lived access token for API calls"
+    refreshToken:
+      type: string
+      description: "New long-lived refresh token; store and use for next refresh"

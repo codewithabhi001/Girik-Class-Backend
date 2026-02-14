@@ -10,13 +10,21 @@ const cookieOptions = {
     path: '/',
 };
 
+const refreshCookieOptions = {
+    ...cookieOptions,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    httpOnly: true,
+};
+
 export const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
-        const { user, token } = await authService.login(email, password);
+        const { user, accessToken, refreshToken } = await authService.login(email, password);
 
-        res.cookie('token', token, cookieOptions);
-        res.json({ user, token });
+        res.cookie('token', accessToken, cookieOptions);
+        res.cookie('refreshToken', refreshToken, refreshCookieOptions);
+        // Always return tokens in body for mobile (and web) – mobile stores these and sends accessToken in Authorization header
+        res.json({ user, accessToken, refreshToken });
     } catch (error) {
         next(error);
     }
@@ -24,10 +32,12 @@ export const login = async (req, res, next) => {
 
 export const register = async (req, res, next) => {
     try {
-        const { user, token } = await authService.register(req.body);
+        const { user, accessToken, refreshToken } = await authService.register(req.body);
 
-        res.cookie('token', token, cookieOptions);
-        res.status(201).json({ user, token });
+        res.cookie('token', accessToken, cookieOptions);
+        res.cookie('refreshToken', refreshToken, refreshCookieOptions);
+        // Tokens in body for mobile – store accessToken + refreshToken in secure storage
+        res.status(201).json({ user, accessToken, refreshToken });
     } catch (error) {
         next(error);
     }
@@ -36,8 +46,10 @@ export const register = async (req, res, next) => {
 export const logout = async (req, res, next) => {
     try {
         await authService.logout(req.user.id);
-        res.clearCookie('token', { path: cookieOptions.path, httpOnly: cookieOptions.httpOnly, secure: cookieOptions.secure, sameSite: cookieOptions.sameSite });
-        res.json({ message: 'Logged out successfully', token: null });
+        const clearOpts = { path: cookieOptions.path, httpOnly: true, secure: cookieOptions.secure, sameSite: cookieOptions.sameSite };
+        res.clearCookie('token', clearOpts);
+        res.clearCookie('refreshToken', clearOpts);
+        res.json({ message: 'Logged out successfully', accessToken: null, refreshToken: null });
     } catch (error) {
         next(error);
     }
@@ -45,10 +57,16 @@ export const logout = async (req, res, next) => {
 
 export const refreshToken = async (req, res, next) => {
     try {
-        const { token } = req.body;
-        const result = await authService.refreshToken(token);
-        res.cookie('token', result.token, cookieOptions);
-        res.json({ user: result.user, token: result.token });
+        const refresh = req.body.refreshToken ?? req.body.token ?? req.cookies?.refreshToken;
+        const result = await authService.refreshToken(refresh);
+        res.cookie('token', result.accessToken, cookieOptions);
+        res.cookie('refreshToken', result.refreshToken, refreshCookieOptions);
+        // Tokens in body for mobile – use new accessToken for API calls, store new refreshToken
+        res.json({
+            user: result.user,
+            accessToken: result.accessToken,
+            refreshToken: result.refreshToken,
+        });
     } catch (error) {
         next(error);
     }
