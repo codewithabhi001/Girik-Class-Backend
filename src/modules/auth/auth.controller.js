@@ -23,7 +23,7 @@ export const login = async (req, res, next) => {
 
         res.cookie('token', accessToken, cookieOptions);
         res.cookie('refreshToken', refreshToken, refreshCookieOptions);
-        // Always return tokens in body for mobile (and web) – mobile stores these and sends accessToken in Authorization header
+        // Return tokens in body; clients should store accessToken and refreshToken securely and send accessToken in Authorization header
         res.json({ user, accessToken, refreshToken });
     } catch (error) {
         next(error);
@@ -36,7 +36,7 @@ export const register = async (req, res, next) => {
 
         res.cookie('token', accessToken, cookieOptions);
         res.cookie('refreshToken', refreshToken, refreshCookieOptions);
-        // Tokens in body for mobile – store accessToken + refreshToken in secure storage
+        // Tokens returned in body; store accessToken + refreshToken securely
         res.status(201).json({ user, accessToken, refreshToken });
     } catch (error) {
         next(error);
@@ -61,7 +61,7 @@ export const refreshToken = async (req, res, next) => {
         const result = await authService.refreshToken(refresh);
         res.cookie('token', result.accessToken, cookieOptions);
         res.cookie('refreshToken', result.refreshToken, refreshCookieOptions);
-        // Tokens in body for mobile – use new accessToken for API calls, store new refreshToken
+        // Tokens returned in body – use new accessToken for API calls, store new refreshToken securely
         res.json({
             user: result.user,
             accessToken: result.accessToken,

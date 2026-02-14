@@ -32,12 +32,13 @@
     "mysql2": "^3.16.1",
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.12",
+    "puppeteer": "^23.0.0",
+    "qrcode": "^1.5.4",
     "sequelize": "^6.37.7",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^13.0.0",
     "winston": "^3.19.0",
-    "yamljs": "^0.3.0",
-    "puppeteer": "^23.0.0"
+    "yamljs": "^0.3.0"
   }
 }

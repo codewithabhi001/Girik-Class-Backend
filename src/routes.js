@@ -29,7 +29,7 @@ import changeRequestRoutes from './modules/change_requests/change_request.routes
 import templateRoutes from './modules/templates/template.routes.js';
 import incidentRoutes from './modules/incidents/incident.routes.js';
 import dashboardRoutes from './modules/dashboard/dashboard.routes.js';
-import mobileRoutes from './modules/mobile/mobile.routes.js';
+// mobile module removed
 
 // New Operational Modules
 import supportRoutes from './modules/support/support.routes.js';
@@ -79,6 +79,6 @@ router.use('/incidents', incidentRoutes);
 router.use('/activity-requests', activityRequestRoutes);
 router.use('/customer-feedback', customerFeedbackRoutes);
 router.use('/dashboard', dashboardRoutes);
-router.use('/mobile', mobileRoutes);
+
 
 export default router;

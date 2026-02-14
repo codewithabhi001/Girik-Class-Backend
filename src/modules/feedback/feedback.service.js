@@ -15,8 +15,9 @@ export const submitFeedback = async (data, userId, clientId) => {
         throw { statusCode: 403, message: 'Unauthorized to provide feedback for this job' };
     }
 
-    if (!['COMPLETED', 'CLOSED', 'CERTIFIED'].includes(job.job_status)) {
-        throw { statusCode: 400, message: 'Feedback allowed only for COMPLETED jobs' };
+    // Feedback is allowed only after the job is certified (finalized)
+    if (job.job_status !== 'CERTIFIED') {
+        throw { statusCode: 400, message: 'Feedback allowed only for CERTIFIED jobs' };
     }
 
     const existing = await CustomerFeedback.findOne({ where: { job_id: data.job_id } });

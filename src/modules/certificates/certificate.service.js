@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as certificatePdfService from '../../services/certificate-pdf.service.js';
 import logger from '../../utils/logger.js';
 import { buildCertificateScopeWhere } from './certificate-scope.js';
+import { buildFallbackCertificateHtml } from './templates/fallback-certificate.template.js';
 
 const Certificate = db.Certificate;
 const CertificateType = db.CertificateType;
@@ -71,26 +72,52 @@ export const generateCertificate = async (data, userId) => {
         order: [['createdAt', 'DESC']],
     });
 
+    // Prepare HTML for PDF. Prefer active template content; fall back to a simple built-in layout
+    const vessel = job.Vessel;
+    const variables = {
+        vessel_name: vessel?.vessel_name ?? '',
+        imo_number: vessel?.imo_number ?? '',
+        issue_date: issueDate,
+        expiry_date: expiryDate,
+        certificate_number: certificateNumber,
+        certificate_type: job.CertificateType?.name ?? '',
+    };
+
+    let fullHtml;
+    // Generate QR code (data URL) for certificate verification if possible
+    let qrDataUrl = null;
+    try {
+        const baseUrl = (process.env.APP_BASE_URL || 'api.girikship.com').replace(/\/$/, '');
+        const verificationUrl = baseUrl ? `${baseUrl}/api/v1/certificates/verify/${certificateNumber}` : `/api/v1/certificates/verify/${certificateNumber}`;
+        const QR = await import('qrcode');
+        qrDataUrl = await QR.toDataURL(verificationUrl, { margin: 1, width: 300 });
+    } catch (e) {
+        logger?.warn('QR generation failed', { err: e?.message || e });
+        qrDataUrl = null;
+    }
+
+    // Add qr_image variable usable by templates (HTML <img/> or raw data)
+    variables.qr_image = qrDataUrl ? `<img src="${qrDataUrl}" alt="QR" style="width:140px;height:140px;object-fit:contain;border-radius:6px;"/>` : null;
+
     if (template?.template_content) {
-        const vessel = job.Vessel;
-        const variables = {
-            vessel_name: vessel?.vessel_name ?? '',
-            imo_number: vessel?.imo_number ?? '',
-            issue_date: issueDate,
-            expiry_date: expiryDate,
-            certificate_number: certificateNumber,
-            certificate_type: job.CertificateType?.name ?? '',
-        };
         const filledHtml = certificatePdfService.fillTemplate(template.template_content, variables);
-        const fullHtml = certificatePdfService.wrapHtmlForPdf(filledHtml);
-        try {
-            const pdfBuffer = await certificatePdfService.htmlToPdfBuffer(fullHtml);
-            const pdfUrl = await certificatePdfService.uploadCertificatePdf(pdfBuffer, certificateNumber);
-            await cert.update({ pdf_file_url: pdfUrl });
-        } catch (err) {
-            // Cert already created; PDF generation/upload failed — keep cert, log and surface in response if needed
-            console.warn('Certificate PDF generation failed for', cert.id, err?.message || err);
-        }
+        fullHtml = certificatePdfService.wrapHtmlForPdf(filledHtml);
+    } else {
+        const htmlFragment = buildFallbackCertificateHtml({
+            variables,
+            issuingAuthority: job.CertificateType?.issuing_authority ?? '',
+            qrDataUrl,
+        });
+        fullHtml = certificatePdfService.wrapHtmlForPdf(htmlFragment);
+    }
+
+    try {
+        const pdfBuffer = await certificatePdfService.htmlToPdfBuffer(fullHtml);
+        const pdfUrl = await certificatePdfService.uploadCertificatePdf(pdfBuffer, certificateNumber);
+        await cert.update({ pdf_file_url: pdfUrl });
+    } catch (err) {
+        // Cert already created; PDF generation/upload failed — keep cert, log and surface in response if needed
+        logger?.warn('Certificate PDF generation/upload failed for', { certId: cert.id, err: err?.message || err });
     }
 
     await job.update({ job_status: 'CERTIFIED' });

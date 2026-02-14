@@ -65,13 +65,6 @@ export const reassignSurveyor = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
-export const escalateJob = async (req, res, next) => {
-    try {
-        const job = await jobService.escalateJob(req.params.id, req.body.reason, req.body.target_role, req.user.id);
-        res.json({ success: true, data: job });
-    } catch (error) { next(error); }
-};
-
 export const cancelJob = async (req, res, next) => {
     try {
         let job;

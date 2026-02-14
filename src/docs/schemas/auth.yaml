@@ -18,7 +18,7 @@ LoginRequest:
 
 LoginResponse:
   type: object
-  description: "Returns user and both tokens. Use accessToken for API calls (Bearer header); use refreshToken only at POST /auth/refresh-token. For mobile, store both in secure storage."
+  description: "Returns user and both tokens. Use accessToken for API calls (Bearer header); use refreshToken only at POST /auth/refresh-token. Store tokens securely."
   properties:
     user:
       $ref: '#/components/schemas/UserSummary'

@@ -143,8 +143,7 @@ Notes:
 
 - Checklists / Mobile
   - PUT /api/v1/checklists/jobs/:jobId/checklist — submit checklist
-  - POST /api/v1/mobile/sync, GET /api/v1/mobile/offline/jobs, POST /api/v1/mobile/offline/surveys
-  Reason: mobile & checklist endpoints used by surveyors in the field.
+  Reason: checklist endpoints used by surveyors in the field.
 
 - Non-conformities / NCs
   - POST /api/v1/non-conformities — create NC (with TO)

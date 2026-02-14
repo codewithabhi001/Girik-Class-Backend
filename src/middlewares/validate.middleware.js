@@ -174,10 +174,7 @@ export const schemas = {
         surveyorId: Joi.string().guid().required(),
         reason: Joi.string().required(),
     }),
-    escalateJob: Joi.object({
-        reason: Joi.string().required(),
-        target_role: Joi.string().valid('GM', 'ADMIN').required(),
-    }),
+    // escalateJob schema removed (escalation endpoint removed)
     uploadEvidence: Joi.object({
         job_id: Joi.string().guid().required(),
         context: Joi.string().required(),
@@ -188,10 +185,7 @@ export const schemas = {
         app_enabled: Joi.boolean().required(),
         alert_types: Joi.array().items(Joi.string()).required()
     }),
-    mobileSync: Joi.object({
-        last_sync_timestamp: Joi.date().iso().required(),
-        offline_data: Joi.object().optional() // items created offline
-    }),
+    // mobileSync schema removed (mobile module was removed)
     rateLimitConfig: Joi.object({
         ip: Joi.string().ip().required(),
         limit: Joi.number().integer().required(),

@@ -28,14 +28,13 @@ router.put('/:id/assign', authorizeRoles('ADMIN', 'GM'), jobController.assignSur
 // Reassign a surveyor (with reason)
 router.put('/:id/reassign', authorizeRoles('GM', 'TM'), validate(schemas.reassignJob), jobController.reassignSurveyor);
 
-// Escalate a job to a higher role
-router.put('/:id/escalate', authorizeRoles('GM', 'TM', 'TO'), validate(schemas.escalateJob), jobController.escalateJob);
+// (escalate endpoint removed)
 
 // Lifecycle Routes
 router.put('/:id/cancel', authorizeRoles('CLIENT', 'GM', 'TM', 'ADMIN'), jobController.cancelJob);
 router.put('/:id/hold', authorizeRoles('GM', 'TM', 'ADMIN'), jobController.holdJob);
 router.put('/:id/resume', authorizeRoles('GM', 'TM', 'ADMIN'), jobController.resumeJob);
-router.post('/:id/clone', authorizeRoles('GM', 'TM', 'ADMIN'), jobController.cloneJob);
+// (clone endpoint removed)
 
 // Priority
 router.put('/:id/priority', authorizeRoles('ADMIN', 'GM', 'TM'), jobController.updatePriority);

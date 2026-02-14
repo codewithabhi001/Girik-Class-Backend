@@ -138,29 +138,13 @@ export const reassignSurveyor = async (jobId, surveyorId, reason, userId) => {
     return job;
 };
 
-export const escalateJob = async (jobId, reason, targetRole, userId) => {
-    const job = await JobRequest.findByPk(jobId);
-    if (!job) throw { statusCode: 404, message: 'Job not found' };
-
-    await JobStatusHistory.create({
-        job_id: job.id,
-        old_status: job.job_status,
-        new_status: job.job_status,
-        changed_by: userId,
-        change_reason: `ESCALATED to ${targetRole}: ${reason}`
-    });
-
-    await notificationService.notifyRoles([targetRole], 'Job Escalation', `Job ${jobId} escalated. Reason: ${reason}`, 'URGENT');
-
-    return job;
-};
-
 export const cancelJob = async (id, reason, userId) => {
     const job = await JobRequest.findByPk(id);
     if (!job) throw { statusCode: 404, message: 'Job not found' };
 
-    if (job.job_status === 'COMPLETED' || job.job_status === 'CANCELLED') {
-        throw { statusCode: 400, message: 'Cannot cancel a completed or already cancelled job' };
+    // Treat CERTIFIED as the final/completed state in current workflow
+    if (job.job_status === 'CERTIFIED' || job.job_status === 'CANCELLED') {
+        throw { statusCode: 400, message: 'Cannot cancel a certified or already cancelled job' };
     }
     return updateJobStatus(id, 'CANCELLED', reason, userId);
 };
@@ -179,7 +163,7 @@ export const holdJob = async (id, reason, userId) => {
     const job = await JobRequest.findByPk(id);
     if (!job) throw { statusCode: 404, message: 'Job not found' };
 
-    if (job.job_status === 'COMPLETED') throw { statusCode: 400, message: 'Cannot hold a completed job' };
+    if (job.job_status === 'CERTIFIED') throw { statusCode: 400, message: 'Cannot hold a certified job' };
 
     return updateJobStatus(id, 'ON_HOLD', reason, userId);
 };
@@ -193,32 +177,6 @@ export const resumeJob = async (id, reason, userId) => {
     return updateJobStatus(id, 'IN_PROGRESS', reason, userId);
 };
 
-export const cloneJob = async (id, userId) => {
-    const originalJob = await JobRequest.findByPk(id);
-    if (!originalJob) throw { statusCode: 404, message: 'Job not found' };
-
-    const newJobData = {
-        vessel_id: originalJob.vessel_id,
-        certificate_type_id: originalJob.certificate_type_id,
-        reason: `Clone of Job ${originalJob.job_number || originalJob.id}`,
-        target_port: originalJob.target_port,
-        target_date: new Date(),
-        job_status: 'CREATED',
-        requested_by_user_id: userId
-    };
-
-    const newJob = await JobRequest.create(newJobData);
-
-    await JobStatusHistory.create({
-        job_id: newJob.id,
-        old_status: null,
-        new_status: 'CREATED',
-        changed_by: userId,
-        change_reason: `Cloned from Job ${originalJob.id}`
-    });
-
-    return newJob;
-};
 
 export const getJobHistory = async (id) => {
     return await JobStatusHistory.findAll({

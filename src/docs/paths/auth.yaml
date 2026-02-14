@@ -4,7 +4,7 @@
     summary: Login
     description: |
       Authenticate with email and password. Returns user, **accessToken** (short-lived, for API calls), and **refreshToken** (long-lived, for getting new access tokens).
-      Use **accessToken** in header: `Authorization: Bearer &lt;accessToken&gt;`. For mobile, store both tokens in secure storage.
+      Use **accessToken** in header: `Authorization: Bearer &lt;accessToken&gt;`. Store tokens securely.
     security: []
     operationId: login
     x-roles: [PUBLIC]
@@ -52,7 +52,7 @@
   post:
     tags: [Auth]
     summary: Logout
-    description: Invalidate current session. Clears tokens; response includes accessToken and refreshToken as null for mobile.
+    description: Invalidate current session. Clears tokens; response includes accessToken and refreshToken as null.
     operationId: logout
     x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
     responses:
@@ -78,7 +78,7 @@
     tags: [Auth]
     summary: Refresh token
     description: |
-      Get new **accessToken** and **refreshToken** using a valid refresh token. Send refresh token in body (`refreshToken` or `token`) or in cookie. Response returns both tokens for mobile and web.
+      Get new **accessToken** and **refreshToken** using a valid refresh token. Send refresh token in body (`refreshToken` or `token`) or in cookie. Response returns both tokens.
     security: []
     operationId: refreshToken
     x-roles: [PUBLIC]
