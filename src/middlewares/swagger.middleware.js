@@ -49,6 +49,18 @@ export function setupSwagger(app) {
     res.json(spec);
   });
 
+  const roleUrls = [
+    { url: '/api-docs/spec.json?role=all', name: 'ALL' },
+    { url: '/api-docs/spec.json?role=ADMIN', name: 'ADMIN' },
+    { url: '/api-docs/spec.json?role=GM', name: 'GM' },
+    { url: '/api-docs/spec.json?role=TM', name: 'TM' },
+    { url: '/api-docs/spec.json?role=TO', name: 'TO' },
+    { url: '/api-docs/spec.json?role=TA', name: 'TA' },
+    { url: '/api-docs/spec.json?role=SURVEYOR', name: 'SURVEYOR' },
+    { url: '/api-docs/spec.json?role=CLIENT', name: 'CLIENT' },
+    { url: '/api-docs/spec.json?role=FLAG_ADMIN', name: 'FLAG_ADMIN' },
+  ];
+
   // Swagger UI: serve static first, then custom HTML for index paths
   const customHandler = (req, res, next) => {
     // Determine role from path: /api-docs/admin -> admin, /api-docs -> all
@@ -58,12 +70,21 @@ export function setupSwagger(app) {
       : null;
 
     const role = roleSlug ? ROLE_MAP[roleSlug] : 'all';
-    const specUrl = `/api-docs/spec.json?role=${role}`;
+    const isRootDocs = req.path === '/' || req.path === '';
 
-    const html = swaggerUi.generateHTML(null, {
-      ...SWAGGER_OPTIONS,
-      swaggerUrl: specUrl,
-    });
+    const html = isRootDocs
+      ? swaggerUi.generateHTML(null, {
+          ...SWAGGER_OPTIONS,
+          swaggerOptions: {
+            ...SWAGGER_OPTIONS.swaggerOptions,
+            urls: roleUrls,
+            'urls.primaryName': 'ALL',
+          },
+        })
+      : swaggerUi.generateHTML(null, {
+          ...SWAGGER_OPTIONS,
+          swaggerUrl: `/api-docs/spec.json?role=${role}`,
+        });
 
     res.send(html);
   };

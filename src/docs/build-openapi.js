@@ -15,6 +15,7 @@ const SCHEMAS_DIR = path.join(DOCS_DIR, 'schemas');
 const PATHS_DIR = path.join(DOCS_DIR, 'paths');
 
 const ROLES = ['ADMIN', 'GM', 'TM', 'TO', 'TA', 'SURVEYOR', 'CLIENT', 'FLAG_ADMIN', 'PUBLIC'];
+const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'];
 
 /**
  * Deep merge objects
@@ -36,6 +37,158 @@ function deepMerge(target, source) {
  */
 function loadYaml(filePath) {
   return yaml.load(filePath);
+}
+
+function clone(obj) {
+  return obj == null ? obj : JSON.parse(JSON.stringify(obj));
+}
+
+function inferPrimitiveExample(schema) {
+  if (!schema || typeof schema !== 'object') return null;
+  if (schema.example !== undefined) return clone(schema.example);
+  if (Array.isArray(schema.enum) && schema.enum.length) return clone(schema.enum[0]);
+
+  const type = schema.type;
+  const format = schema.format;
+
+  if (type === 'string') {
+    if (format === 'uuid') return '01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f';
+    if (format === 'date') return '2026-03-15';
+    if (format === 'date-time') return '2026-03-15T10:00:00.000Z';
+    if (format === 'email') return 'user@example.com';
+    if (format === 'uri' || format === 'url') return 'https://example.com/resource';
+    if (format === 'binary') return 'file.bin';
+    return 'string';
+  }
+
+  if (type === 'integer') return 1;
+  if (type === 'number') return 1.5;
+  if (type === 'boolean') return true;
+  return null;
+}
+
+function resolveRef($ref, spec) {
+  if (typeof $ref !== 'string') return null;
+  const parts = $ref.replace(/^#\//, '').split('/');
+  let node = spec;
+  for (const key of parts) {
+    if (!node || typeof node !== 'object') return null;
+    node = node[key];
+  }
+  return node || null;
+}
+
+function buildExampleFromSchema(schema, spec, visited = new Set()) {
+  if (!schema || typeof schema !== 'object') return null;
+
+  if (schema.example !== undefined) return clone(schema.example);
+  if (schema.default !== undefined) return clone(schema.default);
+
+  if (schema.$ref) {
+    const refName = schema.$ref.split('/').pop();
+    if (!refName || visited.has(refName)) return null;
+    visited.add(refName);
+    const resolved = resolveRef(schema.$ref, spec);
+    return buildExampleFromSchema(resolved, spec, visited);
+  }
+
+  if (Array.isArray(schema.oneOf) && schema.oneOf.length) {
+    return buildExampleFromSchema(schema.oneOf[0], spec, visited);
+  }
+  if (Array.isArray(schema.anyOf) && schema.anyOf.length) {
+    return buildExampleFromSchema(schema.anyOf[0], spec, visited);
+  }
+  if (Array.isArray(schema.allOf) && schema.allOf.length) {
+    const merged = {};
+    for (const item of schema.allOf) {
+      const ex = buildExampleFromSchema(item, spec, visited);
+      if (ex && typeof ex === 'object' && !Array.isArray(ex)) {
+        Object.assign(merged, ex);
+      }
+    }
+    if (Object.keys(merged).length) return merged;
+  }
+
+  const primitive = inferPrimitiveExample(schema);
+  if (primitive !== null) return primitive;
+
+  if (schema.type === 'array' || schema.items) {
+    const itemExample = buildExampleFromSchema(schema.items || {}, spec, visited);
+    return itemExample == null ? [] : [itemExample];
+  }
+
+  if (schema.type === 'object' || schema.properties || schema.additionalProperties) {
+    const out = {};
+    const properties = schema.properties || {};
+
+    const required = Array.isArray(schema.required) ? schema.required : Object.keys(properties);
+    for (const key of required) {
+      const propSchema = properties[key];
+      const value = buildExampleFromSchema(propSchema || { type: 'string' }, spec, visited);
+      out[key] = value == null ? 'string' : value;
+    }
+
+    if (!Object.keys(out).length && schema.additionalProperties && typeof schema.additionalProperties === 'object') {
+      const value = buildExampleFromSchema(schema.additionalProperties, spec, visited);
+      out.key = value == null ? 'string' : value;
+    }
+
+    return out;
+  }
+
+  return null;
+}
+
+function ensureOperationExamples(spec) {
+  for (const pathItem of Object.values(spec.paths || {})) {
+    if (!pathItem || typeof pathItem !== 'object') continue;
+
+    for (const [method, operation] of Object.entries(pathItem)) {
+      if (!HTTP_METHODS.includes(method.toLowerCase())) continue;
+      if (!operation || typeof operation !== 'object') continue;
+
+      // Request examples
+      const requestBody = operation.requestBody;
+      if (requestBody?.content && typeof requestBody.content === 'object') {
+        for (const mediaTypeObj of Object.values(requestBody.content)) {
+          if (!mediaTypeObj || typeof mediaTypeObj !== 'object') continue;
+          if (mediaTypeObj.example !== undefined || mediaTypeObj.examples !== undefined) continue;
+          const ex = buildExampleFromSchema(mediaTypeObj.schema, spec);
+          if (ex !== null) mediaTypeObj.example = ex;
+        }
+      }
+
+      // Response examples + JSON fallback body
+      const responses = operation.responses || {};
+      for (const [statusCode, response] of Object.entries(responses)) {
+        if (!response || typeof response !== 'object') continue;
+
+        const isError = Number(statusCode) >= 400;
+        if (!response.content || typeof response.content !== 'object' || !Object.keys(response.content).length) {
+          response.content = {
+            'application/json': {
+              schema: isError
+                ? { $ref: '#/components/schemas/ErrorResponse' }
+                : {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean', example: true },
+                      message: { type: 'string', example: 'Request successful' },
+                    },
+                  },
+            },
+          };
+        }
+
+        for (const mediaTypeObj of Object.values(response.content)) {
+          if (!mediaTypeObj || typeof mediaTypeObj !== 'object') continue;
+          if (mediaTypeObj.example !== undefined || mediaTypeObj.examples !== undefined) continue;
+          const ex = buildExampleFromSchema(mediaTypeObj.schema, spec);
+          if (ex !== null) mediaTypeObj.example = ex;
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -75,6 +228,9 @@ export function buildFullSpec() {
     paths,
   };
 
+  // Ensure each operation has practical request/response examples.
+  ensureOperationExamples(spec);
+
   return spec;
 }
 
@@ -95,8 +251,7 @@ export function filterSpecByRole(spec, role) {
 
     for (const [method, op] of Object.entries(pathValue)) {
       // Skip non-operation keys (parameters, etc.)
-      const httpMethods = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'];
-      if (!httpMethods.includes(method.toLowerCase())) {
+      if (!HTTP_METHODS.includes(method.toLowerCase())) {
         filteredPath[method] = op;
         continue;
       }
@@ -263,7 +418,8 @@ export function getSpecForRole(role) {
   if (!cachedFullSpec) {
     cachedFullSpec = buildFullSpec();
   }
-  let spec = filterSpecByRole(cachedFullSpec, role);
+  const baseSpec = clone(cachedFullSpec);
+  let spec = filterSpecByRole(baseSpec, role);
 
   // Custom overrides (modify spec based on role rules)
   spec = customizeSpec(spec, role);
