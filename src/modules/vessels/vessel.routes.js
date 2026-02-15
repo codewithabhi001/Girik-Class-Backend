@@ -9,7 +9,7 @@ const router = express.Router();
 router.use(authenticate);
 
 // List all vessels (scoped by client_id for CLIENT)
-router.get('/', authorizeRoles('ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR', 'CLIENT'), vesselController.getVessels);
+router.get('/', authorizeRoles('ADMIN', 'GM', 'TM', 'TO', 'CLIENT'), vesselController.getVessels);
 
 // Get all vessels of a specific client (for management)
 router.get('/client/:clientId', authorizeRoles('ADMIN', 'GM', 'TM'), vesselController.getVesselsByClientId);

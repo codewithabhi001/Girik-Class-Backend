@@ -20,6 +20,9 @@ router.get('/', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'),
 // Get certificates expiring within a range
 router.get('/expiring', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), certController.getExpiringCertificates);
 
+// Get certificates for a specific vessel
+router.get('/vessel/:vesselId', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), certController.getCertificatesByVessel);
+
 // Generate a new certificate
 router.post('/', authorizeRoles('ADMIN', 'GM', 'TM'), certController.generateCertificate);
 

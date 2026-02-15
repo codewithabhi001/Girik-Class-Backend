@@ -49,7 +49,7 @@
                 "description": "Authenticate with email and password. Returns user and JWT token.",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"email\": \"admin@gmail.com\",\n  \"password\": \"admin123!\"\n}",
+                  "raw": "{\n  \"email\": \"admin@gmail.com\",\n  \"password\": \"Password@123\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"

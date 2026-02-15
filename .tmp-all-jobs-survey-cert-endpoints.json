@@ -1,0 +1,284 @@
+{
+  "results": [
+    {
+      "api": "POST /auth/login (admin)",
+      "status": 200,
+      "msg": ""
+    },
+    {
+      "api": "POST /users (TM)",
+      "status": 201,
+      "msg": "User created successfully"
+    },
+    {
+      "api": "POST /users (TO)",
+      "status": 201,
+      "msg": "User created successfully"
+    },
+    {
+      "api": "POST /users (SURVEYOR)",
+      "status": 201,
+      "msg": "User created successfully"
+    },
+    {
+      "api": "POST /users (TA)",
+      "status": 201,
+      "msg": "User created successfully"
+    },
+    {
+      "api": "GET /vessels",
+      "status": 200,
+      "msg": "Vessels fetched successfully"
+    },
+    {
+      "api": "GET /certificates/types",
+      "status": 200,
+      "msg": ""
+    },
+    {
+      "api": "POST /jobs",
+      "status": 201,
+      "msg": ""
+    },
+    {
+      "api": "GET /jobs",
+      "status": 200,
+      "msg": ""
+    },
+    {
+      "api": "GET /jobs/:id",
+      "status": 200,
+      "msg": ""
+    },
+    {
+      "api": "PUT /jobs/:id/status",
+      "status": 200,
+      "msg": ""
+    },
+    {
+      "api": "PUT /jobs/:id/gm-approve",
+      "status": 400,
+      "msg": "Invalid status transition from GM_APPROVED to GM_APPROVED"
+    },
+    {
+      "api": "PUT /jobs/:id/assign",
+      "status": 200,
+      "msg": ""
+    },
+    {
+      "api": "PUT /jobs/:id/reassign",
+      "status": 403,
+      "msg": "Access denied. Requires one of: GM, TM"
+    },
+    {
+      "api": "PUT /jobs/:id/tm-pre-approve",
+      "status": 200,
+      "msg": ""
+    },
+    {
+      "api": "GET /jobs/:id/history",
+      "status": 200,
+      "msg": ""
+    },
+    {
+      "api": "POST /jobs/:id/notes",
+      "status": 201,
+      "msg": ""
+    },
+    {
+      "api": "GET /jobs/:id/messages/external",
+      "status": 200,
+      "msg": ""
+    },
+    {
+      "api": "GET /jobs/:id/messages/internal",
+      "status": 200,
+      "msg": ""
+    },
+    {
+      "api": "POST /jobs/:id/messages",
+      "status": 201,
+      "msg": ""
+    },
+    {
+      "api": "PUT /jobs/:id/priority",
+      "status": 200,
+      "msg": ""
+    },
+    {
+      "api": "PUT /jobs/:id/hold",
+      "status": 400,
+      "msg": "ON_HOLD is not part of the current strict workflow. Use review endpoints instead."
+    },
+    {
+      "api": "PUT /jobs/:id/resume",
+      "status": 400,
+      "msg": "Resume is not supported in strict workflow mode."
+    },
+    {
+      "api": "POST /surveys/start",
+      "status": 201,
+      "msg": "Survey started successfully"
+    },
+    {
+      "api": "POST /surveys/:id/location",
+      "status": 200,
+      "msg": "Location streamed successfully"
+    },
+    {
+      "api": "PUT /jobs/:id/checklist",
+      "status": 200,
+      "msg": ""
+    },
+    {
+      "api": "POST /surveys",
+      "status": 201,
+      "msg": "Survey report submitted successfully"
+    },
+    {
+      "api": "POST /surveys/:id/proof (no file)",
+      "status": 400,
+      "msg": "Evidence can only be uploaded while survey is in progress"
+    },
+    {
+      "api": "GET /surveys",
+      "status": 200,
+      "msg": "Survey reports fetched successfully"
+    },
+    {
+      "api": "GET /surveys/:id/timeline",
+      "status": 200,
+      "msg": "Survey timeline fetched successfully"
+    },
+    {
+      "api": "POST /surveys/:id/violation",
+      "status": 200,
+      "msg": "Violation flagged successfully"
+    },
+    {
+      "api": "PUT /jobs/:id/to-approve",
+      "status": 200,
+      "msg": ""
+    },
+    {
+      "api": "PUT /jobs/:id/to-send-back",
+      "status": 200,
+      "msg": ""
+    },
+    {
+      "api": "PUT /jobs/:id/to-approve (again)",
+      "status": 400,
+      "msg": "Invalid status transition from TM_PRE_APPROVED to TO_APPROVED"
+    },
+    {
+      "api": "PUT /surveys/:id/finalize",
+      "status": 400,
+      "msg": "Survey can only be finalized after TO approval (job must be TO_APPROVED)"
+    },
+    {
+      "api": "POST /payments/invoice",
+      "status": 201,
+      "msg": ""
+    },
+    {
+      "api": "PUT /payments/:id/pay",
+      "status": 400,
+      "msg": "Payment can only be marked done when job is TM_FINAL"
+    },
+    {
+      "api": "POST /certificates",
+      "status": 400,
+      "msg": "Certificate can only be generated when payment is cleared (job must be PAYMENT_DONE)"
+    },
+    {
+      "api": "GET /certificates/verify/:number",
+      "status": 404,
+      "msg": "Certificate not found"
+    },
+    {
+      "api": "GET /certificates",
+      "status": 200,
+      "msg": "Certificates fetched successfully"
+    },
+    {
+      "api": "GET /certificates/expiring",
+      "status": 200,
+      "msg": "Certificates expiring within 30 days fetched successfully"
+    },
+    {
+      "api": "GET /certificates/:id",
+      "status": 404,
+      "msg": "Certificate not found"
+    },
+    {
+      "api": "GET /certificates/:id/download",
+      "status": 404,
+      "msg": "Certificate not found"
+    },
+    {
+      "api": "GET /certificates/:id/preview",
+      "status": 404,
+      "msg": "Certificate not found"
+    },
+    {
+      "api": "POST /certificates/:id/sign",
+      "status": 200,
+      "msg": "Certificate signed successfully"
+    },
+    {
+      "api": "GET /certificates/:id/signature",
+      "status": 200,
+      "msg": "Certificate signature fetched"
+    },
+    {
+      "api": "GET /certificates/:id/history",
+      "status": 404,
+      "msg": "Certificate not found"
+    },
+    {
+      "api": "PUT /certificates/:id/suspend",
+      "status": 404,
+      "msg": "Certificate not found"
+    },
+    {
+      "api": "PUT /certificates/:id/restore",
+      "status": 404,
+      "msg": "Certificate not found"
+    },
+    {
+      "api": "PUT /certificates/:id/revoke",
+      "status": 404,
+      "msg": "Certificate not found"
+    },
+    {
+      "api": "POST /certificates/:id/reissue",
+      "status": 404,
+      "msg": "Certificate not found"
+    },
+    {
+      "api": "PUT /certificates/:id/renew",
+      "status": 404,
+      "msg": "Certificate not found"
+    },
+    {
+      "api": "POST /certificates/bulk-renew",
+      "status": 200,
+      "msg": ""
+    },
+    {
+      "api": "POST /certificates/:id/transfer",
+      "status": 400,
+      "msg": "Validation Error"
+    },
+    {
+      "api": "POST /certificates/:id/extend",
+      "status": 400,
+      "msg": "Validation Error"
+    },
+    {
+      "api": "PUT /certificates/:id/downgrade",
+      "status": 400,
+      "msg": "Validation Error"
+    }
+  ]
+}

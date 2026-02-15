@@ -29,7 +29,7 @@ export const createJob = async (req, res, next) => {
 export const getJobs = async (req, res, next) => {
     try {
         const scopeFilters = await getScopeFilters(req.user);
-        const result = await jobService.getJobs(req.query, scopeFilters);
+        const result = await jobService.getJobs(req.query, scopeFilters, req.user.role);
         res.json({ success: true, data: result });
     } catch (error) { next(error); }
 };
@@ -44,6 +44,12 @@ export const getJobById = async (req, res, next) => {
 
 export const updateJobStatus = async (req, res, next) => {
     try {
+        if (req.user.role !== 'ADMIN') {
+            throw {
+                statusCode: 403,
+                message: 'Generic status update is restricted. Use workflow endpoints for GM/TM/TO approvals.'
+            };
+        }
         const { status, remarks } = req.body;
         const job = await jobService.updateJobStatus(req.params.id, status, remarks, req.user.id);
         res.json({ success: true, data: job });
@@ -54,6 +60,48 @@ export const assignSurveyor = async (req, res, next) => {
     try {
         const { surveyorId } = req.body;
         const job = await jobService.assignSurveyor(req.params.id, surveyorId, req.user.id);
+        res.json({ success: true, data: job });
+    } catch (error) { next(error); }
+};
+
+export const gmApproveJob = async (req, res, next) => {
+    try {
+        const job = await jobService.gmApproveJob(req.params.id, req.body?.remarks, req.user.id);
+        res.json({ success: true, data: job });
+    } catch (error) { next(error); }
+};
+
+export const gmRejectJob = async (req, res, next) => {
+    try {
+        const job = await jobService.gmRejectJob(req.params.id, req.body?.remarks, req.user.id);
+        res.json({ success: true, data: job });
+    } catch (error) { next(error); }
+};
+
+export const tmPreApproveJob = async (req, res, next) => {
+    try {
+        const job = await jobService.tmPreApproveJob(req.params.id, req.body?.remarks, req.user.id);
+        res.json({ success: true, data: job });
+    } catch (error) { next(error); }
+};
+
+export const tmPreRejectJob = async (req, res, next) => {
+    try {
+        const job = await jobService.tmPreRejectJob(req.params.id, req.body?.remarks, req.user.id);
+        res.json({ success: true, data: job });
+    } catch (error) { next(error); }
+};
+
+export const toApproveSurvey = async (req, res, next) => {
+    try {
+        const job = await jobService.toApproveSurvey(req.params.id, req.body?.remarks, req.user.id);
+        res.json({ success: true, data: job });
+    } catch (error) { next(error); }
+};
+
+export const toSendBackSurvey = async (req, res, next) => {
+    try {
+        const job = await jobService.toSendBackSurvey(req.params.id, req.body?.remarks, req.user.id);
         res.json({ success: true, data: job });
     } catch (error) { next(error); }
 };

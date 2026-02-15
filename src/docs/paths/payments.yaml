@@ -143,7 +143,7 @@
     summary: Mark invoice as paid
     description: Mark an invoice as paid. ADMIN, GM, TM only.
     operationId: markPaymentPaid
-    x-roles: [ADMIN, GM, TM]
+    x-roles: [ADMIN, GM, TM, TA]
     parameters:
       - name: id
         in: path

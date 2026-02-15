@@ -2,6 +2,17 @@ import db from '../../models/index.js';
 
 const Vessel = db.Vessel;
 const Client = db.Client;
+const FlagAdministration = db.FlagAdministration;
+
+const ensureValidFlag = async (flagState) => {
+    if (!flagState) return;
+    const flag = await FlagAdministration.findOne({
+        where: { flag_name: flagState, status: 'ACTIVE' }
+    });
+    if (!flag) {
+        throw { statusCode: 400, message: `Invalid flag_state "${flagState}". Use an active flag profile.` };
+    }
+};
 
 export const createVessel = async (data) => {
     // Check if client exists
@@ -15,6 +26,7 @@ export const createVessel = async (data) => {
     if (existing) {
         throw { statusCode: 400, message: 'Vessel with this IMO number already exists' };
     }
+    await ensureValidFlag(data.flag_state);
     return await Vessel.create(data);
 };
 
@@ -126,6 +138,9 @@ export const updateVessel = async (id, data, scopeFilters = {}) => {
         if (existing) {
             throw { statusCode: 400, message: 'Another vessel with this IMO number already exists' };
         }
+    }
+    if (data.flag_state) {
+        await ensureValidFlag(data.flag_state);
     }
 
     return await vessel.update(data);

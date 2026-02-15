@@ -182,6 +182,32 @@
                   items:
                     $ref: '#/components/schemas/CertificateResponse'
 
+/api/v1/certificates/vessel/{vesselId}:
+  get:
+    tags: [Certificates]
+    summary: Get certificates by vessel
+    description: Get all certificates for a specific vessel. Scope restricted (SURVEYOR only assigned, CLIENT only owned).
+    operationId: getCertificatesByVessel
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
+    parameters:
+      - name: vesselId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200":
+        description: Vessel certificates
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CertificateResponse'
+
 /api/v1/certificates/{id}:
   get:
     tags: [Certificates]

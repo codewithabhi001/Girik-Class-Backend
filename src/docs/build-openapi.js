@@ -132,6 +132,129 @@ export function filterSpecByRole(spec, role) {
 }
 
 /**
+ * Filter components.schemas to only include schemas referenced in paths
+ */
+function shakeSchemas(spec) {
+  const definitions = spec.components?.schemas || {};
+  const usedSchemas = new Set();
+  const queue = [];
+
+  // 1. Initial scan of paths for $ref
+  function findRefs(obj) {
+    if (!obj || typeof obj !== 'object') return;
+
+    if (obj.$ref) {
+      const parts = obj.$ref.split('/');
+      const name = parts[parts.length - 1];
+      if (definitions[name] && !usedSchemas.has(name)) {
+        usedSchemas.add(name);
+        queue.push(name);
+      }
+    }
+
+    for (const key in obj) {
+      if (typeof obj[key] === 'object') {
+        findRefs(obj[key]);
+      }
+    }
+  }
+
+  findRefs(spec.paths);
+
+  // 2. Transitive dependencies
+  while (queue.length > 0) {
+    const name = queue.pop();
+    const schema = definitions[name];
+    if (schema) {
+      // Find refs inside this schema
+      const internalUsed = new Set();
+      // Helper specific for schema traversal to avoid re-adding parent
+      function findschemaRefs(obj) {
+        if (!obj || typeof obj !== 'object') return;
+        if (obj.$ref) {
+          const parts = obj.$ref.split('/');
+          const refName = parts[parts.length - 1];
+          if (definitions[refName] && !usedSchemas.has(refName)) {
+            usedSchemas.add(refName);
+            queue.push(refName);
+          }
+        }
+        for (const key in obj) {
+          if (typeof obj[key] === 'object') {
+            findschemaRefs(obj[key]);
+          }
+        }
+      }
+      findschemaRefs(schema);
+    }
+  }
+
+  // 3. Rebuild definitions
+  const newSchemas = {};
+  for (const name of usedSchemas) {
+    newSchemas[name] = definitions[name];
+  }
+
+  // 4. Update spec
+  if (spec.components) {
+    spec.components.schemas = newSchemas;
+  }
+
+  return spec;
+}
+
+/**
+ * Filter tags to only include used tags
+ */
+function filterTags(spec) {
+  if (!spec.tags) return spec;
+
+  const usedTags = new Set();
+  for (const pathKey in spec.paths) {
+    const pathItem = spec.paths[pathKey];
+    for (const method in pathItem) {
+      const op = pathItem[method];
+      if (op.tags && Array.isArray(op.tags)) {
+        op.tags.forEach(tag => usedTags.add(tag));
+      }
+    }
+  }
+
+  spec.tags = spec.tags.filter(t => usedTags.has(t.name));
+  return spec;
+}
+
+
+/**
+ * Customize spec based on role constraints (e.g. status enums)
+ */
+function customizeSpec(spec, role) {
+  if (role === 'SURVEYOR') {
+    // 1. Filter Job Statuses for Surveyor
+    const jobsGet = spec.paths?.['/api/v1/jobs']?.get;
+    if (jobsGet && jobsGet.parameters) {
+      const statusParam = jobsGet.parameters.find(p => p.name === 'status');
+      if (statusParam && statusParam.schema && statusParam.schema.enum) {
+        // Surveyors only see jobs from ASSIGNED onwards
+        const surveyorStatuses = [
+          'ASSIGNED',
+          'SURVEY_DONE',
+          'TO_APPROVED',
+          'TM_FINAL',
+          'PAYMENT_DONE',
+          'CERTIFIED',
+          'REJECTED'
+        ];
+        // Intersect with existing enum to be safe, or just overwrite
+        statusParam.schema.enum = statusParam.schema.enum.filter(s => surveyorStatuses.includes(s));
+        statusParam.description = (statusParam.description || '') + ' (Filtered for SURVEYOR context)';
+      }
+    }
+  }
+  return spec;
+}
+
+/**
  * Get spec for a role. Caches full spec.
  */
 let cachedFullSpec = null;
@@ -140,7 +263,16 @@ export function getSpecForRole(role) {
   if (!cachedFullSpec) {
     cachedFullSpec = buildFullSpec();
   }
-  return filterSpecByRole(cachedFullSpec, role);
+  let spec = filterSpecByRole(cachedFullSpec, role);
+
+  // Custom overrides (modify spec based on role rules)
+  spec = customizeSpec(spec, role);
+
+  // Clean up unused schemas and tags
+  spec = shakeSchemas(spec);
+  spec = filterTags(spec);
+
+  return spec;
 }
 
 export function clearCache() {

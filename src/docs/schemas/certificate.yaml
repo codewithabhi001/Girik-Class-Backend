@@ -26,6 +26,22 @@ CertificateResponse:
     pdf_file_url:
       type: string
       format: uri
+    CertificateType:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Safety Construction"
+          description: "Name of the certificate type"
+    Vessel:
+      type: object
+      properties:
+        vessel_name:
+          type: string
+          example: "Ocean Pioneer"
+        imo_number:
+          type: string
+          example: "9123456"
   example:
     id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
     certificate_number: "GIR-CERT-2026-001234"

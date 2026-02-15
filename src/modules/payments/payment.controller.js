@@ -46,7 +46,7 @@ export const createInvoice = async (req, res, next) => {
 
 export const markPaid = async (req, res, next) => {
     try {
-        const payment = await paymentService.markPaid(req.params.id, req.user.id);
+        const payment = await paymentService.markPaid(req.params.id, req.user.id, req.file, req.body?.remarks);
         res.json({ success: true, data: payment });
     } catch (error) { next(error); }
 };

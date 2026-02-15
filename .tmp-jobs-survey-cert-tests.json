@@ -1,0 +1,144 @@
+{
+  "report": [
+    {
+      "step": "admin_login",
+      "status": 200,
+      "message": ""
+    },
+    {
+      "step": "create_TM",
+      "status": 201,
+      "message": "User created successfully"
+    },
+    {
+      "step": "create_TO",
+      "status": 201,
+      "message": "User created successfully"
+    },
+    {
+      "step": "create_TA",
+      "status": 201,
+      "message": "User created successfully"
+    },
+    {
+      "step": "create_SURVEYOR",
+      "status": 201,
+      "message": "User created successfully"
+    },
+    {
+      "step": "get_vessels",
+      "status": 200,
+      "message": "Vessels fetched successfully"
+    },
+    {
+      "step": "get_cert_types",
+      "status": 200,
+      "message": ""
+    },
+    {
+      "step": "create_job",
+      "status": 201,
+      "message": ""
+    },
+    {
+      "step": "job_get_all",
+      "status": 200,
+      "message": ""
+    },
+    {
+      "step": "job_get_by_id",
+      "status": 200,
+      "message": ""
+    },
+    {
+      "step": "job_history",
+      "status": 200,
+      "message": ""
+    },
+    {
+      "step": "job_messages_external",
+      "status": 200,
+      "message": ""
+    },
+    {
+      "step": "gm_approve",
+      "status": 200,
+      "message": ""
+    },
+    {
+      "step": "assign_surveyor",
+      "status": 200,
+      "message": ""
+    },
+    {
+      "step": "tm_pre_approve",
+      "status": 200,
+      "message": ""
+    },
+    {
+      "step": "survey_start",
+      "status": 201,
+      "message": "Survey started successfully"
+    },
+    {
+      "step": "checklist_submit",
+      "status": 200,
+      "message": ""
+    },
+    {
+      "step": "survey_submit",
+      "status": 201,
+      "message": "Survey report submitted successfully"
+    },
+    {
+      "step": "to_approve",
+      "status": 200,
+      "message": ""
+    },
+    {
+      "step": "tm_finalize",
+      "status": 200,
+      "message": "Survey finalized successfully"
+    },
+    {
+      "step": "create_invoice",
+      "status": 201,
+      "message": ""
+    },
+    {
+      "step": "mark_paid_ta",
+      "status": 200,
+      "message": ""
+    },
+    {
+      "step": "generate_certificate",
+      "status": 201,
+      "message": "Certificate generated successfully"
+    },
+    {
+      "step": "cert_get_all",
+      "status": 200,
+      "message": "Certificates fetched successfully"
+    },
+    {
+      "step": "cert_get_by_id",
+      "status": 200,
+      "message": "Certificate details fetched successfully"
+    },
+    {
+      "step": "cert_preview",
+      "status": 200,
+      "message": "Certificate preview data fetched"
+    },
+    {
+      "step": "cert_history",
+      "status": 200,
+      "message": "Certificate history fetched"
+    },
+    {
+      "step": "generate_certificate_without_payment",
+      "status": 400,
+      "message": "Certificate can only be generated when payment is cleared (job must be PAYMENT_DONE)"
+    }
+  ]
+}

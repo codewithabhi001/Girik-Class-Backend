@@ -46,6 +46,13 @@ export const submitSurveyReport = async (data, file, userId) => {
 
     // Update Job Status
     await job.update({ job_status: 'SURVEY_DONE' });
+    await JobStatusHistory.create({
+        job_id: job.id,
+        old_status: 'IN_PROGRESS',
+        new_status: 'SURVEY_DONE',
+        changed_by: userId,
+        change_reason: 'Survey report submitted by surveyor'
+    });
 
     // Log GPS
     await GpsTracking.create({
@@ -63,8 +70,8 @@ export const startSurvey = async (data, userId) => {
     const { job_id, latitude, longitude } = data;
     const job = await JobRequest.findByPk(job_id);
     if (!job) throw { statusCode: 404, message: 'Job not found' };
-    if (job.job_status !== 'ASSIGNED') {
-        throw { statusCode: 400, message: 'Survey can only be started when job is ASSIGNED' };
+    if (job.job_status !== 'TM_PRE_APPROVED') {
+        throw { statusCode: 400, message: 'Survey can only be started when job is TM_PRE_APPROVED' };
     }
     if (job.gm_assigned_surveyor_id !== userId) {
         throw { statusCode: 403, message: 'You are not assigned to this job' };
@@ -73,7 +80,7 @@ export const startSurvey = async (data, userId) => {
     await job.update({ job_status: 'IN_PROGRESS' });
     await JobStatusHistory.create({
         job_id: job.id,
-        old_status: 'ASSIGNED',
+        old_status: 'TM_PRE_APPROVED',
         new_status: 'IN_PROGRESS',
         changed_by: userId,
         change_reason: 'Survey started by surveyor'
@@ -91,8 +98,8 @@ export const startSurvey = async (data, userId) => {
 export const finalizeSurvey = async (id, userId) => {
     const job = await JobRequest.findByPk(id);
     if (!job) throw { statusCode: 404, message: 'Job not found' };
-    if (job.job_status !== 'SURVEY_DONE') {
-        throw { statusCode: 400, message: 'Survey can only be finalized after the report is submitted (job must be SURVEY_DONE)' };
+    if (job.job_status !== 'TO_APPROVED') {
+        throw { statusCode: 400, message: 'Survey can only be finalized after TO approval (job must be TO_APPROVED)' };
     }
     // Finalization is performed by Technical Manager (TM). Role-based access is enforced in routes/middleware.
 
@@ -102,6 +109,13 @@ export const finalizeSurvey = async (id, userId) => {
     }
 
     await job.update({ job_status: 'TM_FINAL' });
+    await JobStatusHistory.create({
+        job_id: job.id,
+        old_status: 'TO_APPROVED',
+        new_status: 'TM_FINAL',
+        changed_by: userId,
+        change_reason: 'TM final approval granted'
+    });
 
     return { message: 'Survey Finalized.' };
 };

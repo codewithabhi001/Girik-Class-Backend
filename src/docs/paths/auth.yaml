@@ -16,7 +16,7 @@
             $ref: '#/components/schemas/LoginRequest'
           example:
             email: "admin@gmail.com"
-            password: "admin123!"
+            password: "Password@123"
     responses:
       "200":
         description: Login successful

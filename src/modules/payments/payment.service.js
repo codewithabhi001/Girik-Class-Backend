@@ -1,10 +1,12 @@
 import db from '../../models/index.js';
 import { v4 as uuidv4 } from 'uuid';
+import * as s3Service from '../../services/s3.service.js';
 
 const Payment = db.Payment;
 const JobRequest = db.JobRequest;
 const FinancialLedger = db.FinancialLedger;
 const Vessel = db.Vessel;
+const JobStatusHistory = db.JobStatusHistory;
 
 export const createInvoice = async (data) => {
     const { job_id, amount, currency } = data;
@@ -45,21 +47,41 @@ export const getPaymentById = async (id, scopeFilters = {}) => {
     return payment;
 };
 
-export const markPaid = async (paymentId, userId) => {
+export const markPaid = async (paymentId, userId, receiptFile = null, remarks = '') => {
     const payment = await Payment.findByPk(paymentId);
     if (!payment) throw { statusCode: 404, message: 'Payment record not found' };
+
+    const job = await JobRequest.findByPk(payment.job_id);
+    if (!job) throw { statusCode: 404, message: 'Job not found for payment record' };
+    if (job.job_status !== 'TM_FINAL') {
+        throw { statusCode: 400, message: 'Payment can only be marked done when job is TM_FINAL' };
+    }
+
+    let receiptUrl = payment.receipt_url || null;
+    if (receiptFile) {
+        receiptUrl = await s3Service.uploadFile(
+            receiptFile.buffer,
+            receiptFile.originalname,
+            receiptFile.mimetype,
+            `${s3Service.UPLOAD_FOLDERS.DOCUMENTS}/payments`
+        );
+    }
 
     await payment.update({
         payment_status: 'PAID',
         payment_date: new Date(),
-        verified_by_user_id: userId
+        verified_by_user_id: userId,
+        receipt_url: receiptUrl
     });
 
-    // Update job status
-    const job = await JobRequest.findByPk(payment.job_id);
-    if (job) {
-        await job.update({ job_status: 'PAYMENT_DONE' });
-    }
+    await job.update({ job_status: 'PAYMENT_DONE' });
+    await JobStatusHistory.create({
+        job_id: job.id,
+        old_status: 'TM_FINAL',
+        new_status: 'PAYMENT_DONE',
+        changed_by: userId,
+        change_reason: remarks || 'Payment verified and cleared'
+    });
 
     return payment;
 };

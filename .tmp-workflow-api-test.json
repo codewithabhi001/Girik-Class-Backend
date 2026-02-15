@@ -1,0 +1,219 @@
+{
+  "ok": true,
+  "focus": [
+    {
+      "step": "get_cert_types",
+      "status": 200
+    },
+    {
+      "step": "create_job",
+      "status": 201
+    },
+    {
+      "step": "job_get_all",
+      "status": 200
+    },
+    {
+      "step": "job_get_by_id",
+      "status": 200
+    },
+    {
+      "step": "job_history",
+      "status": 200
+    },
+    {
+      "step": "gm_approve",
+      "status": 200
+    },
+    {
+      "step": "assign_surveyor",
+      "status": 400
+    },
+    {
+      "step": "assign_surveyor_valid",
+      "status": 400
+    },
+    {
+      "step": "tm_pre_approve",
+      "status": 401
+    },
+    {
+      "step": "survey_start",
+      "status": 401
+    },
+    {
+      "step": "survey_submit",
+      "status": 401
+    },
+    {
+      "step": "to_approve",
+      "status": 401
+    },
+    {
+      "step": "tm_finalize",
+      "status": 401
+    },
+    {
+      "step": "create_invoice",
+      "status": 201
+    },
+    {
+      "step": "mark_paid_ta",
+      "status": 401
+    },
+    {
+      "step": "generate_certificate",
+      "status": 400
+    },
+    {
+      "step": "cert_get_all",
+      "status": 200
+    },
+    {
+      "step": "cert_get_by_id",
+      "status": 404
+    },
+    {
+      "step": "cert_preview",
+      "status": 404
+    },
+    {
+      "step": "cert_history",
+      "status": 404
+    },
+    {
+      "step": "generate_certificate_without_payment",
+      "status": 400
+    }
+  ],
+  "all": [
+    {
+      "step": "admin_login",
+      "status": 200
+    },
+    {
+      "step": "create_TM",
+      "status": 400
+    },
+    {
+      "step": "login_TM",
+      "status": 400
+    },
+    {
+      "step": "create_TO",
+      "status": 400
+    },
+    {
+      "step": "login_TO",
+      "status": 400
+    },
+    {
+      "step": "create_TA",
+      "status": 400
+    },
+    {
+      "step": "login_TA",
+      "status": 400
+    },
+    {
+      "step": "create_SURVEYOR",
+      "status": 400
+    },
+    {
+      "step": "login_SURVEYOR",
+      "status": 400
+    },
+    {
+      "step": "get_vessels",
+      "status": 200
+    },
+    {
+      "step": "get_cert_types",
+      "status": 200
+    },
+    {
+      "step": "create_job",
+      "status": 201
+    },
+    {
+      "step": "job_get_all",
+      "status": 200
+    },
+    {
+      "step": "job_get_by_id",
+      "status": 200
+    },
+    {
+      "step": "job_history",
+      "status": 200
+    },
+    {
+      "step": "gm_approve",
+      "status": 200
+    },
+    {
+      "step": "assign_surveyor",
+      "status": 400
+    },
+    {
+      "step": "assign_surveyor_valid",
+      "status": 400
+    },
+    {
+      "step": "tm_pre_approve",
+      "status": 401
+    },
+    {
+      "step": "survey_start",
+      "status": 401
+    },
+    {
+      "step": "checklist_submit",
+      "status": 401
+    },
+    {
+      "step": "survey_submit",
+      "status": 401
+    },
+    {
+      "step": "to_approve",
+      "status": 401
+    },
+    {
+      "step": "tm_finalize",
+      "status": 401
+    },
+    {
+      "step": "create_invoice",
+      "status": 201
+    },
+    {
+      "step": "mark_paid_ta",
+      "status": 401
+    },
+    {
+      "step": "generate_certificate",
+      "status": 400
+    },
+    {
+      "step": "cert_get_all",
+      "status": 200
+    },
+    {
+      "step": "cert_get_by_id",
+      "status": 404
+    },
+    {
+      "step": "cert_preview",
+      "status": 404
+    },
+    {
+      "step": "cert_history",
+      "status": 404
+    },
+    {
+      "step": "generate_certificate_without_payment",
+      "status": 400
+    }
+  ]
+}

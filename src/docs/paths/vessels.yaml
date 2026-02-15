@@ -4,7 +4,7 @@
     summary: List vessels
     description: List all vessels. CLIENT sees only their vessels.
     operationId: getVessels
-    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    x-roles: [ADMIN, GM, TM, TO, CLIENT]
     parameters:
       - name: page
         in: query

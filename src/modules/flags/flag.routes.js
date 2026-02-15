@@ -8,7 +8,7 @@ const router = express.Router();
 router.use(authenticate);
 
 router.post('/', authorizeRoles('ADMIN'), validate(schemas.createFlag), flagController.createFlag);
-router.get('/', authorizeRoles('ADMIN', 'GM', 'TM', 'To'), flagController.getFlags);
+router.get('/', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), flagController.getFlags);
 router.put('/:id', authorizeRoles('ADMIN'), flagController.updateFlag);
 
 export default router;

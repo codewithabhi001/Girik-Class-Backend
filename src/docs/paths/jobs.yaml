@@ -186,6 +186,138 @@
             schema:
               $ref: '#/components/schemas/ErrorResponse'
 
+/api/v1/jobs/{id}/gm-approve:
+  put:
+    tags: [Jobs]
+    summary: GM Approve Job
+    description: GM approves a job. GM only.
+    operationId: gmApproveJob
+    x-roles: [GM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              remarks: { type: string }
+    responses:
+      "200": { description: Job approved }
+
+/api/v1/jobs/{id}/gm-reject:
+  put:
+    tags: [Jobs]
+    summary: GM Reject Job
+    description: GM rejects a job. GM only.
+    operationId: gmRejectJob
+    x-roles: [GM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              remarks: { type: string }
+    responses:
+      "200": { description: Job rejected }
+
+/api/v1/jobs/{id}/tm-pre-approve:
+  put:
+    tags: [Jobs]
+    summary: TM Pre-Approve Job
+    description: TM pre-approves a job. TM only.
+    operationId: tmPreApproveJob
+    x-roles: [TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              remarks: { type: string }
+    responses:
+      "200": { description: Job pre-approved }
+
+/api/v1/jobs/{id}/tm-pre-reject:
+  put:
+    tags: [Jobs]
+    summary: TM Pre-Reject Job
+    description: TM pre-rejects a job. TM only.
+    operationId: tmPreRejectJob
+    x-roles: [TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              remarks: { type: string }
+    responses:
+      "200": { description: Job pre-rejected }
+
+/api/v1/jobs/{id}/to-approve:
+  put:
+    tags: [Jobs]
+    summary: TO Approve Survey
+    description: TO approves a survey. TO only.
+    operationId: toApproveSurvey
+    x-roles: [TO]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              remarks: { type: string }
+    responses:
+      "200": { description: Survey approved }
+
+/api/v1/jobs/{id}/to-send-back:
+  put:
+    tags: [Jobs]
+    summary: TO Send Back Survey
+    description: TO sends back a survey for correction. TO only.
+    operationId: toSendBackSurvey
+    x-roles: [TO]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              remarks: { type: string }
+    responses:
+      "200": { description: Survey sent back }
+
 /api/v1/jobs/{id}/assign:
   put:
     tags: [Jobs]

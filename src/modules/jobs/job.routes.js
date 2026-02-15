@@ -12,7 +12,7 @@ router.use(authenticate);
 
 // List all jobs
 // CLIENT gets their own, others get filtered based on logic in service (for now)
-router.get('/', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), jobController.getJobs);
+router.get('/', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'TA', 'FLAG_ADMIN', 'SURVEYOR'), jobController.getJobs);
 
 // Create a new job request
 router.post('/', authorizeRoles('CLIENT', 'ADMIN', 'GM'), validate(schemas.createJob), jobController.createJob);
@@ -22,6 +22,14 @@ router.get('/:id', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR
 
 // Update job status
 router.put('/:id/status', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), jobController.updateJobStatus);
+
+// Workflow review gates
+router.put('/:id/gm-approve', authorizeRoles('ADMIN', 'GM'), jobController.gmApproveJob);
+router.put('/:id/gm-reject', authorizeRoles('ADMIN', 'GM'), jobController.gmRejectJob);
+router.put('/:id/tm-pre-approve', authorizeRoles('TM'), jobController.tmPreApproveJob);
+router.put('/:id/tm-pre-reject', authorizeRoles('TM'), jobController.tmPreRejectJob);
+router.put('/:id/to-approve', authorizeRoles('TO'), jobController.toApproveSurvey);
+router.put('/:id/to-send-back', authorizeRoles('TO'), jobController.toSendBackSurvey);
 
 // Assign a surveyor to a job
 router.put('/:id/assign', authorizeRoles('ADMIN', 'GM'), jobController.assignSurveyor);

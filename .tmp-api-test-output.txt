@@ -1,0 +1,153 @@
+
+> girik_backend@1.0.0 test:apis
+> node scripts/test-all-apis.js
+
+
+=== GIRIK Backend – API tests (Admin token) ===
+Base: http://localhost:3000/api/v1
+
+--- Results by status ---
+  401 Unauthorized: 66
+  404 Not Found: 3
+  200 OK: 1
+
+--- Per request ---
+
+GET    /health                                                 200 OK
+GET    /public/certificate/verify/TEST-NUMBER                  404 Not Found
+GET    /public/vessel/1234567                                  404 Not Found
+GET    /dashboard                                              401 Unauthorized
+GET    /clients                                                401 Unauthorized
+GET    /clients/019c51e1-316c-7244-b9fc-b1fa2c108fee           401 Unauthorized
+GET    /vessels                                                401 Unauthorized
+GET    /vessels/client/019c51e1-316c-7244-b9fc-b1fa2c108fee    401 Unauthorized
+GET    /vessels/019c51e1-316c-7244-b9fc-b1fa2c108fee           401 Unauthorized
+GET    /jobs                                                   401 Unauthorized
+GET    /jobs/019c51e1-316c-7244-b9fc-b1fa2c108fee              401 Unauthorized
+GET    /jobs/019c51e1-316c-7244-b9fc-b1fa2c108fee/history      401 Unauthorized
+GET    /jobs/019c51e1-316c-7244-b9fc-b1fa2c108fee/messages/external 401 Unauthorized
+GET    /jobs/019c51e1-316c-7244-b9fc-b1fa2c108fee/messages/internal 401 Unauthorized
+GET    /surveys                                                401 Unauthorized
+GET    /surveys/019c51e1-316c-7244-b9fc-b1fa2c108fee/timeline  401 Unauthorized
+GET    /certificates/verify/TEST-NUM                           404 Not Found
+GET    /certificates/types                                     401 Unauthorized
+GET    /certificates                                           401 Unauthorized
+GET    /certificates/expiring                                  401 Unauthorized
+GET    /certificates/019c51e1-316c-7244-b9fc-b1fa2c108fee      401 Unauthorized
+GET    /certificates/019c51e1-316c-7244-b9fc-b1fa2c108fee/preview 401 Unauthorized
+GET    /certificates/019c51e1-316c-7244-b9fc-b1fa2c108fee/signature 401 Unauthorized
+GET    /certificates/019c51e1-316c-7244-b9fc-b1fa2c108fee/history 401 Unauthorized
+GET    /payments                                               401 Unauthorized
+GET    /payments/summary                                       401 Unauthorized
+GET    /payments/019c51e1-316c-7244-b9fc-b1fa2c108fee          401 Unauthorized
+GET    /payments/019c51e1-316c-7244-b9fc-b1fa2c108fee/ledger   401 Unauthorized
+GET    /surveyors/applications                                 401 Unauthorized
+GET    /surveyors/019c51e1-316c-7244-b9fc-b1fa2c108fee/profile 401 Unauthorized
+GET    /surveyors/019c51e1-316c-7244-b9fc-b1fa2c108fee/location-history 401 Unauthorized
+GET    /jobs/019c51e1-316c-7244-b9fc-b1fa2c108fee/checklist    401 Unauthorized
+GET    /checklist-templates                                    401 Unauthorized
+GET    /checklist-templates/job/019c51e1-316c-7244-b9fc-b1fa2c108fee 401 Unauthorized
+GET    /checklist-templates/019c51e1-316c-7244-b9fc-b1fa2c108fee 401 Unauthorized
+GET    /non-conformities/job/019c51e1-316c-7244-b9fc-b1fa2c108fee 401 Unauthorized
+GET    /toca                                                   401 Unauthorized
+GET    /flags                                                  401 Unauthorized
+GET    /notifications                                          401 Unauthorized
+GET    /users/me                                               401 Unauthorized
+GET    /users                                                  401 Unauthorized
+GET    /documents/job/019c51e1-316c-7244-b9fc-b1fa2c108fee     401 Unauthorized
+GET    /documents/vessel/019c51e1-316c-7244-b9fc-b1fa2c108fee  401 Unauthorized
+GET    /documents/certificate/019c51e1-316c-7244-b9fc-b1fa2c108fee 401 Unauthorized
+GET    /system/health                                          401 Unauthorized
+GET    /system/readiness                                       401 Unauthorized
+GET    /system/version                                         401 Unauthorized
+GET    /system/metrics                                         401 Unauthorized
+GET    /system/audit-logs                                      401 Unauthorized
+GET    /system/migrations                                      401 Unauthorized
+GET    /system/jobs/failed                                     401 Unauthorized
+GET    /system/feature-flags                                   401 Unauthorized
+GET    /system/locales                                         401 Unauthorized
+GET    /reports/certificates                                   401 Unauthorized
+GET    /reports/surveyors                                      401 Unauthorized
+GET    /reports/non-conformities                               401 Unauthorized
+GET    /reports/financials                                     401 Unauthorized
+GET    /activity-requests                                      401 Unauthorized
+GET    /activity-requests/019c51e1-316c-7244-b9fc-b1fa2c108fee 401 Unauthorized
+GET    /customer-feedback                                      401 Unauthorized
+GET    /customer-feedback/job/019c51e1-316c-7244-b9fc-b1fa2c108fee 401 Unauthorized
+GET    /change-requests                                        401 Unauthorized
+GET    /certificate-templates                                  401 Unauthorized
+GET    /certificate-templates/019c51e1-316c-7244-b9fc-b1fa2c108fee 401 Unauthorized
+GET    /incidents                                              401 Unauthorized
+GET    /incidents/019c51e1-316c-7244-b9fc-b1fa2c108fee         401 Unauthorized
+GET    /support                                                401 Unauthorized
+GET    /support/019c51e1-316c-7244-b9fc-b1fa2c108fee           401 Unauthorized
+GET    /search?q=test                                          401 Unauthorized
+GET    /compliance/export/019c51e1-316c-7244-b9fc-b1fa2c108fee 401 Unauthorized
+
+--- Auth failures (401/403) ---
+  GET /dashboard => 401 Unauthorized
+  GET /clients => 401 Unauthorized
+  GET /clients/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /vessels => 401 Unauthorized
+  GET /vessels/client/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /vessels/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /jobs => 401 Unauthorized
+  GET /jobs/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /jobs/019c51e1-316c-7244-b9fc-b1fa2c108fee/history => 401 Unauthorized
+  GET /jobs/019c51e1-316c-7244-b9fc-b1fa2c108fee/messages/external => 401 Unauthorized
+  GET /jobs/019c51e1-316c-7244-b9fc-b1fa2c108fee/messages/internal => 401 Unauthorized
+  GET /surveys => 401 Unauthorized
+  GET /surveys/019c51e1-316c-7244-b9fc-b1fa2c108fee/timeline => 401 Unauthorized
+  GET /certificates/types => 401 Unauthorized
+  GET /certificates => 401 Unauthorized
+  GET /certificates/expiring => 401 Unauthorized
+  GET /certificates/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /certificates/019c51e1-316c-7244-b9fc-b1fa2c108fee/preview => 401 Unauthorized
+  GET /certificates/019c51e1-316c-7244-b9fc-b1fa2c108fee/signature => 401 Unauthorized
+  GET /certificates/019c51e1-316c-7244-b9fc-b1fa2c108fee/history => 401 Unauthorized
+  GET /payments => 401 Unauthorized
+  GET /payments/summary => 401 Unauthorized
+  GET /payments/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /payments/019c51e1-316c-7244-b9fc-b1fa2c108fee/ledger => 401 Unauthorized
+  GET /surveyors/applications => 401 Unauthorized
+  GET /surveyors/019c51e1-316c-7244-b9fc-b1fa2c108fee/profile => 401 Unauthorized
+  GET /surveyors/019c51e1-316c-7244-b9fc-b1fa2c108fee/location-history => 401 Unauthorized
+  GET /jobs/019c51e1-316c-7244-b9fc-b1fa2c108fee/checklist => 401 Unauthorized
+  GET /checklist-templates => 401 Unauthorized
+  GET /checklist-templates/job/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /checklist-templates/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /non-conformities/job/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /toca => 401 Unauthorized
+  GET /flags => 401 Unauthorized
+  GET /notifications => 401 Unauthorized
+  GET /users/me => 401 Unauthorized
+  GET /users => 401 Unauthorized
+  GET /documents/job/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /documents/vessel/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /documents/certificate/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /system/health => 401 Unauthorized
+  GET /system/readiness => 401 Unauthorized
+  GET /system/version => 401 Unauthorized
+  GET /system/metrics => 401 Unauthorized
+  GET /system/audit-logs => 401 Unauthorized
+  GET /system/migrations => 401 Unauthorized
+  GET /system/jobs/failed => 401 Unauthorized
+  GET /system/feature-flags => 401 Unauthorized
+  GET /system/locales => 401 Unauthorized
+  GET /reports/certificates => 401 Unauthorized
+  GET /reports/surveyors => 401 Unauthorized
+  GET /reports/non-conformities => 401 Unauthorized
+  GET /reports/financials => 401 Unauthorized
+  GET /activity-requests => 401 Unauthorized
+  GET /activity-requests/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /customer-feedback => 401 Unauthorized
+  GET /customer-feedback/job/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /change-requests => 401 Unauthorized
+  GET /certificate-templates => 401 Unauthorized
+  GET /certificate-templates/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /incidents => 401 Unauthorized
+  GET /incidents/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /support => 401 Unauthorized
+  GET /support/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
+  GET /search?q=test => 401 Unauthorized
+  GET /compliance/export/019c51e1-316c-7244-b9fc-b1fa2c108fee => 401 Unauthorized
