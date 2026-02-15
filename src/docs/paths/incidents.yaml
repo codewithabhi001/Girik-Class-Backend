@@ -49,6 +49,8 @@
       "200": { description: Incident details }
       "403": { description: Forbidden }
 
+  
+/api/v1/incidents/{id}/status:
   put:
     tags: [Incidents]
     summary: Update incident status

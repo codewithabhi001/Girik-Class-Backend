@@ -38,6 +38,16 @@
       "201": { description: User created }
       "403": { description: Forbidden }
 
+/api/v1/users/me:
+  get:
+    tags: [Users]
+    summary: Get current user profile
+    operationId: getMyProfile
+    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
+    responses:
+      "200": { description: Current user profile }
+      "401": { description: Unauthorized }
+
 /api/v1/users/{id}:
   put:
     tags: [Users]

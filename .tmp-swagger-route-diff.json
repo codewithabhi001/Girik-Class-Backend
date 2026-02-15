@@ -1,0 +1,237 @@
+{
+  "counts": {
+    "routes": 168,
+    "docs": 164,
+    "missingInDocs": 12,
+    "docsWithoutRoute": 8,
+    "roleMismatch": 2
+  },
+  "missingInDocs": [
+    {
+      "method": "post",
+      "path": "/api/v1/certificates/types",
+      "roles": [
+        "ADMIN"
+      ],
+      "file": "src/modules/certificates/certificate.routes.js"
+    },
+    {
+      "method": "post",
+      "path": "/api/v1/certificates/bulk-renew",
+      "roles": [
+        "ADMIN",
+        "TM"
+      ],
+      "file": "src/modules/certificates/certificate.routes.js"
+    },
+    {
+      "method": "post",
+      "path": "/api/v1/certificates/{id}/transfer",
+      "roles": [
+        "ADMIN",
+        "GM"
+      ],
+      "file": "src/modules/certificates/certificate.routes.js"
+    },
+    {
+      "method": "post",
+      "path": "/api/v1/certificates/{id}/extend",
+      "roles": [
+        "ADMIN",
+        "GM"
+      ],
+      "file": "src/modules/certificates/certificate.routes.js"
+    },
+    {
+      "method": "put",
+      "path": "/api/v1/certificates/{id}/downgrade",
+      "roles": [
+        "ADMIN",
+        "GM"
+      ],
+      "file": "src/modules/certificates/certificate.routes.js"
+    },
+    {
+      "method": "post",
+      "path": "/api/v1/surveyors/apply",
+      "roles": null,
+      "file": "src/modules/surveyors/surveyor.routes.js"
+    },
+    {
+      "method": "get",
+      "path": "/api/v1/users/me",
+      "roles": null,
+      "file": "src/modules/users/user.routes.js"
+    },
+    {
+      "method": "get",
+      "path": "/api/v1/system/health",
+      "roles": null,
+      "file": "src/modules/system/system.routes.js"
+    },
+    {
+      "method": "get",
+      "path": "/api/v1/system/readiness",
+      "roles": null,
+      "file": "src/modules/system/system.routes.js"
+    },
+    {
+      "method": "get",
+      "path": "/api/v1/system/version",
+      "roles": null,
+      "file": "src/modules/system/system.routes.js"
+    },
+    {
+      "method": "put",
+      "path": "/api/v1/incidents/{id}/status",
+      "roles": [
+        "ADMIN",
+        "GM",
+        "TM"
+      ],
+      "file": "src/modules/incidents/incident.routes.js"
+    },
+    {
+      "method": "put",
+      "path": "/api/v1/activity-requests/{id}/status",
+      "roles": [
+        "ADMIN",
+        "GM",
+        "TM"
+      ],
+      "file": "src/modules/activity_requests/activity_request.routes.js"
+    }
+  ],
+  "docsWithoutRoute": [
+    {
+      "method": "put",
+      "path": "/api/v1/activity-requests/{id}",
+      "roles": [
+        "ADMIN",
+        "GM",
+        "TM"
+      ],
+      "file": "activity_requests.yaml"
+    },
+    {
+      "method": "get",
+      "path": "/api/v1/health",
+      "roles": [
+        "ADMIN",
+        "GM",
+        "TM",
+        "TO",
+        "TA",
+        "SURVEYOR",
+        "CLIENT",
+        "FLAG_ADMIN"
+      ],
+      "file": "health.yaml"
+    },
+    {
+      "method": "put",
+      "path": "/api/v1/incidents/{id}",
+      "roles": [
+        "ADMIN",
+        "GM",
+        "TM"
+      ],
+      "file": "incidents.yaml"
+    },
+    {
+      "method": "get",
+      "path": "/api/v1/providers",
+      "roles": [
+        "ADMIN",
+        "GM",
+        "TM",
+        "TO"
+      ],
+      "file": "providers.yaml"
+    },
+    {
+      "method": "post",
+      "path": "/api/v1/providers",
+      "roles": [
+        "ADMIN",
+        "GM"
+      ],
+      "file": "providers.yaml"
+    },
+    {
+      "method": "put",
+      "path": "/api/v1/providers/{id}/status",
+      "roles": [
+        "ADMIN",
+        "GM"
+      ],
+      "file": "providers.yaml"
+    },
+    {
+      "method": "get",
+      "path": "/api/v1/providers/{id}/evaluations",
+      "roles": [
+        "ADMIN",
+        "GM",
+        "TM"
+      ],
+      "file": "providers.yaml"
+    },
+    {
+      "method": "post",
+      "path": "/api/v1/providers/{id}/evaluations",
+      "roles": [
+        "ADMIN",
+        "GM",
+        "TM"
+      ],
+      "file": "providers.yaml"
+    }
+  ],
+  "roleMismatch": [
+    {
+      "route": {
+        "method": "put",
+        "path": "/api/v1/jobs/{id}/status",
+        "roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO"
+        ],
+        "file": "src/modules/jobs/job.routes.js"
+      },
+      "doc": {
+        "method": "put",
+        "path": "/api/v1/jobs/{id}/status",
+        "roles": [
+          "ADMIN"
+        ],
+        "file": "jobs.yaml"
+      }
+    },
+    {
+      "route": {
+        "method": "get",
+        "path": "/api/v1/flags",
+        "roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO"
+        ],
+        "file": "src/modules/flags/flag.routes.js"
+      },
+      "doc": {
+        "method": "get",
+        "path": "/api/v1/flags",
+        "roles": [
+          "ADMIN",
+          "GM",
+          "TM"
+        ],
+        "file": "flags.yaml"
+      }
+    }
+  ]
+}

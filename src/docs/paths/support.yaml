@@ -67,3 +67,30 @@
     responses:
       "200": { description: Status updated }
       "403": { description: Forbidden }
+
+/api/v1/support/{id}/status:
+  put:
+    tags: [Support]
+    summary: Update ticket status
+    operationId: updateSupportTicketStatusPath
+    x-roles: [ADMIN, GM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status: { type: string, enum: [OPEN, IN_PROGRESS, RESOLVED, CLOSED] }
+              internal_note: { type: string }
+          example:
+            status: "RESOLVED"
+            internal_note: "Issue resolved and closed."
+    responses:
+      "200": { description: Status updated }
+      "403": { description: Forbidden }

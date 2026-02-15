@@ -152,6 +152,54 @@
                         format: uuid
                       name:
                         type: string
+  post:
+    tags: [Certificates]
+    summary: Create certificate type
+    description: Create a new certificate type. ADMIN only.
+    operationId: createCertificateType
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name]
+            properties:
+              name: { type: string }
+              issuing_authority: { type: string, enum: [CLASS, FLAG] }
+              validity_years: { type: integer }
+    responses:
+      "201":
+        description: Certificate type created
+      "403":
+        description: Forbidden
+
+/api/v1/certificates/bulk-renew:
+  post:
+    tags: [Certificates]
+    summary: Bulk renew certificates
+    description: Renew multiple certificates in one operation. ADMIN, TM only.
+    operationId: bulkRenewCertificates
+    x-roles: [ADMIN, TM]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [certificate_ids]
+            properties:
+              certificate_ids:
+                type: array
+                items: { type: string, format: uuid }
+              validity_years: { type: integer, default: 1 }
+              reason: { type: string }
+    responses:
+      "200":
+        description: Bulk renewal completed
+      "403":
+        description: Forbidden
 
 /api/v1/certificates/expiring:
   get:
@@ -486,6 +534,78 @@
                   type: string
                 data:
                   $ref: '#/components/schemas/CertificateResponse'
+
+/api/v1/certificates/{id}/transfer:
+  post:
+    tags: [Certificates]
+    summary: Transfer certificate
+    description: Transfer certificate ownership/association. ADMIN, GM only.
+    operationId: transferCertificate
+    x-roles: [ADMIN, GM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CertActionRequest'
+    responses:
+      "200":
+        description: Certificate transferred
+      "403":
+        description: Forbidden
+
+/api/v1/certificates/{id}/extend:
+  post:
+    tags: [Certificates]
+    summary: Extend certificate
+    description: Extend certificate validity. ADMIN, GM only.
+    operationId: extendCertificate
+    x-roles: [ADMIN, GM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CertActionRequest'
+    responses:
+      "200":
+        description: Certificate extended
+      "403":
+        description: Forbidden
+
+/api/v1/certificates/{id}/downgrade:
+  put:
+    tags: [Certificates]
+    summary: Downgrade certificate
+    description: Downgrade certificate classification/type. ADMIN, GM only.
+    operationId: downgradeCertificate
+    x-roles: [ADMIN, GM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CertActionRequest'
+    responses:
+      "200":
+        description: Certificate downgraded
+      "403":
+        description: Forbidden
 
 /api/v1/certificates/{id}/preview:
   get:

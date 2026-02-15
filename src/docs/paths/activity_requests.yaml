@@ -47,6 +47,8 @@
       "200": { description: Request details }
       "403": { description: Forbidden }
 
+  
+/api/v1/activity-requests/{id}/status:
   put:
     tags: [Activity Requests]
     summary: Update request status

@@ -4,7 +4,7 @@
     summary: List jobs
     description: List all jobs. CLIENT sees only their vessels' jobs; SURVEYOR sees assigned jobs.
     operationId: getJobs
-    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, TA, FLAG_ADMIN, SURVEYOR]
     parameters:
       - name: page
         in: query
@@ -148,9 +148,9 @@
   put:
     tags: [Jobs]
     summary: Update job status
-    description: Update job status. ADMIN, GM, TM, TO only.
+    description: Update job status. ADMIN only.
     operationId: updateJobStatus
-    x-roles: [ADMIN, GM, TM, TO]
+    x-roles: [ADMIN]
     parameters:
       - name: id
         in: path
@@ -190,9 +190,9 @@
   put:
     tags: [Jobs]
     summary: GM Approve Job
-    description: GM approves a job. GM only.
+    description: GM approves a job. ADMIN, GM.
     operationId: gmApproveJob
-    x-roles: [GM]
+    x-roles: [ADMIN, GM]
     parameters:
       - name: id
         in: path
@@ -212,9 +212,9 @@
   put:
     tags: [Jobs]
     summary: GM Reject Job
-    description: GM rejects a job. GM only.
+    description: GM rejects a job. ADMIN, GM.
     operationId: gmRejectJob
-    x-roles: [GM]
+    x-roles: [ADMIN, GM]
     parameters:
       - name: id
         in: path
@@ -273,6 +273,28 @@
               remarks: { type: string }
     responses:
       "200": { description: Job pre-rejected }
+
+/api/v1/jobs/{id}/tm-send-back:
+  put:
+    tags: [Jobs]
+    summary: TM Send Back Survey
+    description: TM/GM/ADMIN can send survey back for rework.
+    operationId: tmSendBackSurvey
+    x-roles: [ADMIN, GM, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              remarks: { type: string }
+    responses:
+      "200": { description: Survey sent back for rework }
 
 /api/v1/jobs/{id}/to-approve:
   put:
@@ -403,49 +425,6 @@
             schema:
               $ref: '#/components/schemas/ErrorResponse'
 
-/api/v1/jobs/{id}/escalate:
-  put:
-    tags: [Jobs]
-    summary: Escalate job
-    description: Escalate job to GM or ADMIN. GM, TM, TO only.
-    operationId: escalateJob
-    x-roles: [GM, TM, TO]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/EscalateJobRequest'
-          example:
-            reason: "Requires senior approval"
-            target_role: "GM"
-    responses:
-      "200":
-        description: Job escalated
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
-                  $ref: '#/components/schemas/JobResponse'
-      "403":
-        description: Forbidden
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
-
 /api/v1/jobs/{id}/cancel:
   put:
     tags: [Jobs]
@@ -552,34 +531,6 @@
     responses:
       "200":
         description: Job resumed
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
-                  $ref: '#/components/schemas/JobResponse'
-
-/api/v1/jobs/{id}/clone:
-  post:
-    tags: [Jobs]
-    summary: Clone job
-    description: Create a copy of the job. GM, TM, ADMIN only.
-    operationId: cloneJob
-    x-roles: [GM, TM, ADMIN]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    responses:
-      "201":
-        description: Job cloned
         content:
           application/json:
             schema:

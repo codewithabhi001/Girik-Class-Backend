@@ -29,7 +29,7 @@
     tags: [Flags]
     summary: Get flags
     operationId: getFlags
-    x-roles: [ADMIN, GM, TM]
+    x-roles: [ADMIN, GM, TM, TO]
     responses:
       "200": { description: List of flags }
       "403": { description: Forbidden }

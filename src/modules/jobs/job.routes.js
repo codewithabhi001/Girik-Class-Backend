@@ -21,7 +21,7 @@ router.post('/', authorizeRoles('CLIENT', 'ADMIN', 'GM'), validate(schemas.creat
 router.get('/:id', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), jobController.getJobById);
 
 // Update job status
-router.put('/:id/status', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), jobController.updateJobStatus);
+router.put('/:id/status', authorizeRoles('ADMIN'), jobController.updateJobStatus);
 
 // Workflow review gates
 router.put('/:id/gm-approve', authorizeRoles('ADMIN', 'GM'), jobController.gmApproveJob);

@@ -256,3 +256,60 @@
                   example: true
                 data:
                   $ref: '#/components/schemas/PaymentResponse'
+
+/api/v1/payments/{id}/ledger:
+  get:
+    tags: [Payments]
+    summary: Get payment ledger
+    description: Get financial ledger entries for a payment. ADMIN, GM only.
+    operationId: getPaymentLedger
+    x-roles: [ADMIN, GM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: Ledger entries
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: array
+                  items:
+                    type: object
+
+/api/v1/payments/writeoff:
+  post:
+    tags: [Payments]
+    summary: Write off payment
+    description: Write off an invoice/payment. ADMIN only.
+    operationId: writeOffPayment
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [paymentId, reason]
+            properties:
+              paymentId:
+                type: string
+                format: uuid
+              reason:
+                type: string
+          example:
+            paymentId: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+            reason: "Approved write off"
+    responses:
+      "200":
+        description: Payment written off

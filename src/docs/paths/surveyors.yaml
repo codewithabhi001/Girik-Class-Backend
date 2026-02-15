@@ -26,6 +26,35 @@
       "201": { description: Surveyor created }
       "403": { description: Forbidden }
 
+/api/v1/surveyors/apply:
+  post:
+    tags: [Surveyors]
+    summary: Public surveyor application
+    operationId: applySurveyorPublic
+    x-roles: [PUBLIC]
+    security: []
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required: [full_name, email, phone, nationality, qualification, years_of_experience]
+            properties:
+              full_name: { type: string }
+              email: { type: string, format: email }
+              phone: { type: string }
+              nationality: { type: string }
+              qualification: { type: string }
+              years_of_experience: { type: integer }
+              cv: { type: string, format: binary }
+              id_proof: { type: string, format: binary }
+              certificates:
+                type: array
+                items: { type: string, format: binary }
+    responses:
+      "201": { description: Application submitted }
+
 /api/v1/surveyors/applications:
   get:
     tags: [Surveyors]

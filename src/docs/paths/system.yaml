@@ -8,6 +8,33 @@
       "200": { description: System metrics }
       "403": { description: Forbidden }
 
+/api/v1/system/health:
+  get:
+    tags: [System]
+    summary: Get system health
+    operationId: getSystemHealth
+    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
+    responses:
+      "200": { description: Health status }
+
+/api/v1/system/readiness:
+  get:
+    tags: [System]
+    summary: Get system readiness
+    operationId: getSystemReadiness
+    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
+    responses:
+      "200": { description: Readiness status }
+
+/api/v1/system/version:
+  get:
+    tags: [System]
+    summary: Get system version
+    operationId: getSystemVersion
+    x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
+    responses:
+      "200": { description: Version info }
+
 /api/v1/system/audit-logs:
   get:
     tags: [System]
