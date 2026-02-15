@@ -7,6 +7,7 @@ const JobRequest = db.JobRequest;
 const GpsTracking = db.GpsTracking;
 const ActivityPlanning = db.ActivityPlanning;
 const JobStatusHistory = db.JobStatusHistory;
+const AuditLog = db.AuditLog;
 
 export const submitSurveyReport = async (data, file, userId) => {
     const { job_id, gps_latitude, gps_longitude, survey_statement } = data;
@@ -45,13 +46,26 @@ export const submitSurveyReport = async (data, file, userId) => {
     });
 
     // Update Job Status
+    const oldStatus = job.job_status;
     await job.update({ job_status: 'SURVEY_DONE' });
     await JobStatusHistory.create({
         job_id: job.id,
-        old_status: 'IN_PROGRESS',
+        old_status: oldStatus,
         new_status: 'SURVEY_DONE',
         changed_by: userId,
         change_reason: 'Survey report submitted by surveyor'
+    });
+    await AuditLog.create({
+        user_id: userId,
+        action: 'SUBMIT_SURVEY_REPORT',
+        entity_name: 'JobRequest',
+        entity_id: job.id,
+        old_values: { job_status: oldStatus },
+        new_values: {
+            job_status: 'SURVEY_DONE',
+            survey_report_id: report.id,
+            has_attendance_photo: Boolean(photoUrl)
+        },
     });
 
     // Log GPS
@@ -77,10 +91,11 @@ export const startSurvey = async (data, userId) => {
         throw { statusCode: 403, message: 'You are not assigned to this job' };
     }
 
+    const oldStatus = job.job_status;
     await job.update({ job_status: 'IN_PROGRESS' });
     await JobStatusHistory.create({
         job_id: job.id,
-        old_status: 'TM_PRE_APPROVED',
+        old_status: oldStatus,
         new_status: 'IN_PROGRESS',
         changed_by: userId,
         change_reason: 'Survey started by surveyor'
@@ -92,14 +107,22 @@ export const startSurvey = async (data, userId) => {
         latitude,
         longitude
     });
+    await AuditLog.create({
+        user_id: userId,
+        action: 'START_SURVEY',
+        entity_name: 'JobRequest',
+        entity_id: job.id,
+        old_values: { job_status: oldStatus },
+        new_values: { job_status: 'IN_PROGRESS', latitude, longitude },
+    });
     return { message: 'Survey Started', job_id, started_at: new Date() };
 };
 
 export const finalizeSurvey = async (id, userId) => {
     const job = await JobRequest.findByPk(id);
     if (!job) throw { statusCode: 404, message: 'Job not found' };
-    if (job.job_status !== 'TO_APPROVED') {
-        throw { statusCode: 400, message: 'Survey can only be finalized after TO approval (job must be TO_APPROVED)' };
+    if (job.job_status !== 'TO_APPROVED' && job.job_status !== 'SURVEY_DONE') {
+        throw { statusCode: 400, message: 'Survey can only be finalized when job is TO_APPROVED or SURVEY_DONE (TM bypass)' };
     }
     // Finalization is performed by Technical Manager (TM). Role-based access is enforced in routes/middleware.
 
@@ -108,13 +131,24 @@ export const finalizeSurvey = async (id, userId) => {
         throw { statusCode: 400, message: 'Survey Report not found. Cannot finalize.' };
     }
 
+    const oldStatus = job.job_status;
     await job.update({ job_status: 'TM_FINAL' });
     await JobStatusHistory.create({
         job_id: job.id,
-        old_status: 'TO_APPROVED',
+        old_status: oldStatus,
         new_status: 'TM_FINAL',
         changed_by: userId,
-        change_reason: 'TM final approval granted'
+        change_reason: oldStatus === 'SURVEY_DONE'
+            ? 'TM final approval granted (TO bypass)'
+            : 'TM final approval granted'
+    });
+    await AuditLog.create({
+        user_id: userId,
+        action: 'FINALIZE_SURVEY',
+        entity_name: 'JobRequest',
+        entity_id: job.id,
+        old_values: { job_status: oldStatus },
+        new_values: { job_status: 'TM_FINAL', bypass_to_approval: oldStatus === 'SURVEY_DONE' },
     });
 
     return { message: 'Survey Finalized.' };

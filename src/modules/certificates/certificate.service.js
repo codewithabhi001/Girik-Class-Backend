@@ -11,6 +11,7 @@ const CertificateTemplate = db.CertificateTemplate;
 const JobRequest = db.JobRequest;
 const Vessel = db.Vessel;
 const JobStatusHistory = db.JobStatusHistory;
+const AuditLog = db.AuditLog;
 const { Op } = db.Sequelize;
 
 /** Reusable scope filter for certificate list/get by role. Used in getCertificates, getCertificateById, getExpiringCertificates, preview, getHistory, download. */
@@ -69,6 +70,20 @@ export const generateCertificate = async (data, userId) => {
         status: 'VALID',
         issued_by_user_id: userId,
     });
+    await AuditLog.create({
+        user_id: userId,
+        action: 'GENERATE_CERTIFICATE',
+        entity_name: 'Certificate',
+        entity_id: cert.id,
+        old_values: null,
+        new_values: {
+            job_id: job.id,
+            certificate_number: cert.certificate_number,
+            certificate_type_id: cert.certificate_type_id,
+            vessel_id: cert.vessel_id,
+            status: cert.status,
+        },
+    });
 
     // Fetch template for this certificate type and generate + upload PDF
     const template = await CertificateTemplate.findOne({
@@ -124,13 +139,22 @@ export const generateCertificate = async (data, userId) => {
         logger?.warn('Certificate PDF generation/upload failed for', { certId: cert.id, err: err?.message || err });
     }
 
+    const oldJobStatus = job.job_status;
     await job.update({ job_status: 'CERTIFIED' });
     await JobStatusHistory.create({
         job_id: job.id,
-        old_status: 'PAYMENT_DONE',
+        old_status: oldJobStatus,
         new_status: 'CERTIFIED',
         changed_by: userId,
         change_reason: `Certificate ${certificateNumber} generated`
+    });
+    await AuditLog.create({
+        user_id: userId,
+        action: 'UPDATE_JOB_STATUS',
+        entity_name: 'JobRequest',
+        entity_id: job.id,
+        old_values: { job_status: oldJobStatus },
+        new_values: { job_status: 'CERTIFIED', certificate_id: cert.id, certificate_number: certificateNumber },
     });
 
     return await Certificate.findByPk(cert.id, {

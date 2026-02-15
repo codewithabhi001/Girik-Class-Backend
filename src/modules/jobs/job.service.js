@@ -7,6 +7,7 @@ const JobStatusHistory = db.JobStatusHistory;
 const User = db.User;
 const CertificateType = db.CertificateType;
 const Vessel = db.Vessel;
+const AuditLog = db.AuditLog;
 
 const WORKFLOW_TRANSITIONS = {
     CREATED: ['GM_APPROVED', 'REJECTED'],
@@ -14,7 +15,7 @@ const WORKFLOW_TRANSITIONS = {
     ASSIGNED: ['TM_PRE_APPROVED', 'REJECTED'],
     TM_PRE_APPROVED: ['IN_PROGRESS', 'REJECTED'],
     IN_PROGRESS: ['SURVEY_DONE', 'REJECTED'],
-    SURVEY_DONE: ['TO_APPROVED', 'REJECTED'],
+    SURVEY_DONE: ['TM_PRE_APPROVED', 'TO_APPROVED', 'TM_FINAL', 'REJECTED'],
     TO_APPROVED: ['TM_FINAL', 'TM_PRE_APPROVED', 'REJECTED'],
     TM_FINAL: ['PAYMENT_DONE', 'REJECTED'],
     PAYMENT_DONE: ['CERTIFIED', 'REJECTED'],
@@ -34,15 +35,25 @@ const assertTransition = (fromStatus, toStatus) => {
 
 const updateJobStatusWithHistory = async (job, newStatus, remarks, userId) => {
     const oldStatus = job.job_status;
+    const oldRemarks = job.remarks || null;
+    const updatedRemarks = remarks || oldRemarks;
     assertTransition(oldStatus, newStatus);
 
-    await job.update({ job_status: newStatus, remarks: remarks || job.remarks || null });
+    await job.update({ job_status: newStatus, remarks: updatedRemarks });
     await JobStatusHistory.create({
         job_id: job.id,
         old_status: oldStatus,
         new_status: newStatus,
         changed_by: userId,
         change_reason: remarks || `Status changed from ${oldStatus} to ${newStatus}`
+    });
+    await AuditLog.create({
+        user_id: userId,
+        action: 'UPDATE_JOB_STATUS',
+        entity_name: 'JobRequest',
+        entity_id: job.id,
+        old_values: { job_status: oldStatus, remarks: oldRemarks },
+        new_values: { job_status: newStatus, remarks: updatedRemarks },
     });
     return job;
 };
@@ -271,6 +282,12 @@ export const toSendBackSurvey = async (id, remarks, userId) => {
     return updateJobStatusWithHistory(job, 'TM_PRE_APPROVED', remarks || 'TO sent report back for correction', userId);
 };
 
+export const tmSendBackSurvey = async (id, remarks, userId) => {
+    const job = await JobRequest.findByPk(id);
+    if (!job) throw { statusCode: 404, message: 'Job not found' };
+    return updateJobStatusWithHistory(job, 'TM_PRE_APPROVED', remarks || 'TM rejected survey and requested rework', userId);
+};
+
 export const assignSurveyor = async (jobId, surveyorId, userId) => {
     const job = await JobRequest.findByPk(jobId);
     if (!job) throw { statusCode: 404, message: 'Job not found' };
@@ -293,6 +310,14 @@ export const assignSurveyor = async (jobId, surveyorId, userId) => {
         new_status: 'ASSIGNED',
         changed_by: userId,
         change_reason: `Assigned surveyor ${surveyorId}`
+    });
+    await AuditLog.create({
+        user_id: userId,
+        action: 'ASSIGN_SURVEYOR',
+        entity_name: 'JobRequest',
+        entity_id: job.id,
+        old_values: { gm_assigned_surveyor_id: null, job_status: oldStatus },
+        new_values: { gm_assigned_surveyor_id: surveyorId, job_status: 'ASSIGNED' },
     });
 
     return job;
@@ -318,6 +343,14 @@ export const reassignSurveyor = async (jobId, surveyorId, reason, userId) => {
         new_status: job.job_status,
         changed_by: userId,
         change_reason: `Reassigned from ${oldSurveyor} to ${surveyorId}: ${reason}`
+    });
+    await AuditLog.create({
+        user_id: userId,
+        action: 'REASSIGN_SURVEYOR',
+        entity_name: 'JobRequest',
+        entity_id: job.id,
+        old_values: { gm_assigned_surveyor_id: oldSurveyor },
+        new_values: { gm_assigned_surveyor_id: surveyorId, reason: reason || null },
     });
 
     await notificationService.notifyRoles(['SURVEYOR'], 'Job Reassigned', `Job ${jobId} has been reassigned to you.`);

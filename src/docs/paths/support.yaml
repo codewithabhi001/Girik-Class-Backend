@@ -9,14 +9,15 @@
         application/json:
           schema:
             type: object
-            required: [subject, message]
+            required: [subject]
             properties:
               subject: { type: string }
+              description: { type: string }
               message: { type: string }
               priority: { type: string, enum: [LOW, MEDIUM, HIGH, URGENT] }
           example:
             subject: "Unable to submit survey"
-            message: "Getting 500 error when submitting survey for job XYZ"
+            description: "Getting 500 error when submitting survey for job XYZ"
             priority: "HIGH"
     responses:
       "201": { description: Ticket created }
@@ -45,7 +46,7 @@
 
   put:
     tags: [Support]
-    summary: Update ticket status
+    summary: Update ticket status (or use /support/{id}/status)
     operationId: updateSupportTicketStatus
     x-roles: [ADMIN, GM]
     parameters:

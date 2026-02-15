@@ -1,0 +1,593 @@
+{
+  "ok": true,
+  "generatedAt": "2026-02-15T12:46:17.691Z",
+  "summary": {
+    "total": 82,
+    "passed": 79,
+    "failed": 3
+  },
+  "report": [
+    {
+      "step": "login_admin",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "create_TM",
+      "status": 201,
+      "ok": true,
+      "message": "User created successfully",
+      "meta": {
+        "email": "tm372438@girik.com"
+      }
+    },
+    {
+      "step": "create_TO",
+      "status": 201,
+      "ok": true,
+      "message": "User created successfully",
+      "meta": {
+        "email": "to372438@girik.com"
+      }
+    },
+    {
+      "step": "create_TA",
+      "status": 201,
+      "ok": true,
+      "message": "User created successfully",
+      "meta": {
+        "email": "ta372438@girik.com"
+      }
+    },
+    {
+      "step": "create_SURVEYOR",
+      "status": 201,
+      "ok": true,
+      "message": "User created successfully",
+      "meta": {
+        "email": "surveyor372438@girik.com"
+      }
+    },
+    {
+      "step": "login_tm",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "login_to",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "login_ta",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "login_surveyor",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "get_flags",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "get_vessels",
+      "status": 200,
+      "ok": true,
+      "message": "Vessels fetched successfully",
+      "meta": {}
+    },
+    {
+      "step": "get_cert_types",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "job_create_main",
+      "status": 201,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "jobs_list",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "job_get_by_id",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "job_history_initial",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "job_messages_external",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "job_messages_internal",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "job_message_send",
+      "status": 201,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "job_priority",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "job_hold_expected_400",
+      "status": 400,
+      "ok": false,
+      "message": "ON_HOLD is not part of the current strict workflow. Use review endpoints instead.",
+      "meta": {}
+    },
+    {
+      "step": "job_resume_expected_400",
+      "status": 400,
+      "ok": false,
+      "message": "Resume is not supported in strict workflow mode.",
+      "meta": {}
+    },
+    {
+      "step": "gm_approve_main",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "assign_main",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "reassign_main",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "tm_pre_approve_main",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "survey_start_main",
+      "status": 201,
+      "ok": true,
+      "message": "Survey started successfully",
+      "meta": {}
+    },
+    {
+      "step": "survey_location_main",
+      "status": 200,
+      "ok": true,
+      "message": "Location streamed successfully",
+      "meta": {}
+    },
+    {
+      "step": "checklist_submit_main",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "survey_submit_main",
+      "status": 201,
+      "ok": true,
+      "message": "Survey report submitted successfully",
+      "meta": {}
+    },
+    {
+      "step": "survey_proof_expected_400_after_submit",
+      "status": 400,
+      "ok": false,
+      "message": "Evidence can only be uploaded while survey is in progress",
+      "meta": {}
+    },
+    {
+      "step": "to_approve_main",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "tm_finalize_main",
+      "status": 200,
+      "ok": true,
+      "message": "Survey finalized successfully",
+      "meta": {}
+    },
+    {
+      "step": "create_invoice_main",
+      "status": 201,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "payments_list",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "payments_summary",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "payment_get_by_id",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "payment_ledger",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "payment_mark_paid_ta",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "certificate_generate_main",
+      "status": 201,
+      "ok": true,
+      "message": "Certificate generated successfully",
+      "meta": {}
+    },
+    {
+      "step": "cert_list",
+      "status": 200,
+      "ok": true,
+      "message": "Certificates fetched successfully",
+      "meta": {}
+    },
+    {
+      "step": "cert_get_by_id",
+      "status": 200,
+      "ok": true,
+      "message": "Certificate details fetched successfully",
+      "meta": {}
+    },
+    {
+      "step": "cert_preview",
+      "status": 200,
+      "ok": true,
+      "message": "Certificate preview data fetched",
+      "meta": {}
+    },
+    {
+      "step": "cert_history",
+      "status": 200,
+      "ok": true,
+      "message": "Certificate history fetched",
+      "meta": {}
+    },
+    {
+      "step": "cert_signature",
+      "status": 200,
+      "ok": true,
+      "message": "Certificate signature fetched",
+      "meta": {}
+    },
+    {
+      "step": "cert_public_verify",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "job_create_bypass",
+      "status": 201,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "gm_approve_bypass",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "assign_bypass",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "reassign_bypass",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "tm_pre_approve_bypass",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "survey_start_bypass",
+      "status": 201,
+      "ok": true,
+      "message": "Survey started successfully",
+      "meta": {}
+    },
+    {
+      "step": "survey_location_bypass",
+      "status": 200,
+      "ok": true,
+      "message": "Location streamed successfully",
+      "meta": {}
+    },
+    {
+      "step": "checklist_submit_bypass",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "survey_submit_bypass",
+      "status": 201,
+      "ok": true,
+      "message": "Survey report submitted successfully",
+      "meta": {}
+    },
+    {
+      "step": "tm_send_back",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "survey_start_redo",
+      "status": 201,
+      "ok": true,
+      "message": "Survey started successfully",
+      "meta": {}
+    },
+    {
+      "step": "checklist_submit_redo",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "survey_submit_redo",
+      "status": 201,
+      "ok": true,
+      "message": "Survey report submitted successfully",
+      "meta": {}
+    },
+    {
+      "step": "tm_finalize_bypass_without_to",
+      "status": 200,
+      "ok": true,
+      "message": "Survey finalized successfully",
+      "meta": {}
+    },
+    {
+      "step": "job_create_to-send-back",
+      "status": 201,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "gm_approve_to-send-back",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "assign_to-send-back",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "reassign_to-send-back",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "tm_pre_approve_to-send-back",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "survey_start_to-send-back",
+      "status": 201,
+      "ok": true,
+      "message": "Survey started successfully",
+      "meta": {}
+    },
+    {
+      "step": "survey_location_to-send-back",
+      "status": 200,
+      "ok": true,
+      "message": "Location streamed successfully",
+      "meta": {}
+    },
+    {
+      "step": "checklist_submit_to-send-back",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "survey_submit_to-send-back",
+      "status": 201,
+      "ok": true,
+      "message": "Survey report submitted successfully",
+      "meta": {}
+    },
+    {
+      "step": "to_approve_secondary",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "to_send_back",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "job_create_gm-reject",
+      "status": 201,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "gm_reject",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "job_create_tm-pre-reject",
+      "status": 201,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "gm_approve_tm_reject_job",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "assign_tm_reject_job",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "tm_pre_reject",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "job_create_cancel",
+      "status": 201,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "job_cancel",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    },
+    {
+      "step": "surveys_list",
+      "status": 200,
+      "ok": true,
+      "message": "Survey reports fetched successfully",
+      "meta": {}
+    },
+    {
+      "step": "survey_timeline",
+      "status": 200,
+      "ok": true,
+      "message": "Survey timeline fetched successfully",
+      "meta": {}
+    },
+    {
+      "step": "audit_logs_list",
+      "status": 200,
+      "ok": true,
+      "message": "",
+      "meta": {}
+    }
+  ]
+}

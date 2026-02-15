@@ -28,6 +28,7 @@ router.put('/:id/gm-approve', authorizeRoles('ADMIN', 'GM'), jobController.gmApp
 router.put('/:id/gm-reject', authorizeRoles('ADMIN', 'GM'), jobController.gmRejectJob);
 router.put('/:id/tm-pre-approve', authorizeRoles('TM'), jobController.tmPreApproveJob);
 router.put('/:id/tm-pre-reject', authorizeRoles('TM'), jobController.tmPreRejectJob);
+router.put('/:id/tm-send-back', authorizeRoles('ADMIN', 'GM', 'TM'), jobController.tmSendBackSurvey);
 router.put('/:id/to-approve', authorizeRoles('TO'), jobController.toApproveSurvey);
 router.put('/:id/to-send-back', authorizeRoles('TO'), jobController.toSendBackSurvey);
 

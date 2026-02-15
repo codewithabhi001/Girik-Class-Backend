@@ -39,7 +39,7 @@ export const getFinancialSummary = async (req, res, next) => {
 
 export const createInvoice = async (req, res, next) => {
     try {
-        const invoice = await paymentService.createInvoice(req.body);
+        const invoice = await paymentService.createInvoice(req.body, req.user.id);
         res.status(201).json({ success: true, data: invoice });
     } catch (error) { next(error); }
 };

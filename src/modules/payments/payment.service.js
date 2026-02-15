@@ -7,8 +7,9 @@ const JobRequest = db.JobRequest;
 const FinancialLedger = db.FinancialLedger;
 const Vessel = db.Vessel;
 const JobStatusHistory = db.JobStatusHistory;
+const AuditLog = db.AuditLog;
 
-export const createInvoice = async (data) => {
+export const createInvoice = async (data, userId = null) => {
     const { job_id, amount, currency } = data;
 
     const payment = await Payment.create({
@@ -17,6 +18,19 @@ export const createInvoice = async (data) => {
         amount,
         currency: currency || 'USD',
         payment_status: 'UNPAID'
+    });
+    await AuditLog.create({
+        user_id: userId,
+        action: 'CREATE_INVOICE',
+        entity_name: 'Payment',
+        entity_id: payment.id,
+        old_values: null,
+        new_values: {
+            job_id: payment.job_id,
+            amount: payment.amount,
+            currency: payment.currency,
+            payment_status: payment.payment_status,
+        },
     });
 
     return payment;
@@ -57,6 +71,8 @@ export const markPaid = async (paymentId, userId, receiptFile = null, remarks = 
         throw { statusCode: 400, message: 'Payment can only be marked done when job is TM_FINAL' };
     }
 
+    const oldPaymentStatus = payment.payment_status;
+    const oldJobStatus = job.job_status;
     let receiptUrl = payment.receipt_url || null;
     if (receiptFile) {
         receiptUrl = await s3Service.uploadFile(
@@ -77,10 +93,26 @@ export const markPaid = async (paymentId, userId, receiptFile = null, remarks = 
     await job.update({ job_status: 'PAYMENT_DONE' });
     await JobStatusHistory.create({
         job_id: job.id,
-        old_status: 'TM_FINAL',
+        old_status: oldJobStatus,
         new_status: 'PAYMENT_DONE',
         changed_by: userId,
         change_reason: remarks || 'Payment verified and cleared'
+    });
+    await AuditLog.create({
+        user_id: userId,
+        action: 'MARK_PAYMENT_PAID',
+        entity_name: 'Payment',
+        entity_id: payment.id,
+        old_values: { payment_status: oldPaymentStatus, receipt_url: payment.receipt_url || null },
+        new_values: { payment_status: 'PAID', receipt_url: receiptUrl, verified_by_user_id: userId },
+    });
+    await AuditLog.create({
+        user_id: userId,
+        action: 'UPDATE_JOB_STATUS',
+        entity_name: 'JobRequest',
+        entity_id: job.id,
+        old_values: { job_status: oldJobStatus },
+        new_values: { job_status: 'PAYMENT_DONE', reason: remarks || 'Payment verified and cleared' },
     });
 
     return payment;

@@ -185,6 +185,17 @@ export const schemas = {
         app_enabled: Joi.boolean().required(),
         alert_types: Joi.array().items(Joi.string()).required()
     }),
+    createSupportTicket: Joi.object({
+        subject: Joi.string().required(),
+        description: Joi.string().optional(),
+        message: Joi.string().optional(),
+        priority: Joi.string().valid('LOW', 'MEDIUM', 'HIGH', 'URGENT').optional(),
+        category: Joi.string().optional().allow(''),
+    }).or('description', 'message'),
+    updateSupportTicketStatus: Joi.object({
+        status: Joi.string().valid('OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED').required(),
+        internal_note: Joi.string().optional().allow(''),
+    }),
     // mobileSync schema removed (mobile module was removed)
     rateLimitConfig: Joi.object({
         ip: Joi.string().ip().required(),

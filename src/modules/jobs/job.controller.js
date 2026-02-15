@@ -106,6 +106,13 @@ export const toSendBackSurvey = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
+export const tmSendBackSurvey = async (req, res, next) => {
+    try {
+        const job = await jobService.tmSendBackSurvey(req.params.id, req.body?.remarks, req.user.id);
+        res.json({ success: true, data: job });
+    } catch (error) { next(error); }
+};
+
 export const reassignSurveyor = async (req, res, next) => {
     try {
         const job = await jobService.reassignSurveyor(req.params.id, req.body.surveyorId, req.body.reason, req.user.id);
