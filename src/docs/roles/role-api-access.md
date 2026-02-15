@@ -1,3 +1,198 @@
+# Role API Access Matrix
+
+This document lists APIs by role, based on current route-level authorization in `src/modules/*/*.routes.js`.
+
+Base API prefix: `/api/v1`
+
+## Source and scope
+
+- Mount points from `src/routes.js`
+- Role checks from `authorizeRoles(...)` and `hasRole(...)`
+- If a route only uses `authenticate` (no role check), it is available to all authenticated users
+
+## Public APIs (no auth required)
+
+- `GET /api/v1/health`
+- `GET /api/v1/public/certificate/verify/:number`
+- `GET /api/v1/public/vessel/:imo`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/refresh-token`
+- `POST /api/v1/auth/forgot-password`
+- `POST /api/v1/auth/reset-password`
+- `POST /api/v1/surveyors/apply`
+- `GET /api/v1/certificates/verify/:number`
+
+## Authenticated APIs (all logged-in users)
+
+- `POST /api/v1/auth/logout`
+- `GET /api/v1/dashboard`
+- `GET /api/v1/notifications`
+- `PUT /api/v1/notifications/:id/read`
+- `PUT /api/v1/notifications/read-all`
+- `GET /api/v1/search`
+- `POST /api/v1/support`
+- `GET /api/v1/support`
+- `GET /api/v1/support/:id`
+- `GET /api/v1/users/me`
+- `GET /api/v1/system/health`
+- `GET /api/v1/system/readiness`
+- `GET /api/v1/system/version`
+- `GET /api/v1/jobs/:jobId/checklist`
+
+---
+
+## SURVEYOR
+
+- Jobs
+  - `GET /api/v1/jobs`
+  - `GET /api/v1/jobs/:id`
+  - `GET /api/v1/jobs/:id/messages/external`
+  - `POST /api/v1/jobs/:id/messages`
+- Surveys
+  - `POST /api/v1/surveys/start`
+  - `POST /api/v1/surveys`
+  - `POST /api/v1/surveys/:id/location`
+  - `POST /api/v1/surveys/:id/proof`
+- Checklists
+  - `PUT /api/v1/jobs/:jobId/checklist`
+  - `GET /api/v1/checklist-templates`
+  - `GET /api/v1/checklist-templates/job/:jobId`
+  - `GET /api/v1/checklist-templates/:id`
+- Certificates (read)
+  - `GET /api/v1/certificates/types`
+  - `GET /api/v1/certificates`
+  - `GET /api/v1/certificates/:id`
+  - `GET /api/v1/certificates/:id/download`
+  - `GET /api/v1/certificates/:id/preview`
+  - `GET /api/v1/certificates/:id/signature`
+  - `GET /api/v1/certificates/:id/history`
+- Others
+  - `POST /api/v1/non-conformities`
+  - `GET /api/v1/non-conformities/job/:jobId`
+  - `GET /api/v1/vessels`
+  - `GET /api/v1/vessels/:id`
+  - `GET /api/v1/documents/:entityType/:entityId`
+  - `GET /api/v1/surveyors/:id/profile`
+  - `POST /api/v1/surveyors/availability`
+  - `POST /api/v1/surveyors/location`
+
+## CLIENT
+
+- Clients
+  - `GET /api/v1/clients/profile`
+  - `PUT /api/v1/clients/profile`
+  - `GET /api/v1/clients/dashboard`
+- Jobs
+  - `POST /api/v1/jobs`
+  - `GET /api/v1/jobs`
+  - `GET /api/v1/jobs/:id`
+  - `PUT /api/v1/jobs/:id/cancel`
+  - `GET /api/v1/jobs/:id/messages/external`
+  - `POST /api/v1/jobs/:id/messages`
+- Certificates
+  - `GET /api/v1/certificates/types`
+  - `GET /api/v1/certificates`
+  - `GET /api/v1/certificates/expiring`
+  - `GET /api/v1/certificates/:id`
+  - `GET /api/v1/certificates/:id/download`
+  - `GET /api/v1/certificates/:id/preview`
+  - `GET /api/v1/certificates/:id/signature`
+  - `GET /api/v1/certificates/:id/history`
+- Others
+  - `GET /api/v1/vessels`
+  - `GET /api/v1/vessels/:id`
+  - `POST /api/v1/incidents`
+  - `GET /api/v1/incidents`
+  - `GET /api/v1/incidents/:id`
+  - `POST /api/v1/change-requests`
+  - `GET /api/v1/documents/:entityType/:entityId`
+  - `POST /api/v1/documents/:entityType/:entityId`
+  - `POST /api/v1/activity-requests`
+  - `GET /api/v1/activity-requests`
+  - `GET /api/v1/activity-requests/:id`
+  - `POST /api/v1/customer-feedback`
+  - `GET /api/v1/customer-feedback/job/:jobId`
+  - `GET /api/v1/payments`
+  - `GET /api/v1/payments/summary`
+  - `GET /api/v1/payments/:id`
+  - `GET /api/v1/compliance/export/:id`
+
+## TO
+
+- `GET /api/v1/clients`, `GET /api/v1/clients/:id`
+- `GET /api/v1/jobs`, `GET /api/v1/jobs/:id`, `PUT /api/v1/jobs/:id/status`
+- `GET /api/v1/jobs/:id/history`, `POST /api/v1/jobs/:id/notes`
+- `GET /api/v1/jobs/:id/messages/external`, `GET /api/v1/jobs/:id/messages/internal`, `POST /api/v1/jobs/:id/messages`
+- `GET /api/v1/surveys`
+- `GET /api/v1/certificates/types`, `GET /api/v1/certificates`, `GET /api/v1/certificates/expiring`
+- `GET /api/v1/certificates/:id`, `GET /api/v1/certificates/:id/download`, `GET /api/v1/certificates/:id/preview`, `GET /api/v1/certificates/:id/signature`, `GET /api/v1/certificates/:id/history`
+- `GET /api/v1/checklist-templates/job/:jobId`
+- `POST /api/v1/non-conformities`, `PUT /api/v1/non-conformities/:id/close`, `GET /api/v1/non-conformities/job/:jobId`
+- `GET /api/v1/incidents`, `GET /api/v1/incidents/:id`
+- `GET /api/v1/activity-requests`, `GET /api/v1/activity-requests/:id`
+- `GET /api/v1/documents/:entityType/:entityId`
+- `GET /api/v1/vessels`, `GET /api/v1/vessels/:id`
+- `GET /api/v1/flags` (intended; see note below)
+
+## TM
+
+- Full access for technical and approval operations across:
+  - Clients (`POST/GET/PUT /clients*`)
+  - Jobs (status, reassign, lifecycle, priority, notes, internal/external messaging)
+  - Surveys (`PUT /surveys/:id/finalize`, `GET /surveys`, `GET /surveys/:id/timeline`, `POST /surveys/:id/violation`)
+  - Certificates (generate, suspend/revoke/restore/renew, bulk renew, reissue + read APIs)
+  - Vessels (`GET/POST/PUT`, plus `GET /vessels/client/:clientId`)
+  - Reports (`GET /reports/certificates|surveyors|non-conformities|financials`)
+  - TOCA (`POST /toca`, `PUT /toca/:id/status`, `GET /toca`)
+  - Change requests (`POST/GET /change-requests`)
+  - Approvals (`POST /approvals`, `PUT /approvals/:id/step`)
+  - Documents (`GET/POST /documents/...`)
+  - Templates (`GET /certificate-templates`, `GET /certificate-templates/:id`)
+  - NC (`PUT /non-conformities/:id/close`, `GET /non-conformities/job/:jobId`)
+  - Activity requests (`POST/GET /activity-requests`, `GET /activity-requests/:id`, `PUT /activity-requests/:id/status`)
+  - Incidents (`POST/GET /incidents`, `GET /incidents/:id`, `PUT /incidents/:id/status`)
+  - Surveyor management (`POST /surveyors`, applications review, profile update, location history)
+  - Payments (`GET /payments`, `GET /payments/:id`, `POST /payments/invoice`, `PUT /payments/:id/pay`, `POST /payments/:id/partial`)
+  - Flags (`GET /flags`)
+
+## GM
+
+- Broad management access across:
+  - Clients, Jobs, Certificates, Vessels, Reports
+  - Change requests (including approve/reject)
+  - Approvals, Documents (including delete), Activity requests, Incidents
+  - Feedback read APIs
+  - Payments (including refund and ledger)
+  - `PUT /api/v1/support/:id/status`
+  - `GET /api/v1/flags`
+
+## ADMIN
+
+- Access to almost all internal APIs, including admin-only endpoints:
+  - Full `/users` management
+  - Full `/system` admin and operations endpoints
+  - Certificate type creation
+  - Template and checklist-template create/update/delete/activate/clone
+  - Flags create/update
+  - Payment write-off
+
+## TA
+
+- No route-level endpoint currently includes `TA` in `authorizeRoles(...)` or `hasRole(...)`.
+- TA can still access authenticated common APIs listed above.
+
+## FLAG_ADMIN
+
+- No route-level endpoint currently includes `FLAG_ADMIN` in `authorizeRoles(...)` or `hasRole(...)`.
+- FLAG_ADMIN can still access authenticated common APIs listed above.
+
+---
+
+## Notes
+
+- In `flags` routes, one role is written as `To` instead of `TO`:
+  - `authorizeRoles('ADMIN', 'GM', 'TM', 'To')`
+  - If role comparison is case-sensitive, `TO` users will not match this check.
 # Role → API access list
 
 This file lists API endpoints (method + path) grouped by role. Paths use the API prefix `/api/v1` (router mounts in `src/routes.js`). Each entry includes a short reason why the role has access.
