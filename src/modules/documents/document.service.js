@@ -10,7 +10,7 @@ export const getEntityDocuments = async (entityType, entityId) => {
     });
 };
 
-export const uploadEntityDocument = async (entityType, entityId, file, userId) => {
+export const uploadEntityDocument = async (entityType, entityId, file, userId, documentType, description) => {
     const folder = `${s3Service.UPLOAD_FOLDERS.DOCUMENTS}/${String(entityType).toLowerCase()}`;
     const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, folder);
 
@@ -19,16 +19,20 @@ export const uploadEntityDocument = async (entityType, entityId, file, userId) =
         entity_id: entityId,
         file_url: url,
         file_type: file.mimetype,
+        document_type: documentType,
+        description: description,
         uploaded_by: userId
     });
 };
 
-export const registerDocument = async (entityType, entityId, fileData, userId) => {
+export const registerDocument = async (entityType, entityId, fileData, userId, documentType, description) => {
     return await Document.create({
         entity_type: entityType,
         entity_id: entityId,
         file_url: fileData.url,
         file_type: fileData.type,
+        document_type: documentType,
+        description: description,
         uploaded_by: userId
     });
 };

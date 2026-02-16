@@ -63,8 +63,12 @@
             required: [file]
             properties:
               file: { type: string, format: binary }
+              document_type: { type: string, description: "Type of document (e.g., EVIDENCE, REPORT)" }
+              description: { type: string, description: "Optional description of the document" }
           example:
             file: "(Binary file data)"
+            document_type: "EVIDENCE"
+            description: "Photo of cracked hull"
     responses:
       "201":
         description: Document uploaded successfully
@@ -79,6 +83,8 @@
                   properties:
                     id: { type: string, format: uuid }
                     file_url: { type: string }
+                    document_type: { type: string }
+                    description: { type: string }
       "403": { description: Forbidden }
 
 /api/v1/documents/{id}:

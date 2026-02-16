@@ -33,11 +33,12 @@ export const uploadDocument = async (req, res, next) => {
         const { entityId } = req.params;
         const entityType = req.params.entityType.toUpperCase();
         await verifyAccess(req.user, entityType, entityId);
+        const { document_type, description } = req.body;
         let result;
         if (req.file) {
-            result = await documentService.uploadEntityDocument(entityType, entityId, req.file, req.user.id);
+            result = await documentService.uploadEntityDocument(entityType, entityId, req.file, req.user.id, document_type, description);
         } else if (req.body.fileData) {
-            result = await documentService.registerDocument(entityType, entityId, req.body.fileData, req.user.id);
+            result = await documentService.registerDocument(entityType, entityId, req.body.fileData, req.user.id, document_type, description);
         } else {
             throw { statusCode: 400, message: 'No file or file data provided' };
         }

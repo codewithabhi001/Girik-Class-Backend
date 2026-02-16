@@ -5,6 +5,8 @@ export default (sequelize, DataTypes) => {
         entity_id: DataTypes.UUID,
         file_url: DataTypes.STRING,
         file_type: DataTypes.STRING,
+        document_type: DataTypes.STRING,
+        description: DataTypes.STRING,
         uploaded_by: DataTypes.UUID,
         uploaded_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     }, {
