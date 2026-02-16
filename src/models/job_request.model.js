@@ -19,6 +19,7 @@ export default (sequelize, DataTypes) => {
             },
         },
         gm_assigned_surveyor_id: DataTypes.UUID,
+        generated_certificate_id: DataTypes.UUID,
         remarks: DataTypes.TEXT,
     }, {
         tableName: 'job_requests',
@@ -32,6 +33,7 @@ export default (sequelize, DataTypes) => {
         JobRequest.belongsTo(models.User, { foreignKey: 'requested_by_user_id', as: 'requester' });
         JobRequest.belongsTo(models.User, { foreignKey: 'gm_assigned_surveyor_id', as: 'surveyor' });
         JobRequest.belongsTo(models.CertificateType, { foreignKey: 'certificate_type_id' });
+        JobRequest.belongsTo(models.Certificate, { foreignKey: 'generated_certificate_id', as: 'Certificate' });
         JobRequest.hasMany(models.JobStatusHistory, { foreignKey: 'job_id' });
         JobRequest.hasOne(models.SurveyReport, { foreignKey: 'job_id' });
         JobRequest.hasMany(models.ActivityPlanning, { foreignKey: 'job_id' });

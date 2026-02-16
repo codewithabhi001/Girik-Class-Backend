@@ -7,6 +7,7 @@ const JobStatusHistory = db.JobStatusHistory;
 const User = db.User;
 const CertificateType = db.CertificateType;
 const Vessel = db.Vessel;
+const Certificate = db.Certificate;
 const AuditLog = db.AuditLog;
 
 const WORKFLOW_TRANSITIONS = {
@@ -245,9 +246,25 @@ export const getJobs = async (query, scopeFilters = {}, userRole = null) => {
 export const getJobById = async (id, scopeFilters = {}) => {
     const job = await JobRequest.findOne({
         where: { id, ...scopeFilters },
-        include: ['Vessel', 'CertificateType', 'JobStatusHistories']
+        include: [
+            'Vessel',
+            'CertificateType',
+            'JobStatusHistories',
+            {
+                model: Certificate,
+                as: 'Certificate',
+                attributes: ['id', 'certificate_number', 'pdf_file_url']
+            }
+        ]
     });
     if (!job) throw { statusCode: 404, message: 'Job not found' };
+
+    if (job.Certificate) {
+        job.setDataValue('certificate_url', job.Certificate.pdf_file_url);
+        job.setDataValue('certificate_number', job.Certificate.certificate_number);
+        job.setDataValue('certificate_id', job.Certificate.id);
+    }
+
     return job;
 };
 

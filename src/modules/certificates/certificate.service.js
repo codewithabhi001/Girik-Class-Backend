@@ -140,7 +140,10 @@ export const generateCertificate = async (data, userId) => {
     }
 
     const oldJobStatus = job.job_status;
-    await job.update({ job_status: 'CERTIFIED' });
+    await job.update({
+        job_status: 'CERTIFIED',
+        generated_certificate_id: cert.id
+    });
     await JobStatusHistory.create({
         job_id: job.id,
         old_status: oldJobStatus,
