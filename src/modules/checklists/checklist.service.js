@@ -3,8 +3,21 @@ import db from '../../models/index.js';
 const ActivityPlanning = db.ActivityPlanning;
 const JobRequest = db.JobRequest;
 
-export const getChecklist = async (jobId) => {
-    return await ActivityPlanning.findAll({ where: { job_id: jobId } });
+export const getChecklist = async (jobId, filters = {}) => {
+    const { answer, question_code, search } = filters;
+    const where = { job_id: jobId };
+
+    if (answer) where.answer = answer;
+    if (question_code) where.question_code = question_code;
+
+    if (search) {
+        where[db.Sequelize.Op.or] = [
+            { question_text: { [db.Sequelize.Op.like]: `%${search}%` } },
+            { remarks: { [db.Sequelize.Op.like]: `%${search}%` } }
+        ];
+    }
+
+    return await ActivityPlanning.findAll({ where });
 };
 
 export const submitChecklist = async (jobId, items, userId) => {

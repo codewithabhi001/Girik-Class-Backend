@@ -23,7 +23,7 @@
         schema:
           type: string
           enum: [CREATED, GM_APPROVED, TM_PRE_APPROVED, ASSIGNED, SURVEY_DONE, TO_APPROVED, TM_FINAL, PAYMENT_DONE, CERTIFIED, REJECTED]
-          example: "CREATED"
+          example: ""
     responses:
       "200":
         description: List of jobs

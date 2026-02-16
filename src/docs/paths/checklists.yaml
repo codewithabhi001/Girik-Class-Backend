@@ -1,66 +1,92 @@
 /api/v1/jobs/{jobId}/checklist:
   get:
-    tags: [Checklists]
-    summary: Get checklist for job
+    tags:
+      - Checklists
+    summary: Get checklist for a job
+    description: Retrieve the checklist items for a specific job. Can be filtered by answer or question code.
     operationId: getChecklist
+    security:
+      - bearerAuth: []
     x-roles: [ADMIN, GM, TM, TO, SURVEYOR]
     parameters:
-      - name: jobId
-        in: path
+      - in: path
+        name: jobId
+        schema:
+          type: string
+          format: uuid
         required: true
-        schema: { type: string, format: uuid }
+        description: Unique identifier of the job
+      - in: query
+        name: answer
+        schema:
+          type: string
+          enum: [YES, NO, NA]
+        description: Filter by answer status
+      - in: query
+        name: question_code
+        schema:
+          type: string
+        description: Filter by specific question code
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in question text or remarks
     responses:
-    responses:
-      "200":
-        description: Checklist data retrieved successfully
+      '200':
+        description: Checklist retrieved successfully
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                success: { type: boolean, example: true }
-                data:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      id: { type: string, format: uuid }
-                      question_code: { type: string }
-                      question_text: { type: string }
-                      answer: { type: string }
-                      remarks: { type: string }
-                      file_url: { type: string }
-      "403": { description: Forbidden }
+              $ref: '#/components/schemas/ChecklistResponse'
+      '400':
+        description: Bad Request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+      '403':
+        description: Forbidden
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+      '404':
+        description: Not Found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
 
   put:
-    tags: [Checklists]
-    summary: Submit checklist
+    tags:
+      - Checklists
+    summary: Submit checklist for a job
+    description: Submit or update the checklist items for a job. Only the assigned SURVEYOR can perform this action when the job is IN_PROGRESS.
     operationId: submitChecklist
+    security:
+      - bearerAuth: []
     x-roles: [SURVEYOR]
     parameters:
-      - name: jobId
-        in: path
+      - in: path
+        name: jobId
+        schema:
+          type: string
+          format: uuid
         required: true
-        schema: { type: string, format: uuid }
+        description: Unique identifier of the job
     requestBody:
       required: true
       content:
         application/json:
           schema:
-            type: object
-            required: [items]
-            properties:
-              items:
-                type: array
-                items:
-                  type: object
-                  required: [question_code, question_text, answer]
-                  properties:
-                    question_code: { type: string }
-                    question_text: { type: string }
-                    answer: { type: string, enum: [YES, NO, NA] }
-                    remarks: { type: string }
-                    file_url: { type: string, format: uri, description: "Evidence image URL" }
+            $ref: '#/components/schemas/ChecklistSubmission'
           example:
             items:
               - question_code: "LSE001"
@@ -72,7 +98,40 @@
                 question_text: "Is the fire extinguisher charged?"
                 answer: "NO"
                 remarks: "Pressure low, needs replacement"
-                file_url: "https://s3.amazonaws.com/bucket/job/123/evidence_fire_ext.jpg"
+                file_url: "https://example.com/evidence_fire_ext.jpg"
+              - question_code: "LSE003"
+                question_text: "Is the fire alarm functional?"
+                answer: "NA"
+                remarks: "Not applicable for this vessel type"
+                file_url: ""
     responses:
-      "200": { description: Checklist submitted }
-      "403": { description: Forbidden }
+      '200':
+        description: Checklist submitted successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChecklistResponse'
+      '400':
+        description: Bad Request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+      '403':
+        description: Forbidden
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+      '404':
+        description: Not Found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'

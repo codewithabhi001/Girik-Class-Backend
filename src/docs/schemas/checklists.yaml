@@ -1,0 +1,107 @@
+ChecklistItem:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    job_id:
+      type: string
+      format: uuid
+    question_code:
+      type: string
+    question_text:
+      type: string
+    answer:
+      type: string
+    remarks:
+      type: string
+    file_url:
+      type: string
+      nullable: true
+    createdAt:
+      type: string
+      format: date-time
+    updatedAt:
+      type: string
+      format: date-time
+  example:
+    id: "019c675a-eead-752b-b2ea-e8b5932b0cfc"
+    job_id: "019c6152-5b55-736c-a0d3-0dc3f6f1c4ec"
+    question_code: "LSE001"
+    question_text: "Are life jackets available?"
+    answer: "YES"
+    remarks: ""
+    file_url: null
+    createdAt: "2026-02-16T16:48:58.000Z"
+    updatedAt: "2026-02-16T16:48:58.000Z"
+
+ChecklistSubmission:
+  type: object
+  required:
+    - items
+  properties:
+    items:
+      type: array
+      items:
+        type: object
+        required:
+          - question_code
+          - question_text
+          - answer
+        properties:
+          question_code:
+            type: string
+          question_text:
+            type: string
+          answer:
+            type: string
+            enum: [YES, NO, NA]
+          remarks:
+            type: string
+          file_url:
+            type: string
+            format: uri
+  example:
+    items:
+      - question_code: "LSE001"
+        question_text: "Are life jackets available?"
+        answer: "YES"
+        remarks: "Verified count matches record"
+        file_url: ""
+      - question_code: "LSE002"
+        question_text: "Is the fire extinguisher charged?"
+        answer: "NO"
+        remarks: "Pressure low, needs replacement"
+        file_url: "https://example.com/evidence_fire_ext.jpg"
+
+ChecklistResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+      example: true
+    data:
+      type: array
+      items:
+        $ref: '#/components/schemas/ChecklistItem'
+  example:
+    success: true
+    data:
+      - id: "019c675a-eead-752b-b2ea-e8b5932b0cfc"
+        job_id: "019c6152-5b55-736c-a0d3-0dc3f6f1c4ec"
+        question_code: "LSE001"
+        question_text: "Are life jackets available?"
+        answer: "YES"
+        remarks: ""
+        file_url: null
+        createdAt: "2026-02-16T16:48:58.000Z"
+        updatedAt: "2026-02-16T16:48:58.000Z"
+      - id: "019c675a-eead-752b-b2ea-ed0e46e9bbc7"
+        job_id: "019c6152-5b55-736c-a0d3-0dc3f6f1c4ec"
+        question_code: "LSE002"
+        question_text: "Number of life jackets"
+        answer: "YES"
+        remarks: "24 units"
+        file_url: null
+        createdAt: "2026-02-16T16:48:58.000Z"
+        updatedAt: "2026-02-16T16:48:58.000Z"
