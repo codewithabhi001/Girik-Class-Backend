@@ -9,7 +9,7 @@ export default (sequelize, DataTypes) => {
         target_date: DataTypes.DATEONLY,
         job_status: {
             type: DataTypes.ENUM(
-                'CREATED', 'GM_APPROVED', 'TM_PRE_APPROVED', 'ASSIGNED', 'IN_PROGRESS', 'SURVEY_DONE',
+                'CREATED', 'GM_APPROVED', 'TM_PRE_APPROVED', 'TO_PRE_APPROVED', 'ASSIGNED', 'IN_PROGRESS', 'SURVEY_DONE',
                 'TO_APPROVED', 'TM_FINAL', 'PAYMENT_DONE', 'CERTIFIED', 'REJECTED'
             ),
             defaultValue: 'CREATED',

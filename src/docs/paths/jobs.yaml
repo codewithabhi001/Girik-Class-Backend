@@ -11,16 +11,19 @@
         schema:
           type: integer
           default: 1
+          example: 1
       - name: limit
         in: query
         schema:
           type: integer
           default: 20
+          example: 20
       - name: status
         in: query
         schema:
           type: string
           enum: [CREATED, GM_APPROVED, TM_PRE_APPROVED, ASSIGNED, SURVEY_DONE, TO_APPROVED, TM_FINAL, PAYMENT_DONE, CERTIFIED, REJECTED]
+          example: "CREATED"
     responses:
       "200":
         description: List of jobs
@@ -418,6 +421,13 @@
                   example: true
                 data:
                   $ref: '#/components/schemas/JobResponse'
+            example:
+              success: true
+              data:
+                id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                job_status: "ASSIGNED"
+                vessel_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                surveyor_id: "01933c5e-7f2c-7a00-8000-1a2b3c4d5e6f"
       "400":
         description: Validation error
         content:
@@ -459,6 +469,13 @@
                   example: true
                 data:
                   $ref: '#/components/schemas/JobResponse'
+            example:
+              success: true
+              data:
+                id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                job_status: "REJECTED"
+                reason: "Client requested cancellation"
+                vessel_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
       "403":
         description: Forbidden
         content:
@@ -581,6 +598,13 @@
                   example: true
                 data:
                   $ref: '#/components/schemas/JobResponse'
+            example:
+              success: true
+              data:
+                id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                job_status: "CREATED"
+                priority: "HIGH"
+                vessel_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
 
 /api/v1/jobs/{id}/history:
   get:
@@ -610,7 +634,21 @@
                 data:
                   type: array
                   items:
-                    type: object
+                    $ref: '#/components/schemas/JobHistoryItem'
+            example:
+              success: true
+              data:
+                - id: "01933c5e-7f2d-7a00-8000-1a2b3c4d5e6f"
+                  job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                  old_status: "CREATED"
+                  new_status: "GM_APPROVED"
+                  changed_by: "01933c5e-7f2e-7a00-8000-1a2b3c4d5e6f"
+                  change_reason: "Approved for survey"
+                  created_at: "2026-02-16T10:00:00Z"
+                  User:
+                    name: "John Doe"
+                    email: "gm@example.com"
+                    role: "GM"
 
 /api/v1/jobs/{id}/notes:
   post:
@@ -646,7 +684,16 @@
                   type: boolean
                   example: true
                 data:
-                  type: object
+                  $ref: '#/components/schemas/JobNoteResponse'
+            example:
+              success: true
+              data:
+                id: "01933c5e-7f3a-7a00-8000-1a2b3c4d5e6f"
+                job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                user_id: "01933c5e-7f2e-7a00-8000-1a2b3c4d5e6f"
+                note_text: "Client confirmed availability"
+                is_internal: true
+                created_at: "2026-02-16T10:05:00Z"
 
 /api/v1/jobs/{id}/messages/external:
   get:
@@ -676,7 +723,20 @@
                 data:
                   type: array
                   items:
-                    type: object
+                    $ref: '#/components/schemas/JobMessageResponse'
+            example:
+              success: true
+              data:
+                - id: "01933c5e-7f4a-7a00-8000-1a2b3c4d5e6f"
+                  job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                  sender_id: "01933c5e-7f2e-7a00-8000-1a2b3c4d5e6f"
+                  message_text: "Please upload the survey report."
+                  is_internal: false
+                  attachment_url: "https://s3.amazonaws.com/bucket/file.pdf"
+                  created_at: "2026-02-16T10:10:00Z"
+                  Sender:
+                    name: "Jane Smith"
+                    role: "CLIENT"
 
 /api/v1/jobs/{id}/messages/internal:
   get:
@@ -705,6 +765,21 @@
                   example: true
                 data:
                   type: array
+                  items:
+                    $ref: '#/components/schemas/JobMessageResponse'
+            example:
+              success: true
+              data:
+                - id: "01933c5e-7f4b-7a00-8000-1a2b3c4d5e6f"
+                  job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                  sender_id: "01933c5e-7f2d-7a00-8000-1a2b3c4d5e6f"
+                  message_text: "Internal note: Check certification validity."
+                  is_internal: true
+                  attachment_url: null
+                  created_at: "2026-02-16T10:15:00Z"
+                  Sender:
+                    name: "John Doe"
+                    role: "GM"
 
 /api/v1/jobs/{id}/messages:
   post:
@@ -742,10 +817,23 @@
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
                   type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    data:
+                      $ref: '#/components/schemas/JobMessageResponse'
+            example:
+              success: true
+              data:
+                id: "01933c5e-7f5a-7a00-8000-1a2b3c4d5e6f"
+                job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                sender_id: "01933c5e-7f2c-7a00-8000-1a2b3c4d5e6f"
+                message_text: "Survey completed. Awaiting approval."
+                is_internal: false
+                attachment_url: "https://s3.amazonaws.com/bucket/report.pdf"
+                created_at: "2026-02-16T10:20:00Z"
+                Sender:
+                  name: "Surveyor Bob"
+                  role: "SURVEYOR"

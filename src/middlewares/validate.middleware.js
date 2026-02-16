@@ -88,7 +88,8 @@ export const schemas = {
             question_code: Joi.string().required(),
             question_text: Joi.string().required(),
             answer: Joi.string().valid('YES', 'NO', 'NA').required(),
-            remarks: Joi.string().allow('').optional()
+            remarks: Joi.string().allow('').optional(),
+            file_url: Joi.string().allow('', null).optional()
         })).required()
     }),
     createToca: Joi.object({

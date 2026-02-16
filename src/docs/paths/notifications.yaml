@@ -5,7 +5,22 @@
     operationId: getNotifications
     x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
     responses:
-      "200": { description: List of notifications }
+    responses:
+      "200":
+        description: List of notifications retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  title: { type: string, example: "Job Assigned" }
+                  message: { type: string, example: "You have been assigned to survey Sea Star." }
+                  type: { type: string, example: "JOB_ASSIGNED" }
+                  is_read: { type: boolean, example: false }
+                  created_at: { type: string, format: date-time }
 
 /api/v1/notifications/{id}/read:
   put:

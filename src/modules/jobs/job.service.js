@@ -87,6 +87,20 @@ export const createJob = async (data, userId) => {
         change_reason: 'Initial creation'
     });
 
+    const jobWithVessel = await JobRequest.findByPk(job.id, { include: ['Vessel'] });
+    await notificationService.notifyRoles(['ADMIN', 'GM', 'TM'], 'JOB_CREATED', {
+        vesselName: jobWithVessel.Vessel.vessel_name,
+        port: jobWithVessel.target_port
+    });
+    // Notify Client
+    const clientUser = await User.findOne({ where: { client_id: jobWithVessel.Vessel.client_id, role: 'CLIENT' } }); // Assuming one client user per client
+    if (clientUser) {
+        await notificationService.sendNotification(clientUser.id, 'JOB_CREATED', {
+            vesselName: jobWithVessel.Vessel.vessel_name,
+            port: jobWithVessel.target_port
+        });
+    }
+
     return job;
 };
 
@@ -261,7 +275,23 @@ export const tmPreApproveJob = async (id, remarks, userId) => {
     if (!job.gm_assigned_surveyor_id) {
         throw { statusCode: 400, message: 'Cannot pre-approve before surveyor assignment' };
     }
-    return updateJobStatusWithHistory(job, 'TM_PRE_APPROVED', remarks || 'TM pre-survey approved', userId);
+    const updatedJob = await updateJobStatusWithHistory(job, 'TM_PRE_APPROVED', remarks || 'TM pre-survey approved', userId);
+    const jobWithVessel = await JobRequest.findByPk(job.id, { include: ['Vessel'] });
+    await notificationService.sendNotification(job.gm_assigned_surveyor_id, 'JOB_APPROVED', {
+        jobId: job.id,
+        status: 'TM_PRE_APPROVED',
+        vesselName: jobWithVessel.Vessel.vessel_name
+    });
+    // Notify Client
+    const clientUser = await User.findOne({ where: { client_id: jobWithVessel.Vessel.client_id, role: 'CLIENT' } });
+    if (clientUser) {
+        await notificationService.sendNotification(clientUser.id, 'JOB_APPROVED', {
+            jobId: job.id,
+            status: 'TM_PRE_APPROVED',
+            vesselName: jobWithVessel.Vessel.vessel_name
+        });
+    }
+    return updatedJob;
 };
 
 export const tmPreRejectJob = async (id, remarks, userId) => {
@@ -279,13 +309,27 @@ export const toApproveSurvey = async (id, remarks, userId) => {
 export const toSendBackSurvey = async (id, remarks, userId) => {
     const job = await JobRequest.findByPk(id);
     if (!job) throw { statusCode: 404, message: 'Job not found' };
-    return updateJobStatusWithHistory(job, 'TM_PRE_APPROVED', remarks || 'TO sent report back for correction', userId);
+    const updatedJob = await updateJobStatusWithHistory(job, 'TO_PRE_APPROVED', remarks || 'TO sent report back for correction', userId);
+    const jobWithVessel = await JobRequest.findByPk(job.id, { include: ['Vessel'] });
+    await notificationService.sendNotification(job.gm_assigned_surveyor_id, 'JOB_SENT_BACK', {
+        jobId: job.id,
+        vesselName: jobWithVessel.Vessel.vessel_name,
+        remarks: remarks || 'Correction needed'
+    });
+    return updatedJob;
 };
 
 export const tmSendBackSurvey = async (id, remarks, userId) => {
     const job = await JobRequest.findByPk(id);
     if (!job) throw { statusCode: 404, message: 'Job not found' };
-    return updateJobStatusWithHistory(job, 'TM_PRE_APPROVED', remarks || 'TM rejected survey and requested rework', userId);
+    const updatedJob = await updateJobStatusWithHistory(job, 'TM_PRE_APPROVED', remarks || 'TM rejected survey and requested rework', userId);
+    const jobWithVessel = await JobRequest.findByPk(job.id, { include: ['Vessel'] });
+    await notificationService.sendNotification(job.gm_assigned_surveyor_id, 'JOB_SENT_BACK', {
+        jobId: job.id,
+        vesselName: jobWithVessel.Vessel.vessel_name,
+        remarks: remarks || 'Rework requested'
+    });
+    return updatedJob;
 };
 
 export const assignSurveyor = async (jobId, surveyorId, userId) => {
@@ -318,6 +362,12 @@ export const assignSurveyor = async (jobId, surveyorId, userId) => {
         entity_id: job.id,
         old_values: { gm_assigned_surveyor_id: null, job_status: oldStatus },
         new_values: { gm_assigned_surveyor_id: surveyorId, job_status: 'ASSIGNED' },
+    });
+
+    const jobWithVessel = await JobRequest.findByPk(job.id, { include: ['Vessel'] });
+    await notificationService.sendNotification(surveyorId, 'JOB_ASSIGNED', {
+        vesselName: jobWithVessel.Vessel.vessel_name,
+        port: jobWithVessel.target_port
     });
 
     return job;

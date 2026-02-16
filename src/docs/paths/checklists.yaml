@@ -10,7 +10,26 @@
         required: true
         schema: { type: string, format: uuid }
     responses:
-      "200": { description: Checklist data }
+    responses:
+      "200":
+        description: Checklist data retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: { type: string, format: uuid }
+                      question_code: { type: string }
+                      question_text: { type: string }
+                      answer: { type: string }
+                      remarks: { type: string }
+                      file_url: { type: string }
       "403": { description: Forbidden }
 
   put:
@@ -41,16 +60,19 @@
                     question_text: { type: string }
                     answer: { type: string, enum: [YES, NO, NA] }
                     remarks: { type: string }
+                    file_url: { type: string, format: uri, description: "Evidence image URL" }
           example:
             items:
               - question_code: "LSE001"
                 question_text: "Are life jackets available?"
                 answer: "YES"
-                remarks: ""
+                remarks: "Verified count matches record"
+                file_url: ""
               - question_code: "LSE002"
-                question_text: "Number of life jackets"
-                answer: "YES"
-                remarks: "24 units"
+                question_text: "Is the fire extinguisher charged?"
+                answer: "NO"
+                remarks: "Pressure low, needs replacement"
+                file_url: "https://s3.amazonaws.com/bucket/job/123/evidence_fire_ext.jpg"
     responses:
       "200": { description: Checklist submitted }
       "403": { description: Forbidden }

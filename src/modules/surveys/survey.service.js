@@ -84,8 +84,8 @@ export const startSurvey = async (data, userId) => {
     const { job_id, latitude, longitude } = data;
     const job = await JobRequest.findByPk(job_id);
     if (!job) throw { statusCode: 404, message: 'Job not found' };
-    if (job.job_status !== 'TM_PRE_APPROVED') {
-        throw { statusCode: 400, message: 'Survey can only be started when job is TM_PRE_APPROVED' };
+    if (job.job_status !== 'TM_PRE_APPROVED' || job.job_status !== 'TO_PRE_APPROVED') {
+        throw { statusCode: 400, message: 'Survey can only be started when job is TM_PRE_APPROVED or TO_PRE_APPROVED' };
     }
     if (job.gm_assigned_surveyor_id !== userId) {
         throw { statusCode: 403, message: 'You are not assigned to this job' };
@@ -149,6 +149,11 @@ export const finalizeSurvey = async (id, userId) => {
         entity_id: job.id,
         old_values: { job_status: oldStatus },
         new_values: { job_status: 'TM_FINAL', bypass_to_approval: oldStatus === 'SURVEY_DONE' },
+    });
+
+    const jobWithVessel = await JobRequest.findByPk(job.id, { include: ['Vessel'] });
+    await notificationService.sendNotification(job.gm_assigned_surveyor_id, 'JOB_FINALIZED', {
+        vesselName: jobWithVessel.Vessel.vessel_name
     });
 
     return { message: 'Survey Finalized.' };

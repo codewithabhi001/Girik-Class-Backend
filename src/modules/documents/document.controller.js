@@ -20,20 +20,24 @@ const verifyAccess = async (user, entityType, entityId) => {
 
 export const getDocuments = async (req, res, next) => {
     try {
-        await verifyAccess(req.user, req.params.entityType, req.params.entityId);
-        const result = await documentService.getEntityDocuments(req.params.entityType, req.params.entityId);
+        const { entityId } = req.params;
+        const entityType = req.params.entityType.toUpperCase();
+        await verifyAccess(req.user, entityType, entityId);
+        const result = await documentService.getEntityDocuments(entityType, entityId);
         res.json({ success: true, data: result });
     } catch (e) { next(e); }
 };
 
 export const uploadDocument = async (req, res, next) => {
     try {
-        await verifyAccess(req.user, req.body.entityType, req.body.entityId);
+        const { entityId } = req.params;
+        const entityType = req.params.entityType.toUpperCase();
+        await verifyAccess(req.user, entityType, entityId);
         let result;
         if (req.file) {
-            result = await documentService.uploadEntityDocument(req.body.entityType, req.body.entityId, req.file, req.user.id);
+            result = await documentService.uploadEntityDocument(entityType, entityId, req.file, req.user.id);
         } else if (req.body.fileData) {
-            result = await documentService.registerDocument(req.body.entityType, req.body.entityId, req.body.fileData, req.user.id);
+            result = await documentService.registerDocument(entityType, entityId, req.body.fileData, req.user.id);
         } else {
             throw { statusCode: 400, message: 'No file or file data provided' };
         }

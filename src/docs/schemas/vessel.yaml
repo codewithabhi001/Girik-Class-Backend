@@ -121,6 +121,10 @@ VesselUpdateRequest:
       type: string
     builder_name:
       type: string
+  example:
+    vessel_name: "Ocean Pioneer II"
+    class_status: "SUSPENDED"
+    deadweight: 50000.5
 
 VesselResponse:
   allOf:
@@ -152,3 +156,21 @@ VesselResponse:
           type: string
         builder_name:
           type: string
+  example:
+    id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+    vessel_name: "Ocean Pioneer"
+    imo_number: "9123456"
+    flag_state: "Singapore"
+    ship_type: "Cargo"
+    client_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+    call_sign: "9VSP"
+    mmsi_number: "563123456"
+    port_of_registry: "Singapore"
+    year_built: 2015
+    gross_tonnage: 30000.0
+    net_tonnage: 15000.0
+    deadweight: 45000.0
+    class_status: "ACTIVE"
+    current_class_society: "DNV"
+    engine_type: "Diesel"
+    builder_name: "Hyundai Heavy Industries"

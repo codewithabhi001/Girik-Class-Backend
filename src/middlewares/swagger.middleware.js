@@ -9,7 +9,7 @@
  *   /api-docs/client   - CLIENT role view
  */
 import swaggerUi from 'swagger-ui-express';
-import { getSpecForRole } from '../docs/build-openapi.js';
+import { clearCache, getSpecForRole } from '../docs/build-openapi.js';
 
 const ROLE_SLUGS = ['admin', 'gm', 'tm', 'to', 'surveyor', 'client', 'ta', 'flag_admin'];
 
@@ -44,6 +44,8 @@ const SWAGGER_OPTIONS = {
 export function setupSwagger(app) {
   // Spec endpoints - must be before the catch-all to avoid static file conflict
   app.get('/api-docs/spec.json', (req, res) => {
+    // Rebuild on each request so docs edits appear instantly in dev.
+    clearCache();
     const role = req.query.role || 'all';
     const spec = getSpecForRole(role);
     res.json(spec);

@@ -57,6 +57,26 @@ export const sendTemplateEmail = async (to, templateName, data) => {
             subject = `Legal Hold Activated: ${data.entityId}`;
             text = `A Legal Hold has been placed on ${data.type} ID ${data.entityId} by ${data.actor}.`;
             break;
+        case 'JOB_CREATED':
+            subject = `New Job Request: ${data.vesselName}`;
+            text = `A new job request has been created for vessel ${data.vesselName} at ${data.port}.`;
+            break;
+        case 'JOB_ASSIGNED':
+            subject = `New Assignment: ${data.vesselName}`;
+            text = `You have been assigned to survey ${data.vesselName} at ${data.port}. Log in to view details.`;
+            break;
+        case 'JOB_APPROVED':
+            subject = `Job Approved: ${data.vesselName}`;
+            text = `Job ${data.jobId} status has been updated to ${data.status}. You may now proceed.`;
+            break;
+        case 'JOB_SENT_BACK':
+            subject = `Action Required: Job ${data.jobId} Sent Back`;
+            text = `Your survey report for ${data.vesselName} was sent back. Remarks: ${data.remarks}`;
+            break;
+        case 'JOB_FINALIZED':
+            subject = `Job Finalized: ${data.vesselName}`;
+            text = `The survey for ${data.vesselName} has been finalized.`;
+            break;
         default:
             subject = 'Notification from GIRIK';
             text = JSON.stringify(data, null, 2);

@@ -6,6 +6,7 @@ export default (sequelize, DataTypes) => {
         question_text: DataTypes.STRING,
         answer: DataTypes.ENUM('YES', 'NO', 'NA'),
         remarks: DataTypes.TEXT,
+        file_url: DataTypes.STRING,
     }, {
         tableName: 'activity_plannings',
         underscored: true,

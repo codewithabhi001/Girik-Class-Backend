@@ -8,20 +8,38 @@
       - name: entityType
         in: path
         required: true
-        schema: { type: string }
+        schema: { type: string, example: "JOB" }
       - name: entityId
         in: path
         required: true
         schema: { type: string, format: uuid }
     responses:
-      "200": { description: List of documents }
+    responses:
+      "200":
+        description: List of documents retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: { type: string, format: uuid }
+                      entity_type: { type: string }
+                      entity_id: { type: string, format: uuid }
+                      file_url: { type: string }
+                      uploaded_at: { type: string, format: date-time }
       "403": { description: Forbidden }
 
   post:
     tags: [Documents]
     summary: Upload document
     operationId: uploadDocument
-    x-roles: [CLIENT, ADMIN, GM, TM]
+    x-roles: [CLIENT, ADMIN, GM, TM, SURVEYOR]
     parameters:
       - name: entityType
         in: path
@@ -42,10 +60,24 @@
               document_type: { type: string }
               description: { type: string }
           example:
-            document_type: "INSPECTION_REPORT"
-            description: "Annual survey report 2026"
+            file: "(Binary file data)"
+            document_type: "EVIDENCE"
+            description: "Photo of cracked hull"
     responses:
-      "201": { description: Document uploaded }
+    responses:
+      "201":
+        description: Document uploaded successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    id: { type: string, format: uuid }
+                    file_url: { type: string }
       "403": { description: Forbidden }
 
 /api/v1/documents/{id}:
