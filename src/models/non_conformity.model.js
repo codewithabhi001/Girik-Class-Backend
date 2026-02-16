@@ -1,7 +1,16 @@
 export default (sequelize, DataTypes) => {
     const NonConformity = sequelize.define('NonConformity', {
         id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV7, primaryKey: true },
-        job_id: DataTypes.UUID,
+        job_id: {
+            type: DataTypes.UUID,
+            allowNull: false,
+            references: {
+                model: 'job_requests',
+                key: 'id'
+            },
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE'
+        },
         description: DataTypes.TEXT,
         severity: DataTypes.ENUM('MINOR', 'MAJOR', 'CRITICAL'),
         status: { type: DataTypes.ENUM('OPEN', 'CLOSED'), defaultValue: 'OPEN' },

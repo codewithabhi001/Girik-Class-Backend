@@ -9,7 +9,7 @@ const router = express.Router();
 router.use(authenticate);
 
 router.get('/:entityType/:entityId', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), documentController.getDocuments);
-router.post('/:entityType/:entityId', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM'), upload.single('file'), documentController.uploadDocument);
+router.post('/:entityType/:entityId', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'SURVEYOR'), upload.single('file'), documentController.uploadDocument);
 router.delete('/:id', authorizeRoles('ADMIN', 'GM'), documentController.deleteDocument);
 
 export default router;

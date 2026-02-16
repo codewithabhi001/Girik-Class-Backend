@@ -8,12 +8,13 @@
       - name: entityType
         in: path
         required: true
+        description: The type of entity (e.g., VESSEL, JOB, CERTIFICATE, USER, SURVEY)
         schema: { type: string, example: "JOB" }
       - name: entityId
         in: path
         required: true
+        description: The UUID of the specific entity
         schema: { type: string, format: uuid }
-    responses:
     responses:
       "200":
         description: List of documents retrieved successfully
@@ -44,26 +45,26 @@
       - name: entityType
         in: path
         required: true
-        schema: { type: string }
+        description: The type of entity to attach the document to (e.g., VESSEL, JOB, CERTIFICATE, USER, SURVEY)
+        schema: 
+          type: string
+          example: "JOB"
       - name: entityId
         in: path
         required: true
+        description: The UUID of the specific entity
         schema: { type: string, format: uuid }
     requestBody:
+      required: true
       content:
         multipart/form-data:
           schema:
             type: object
-            required: [file, document_type]
+            required: [file]
             properties:
               file: { type: string, format: binary }
-              document_type: { type: string }
-              description: { type: string }
           example:
             file: "(Binary file data)"
-            document_type: "EVIDENCE"
-            description: "Photo of cracked hull"
-    responses:
     responses:
       "201":
         description: Document uploaded successfully
