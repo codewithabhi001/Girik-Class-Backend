@@ -81,7 +81,8 @@ export const globalSearch = async (query, user) => {
     results.certificates = await db.Certificate.findAll({
         where: certWhere,
         include: certInclude,
-        limit: 10
+        limit: 10,
+        subQuery: false
     });
 
     return results;
