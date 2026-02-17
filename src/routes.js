@@ -35,6 +35,7 @@ import dashboardRoutes from './modules/dashboard/dashboard.routes.js';
 import supportRoutes from './modules/support/support.routes.js';
 import searchRoutes from './modules/search/search.routes.js';
 import complianceRoutes from './modules/compliance/compliance.routes.js';
+import websiteRoutes from './modules/website/website.routes.js';
 
 // Client Modules
 const router = express.Router();
@@ -79,6 +80,7 @@ router.use('/incidents', incidentRoutes);
 router.use('/activity-requests', activityRequestRoutes);
 router.use('/customer-feedback', customerFeedbackRoutes);
 router.use('/dashboard', dashboardRoutes);
+router.use('/website', websiteRoutes);
 
 
 export default router;

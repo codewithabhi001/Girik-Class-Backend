@@ -1,0 +1,53 @@
+WebsiteVideo:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+      example: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+    section:
+      type: string
+      example: "HOME"
+      description: "Section of the website where the video belongs (e.g., HOME, PORTFOLIO)"
+    title:
+      type: string
+      example: "Introduction Video"
+    description:
+      type: string
+      example: "A brief introduction to our services."
+    video_url:
+      type: string
+      format: uri
+      example: "https://bucket.s3.region.amazonaws.com/website/videos/video.mp4"
+    thumbnail_url:
+      type: string
+      format: uri
+      example: "https://bucket.s3.region.amazonaws.com/website/videos/thumb.jpg"
+    uploaded_by:
+      type: string
+      format: uuid
+      example: "01933c5e-user-id"
+    created_at:
+      type: string
+      format: date-time
+    updated_at:
+      type: string
+      format: date-time
+
+WebsiteVideoInput:
+  type: object
+  required:
+    - section
+  properties:
+    section:
+      type: string
+      example: "HOME"
+    title:
+      type: string
+      example: "New Video Title"
+    description:
+      type: string
+      example: "Description of the video"
+    thumbnail_url:
+      type: string
+      example: "https://example.com/thumb.jpg"

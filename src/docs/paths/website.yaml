@@ -1,0 +1,137 @@
+/api/v1/website/videos:
+  get:
+    tags:
+      - Website
+    summary: Get all website videos
+    description: Retrieve a list of uploaded videos, optionally filtered by section.
+    parameters:
+      - in: query
+        name: section
+        schema:
+          type: string
+        description: Filter by website section (e.g. HOME, PORTFOLIO)
+    responses:
+      200:
+        description: List of videos
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/WebsiteVideo'
+    x-roles:
+      - PUBLIC
+      - ADMIN
+      - CLIENT
+      - GM
+      - TM
+      - TO
+      - SURVEYOR
+
+  post:
+    tags:
+      - Website
+    summary: Upload a new video
+    description: Upload a video file for a specific website section.
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required:
+              - section
+              - video
+            properties:
+              section:
+                type: string
+                description: Target section (HOME, PORTFOLIO, etc.)
+              title:
+                type: string
+              description:
+                type: string
+              thumbnail:
+                type: string
+                format: binary
+                description: The thumbnail image file
+              video:
+                type: string
+                format: binary
+                description: The video file to upload
+                
+    responses:
+      201:
+        description: Video uploaded successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebsiteVideo'
+    x-roles:
+      - ADMIN
+
+/api/v1/website/videos/{id}:
+  put:
+    tags:
+      - Website
+    summary: Update video details
+    description: Update metadata (title, description, section) of an existing video.
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Video ID
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              section:
+                type: string
+                description: Target section (HOME, PORTFOLIO, etc.)
+              title:
+                type: string
+              description:
+                type: string
+              thumbnail:
+                type: string
+                format: binary
+                description: The thumbnail image file
+              video:
+                type: string
+                format: binary
+                description: The video file to upload
+    responses:
+      200:
+        description: Video updated successfully
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebsiteVideo'
+      404:
+        description: Video not found
+    x-roles:
+      - ADMIN
+
+  delete:
+    tags:
+      - Website
+    summary: Delete a video
+    description: Remove a video and its metadata.
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Video ID
+    responses:
+      204:
+        description: Video deleted successfully
+      404:
+        description: Video not found
+    x-roles:
+      - ADMIN

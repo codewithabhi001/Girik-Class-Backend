@@ -40,6 +40,7 @@ export const UPLOAD_FOLDERS = {
     SURVEYS_PHOTO: 'surveys/photos',
     JOBS_ATTACHMENTS: 'jobs/attachments',
     CERTIFICATES: 'certificates',
+    WEBSITE_VIDEOS: 'website/videos',
 };
 
 export const getSignedFileUrl = async (key) => {
