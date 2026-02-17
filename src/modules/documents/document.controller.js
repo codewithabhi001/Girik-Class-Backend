@@ -34,15 +34,28 @@ export const uploadDocument = async (req, res, next) => {
         const entityType = req.params.entityType.toUpperCase();
         await verifyAccess(req.user, entityType, entityId);
         const { document_type, description } = req.body;
-        let result;
-        if (req.file) {
-            result = await documentService.uploadEntityDocument(entityType, entityId, req.file, req.user.id, document_type, description);
+
+        let results = [];
+
+        if (req.files && req.files.length > 0) {
+            // Upload multiple files
+            const uploadPromises = req.files.map(file =>
+                documentService.uploadEntityDocument(entityType, entityId, file, req.user.id, document_type, description)
+            );
+            results = await Promise.all(uploadPromises);
+        } else if (req.file) {
+            // Fallback for single file
+            const result = await documentService.uploadEntityDocument(entityType, entityId, req.file, req.user.id, document_type, description);
+            results.push(result);
         } else if (req.body.fileData) {
-            result = await documentService.registerDocument(entityType, entityId, req.body.fileData, req.user.id, document_type, description);
+            // Register external file data
+            const result = await documentService.registerDocument(entityType, entityId, req.body.fileData, req.user.id, document_type, description);
+            results.push(result);
         } else {
-            throw { statusCode: 400, message: 'No file or file data provided' };
+            throw { statusCode: 400, message: 'No files provided' };
         }
-        res.status(201).json({ success: true, data: result });
+
+        res.status(201).json({ success: true, count: results.length, data: results });
     } catch (e) { next(e); }
 };
 
