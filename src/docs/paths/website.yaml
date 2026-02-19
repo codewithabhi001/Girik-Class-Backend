@@ -1,7 +1,7 @@
-/api/v1/website/videos:
+/api/v1/public/website/videos:
   get:
     tags:
-      - Website
+      - Public
     summary: Get all website videos
     description: Retrieve a list of uploaded videos, optionally filtered by section.
     parameters:
