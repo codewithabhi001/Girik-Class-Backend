@@ -47,7 +47,10 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // API Request/Response Logger - Logs every API hit with details
-app.use('/api/v1', apiLogger);
+if(process.env.NODE_ENV = 'PRODUCTION'){
+    app.use('/api/v1', apiLogger);
+}
+
 
 // Routes
 app.use('/api/v1', routes);

@@ -4,6 +4,7 @@ import * as certificatePdfService from '../../services/certificate-pdf.service.j
 import logger from '../../utils/logger.js';
 import { buildCertificateScopeWhere } from './certificate-scope.js';
 import { buildFallbackCertificateHtml } from './templates/fallback-certificate.template.js';
+import * as fileAccessService from '../../services/fileAccess.service.js';
 
 const Certificate = db.Certificate;
 const CertificateType = db.CertificateType;
@@ -218,7 +219,18 @@ export const getCertificateById = async (id, user) => {
         where: { id, ...scopeWhere },
         include: [{ model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }, { model: db.CertificateType, attributes: ['name'] }],
     });
-    if (cert) return cert;
+    if (cert) {
+        if (cert.pdf_file_url) {
+            const key = fileAccessService.getKeyFromUrl(cert.pdf_file_url);
+            let pdfUrl = fileAccessService.generatePublicCdnUrl(key);
+            if (!pdfUrl) {
+                // Generate signed URL (1 hour access for internal/authorized users)
+                pdfUrl = await fileAccessService.generateSignedUrl(key, 3600, user);
+            }
+            cert.setDataValue('pdf_url', pdfUrl);
+        }
+        return cert;
+    }
     const exists = await Certificate.findByPk(id);
     if (exists) {
         logger.warn('Certificate access denied', { userId: user?.id, role: user?.role, certificateId: id });
@@ -410,8 +422,19 @@ export const verifyCertificate = async (certificateNumber) => {
         include: [{ model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }, { model: db.CertificateType, attributes: ['name'] }]
     });
     if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
+
+    let pdfUrl = null;
+    if (cert.pdf_file_url) {
+        const key = fileAccessService.getKeyFromUrl(cert.pdf_file_url);
+        pdfUrl = fileAccessService.generatePublicCdnUrl(key);
+        if (!pdfUrl) {
+            pdfUrl = await fileAccessService.generateSignedUrl(key, 900);
+        }
+    }
+
     return {
         valid: cert.status === 'VALID' && new Date(cert.expiry_date) > new Date(),
-        certificate: cert
+        certificate: cert,
+        pdf_url: pdfUrl
     };
 };

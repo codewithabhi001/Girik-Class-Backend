@@ -1,5 +1,6 @@
 import db from '../../models/index.js';
 import * as notificationService from '../../services/notification.service.js';
+import * as fileAccessService from '../../services/fileAccess.service.js';
 import { Op } from 'sequelize';
 
 const JobRequest = db.JobRequest;
@@ -260,7 +261,22 @@ export const getJobById = async (id, scopeFilters = {}) => {
     if (!job) throw { statusCode: 404, message: 'Job not found' };
 
     if (job.Certificate) {
-        job.setDataValue('certificate_url', job.Certificate.pdf_file_url);
+        // Transform the URL to a public CDN or Signed URL
+        const rawUrl = job.Certificate.pdf_file_url;
+        let processedUrl = null;
+        if (rawUrl) {
+            const key = fileAccessService.getKeyFromUrl(rawUrl);
+            if (key) {
+                if (key.startsWith('public/certificates/')) {
+                    processedUrl = fileAccessService.generatePublicCdnUrl(key);
+                } else {
+                    // Fallback to signed URL with default expiry if not public
+                    processedUrl = await fileAccessService.generateSignedUrl(key, 3600);
+                }
+            }
+        }
+
+        job.setDataValue('certificate_url', processedUrl);
         job.setDataValue('certificate_number', job.Certificate.certificate_number);
         job.setDataValue('certificate_id', job.Certificate.id);
     }

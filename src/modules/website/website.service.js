@@ -1,5 +1,6 @@
 import db from '../../models/index.js';
 import * as s3Service from '../../services/s3.service.js';
+import * as fileAccessService from '../../services/fileAccess.service.js';
 
 const WebsiteVideo = db.WebsiteVideo;
 
@@ -33,10 +34,33 @@ export const getVideos = async (section) => {
         whereClause.section = section;
     }
 
-    return await WebsiteVideo.findAll({
+    const videos = await WebsiteVideo.findAll({
         where: whereClause,
         order: [['created_at', 'DESC']]
     });
+
+    // Transform URLs for delivery
+    for (const v of videos) {
+        if (v.video_url) {
+            const key = fileAccessService.getKeyFromUrl(v.video_url);
+            let url = fileAccessService.generatePublicCdnUrl(key);
+            if (!url) {
+                // Fallback to signed URL for legacy/private uploads
+                url = await fileAccessService.generateSignedUrl(key, 3600);
+            }
+            v.setDataValue('video_url', url);
+        }
+        if (v.thumbnail_url) {
+            const key = fileAccessService.getKeyFromUrl(v.thumbnail_url);
+            let url = fileAccessService.generatePublicCdnUrl(key);
+            if (!url) {
+                url = await fileAccessService.generateSignedUrl(key, 3600);
+            }
+            v.setDataValue('thumbnail_url', url);
+        }
+    }
+
+    return videos;
 };
 
 export const updateVideo = async (id, data, videoFile, thumbnailFile) => {

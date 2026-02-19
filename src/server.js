@@ -15,10 +15,10 @@ const startServer = async () => {
 
         // Production-ready: Don't alter tables, just validate connection
         // Use migrations for schema changes in production
-        if (env.nodeEnv === 'development') {
-            logger.info('Syncing database models...');
-            await db.sequelize.sync({ alter: false });
-        }
+        // if (env.nodeEnv === 'development') {
+        //     logger.info('Syncing database models...');
+        //     await db.sequelize.sync({});
+        // }
         logger.info('Database models ready.');
 
         startMonitoring();

@@ -1,30 +1,33 @@
 import * as documentService from './document.service.js';
+import * as fileAccessService from '../../services/fileAccess.service.js';
 import db from '../../models/index.js';
 
-const verifyAccess = async (user, entityType, entityId) => {
-    if (user.role === 'CLIENT') {
-        if (entityType === 'VESSEL') {
-            const vessel = await db.Vessel.findOne({ where: { id: entityId, client_id: user.client_id } });
-            if (!vessel) throw { statusCode: 403, message: 'Unauthorized access to vessel documents' };
-        } else if (entityType === 'JOB') {
-            const job = await db.JobRequest.findByPk(entityId, { include: [{ model: db.Vessel, attributes: ['client_id'] }] });
-            if (!job || job.Vessel.client_id !== user.client_id) throw { statusCode: 403, message: 'Unauthorized access to job documents' };
-        } else if (entityType === 'CERTIFICATE') {
-            const cert = await db.Certificate.findByPk(entityId, { include: [{ model: db.Vessel, attributes: ['client_id'] }] });
-            if (!cert || cert.Vessel.client_id !== user.client_id) throw { statusCode: 403, message: 'Unauthorized access to certificate documents' };
-        }
-    }
-    // Other roles checks? Assuming internal roles have access. TO/Surveyor might be restricted too.
-    // For now mirroring Client Portal logic which was strict.
-};
+
 
 export const getDocuments = async (req, res, next) => {
     try {
         const { entityId } = req.params;
         const entityType = req.params.entityType.toUpperCase();
-        await verifyAccess(req.user, entityType, entityId);
-        const result = await documentService.getEntityDocuments(entityType, entityId);
-        res.json({ success: true, data: result });
+
+        const hasAccess = await fileAccessService.validateUserEntityAccess(req.user, entityType, entityId);
+        if (!hasAccess) {
+            throw { statusCode: 403, message: `Unauthorized access to ${entityType.toLowerCase()} documents` };
+        }
+
+        const documents = await documentService.getEntityDocuments(entityType, entityId);
+
+        // Transform documents to structured response
+        const data = await Promise.all(documents.map(async (doc) => {
+            const accessInfo = await fileAccessService.processFileAccess(doc, req.user);
+            return {
+                ...doc.toJSON(),
+                ...accessInfo,
+                // Hide raw S3 URL if desired, though key is public/certificates sometimes
+                file_url: undefined // Hide raw URL
+            };
+        }));
+
+        res.json({ success: true, data });
     } catch (e) { next(e); }
 };
 
@@ -32,7 +35,12 @@ export const uploadDocument = async (req, res, next) => {
     try {
         const { entityId } = req.params;
         const entityType = req.params.entityType.toUpperCase();
-        await verifyAccess(req.user, entityType, entityId);
+
+        const hasAccess = await fileAccessService.validateUserEntityAccess(req.user, entityType, entityId);
+        if (!hasAccess) {
+            throw { statusCode: 403, message: `Unauthorized access to ${entityType.toLowerCase()} documents` };
+        }
+
         const { document_type, description } = req.body;
 
         let results = [];
@@ -55,7 +63,16 @@ export const uploadDocument = async (req, res, next) => {
             throw { statusCode: 400, message: 'No files provided' };
         }
 
-        res.status(201).json({ success: true, count: results.length, data: results });
+        const data = await Promise.all(results.map(async (doc) => {
+            const accessInfo = await fileAccessService.processFileAccess(doc, req.user);
+            return {
+                ...doc.toJSON(),
+                ...accessInfo,
+                file_url: undefined
+            };
+        }));
+
+        res.status(201).json({ success: true, count: data.length, data: data });
     } catch (e) { next(e); }
 };
 

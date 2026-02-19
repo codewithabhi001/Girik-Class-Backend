@@ -34,6 +34,7 @@ export default {
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
         region: process.env.AWS_REGION,
         bucketName: process.env.AWS_BUCKET_NAME,
+        cloudfrontDomain: process.env.AWS_CLOUDFRONT_DOMAIN,
     },
     frontendUrl: process.env.FRONTEND_URL || process.env.CLIENT_URL || 'http://localhost:3000',
     passwordResetExpiresIn: process.env.PASSWORD_RESET_EXPIRES_IN || '1h',

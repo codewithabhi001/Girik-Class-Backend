@@ -28,7 +28,8 @@ export const uploadFile = async (fileBuffer, fileName, mimeType, folder = '') =>
     });
 
     await s3Client.send(command);
-    return `https://${env.aws.bucketName}.s3.${env.aws.region}.amazonaws.com/${key}`;
+    // Return only the key as requested, not the full URL.
+    return key;
 };
 
 /** Folder constants for organized uploads */
@@ -40,10 +41,11 @@ export const UPLOAD_FOLDERS = {
     SURVEYS_PHOTO: 'surveys/photos',
     JOBS_ATTACHMENTS: 'jobs/attachments',
     CERTIFICATES: 'certificates',
-    WEBSITE_VIDEOS: 'website/videos',
+    PUBLIC_CERTIFICATES: 'public/certificates', // Publicly accessible via CDN
+    WEBSITE_VIDEOS: 'public/website/videos',
 };
 
-export const getSignedFileUrl = async (key) => {
+export const getSignedFileUrl = async (key, expiresIn = 3600) => {
     if (!env.aws.bucketName || !env.aws.accessKeyId) {
         return `https://mock-s3.com/${key}`;
     }
@@ -51,7 +53,7 @@ export const getSignedFileUrl = async (key) => {
         Bucket: env.aws.bucketName,
         Key: key,
     });
-    return await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+    return await getSignedUrl(s3Client, command, { expiresIn });
 };
 
 export const getFileContent = async (key) => {

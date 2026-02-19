@@ -44,12 +44,17 @@ export const getCertificateById = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
-/** Redirect to certificate PDF for download. Scope enforced in service (403 if unauthorized). */
+import * as fileAccessService from '../../services/fileAccess.service.js';
+
 export const downloadCertificate = async (req, res, next) => {
     try {
         const cert = await certService.getCertificateById(req.params.id, req.user);
         if (cert.pdf_file_url) {
-            return res.redirect(302, cert.pdf_file_url);
+            const process = await fileAccessService.processFileAccess({ file_url: cert.pdf_file_url }, req.user);
+            // If processFileAccess returns a signedUrl (which it does for both CDN and S3), redirect to it.
+            if (process.signedUrl) {
+                return res.redirect(302, process.signedUrl);
+            }
         }
         res.status(404).json({
             success: false,
