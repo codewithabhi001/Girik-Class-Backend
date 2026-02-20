@@ -132,9 +132,9 @@ export const getTADashboard = async (user) => {
 
 export const getSurveyorDashboard = async (user) => {
     const [assignedJobsCount, assignedJobs, completedSurveys, profile] = await Promise.all([
-        JobRequest.count({ where: { gm_assigned_surveyor_id: user.id } }),
+        JobRequest.count({ where: { assigned_surveyor_id: user.id } }),
         JobRequest.findAll({
-            where: { gm_assigned_surveyor_id: user.id },
+            where: { assigned_surveyor_id: user.id },
             include: ['Vessel', 'CertificateType'],
             order: [['createdAt', 'DESC']],
             limit: 10,
@@ -248,7 +248,7 @@ export const getFlagAdminDashboard = async () => {
             attributes: ['id', 'flag_name', 'country', 'status'],
             raw: true,
         });
-    } catch (_) {}
+    } catch (_) { }
     return {
         role: 'FLAG_ADMIN',
         summary: {

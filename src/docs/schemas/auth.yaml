@@ -7,13 +7,13 @@ LoginRequest:
     email:
       type: string
       format: email
-      example: "admin@gmail.com"
+      example: "admin@girik.com"
     password:
       type: string
       format: password
       example: "SecurePass123!"
   example:
-    email: "admin@gmail.com"
+    email: "admin@girik.com"
     password: "SecurePass123!"
 
 LoginResponse:
@@ -34,7 +34,7 @@ LoginResponse:
     user:
       id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
       name: "John Doe"
-      email: "admin@gmail.com"
+      email: "admin@girik.com"
       role: "CLIENT"
     accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
     refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -63,7 +63,7 @@ UserSummary:
     email:
       type: string
       format: email
-      example: "admin@gmail.com"
+      example: "admin@girik.com"
     role:
       type: string
       enum: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]

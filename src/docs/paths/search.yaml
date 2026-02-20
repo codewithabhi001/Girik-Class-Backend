@@ -2,14 +2,37 @@
   get:
     tags: [Search]
     summary: Global search
+    description: Search across vessels, jobs, and certificates. Results are filtered by user's role and scope.
     operationId: globalSearch
     x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
     parameters:
       - name: q
         in: query
-        schema: { type: string }
+        required: true
+        description: Search query string (min 3 chars)
+        schema: { type: string, example: "Ocean" }
       - name: type
         in: query
-        schema: { type: string }
+        description: Filter by specific entity type
+        schema: { type: string, enum: [VESSEL, JOB, CERTIFICATE, USER] }
     responses:
-      "200": { description: Search results }
+      "200":
+        description: Search results
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    vessels:
+                      type: array
+                      items: { $ref: '#/components/schemas/VesselSummary' }
+                    jobs:
+                      type: array
+                      items: { $ref: '#/components/schemas/JobResponse' }
+                    certificates:
+                      type: array
+                      items: { $ref: '#/components/schemas/CertificateResponse' }

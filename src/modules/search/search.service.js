@@ -45,12 +45,12 @@ export const globalSearch = async (query, user) => {
         vesselInclude.push({
             model: db.JobRequest,
             attributes: [],
-            where: { gm_assigned_surveyor_id: user.id },
+            where: { assigned_surveyor_id: user.id },
             required: true
         });
 
         // Surveyor sees only their assigned Jobs
-        jobWhere.gm_assigned_surveyor_id = user.id;
+        jobWhere.assigned_surveyor_id = user.id;
 
         // Surveyor sees Certificates linked to Vessels they have jobs on
         // Logic: Certificate -> belongsTo Vessel -> hasMany JobRequest (where surveyor matches)
@@ -61,7 +61,7 @@ export const globalSearch = async (query, user) => {
             include: [{
                 model: db.JobRequest,
                 attributes: [],
-                where: { gm_assigned_surveyor_id: user.id },
+                where: { assigned_surveyor_id: user.id },
                 required: true
             }]
         });

@@ -10,49 +10,53 @@ const router = express.Router();
 
 router.use(authenticate);
 
-// List all jobs
-// CLIENT gets their own, others get filtered based on logic in service (for now)
+// ─── List & Detail ───────────────────────────────────────
 router.get('/', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'TA', 'FLAG_ADMIN', 'SURVEYOR'), jobController.getJobs);
-
-// Create a new job request
-router.post('/', authorizeRoles('CLIENT', 'ADMIN', 'GM'), validate(schemas.createJob), jobController.createJob);
-
-// Get specific job details
 router.get('/:id', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), jobController.getJobById);
 
-// Update job status
-router.put('/:id/status', authorizeRoles('ADMIN'), jobController.updateJobStatus);
+// ─── Create ───────────────────────────────────────────────
+// CREATED
+router.post('/', authorizeRoles('CLIENT', 'ADMIN', 'GM'), validate(schemas.createJob), jobController.createJob);
 
-// Workflow review gates
-router.put('/:id/gm-approve', authorizeRoles('ADMIN', 'GM'), jobController.gmApproveJob);
-router.put('/:id/gm-reject', authorizeRoles('ADMIN', 'GM'), jobController.gmRejectJob);
-router.put('/:id/tm-pre-approve', authorizeRoles('TM'), jobController.tmPreApproveJob);
-router.put('/:id/tm-pre-reject', authorizeRoles('TM'), jobController.tmPreRejectJob);
-router.put('/:id/tm-send-back', authorizeRoles('ADMIN', 'GM', 'TM'), jobController.tmSendBackSurvey);
-router.put('/:id/to-approve', authorizeRoles('TO'), jobController.toApproveSurvey);
-router.put('/:id/to-send-back', authorizeRoles('TO'), jobController.toSendBackSurvey);
+// ─── Explicit Semantic Workflow Transitions ───────────────
+// CREATED → APPROVED   (GM / ADMIN)
+router.put('/:id/approve-request', authorizeRoles('ADMIN', 'GM'), jobController.approveRequest);
 
-// Assign a surveyor to a job
+// APPROVED → ASSIGNED  (ADMIN / GM — requires surveyorId in body)
 router.put('/:id/assign', authorizeRoles('ADMIN', 'GM'), jobController.assignSurveyor);
-// Reassign a surveyor (with reason)
+// Re-assign surveyor without status change (GM / TM)
 router.put('/:id/reassign', authorizeRoles('GM', 'TM'), validate(schemas.reassignJob), jobController.reassignSurveyor);
 
-// (escalate endpoint removed)
+// ASSIGNED → SURVEY_AUTHORIZED   (ADMIN / TM)
+router.put('/:id/authorize-survey', authorizeRoles('ADMIN', 'TM'), jobController.authorizeSurvey);
 
-// Lifecycle Routes
+// IN_PROGRESS / REWORK_REQUESTED → automatically handled by survey lifecycle
+
+// SURVEY_DONE → REVIEWED   (TO — technical review)
+router.put('/:id/review', authorizeRoles('TO'), jobController.reviewJob);
+
+// REVIEWED → REWORK_REQUESTED  (ADMIN / TM / TO — requests surveyor correction)
+// NOTE: preferred path is PUT /api/v1/surveys/:id/rework
+router.put('/:id/send-back', authorizeRoles('ADMIN', 'TM', 'TO'), jobController.sendBackJob);
+
+// PAYMENT_DONE → CERTIFIED  (triggered internally by certificate.service.generateCertificate)
+// No direct endpoint: finalization & certification happen via survey + certificate endpoints
+
+// ─── Rejection (terminal → REJECTED) ─────────────────────
+// ADMIN: any non-terminal | GM: CREATED only | TM: ASSIGNED, SURVEY_DONE, REVIEWED
+router.put('/:id/reject', authorizeRoles('ADMIN', 'GM', 'TM'), jobController.rejectJob);
+
+// ─── Cancellation ────────────────────────────────────────
 router.put('/:id/cancel', authorizeRoles('CLIENT', 'GM', 'TM', 'ADMIN'), jobController.cancelJob);
-router.put('/:id/hold', authorizeRoles('GM', 'TM', 'ADMIN'), jobController.holdJob);
-router.put('/:id/resume', authorizeRoles('GM', 'TM', 'ADMIN'), jobController.resumeJob);
-// (clone endpoint removed)
 
-// Priority
+// ─── Priority ────────────────────────────────────────────
 router.put('/:id/priority', authorizeRoles('ADMIN', 'GM', 'TM'), jobController.updatePriority);
 
-// History & Notes
+// ─── History & Notes ─────────────────────────────────────
 router.get('/:id/history', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), jobController.getHistory);
 router.post('/:id/notes', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), jobController.addInternalNote);
 
-// Messaging
+// ─── Messaging ───────────────────────────────────────────
 router.get('/:id/messages/external', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), async (req, res, next) => {
     try {
         const messages = await jobController.getJobMessages(req.params.id, false);

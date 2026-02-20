@@ -8,13 +8,9 @@ JobCreateRequest:
     - target_date
   properties:
     vessel_id:
-      type: string
-      format: uuid
-      example: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+      $ref: '#/components/schemas/UUID'
     certificate_type_id:
-      type: string
-      format: uuid
-      example: "01933c5e-7f2b-7a00-8000-1a2b3c4d5e6f"
+      $ref: '#/components/schemas/UUID'
     reason:
       type: string
       example: "Annual survey due"
@@ -25,12 +21,12 @@ JobCreateRequest:
       type: string
       format: date
       example: "2026-03-15"
-  example:
-    vessel_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-    certificate_type_id: "01933c5e-7f2b-7a00-8000-1a2b3c4d5e6f"
-    reason: "Annual survey due"
-    target_port: "Singapore"
-    target_date: "2026-03-15"
+    priority:
+      type: string
+      enum: [LOW, NORMAL, HIGH, URGENT]
+      default: NORMAL
+    remarks:
+      type: string
 
 JobResponse:
   type: object
@@ -48,10 +44,27 @@ JobResponse:
     target_date:
       type: string
       format: date
+    assigned_surveyor_id:
+      $ref: '#/components/schemas/UUID'
+      nullable: true
+    assigned_by_user_id:
+      $ref: '#/components/schemas/UUID'
+      nullable: true
+    approved_by_user_id:
+      $ref: '#/components/schemas/UUID'
+      nullable: true
+    generated_certificate_id:
+      $ref: '#/components/schemas/UUID'
+      nullable: true
+    remarks:
+      type: string
     job_status:
       type: string
-      enum: [CREATED, GM_APPROVED, TM_PRE_APPROVED, ASSIGNED, SURVEY_DONE, TO_APPROVED, TM_FINAL, PAYMENT_DONE, CERTIFIED, REJECTED]
-      example: ""
+      enum: [CREATED, APPROVED, ASSIGNED, SURVEY_AUTHORIZED, IN_PROGRESS, SURVEY_DONE, REVIEWED, FINALIZED, REWORK_REQUESTED, PAYMENT_DONE, CERTIFIED, REJECTED]
+      example: "CREATED"
+    priority:
+      type: string
+      enum: [LOW, NORMAL, HIGH, URGENT]
     vessel:
       $ref: '#/components/schemas/VesselSummary'
     certificate_type:
@@ -64,6 +77,9 @@ JobResponse:
     created_at:
       type: string
       format: date-time
+    updated_at:
+      type: string
+      format: date-time
   example:
     id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
     vessel_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
@@ -74,10 +90,11 @@ JobResponse:
 
 JobStatusUpdateRequest:
   type: object
+  required: [status]
   properties:
     status:
       type: string
-      enum: [GM_APPROVED, TM_PRE_APPROVED, ASSIGNED, SURVEY_DONE, TO_APPROVED, TM_FINAL, PAYMENT_DONE, CERTIFIED, REJECTED]
+      enum: [CREATED, APPROVED, ASSIGNED, SURVEY_AUTHORIZED, IN_PROGRESS, SURVEY_DONE, REVIEWED, FINALIZED, REWORK_REQUESTED, PAYMENT_DONE, CERTIFIED, REJECTED]
     remarks:
       type: string
 
@@ -87,9 +104,7 @@ AssignSurveyorRequest:
     - surveyorId
   properties:
     surveyorId:
-      type: string
-      format: uuid
-      example: "01933c5e-7f2c-7a00-8000-1a2b3c4d5e6f"
+      $ref: '#/components/schemas/UUID'
 
 ReassignJobRequest:
   type: object
@@ -98,8 +113,7 @@ ReassignJobRequest:
     - reason
   properties:
     surveyorId:
-      type: string
-      format: uuid
+      $ref: '#/components/schemas/UUID'
     reason:
       type: string
 
@@ -117,6 +131,7 @@ EscalateJobRequest:
 
 JobCancelRequest:
   type: object
+  required: [reason]
   properties:
     reason:
       type: string
@@ -128,6 +143,9 @@ AddNoteRequest:
   properties:
     note_text:
       type: string
+    is_internal:
+      type: boolean
+      default: true
 
 MessageCreateRequest:
   type: object
@@ -141,19 +159,16 @@ JobHistoryItem:
   type: object
   properties:
     id:
-      type: string
-      format: uuid
+      $ref: '#/components/schemas/UUID'
     job_id:
-      type: string
-      format: uuid
+      $ref: '#/components/schemas/UUID'
     old_status:
       type: string
       nullable: true
     new_status:
       type: string
     changed_by:
-      type: string
-      format: uuid
+      $ref: '#/components/schemas/UUID'
     change_reason:
       type: string
     created_at:
@@ -168,31 +183,16 @@ JobHistoryItem:
           type: string
         role:
           type: string
-  example:
-    id: "01933c5e-7f2d-7a00-8000-1a2b3c4d5e6f"
-    job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-    old_status: "CREATED"
-    new_status: "GM_APPROVED"
-    changed_by: "01933c5e-7f2e-7a00-8000-1a2b3c4d5e6f"
-    change_reason: "Approved for survey"
-    created_at: "2026-02-16T10:00:00Z"
-    User:
-      name: "John Doe"
-      email: "gm@example.com"
-      role: "GM"
 
 JobNoteResponse:
   type: object
   properties:
     id:
-      type: string
-      format: uuid
+      $ref: '#/components/schemas/UUID'
     job_id:
-      type: string
-      format: uuid
+      $ref: '#/components/schemas/UUID'
     user_id:
-      type: string
-      format: uuid
+      $ref: '#/components/schemas/UUID'
     note_text:
       type: string
     is_internal:
@@ -200,26 +200,16 @@ JobNoteResponse:
     created_at:
       type: string
       format: date-time
-  example:
-    id: "01933c5e-7f3a-7a00-8000-1a2b3c4d5e6f"
-    job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-    user_id: "01933c5e-7f2e-7a00-8000-1a2b3c4d5e6f"
-    note_text: "Client confirmed availability"
-    is_internal: true
-    created_at: "2026-02-16T10:05:00Z"
 
 JobMessageResponse:
   type: object
   properties:
     id:
-      type: string
-      format: uuid
+      $ref: '#/components/schemas/UUID'
     job_id:
-      type: string
-      format: uuid
+      $ref: '#/components/schemas/UUID'
     sender_id:
-      type: string
-      format: uuid
+      $ref: '#/components/schemas/UUID'
     message_text:
       type: string
     is_internal:
@@ -238,14 +228,3 @@ JobMessageResponse:
           type: string
         role:
           type: string
-  example:
-    id: "01933c5e-7f4a-7a00-8000-1a2b3c4d5e6f"
-    job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-    sender_id: "01933c5e-7f2e-7a00-8000-1a2b3c4d5e6f"
-    message_text: "Please upload the survey report."
-    is_internal: false
-    attachment_url: "https://s3.amazonaws.com/bucket/file.pdf"
-    created_at: "2026-02-16T10:10:00Z"
-    Sender:
-      name: "Jane Smith"
-      role: "CLIENT"

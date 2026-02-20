@@ -170,12 +170,12 @@ function ensureOperationExamples(spec) {
               schema: isError
                 ? { $ref: '#/components/schemas/ErrorResponse' }
                 : {
-                    type: 'object',
-                    properties: {
-                      success: { type: 'boolean', example: true },
-                      message: { type: 'string', example: 'Request successful' },
-                    },
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    message: { type: 'string', example: 'Request successful' },
                   },
+                },
             },
           };
         }
@@ -381,9 +381,29 @@ function filterTags(spec) {
 
 
 /**
- * Customize spec based on role constraints (e.g. status enums)
+ * Customize spec based on role constraints (e.g. status enums, examples)
  */
 function customizeSpec(spec, role) {
+  // Update login example if role is specific
+  const loginPost = spec.paths?.['/api/v1/auth/login']?.post;
+  if (loginPost && loginPost.requestBody?.content?.['application/json']) {
+    const roleEmails = {
+      ADMIN: 'admin@girik.com',
+      TM: 'tm@girik.com',
+      GM: 'gm@girik.com',
+      SURVEYOR: 'surveyor@girik.com',
+      CLIENT: 'ops@pacific.com',
+    };
+
+    if (roleEmails[role]) {
+      loginPost.requestBody.content['application/json'].example = {
+        email: roleEmails[role],
+        password: 'Password@123'
+      };
+      loginPost.description = (loginPost.description || '') + `\n\n**Note:** Default credentials for **${role}** have been pre-filled for testing.`;
+    }
+  }
+
   if (role === 'SURVEYOR') {
     // 1. Filter Job Statuses for Surveyor
     const jobsGet = spec.paths?.['/api/v1/jobs']?.get;
@@ -393,9 +413,12 @@ function customizeSpec(spec, role) {
         // Surveyors only see jobs from ASSIGNED onwards
         const surveyorStatuses = [
           'ASSIGNED',
+          'SURVEY_AUTHORIZED',
+          'IN_PROGRESS',
           'SURVEY_DONE',
-          'TO_APPROVED',
-          'TM_FINAL',
+          'REVIEWED',
+          'FINALIZED',
+          'REWORK_REQUESTED',
           'PAYMENT_DONE',
           'CERTIFIED',
           'REJECTED'

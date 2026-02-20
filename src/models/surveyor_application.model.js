@@ -11,7 +11,7 @@ export default (sequelize, DataTypes) => {
         certificate_files_url: DataTypes.JSON,
         id_proof_url: DataTypes.STRING,
         status: { type: DataTypes.ENUM('PENDING', 'DOCUMENTS_REQUIRED', 'APPROVED', 'REJECTED'), defaultValue: 'PENDING' },
-        tm_remarks: DataTypes.TEXT,
+        reviewer_remarks: DataTypes.TEXT,
         approved_user_id: { type: DataTypes.UUID, allowNull: true },
     }, {
         tableName: 'surveyor_applications',

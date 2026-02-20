@@ -51,3 +51,66 @@ WebsiteVideoInput:
     thumbnail_url:
       type: string
       example: "https://example.com/thumb.jpg"
+
+WebsiteContact:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+      example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+    full_name:
+      type: string
+      example: "John Maritime"
+    company:
+      type: string
+      example: "Pacific Shipping Co. Ltd"
+    corporate_email:
+      type: string
+      format: email
+      example: "john@pacificshipping.com"
+    message:
+      type: string
+      example: "We are interested in classification services for our fleet."
+    phone:
+      type: string
+      example: "+91 98765 43210"
+    subject:
+      type: string
+      example: "Fleet Classification Inquiry"
+    status:
+      type: string
+      enum: [NEW, READ, REPLIED, ARCHIVED]
+      example: "NEW"
+    internal_note:
+      type: string
+      nullable: true
+      example: "Responded via email on 20 Feb 2026."
+    replied_by:
+      type: string
+      format: uuid
+      nullable: true
+    replied_at:
+      type: string
+      format: date-time
+      nullable: true
+    ip_address:
+      type: string
+      nullable: true
+      example: "192.168.1.1"
+    source_page:
+      type: string
+      example: "CONTACT"
+    created_at:
+      type: string
+      format: date-time
+    updated_at:
+      type: string
+      format: date-time
+    Responder:
+      type: object
+      nullable: true
+      properties:
+        id:    { type: string, format: uuid }
+        name:  { type: string, example: "Admin User" }
+        email: { type: string, example: "admin@girik.com" }

@@ -9,8 +9,8 @@ export default (sequelize, DataTypes) => {
         target_date: DataTypes.DATEONLY,
         job_status: {
             type: DataTypes.ENUM(
-                'CREATED', 'GM_APPROVED', 'TM_PRE_APPROVED', 'TO_PRE_APPROVED', 'ASSIGNED', 'IN_PROGRESS', 'SURVEY_DONE',
-                'TO_APPROVED', 'TM_FINAL', 'PAYMENT_DONE', 'CERTIFIED', 'REJECTED'
+                'CREATED', 'APPROVED', 'ASSIGNED', 'SURVEY_AUTHORIZED', 'IN_PROGRESS', 'SURVEY_DONE',
+                'REVIEWED', 'FINALIZED', 'REWORK_REQUESTED', 'PAYMENT_DONE', 'CERTIFIED', 'REJECTED'
             ),
             defaultValue: 'CREATED',
             get() {
@@ -18,8 +18,10 @@ export default (sequelize, DataTypes) => {
                 return (raw === null || raw === '') ? 'CREATED' : raw;
             },
         },
-        gm_assigned_surveyor_id: DataTypes.UUID,
+        assigned_surveyor_id: DataTypes.UUID,
+        assigned_by_user_id: DataTypes.UUID,
         generated_certificate_id: DataTypes.UUID,
+        approved_by_user_id: DataTypes.UUID,
         remarks: DataTypes.TEXT,
     }, {
         tableName: 'job_requests',
@@ -31,7 +33,9 @@ export default (sequelize, DataTypes) => {
     JobRequest.associate = (models) => {
         JobRequest.belongsTo(models.Vessel, { foreignKey: 'vessel_id' });
         JobRequest.belongsTo(models.User, { foreignKey: 'requested_by_user_id', as: 'requester' });
-        JobRequest.belongsTo(models.User, { foreignKey: 'gm_assigned_surveyor_id', as: 'surveyor' });
+        JobRequest.belongsTo(models.User, { foreignKey: 'assigned_surveyor_id', as: 'surveyor' });
+        JobRequest.belongsTo(models.User, { foreignKey: 'assigned_by_user_id', as: 'assigned_by' });
+        JobRequest.belongsTo(models.User, { foreignKey: 'approved_by_user_id', as: 'approver' });
         JobRequest.belongsTo(models.CertificateType, { foreignKey: 'certificate_type_id' });
         JobRequest.belongsTo(models.Certificate, { foreignKey: 'generated_certificate_id', as: 'Certificate' });
         JobRequest.hasMany(models.JobStatusHistory, { foreignKey: 'job_id' });

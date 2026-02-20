@@ -16,7 +16,7 @@ export async function buildCertificateScopeWhere(user, deps) {
     }
     if (role === 'SURVEYOR') {
         const jobs = await JobRequest.findAll({
-            where: { gm_assigned_surveyor_id: user.id },
+            where: { assigned_surveyor_id: user.id },
             attributes: ['vessel_id'],
             raw: true,
         });

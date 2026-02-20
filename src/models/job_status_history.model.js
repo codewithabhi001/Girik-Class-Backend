@@ -1,16 +1,34 @@
 export default (sequelize, DataTypes) => {
     const JobStatusHistory = sequelize.define('JobStatusHistory', {
-        id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV7, primaryKey: true },
-        job_id: DataTypes.UUID,
-        old_status: DataTypes.STRING, // Using STRING to avoid ENUM updates issues if statuses change
-        new_status: DataTypes.STRING,
-        changed_by: DataTypes.UUID,
-        change_reason: DataTypes.TEXT,
-        changed_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+        id: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV7,
+            primaryKey: true
+        },
+        job_id: {
+            type: DataTypes.UUID,
+            allowNull: false
+        },
+        previous_status: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        new_status: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        changed_by: {
+            type: DataTypes.UUID,
+            allowNull: false
+        },
+        reason: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        }
     }, {
-        tableName: 'job_status_history',
+        tableName: 'job_status_histories',
         underscored: true,
-        timestamps: false,
+        timestamps: true
     });
 
     JobStatusHistory.associate = (models) => {

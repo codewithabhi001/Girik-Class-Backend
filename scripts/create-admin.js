@@ -1,11 +1,11 @@
 /**
- * Create admin user: admin@gmail.com / admin123
+ * Create admin user: admin@girik.com / admin123
  * Run: node scripts/create-admin.js
  */
 import db from '../src/models/index.js';
 import bcrypt from 'bcrypt';
 
-const EMAIL = 'admin@gmail.com';
+const EMAIL = 'admin@girik.com';
 const PASSWORD = 'admin123';
 const NAME = 'Admin';
 

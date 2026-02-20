@@ -36,6 +36,7 @@ import supportRoutes from './modules/support/support.routes.js';
 import searchRoutes from './modules/search/search.routes.js';
 import complianceRoutes from './modules/compliance/compliance.routes.js';
 import websiteRoutes from './modules/website/website.routes.js';
+import contactRoutes from './modules/contact/contact.routes.js';
 
 // Client Modules
 const router = express.Router();
@@ -50,6 +51,9 @@ router.use('/public', publicRoutes);
 // 2. Auth Routes
 router.use('/auth', authRoutes);
 
+// 3. Website Contact (PUBLIC post – no auth required; must be BEFORE the '/' checklist catch-all)
+router.use('/contact', contactRoutes);
+
 // 4. Operational Modules
 router.use('/support', supportRoutes);
 router.use('/search', searchRoutes);
@@ -63,7 +67,7 @@ router.use('/surveys', surveyRoutes);
 router.use('/certificates', certificateRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/surveyors', surveyorRoutes);
-router.use('/', checklistRoutes);
+router.use('/checklists', checklistRoutes);
 router.use('/checklist-templates', checklistTemplateRoutes);
 router.use('/non-conformities', ncRoutes);
 router.use('/toca', tocaRoutes);

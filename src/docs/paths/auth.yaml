@@ -15,7 +15,7 @@
           schema:
             $ref: '#/components/schemas/LoginRequest'
           example:
-            email: "admin@gmail.com"
+            email: "admin@girik.com"
             password: "Password@123"
     responses:
       "200":
@@ -28,7 +28,7 @@
               user:
                 id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
                 name: "John Doe"
-                email: "admin@gmail.com"
+                email: "admin@girik.com"
                 role: "CLIENT"
               accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
               refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -100,7 +100,7 @@
               user:
                 id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
                 name: "John Doe"
-                email: "admin@gmail.com"
+                email: "admin@girik.com"
                 role: "CLIENT"
               accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
               refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."

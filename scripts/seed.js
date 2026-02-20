@@ -211,12 +211,11 @@ const seed = async () => {
                     console.log(`Certificate created: ${certData.certificate_number} for vessel ${certData.vessel_id}`);
                 }
             };
-
             const smcType = await db.CertificateType.findOne({ where: { name: 'Safety Management Certificate' } });
             const loadLineType = await db.CertificateType.findOne({ where: { name: 'Load Line Certificate' } });
-            const vessels = await db.Vessel.findAll();
+            const allVessels = await db.Vessel.findAll();
 
-            for (const v of vessels) {
+            for (const v of allVessels) {
                 // 1. Every vessel gets a Class Cert (Valid)
                 await createCertIfMissing({
                     vessel_id: v.id,
@@ -252,6 +251,69 @@ const seed = async () => {
                         status: 'EXPIRED',
                         issued_by_user_id: adminUser.id
                     });
+                }
+            }
+
+            // 7. Create Checklist Templates
+            const templateData = [
+                {
+                    name: 'Annual Class Survey Checklist',
+                    code: 'CL-SURV-ANN-001',
+                    description: 'Standard checklist for annual class survey requirements.',
+                    certificate_type_id: classCertType.id,
+                    status: 'ACTIVE',
+                    sections: [
+                        {
+                            title: 'General Documentation',
+                            items: [
+                                { code: 'DOC-001', text: 'Previous survey reports and records available on board?', type: 'YES_NO' },
+                                { code: 'DOC-002', text: 'Valid certificates of registry and classification?', type: 'YES_NO' }
+                            ]
+                        },
+                        {
+                            title: 'Hull and Deck',
+                            items: [
+                                { code: 'HULL-001', text: 'Hull plating above waterline in satisfactory condition?', type: 'YES_NO_NA' },
+                                { code: 'HULL-002', text: 'Anchors and chain cables in good working order?', type: 'YES_NO_NA' },
+                                { code: 'HULL-003', text: 'Watertight doors and hatches sealing properly?', type: 'YES_NO' }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    name: 'SMC Intermediate Audit Checklist',
+                    code: 'CL-SMC-INT-002',
+                    description: 'Checklist for Safety Management Certificate intermediate audit.',
+                    certificate_type_id: smcType.id,
+                    status: 'ACTIVE',
+                    sections: [
+                        {
+                            title: 'Safety Management System',
+                            items: [
+                                { code: 'SMS-001', text: 'Safety and environmental-protection policy available?', type: 'YES_NO' },
+                                { code: 'SMS-002', text: 'Designated Person Ashore (DPA) known to crew?', type: 'YES_NO' },
+                                { code: 'SMS-003', text: 'Master\'s responsibility and authority clearly defined?', type: 'YES_NO' }
+                            ]
+                        },
+                        {
+                            title: 'Emergency Preparedness',
+                            items: [
+                                { code: 'EP-001', text: 'Emergency drills carried out as per schedule?', type: 'YES_NO' },
+                                { code: 'EP-002', text: 'Mustering and abandon ship drills satisfactory?', type: 'YES_NO' }
+                            ]
+                        }
+                    ]
+                }
+            ];
+
+            for (const t of templateData) {
+                const existingTemplate = await db.ChecklistTemplate.findOne({ where: { code: t.code } });
+                if (!existingTemplate) {
+                    await db.ChecklistTemplate.create({
+                        ...t,
+                        created_by: adminUser.id
+                    });
+                    console.log(`Checklist Template created: ${t.code}`);
                 }
             }
         }

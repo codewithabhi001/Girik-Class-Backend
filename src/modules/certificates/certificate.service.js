@@ -5,6 +5,7 @@ import logger from '../../utils/logger.js';
 import { buildCertificateScopeWhere } from './certificate-scope.js';
 import { buildFallbackCertificateHtml } from './templates/fallback-certificate.template.js';
 import * as fileAccessService from '../../services/fileAccess.service.js';
+import * as lifecycleService from '../../services/lifecycle.service.js';
 
 const Certificate = db.Certificate;
 const CertificateType = db.CertificateType;
@@ -45,128 +46,131 @@ export const createCertificateType = async (data) => {
 
 export const generateCertificate = async (data, userId) => {
     const { job_id, validity_years } = data;
-    const job = await JobRequest.findByPk(job_id, {
-        include: [
-            { model: db.Vessel, attributes: ['id', 'vessel_name', 'imo_number'] },
-            { model: db.CertificateType, attributes: ['id', 'name'] },
-        ],
-    });
-    if (!job) throw { statusCode: 404, message: 'Job not found' };
-    if (job.job_status !== 'PAYMENT_DONE') {
-        throw { statusCode: 400, message: 'Certificate can only be generated when payment is cleared (job must be PAYMENT_DONE)' };
-    }
 
-    const issueDate = new Date();
-    const expiryDate = new Date();
-    expiryDate.setFullYear(issueDate.getFullYear() + (validity_years || 1));
-
-    const certificateNumber = `CERT-${uuidv4().substring(0, 8).toUpperCase()}`;
-
-    const cert = await Certificate.create({
-        vessel_id: job.vessel_id,
-        certificate_type_id: job.certificate_type_id,
-        certificate_number: certificateNumber,
-        issue_date: issueDate,
-        expiry_date: expiryDate,
-        status: 'VALID',
-        issued_by_user_id: userId,
-    });
-    await AuditLog.create({
-        user_id: userId,
-        action: 'GENERATE_CERTIFICATE',
-        entity_name: 'Certificate',
-        entity_id: cert.id,
-        old_values: null,
-        new_values: {
-            job_id: job.id,
-            certificate_number: cert.certificate_number,
-            certificate_type_id: cert.certificate_type_id,
-            vessel_id: cert.vessel_id,
-            status: cert.status,
-        },
-    });
-
-    // Fetch template for this certificate type and generate + upload PDF
-    const template = await CertificateTemplate.findOne({
-        where: { certificate_type_id: job.certificate_type_id, is_active: true },
-        order: [['createdAt', 'DESC']],
-    });
-
-    // Prepare HTML for PDF. Prefer active template content; fall back to a simple built-in layout
-    const vessel = job.Vessel;
-    const variables = {
-        vessel_name: vessel?.vessel_name ?? '',
-        imo_number: vessel?.imo_number ?? '',
-        issue_date: issueDate,
-        expiry_date: expiryDate,
-        certificate_number: certificateNumber,
-        certificate_type: job.CertificateType?.name ?? '',
-    };
-
-    let fullHtml;
-    // Generate QR code (data URL) for certificate verification if possible
-    let qrDataUrl = null;
+    const transaction = await db.sequelize.transaction();
     try {
-        const baseUrl = (process.env.APP_BASE_URL || 'api.girikship.com').replace(/\/$/, '');
-        const verificationUrl = baseUrl ? `${baseUrl}/api/v1/certificates/verify/${certificateNumber}` : `/api/v1/certificates/verify/${certificateNumber}`;
-        const QR = await import('qrcode');
-        qrDataUrl = await QR.toDataURL(verificationUrl, { margin: 1, width: 300 });
-    } catch (e) {
-        logger?.warn('QR generation failed', { err: e?.message || e });
-        qrDataUrl = null;
-    }
-
-    // Add qr_image variable usable by templates (HTML <img/> or raw data)
-    variables.qr_image = qrDataUrl ? `<img src="${qrDataUrl}" alt="QR" style="width:140px;height:140px;object-fit:contain;border-radius:6px;"/>` : null;
-
-    if (template?.template_content) {
-        const filledHtml = certificatePdfService.fillTemplate(template.template_content, variables);
-        fullHtml = certificatePdfService.wrapHtmlForPdf(filledHtml);
-    } else {
-        const htmlFragment = buildFallbackCertificateHtml({
-            variables,
-            issuingAuthority: job.CertificateType?.issuing_authority ?? '',
-            qrDataUrl,
+        // Lock Job row for the entire operation
+        const job = await JobRequest.findByPk(job_id, {
+            transaction,
+            lock: transaction.LOCK.UPDATE,
+            include: [
+                { model: db.Vessel, attributes: ['id', 'vessel_name', 'imo_number'] },
+                { model: db.CertificateType, attributes: ['id', 'name', 'issuing_authority'] },
+            ],
         });
-        fullHtml = certificatePdfService.wrapHtmlForPdf(htmlFragment);
+        if (!job) throw { statusCode: 404, message: 'Job not found' };
+
+        // ── Guard 1: Job must be PAYMENT_DONE ──
+        if (job.job_status !== 'PAYMENT_DONE') {
+            throw { statusCode: 400, message: `Certificate can only be generated when job is PAYMENT_DONE. Current: ${job.job_status}` };
+        }
+
+        // ── Guard 2: Survey must be FINALIZED ──
+        const survey = await db.Survey.findOne({ where: { job_id }, transaction });
+        if (!survey || survey.survey_status !== 'FINALIZED') {
+            throw { statusCode: 400, message: 'Cannot generate certificate: Survey must be FINALIZED first.' };
+        }
+
+        // ── Guard 3: No certificate already linked to this job ──
+        if (job.generated_certificate_id) {
+            throw { statusCode: 409, message: 'Certificate already issued for this job.' };
+        }
+        const existingCert = await Certificate.findOne({ where: { vessel_id: job.vessel_id, certificate_type_id: job.certificate_type_id, status: 'VALID' }, transaction });
+        if (existingCert) {
+            logger?.warn('Possible duplicate certificate attempt', { job_id, existing_cert_id: existingCert.id });
+        }
+
+        // ── Guard 4: No open Non-Conformities ──
+        if (db.NonConformity) {
+            const openNCs = await db.NonConformity.count({
+                where: { job_id, status: { [Op.notIn]: ['CLOSED', 'RESOLVED'] } },
+                transaction
+            });
+            if (openNCs > 0) {
+                throw { statusCode: 400, message: `Cannot generate certificate: ${openNCs} open non-conformit${openNCs > 1 ? 'ies' : 'y'} must be resolved first.` };
+            }
+        }
+
+        const issueDate = new Date();
+        const expiryDate = new Date();
+        expiryDate.setFullYear(issueDate.getFullYear() + (validity_years || 1));
+        const certificateNumber = `CERT-${uuidv4().substring(0, 8).toUpperCase()}`;
+
+        const cert = await Certificate.create({
+            vessel_id: job.vessel_id,
+            certificate_type_id: job.certificate_type_id,
+            certificate_number: certificateNumber,
+            issue_date: issueDate,
+            expiry_date: expiryDate,
+            status: 'VALID',
+            issued_by_user_id: userId,
+        }, { transaction });
+
+        // Update job to CERTIFIED via lifecycle (ensures history record + terminal guard)
+        await lifecycleService.updateJobStatus(job_id, 'CERTIFIED', userId,
+            `Certificate ${certificateNumber} generated`, { transaction });
+        await job.update({ generated_certificate_id: cert.id }, { transaction });
+
+        await AuditLog.create({
+            user_id: userId, action: 'GENERATE_CERTIFICATE',
+            entity_name: 'Certificate', entity_id: cert.id,
+            old_values: null,
+            new_values: { job_id, certificate_number, certificate_type_id: cert.certificate_type_id, vessel_id: cert.vessel_id }
+        }, { transaction });
+
+        await transaction.commit();
+
+        // Generate PDF outside transaction (non-critical, best-effort)
+        const template = await CertificateTemplate.findOne({
+            where: { certificate_type_id: job.certificate_type_id, is_active: true },
+            order: [['createdAt', 'DESC']]
+        });
+        const vessel = job.Vessel;
+        const variables = {
+            vessel_name: vessel?.vessel_name ?? '',
+            imo_number: vessel?.imo_number ?? '',
+            issue_date: issueDate,
+            expiry_date: expiryDate,
+            certificate_number: certificateNumber,
+            certificate_type: job.CertificateType?.name ?? ''
+        };
+        let qrDataUrl = null;
+        try {
+            const baseUrl = (process.env.APP_BASE_URL || 'api.girikship.com').replace(/\/$/, '');
+            const QR = await import('qrcode');
+            qrDataUrl = await QR.toDataURL(`${baseUrl}/api/v1/certificates/verify/${certificateNumber}`, { margin: 1, width: 300 });
+        } catch (e) { logger?.warn('QR generation failed', { err: e?.message }); }
+
+        variables.qr_image = qrDataUrl
+            ? `<img src="${qrDataUrl}" alt="QR" style="width:140px;height:140px;"/>`
+            : null;
+
+        let fullHtml;
+        if (template?.template_content) {
+            fullHtml = certificatePdfService.wrapHtmlForPdf(certificatePdfService.fillTemplate(template.template_content, variables));
+        } else {
+            fullHtml = certificatePdfService.wrapHtmlForPdf(buildFallbackCertificateHtml({
+                variables, issuingAuthority: job.CertificateType?.issuing_authority ?? '', qrDataUrl
+            }));
+        }
+        try {
+            const pdfBuffer = await certificatePdfService.htmlToPdfBuffer(fullHtml);
+            const pdfUrl = await certificatePdfService.uploadCertificatePdf(pdfBuffer, certificateNumber);
+            await cert.update({ pdf_file_url: pdfUrl });
+        } catch (err) {
+            logger?.warn('Certificate PDF generation/upload failed', { certId: cert.id, err: err?.message });
+        }
+
+        return await Certificate.findByPk(cert.id, {
+            include: [
+                { model: db.Vessel, attributes: ['vessel_name', 'imo_number'] },
+                { model: db.CertificateType, attributes: ['name'] }
+            ]
+        });
+    } catch (error) {
+        await transaction.rollback();
+        throw error;
     }
-
-    try {
-        const pdfBuffer = await certificatePdfService.htmlToPdfBuffer(fullHtml);
-        const pdfUrl = await certificatePdfService.uploadCertificatePdf(pdfBuffer, certificateNumber);
-        await cert.update({ pdf_file_url: pdfUrl });
-    } catch (err) {
-        // Cert already created; PDF generation/upload failed — keep cert, log and surface in response if needed
-        logger?.warn('Certificate PDF generation/upload failed for', { certId: cert.id, err: err?.message || err });
-    }
-
-    const oldJobStatus = job.job_status;
-    await job.update({
-        job_status: 'CERTIFIED',
-        generated_certificate_id: cert.id
-    });
-    await JobStatusHistory.create({
-        job_id: job.id,
-        old_status: oldJobStatus,
-        new_status: 'CERTIFIED',
-        changed_by: userId,
-        change_reason: `Certificate ${certificateNumber} generated`
-    });
-    await AuditLog.create({
-        user_id: userId,
-        action: 'UPDATE_JOB_STATUS',
-        entity_name: 'JobRequest',
-        entity_id: job.id,
-        old_values: { job_status: oldJobStatus },
-        new_values: { job_status: 'CERTIFIED', certificate_id: cert.id, certificate_number: certificateNumber },
-    });
-
-    return await Certificate.findByPk(cert.id, {
-        include: [
-            { model: db.Vessel, attributes: ['vessel_name', 'imo_number'] },
-            { model: db.CertificateType, attributes: ['name'] },
-        ],
-    });
 };
 
 const ALLOWED_CERT_LIST_FILTERS = ['vessel_id', 'certificate_type_id', 'status'];

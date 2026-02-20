@@ -46,7 +46,8 @@ export default (sequelize, DataTypes) => {
     User.associate = (models) => {
         User.belongsTo(models.Client, { foreignKey: 'client_id' });
         User.hasOne(models.SurveyorProfile, { foreignKey: 'user_id' });
-        User.hasMany(models.JobRequest, { foreignKey: 'requested_by_user_id', as: 'RequestedJobs' });
+        User.hasMany(models.JobRequest, { foreignKey: 'requested_by_user_id', as: 'ClientJobs' });
+        User.hasMany(models.JobRequest, { foreignKey: 'assigned_surveyor_id', as: 'AssignedJobs' });
         User.hasMany(models.SupportTicket, { foreignKey: 'user_id', as: 'Tickets' });
     };
 

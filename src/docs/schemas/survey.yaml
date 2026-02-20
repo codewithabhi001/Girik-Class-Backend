@@ -1,0 +1,61 @@
+SurveyReportResponse:
+  type: object
+  properties:
+    id:
+      $ref: '#/components/schemas/UUID'
+    job_id:
+      $ref: '#/components/schemas/UUID'
+    surveyor_id:
+      $ref: '#/components/schemas/UUID'
+    survey_status:
+      type: string
+      enum: [NOT_STARTED, STARTED, CHECKLIST_SUBMITTED, PROOF_UPLOADED, SUBMITTED, REWORK_REQUIRED, FINALIZED]
+    submission_count:
+      type: integer
+    gps_latitude:
+      type: number
+    gps_longitude:
+      type: number
+    attendance_photo_url:
+      type: string
+      format: uri
+    evidence_proof_url:
+      type: string
+      format: uri
+    survey_statement:
+      type: string
+    started_at:
+      type: string
+      format: date-time
+    submitted_at:
+      type: string
+      format: date-time
+    finalized_at:
+      type: string
+      format: date-time
+  example:
+    id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+    job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+    survey_status: "SUBMITTED"
+    submission_count: 1
+    gps_latitude: 1.3521
+    gps_longitude: 103.8198
+    survey_statement: "Survey completed successfully."
+    started_at: "2026-02-20T10:00:00Z"
+    submitted_at: "2026-02-20T12:00:00Z"
+
+SurveyTimelineResponse:
+  type: object
+  properties:
+    job_id:
+      $ref: '#/components/schemas/UUID'
+    gps_trace:
+      type: array
+      items:
+        type: object
+        properties:
+          latitude: { type: number }
+          longitude: { type: number }
+          timestamp: { type: string, format: date-time }
+    survey_details:
+      $ref: '#/components/schemas/SurveyReportResponse'

@@ -67,7 +67,6 @@ export const schemas = {
         remarks: Joi.string().optional().allow(''),
     }),
     updateGps: Joi.object({
-        vessel_id: Joi.string().guid().required(),
         latitude: Joi.number().required(),
         longitude: Joi.number().required(),
     }),
@@ -307,5 +306,20 @@ export const schemas = {
         phone: Joi.string().optional().allow(''),
         status: Joi.string().valid('ACTIVE', 'INACTIVE', 'SUSPENDED').optional(),
         client_id: Joi.string().guid().optional().allow(null),
-    })
+    }),
+
+    // ── Contact / Website Enquiry ───────────────────────────────────────────
+    submitContactEnquiry: Joi.object({
+        full_name: Joi.string().min(2).max(100).required(),
+        company: Joi.string().max(150).optional().allow('', null),
+        corporate_email: Joi.string().email().required(),
+        message: Joi.string().min(10).max(5000).required(),
+        phone: Joi.string().max(30).optional().allow('', null),
+        subject: Joi.string().max(200).optional().allow('', null),
+        source_page: Joi.string().max(50).optional().allow('', null),
+    }),
+    updateContactEnquiryStatus: Joi.object({
+        status: Joi.string().valid('NEW', 'READ', 'REPLIED', 'ARCHIVED').required(),
+        internal_note: Joi.string().max(2000).optional().allow('', null),
+    }),
 };

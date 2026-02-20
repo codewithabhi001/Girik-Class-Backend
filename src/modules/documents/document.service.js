@@ -1,20 +1,22 @@
 import db from '../../models/index.js';
 import * as s3Service from '../../services/s3.service.js';
+import * as fileAccessService from '../../services/fileAccess.service.js';
 
 const Document = db.Document;
 
 export const getEntityDocuments = async (entityType, entityId) => {
-    return await Document.findAll({
+    const documents = await Document.findAll({
         where: { entity_type: entityType, entity_id: entityId },
         order: [['uploaded_at', 'DESC']]
     });
+    return await fileAccessService.resolveEntity(documents);
 };
 
 export const uploadEntityDocument = async (entityType, entityId, file, userId, documentType, description) => {
     const folder = `${s3Service.UPLOAD_FOLDERS.DOCUMENTS}/${String(entityType).toLowerCase()}`;
     const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, folder);
 
-    return await Document.create({
+    const doc = await Document.create({
         entity_type: entityType,
         entity_id: entityId,
         file_url: url,
@@ -23,10 +25,12 @@ export const uploadEntityDocument = async (entityType, entityId, file, userId, d
         description: description,
         uploaded_by: userId
     });
+
+    return await fileAccessService.resolveEntity(doc, { id: userId });
 };
 
 export const registerDocument = async (entityType, entityId, fileData, userId, documentType, description) => {
-    return await Document.create({
+    const doc = await Document.create({
         entity_type: entityType,
         entity_id: entityId,
         file_url: fileData.url,
@@ -35,6 +39,8 @@ export const registerDocument = async (entityType, entityId, fileData, userId, d
         description: description,
         uploaded_by: userId
     });
+
+    return await fileAccessService.resolveEntity(doc, { id: userId });
 };
 
 export const deleteDocument = async (id) => {

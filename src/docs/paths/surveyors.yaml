@@ -84,12 +84,20 @@
             required: [status]
             properties:
               status: { type: string, enum: [APPROVED, REJECTED, DOCUMENTS_REQUIRED] }
-              remarks: { type: string }
+              reviewer_remarks: { type: string }
           example:
             status: "APPROVED"
-            remarks: "Documents verified. Eligible for assignment."
+            reviewer_remarks: "Documents verified. Eligible for assignment."
     responses:
-      "200": { description: Application reviewed }
+      "200":
+        description: Application reviewed successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "Application approved." }
       "403": { description: Forbidden }
 
 /api/v1/surveyors/{id}/profile:

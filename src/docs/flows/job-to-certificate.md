@@ -52,7 +52,7 @@ This document describes the end-to-end flow in the GIRIK_BACKEND codebase from c
   PUT /api/v1/jobs/:id/assign
 
   - Roles: ADMIN, GM
-  - Sets `gm_assigned_surveyor_id` and job_status => `ASSIGNED`
+  - Sets `assigned_surveyor_id` and job_status => `ASSIGNED`
 
 - Start survey (surveyor check-in)
 

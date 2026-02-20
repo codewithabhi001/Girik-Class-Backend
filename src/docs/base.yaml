@@ -82,6 +82,8 @@ tags:
     description: Customer feedback
   - name: Mobile
     description: Mobile app sync
+  - name: Contact
+    description: Website contact / enquiry management
 
 components:
   securitySchemes:

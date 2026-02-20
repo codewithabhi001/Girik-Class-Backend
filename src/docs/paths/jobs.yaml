@@ -1,29 +1,26 @@
 /api/v1/jobs:
   get:
     tags: [Jobs]
-    summary: List jobs
-    description: List all jobs. CLIENT sees only their vessels' jobs; SURVEYOR sees assigned jobs.
+    summary: List jobs (Role-filtered)
+    description: |
+      List all jobs with visibility filters:
+      - **CLIENT:** Sees only jobs for their fleet.
+      - **SURVEYOR:** Sees only assigned jobs.
+      - **ADMIN/GM/TM/TO:** See all matching jobs.
     operationId: getJobs
     x-roles: [CLIENT, ADMIN, GM, TM, TO, TA, FLAG_ADMIN, SURVEYOR]
     parameters:
       - name: page
         in: query
-        schema:
-          type: integer
-          default: 1
-          example: 1
+        schema: { type: integer, default: 1 }
       - name: limit
         in: query
-        schema:
-          type: integer
-          default: 20
-          example: 20
+        schema: { type: integer, default: 20 }
       - name: status
         in: query
         schema:
           type: string
-          enum: [CREATED, GM_APPROVED, TM_PRE_APPROVED, ASSIGNED, SURVEY_DONE, TO_APPROVED, TM_FINAL, PAYMENT_DONE, CERTIFIED, REJECTED]
-          example: ""
+          enum: [CREATED, APPROVED, ASSIGNED, SURVEY_AUTHORIZED, IN_PROGRESS, SURVEY_DONE, REVIEWED, FINALIZED, REWORK_REQUESTED, PAYMENT_DONE, CERTIFIED, REJECTED]
     responses:
       "200":
         description: List of jobs
@@ -32,50 +29,23 @@
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
+                success: { type: boolean, example: true }
                 data:
                   type: array
-                  items:
-                    $ref: '#/components/schemas/JobResponse'
-            example:
-              success: true
-              data:
-                - id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                  job_status: "CREATED"
-                  reason: "Annual survey due"
-      "401":
-        description: Unauthorized
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
-      "403":
-        description: Forbidden
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
+                  items: { $ref: '#/components/schemas/JobResponse' }
+                meta: { $ref: '#/components/schemas/PaginatedMeta' }
 
   post:
     tags: [Jobs]
-    summary: Create job
-    description: Create a new job request. CLIENT, ADMIN, GM only.
+    summary: Create job request
+    description: CLIENT, ADMIN, GM only. Initializes process from CREATED status.
     operationId: createJob
     x-roles: [CLIENT, ADMIN, GM]
     requestBody:
       required: true
       content:
         application/json:
-          schema:
-            $ref: '#/components/schemas/JobCreateRequest'
-          example:
-            vessel_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-            certificate_type_id: "01933c5e-7f2b-7a00-8000-1a2b3c4d5e6f"
-            reason: "Annual survey due"
-            target_port: "Singapore"
-            target_date: "2026-03-15"
+          schema: { $ref: '#/components/schemas/JobCreateRequest' }
     responses:
       "201":
         description: Job created
@@ -84,43 +54,20 @@
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
-                  $ref: '#/components/schemas/JobResponse'
-            example:
-              success: true
-              data:
-                id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                job_status: "CREATED"
-      "400":
-        description: Validation error
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
-      "403":
-        description: Forbidden
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
+                success: { type: boolean, example: true }
+                data: { $ref: '#/components/schemas/JobResponse' }
 
 /api/v1/jobs/{id}:
   get:
     tags: [Jobs]
-    summary: Get job by ID
-    description: Get job details by ID.
+    summary: Get job details
     operationId: getJobById
     x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
     parameters:
       - name: id
         in: path
         required: true
-        schema:
-          type: string
-          format: uuid
+        schema: { type: string, format: uuid }
     responses:
       "200":
         description: Job details
@@ -129,160 +76,49 @@
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
-                  $ref: '#/components/schemas/JobResponse'
-      "404":
-        description: Job not found
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
-      "403":
-        description: Forbidden
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
+                success: { type: boolean, example: true }
+                data: { $ref: '#/components/schemas/JobResponse' }
 
-/api/v1/jobs/{id}/status:
+/api/v1/jobs/{id}/approve:
   put:
     tags: [Jobs]
-    summary: Update job status
-    description: Update job status. ADMIN only.
-    operationId: updateJobStatus
-    x-roles: [ADMIN]
+    summary: Approve job (Role-specific logic)
+    description: |
+      Transitions job to next state:
+      - **CREATED -> APPROVED** (By ADMIN/GM/TM)
+      - **ASSIGNED -> SURVEY_AUTHORIZED** (By TM/TO)
+      - **SURVEY_DONE -> REVIEWED** (By TO/TM)
+      - **REVIEWED -> FINALIZED** (By TM)
+    operationId: approveJob
+    x-roles: [ADMIN, GM, TM, TO]
     parameters:
       - name: id
         in: path
         required: true
-        schema:
-          type: string
-          format: uuid
+        schema: { type: string, format: uuid }
     requestBody:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/JobStatusUpdateRequest'
-          example:
-            status: "GM_APPROVED"
-            remarks: "Approved for survey"
+            type: object
+            properties:
+              remarks: { type: string, example: "Verified. Moving to next stage." }
     responses:
       "200":
-        description: Status updated
+        description: Job approved
         content:
           application/json:
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
-                  $ref: '#/components/schemas/JobResponse'
-      "403":
-        description: Forbidden
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
+                success: { type: boolean, example: true }
+                data: { $ref: '#/components/schemas/JobResponse' }
 
-/api/v1/jobs/{id}/gm-approve:
+/api/v1/jobs/{id}/reject:
   put:
     tags: [Jobs]
-    summary: GM Approve Job
-    description: GM approves a job. ADMIN, GM.
-    operationId: gmApproveJob
-    x-roles: [ADMIN, GM]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema: { type: string, format: uuid }
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              remarks: { type: string }
-    responses:
-      "200": { description: Job approved }
-
-/api/v1/jobs/{id}/gm-reject:
-  put:
-    tags: [Jobs]
-    summary: GM Reject Job
-    description: GM rejects a job. ADMIN, GM.
-    operationId: gmRejectJob
-    x-roles: [ADMIN, GM]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema: { type: string, format: uuid }
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              remarks: { type: string }
-    responses:
-      "200": { description: Job rejected }
-
-/api/v1/jobs/{id}/tm-pre-approve:
-  put:
-    tags: [Jobs]
-    summary: TM Pre-Approve Job
-    description: TM pre-approves a job. TM only.
-    operationId: tmPreApproveJob
-    x-roles: [TM]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema: { type: string, format: uuid }
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              remarks: { type: string }
-    responses:
-      "200": { description: Job pre-approved }
-
-/api/v1/jobs/{id}/tm-pre-reject:
-  put:
-    tags: [Jobs]
-    summary: TM Pre-Reject Job
-    description: TM pre-rejects a job. TM only.
-    operationId: tmPreRejectJob
-    x-roles: [TM]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema: { type: string, format: uuid }
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              remarks: { type: string }
-    responses:
-      "200": { description: Job pre-rejected }
-
-/api/v1/jobs/{id}/tm-send-back:
-  put:
-    tags: [Jobs]
-    summary: TM Send Back Survey
-    description: TM/GM/ADMIN can send survey back for rework.
-    operationId: tmSendBackSurvey
+    summary: Reject/Cancel job
+    operationId: rejectJob
     x-roles: [ADMIN, GM, TM]
     parameters:
       - name: id
@@ -295,76 +131,35 @@
           schema:
             type: object
             properties:
-              remarks: { type: string }
+              remarks: { type: string, example: "Rejected due to missing docs." }
     responses:
-      "200": { description: Survey sent back for rework }
-
-/api/v1/jobs/{id}/to-approve:
-  put:
-    tags: [Jobs]
-    summary: TO Approve Survey
-    description: TO approves a survey. TO only.
-    operationId: toApproveSurvey
-    x-roles: [TO]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema: { type: string, format: uuid }
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              remarks: { type: string }
-    responses:
-      "200": { description: Survey approved }
-
-/api/v1/jobs/{id}/to-send-back:
-  put:
-    tags: [Jobs]
-    summary: TO Send Back Survey
-    description: TO sends back a survey for correction. TO only.
-    operationId: toSendBackSurvey
-    x-roles: [TO]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema: { type: string, format: uuid }
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              remarks: { type: string }
-    responses:
-      "200": { description: Survey sent back }
+      "200":
+        description: Job rejected
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data: { $ref: '#/components/schemas/JobResponse' }
 
 /api/v1/jobs/{id}/assign:
   put:
     tags: [Jobs]
     summary: Assign surveyor
-    description: Assign a surveyor to the job. ADMIN, GM only.
+    description: ADMIN or GM assigns a surveyor. Moves status to ASSIGNED.
     operationId: assignSurveyor
     x-roles: [ADMIN, GM]
     parameters:
       - name: id
         in: path
         required: true
-        schema:
-          type: string
-          format: uuid
+        schema: { type: string, format: uuid }
     requestBody:
       required: true
       content:
         application/json:
-          schema:
-            $ref: '#/components/schemas/AssignSurveyorRequest'
-          example:
-            surveyorId: "01933c5e-7f2c-7a00-8000-1a2b3c4d5e6f"
+          schema: { $ref: '#/components/schemas/AssignSurveyorRequest' }
     responses:
       "200":
         description: Surveyor assigned
@@ -373,41 +168,26 @@
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
-                  $ref: '#/components/schemas/JobResponse'
-      "403":
-        description: Forbidden
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
+                success: { type: boolean, example: true }
+                data: { $ref: '#/components/schemas/JobResponse' }
 
 /api/v1/jobs/{id}/reassign:
   put:
     tags: [Jobs]
     summary: Reassign surveyor
-    description: Reassign job to another surveyor with reason. GM, TM only.
+    description: GM or TM reassigns to another surveyor with mandatory reason.
     operationId: reassignSurveyor
     x-roles: [GM, TM]
     parameters:
       - name: id
         in: path
         required: true
-        schema:
-          type: string
-          format: uuid
+        schema: { type: string, format: uuid }
     requestBody:
       required: true
       content:
         application/json:
-          schema:
-            $ref: '#/components/schemas/ReassignJobRequest'
-          example:
-            surveyorId: "01933c5e-7f2c-7a00-8000-1a2b3c4d5e6f"
-            reason: "Surveyor unavailable"
+          schema: { $ref: '#/components/schemas/ReassignJobRequest' }
     responses:
       "200":
         description: Job reassigned
@@ -416,424 +196,85 @@
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
-                  $ref: '#/components/schemas/JobResponse'
-            example:
-              success: true
-              data:
-                id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                job_status: "ASSIGNED"
-                vessel_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                surveyor_id: "01933c5e-7f2c-7a00-8000-1a2b3c4d5e6f"
-      "400":
-        description: Validation error
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
-
-/api/v1/jobs/{id}/cancel:
-  put:
-    tags: [Jobs]
-    summary: Cancel job
-    description: Cancel a job. CLIENT, GM, TM, ADMIN.
-    operationId: cancelJob
-    x-roles: [CLIENT, GM, TM, ADMIN]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    requestBody:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/JobCancelRequest'
-          example:
-            reason: "Client requested cancellation"
-    responses:
-      "200":
-        description: Job cancelled
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
-                  $ref: '#/components/schemas/JobResponse'
-            example:
-              success: true
-              data:
-                id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                job_status: "REJECTED"
-                reason: "Client requested cancellation"
-                vessel_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-      "403":
-        description: Forbidden
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
-
-/api/v1/jobs/{id}/hold:
-  put:
-    tags: [Jobs]
-    summary: Hold job
-    description: Put job on hold. GM, TM, ADMIN only.
-    operationId: holdJob
-    x-roles: [GM, TM, ADMIN]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              reason:
-                type: string
-          example:
-            reason: "Awaiting client confirmation"
-    responses:
-      "200":
-        description: Job held
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
-                  $ref: '#/components/schemas/JobResponse'
-
-/api/v1/jobs/{id}/resume:
-  put:
-    tags: [Jobs]
-    summary: Resume job
-    description: Resume a held job. GM, TM, ADMIN only.
-    operationId: resumeJob
-    x-roles: [GM, TM, ADMIN]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              reason:
-                type: string
-          example:
-            reason: "Client confirmed. Resuming job."
-    responses:
-      "200":
-        description: Job resumed
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
-                  $ref: '#/components/schemas/JobResponse'
-
-/api/v1/jobs/{id}/priority:
-  put:
-    tags: [Jobs]
-    summary: Update job priority
-    description: Update job priority. ADMIN, GM, TM only.
-    operationId: updateJobPriority
-    x-roles: [ADMIN, GM, TM]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            required: [priority]
-            properties:
-              priority:
-                type: string
-                enum: [LOW, NORMAL, HIGH, URGENT]
-          example:
-            priority: "HIGH"
-    responses:
-      "200":
-        description: Priority updated
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
-                  $ref: '#/components/schemas/JobResponse'
-            example:
-              success: true
-              data:
-                id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                job_status: "CREATED"
-                priority: "HIGH"
-                vessel_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                success: { type: boolean, example: true }
+                data: { $ref: '#/components/schemas/JobResponse' }
 
 /api/v1/jobs/{id}/history:
   get:
     tags: [Jobs]
-    summary: Get job history
-    description: Get status history and audit trail. ADMIN, GM, TM, TO only.
+    summary: Job status history & Audit trail
     operationId: getJobHistory
     x-roles: [ADMIN, GM, TM, TO]
     parameters:
       - name: id
         in: path
         required: true
-        schema:
-          type: string
-          format: uuid
+        schema: { type: string, format: uuid }
     responses:
       "200":
-        description: Job history
+        description: History fetched
         content:
           application/json:
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
+                success: { type: boolean, example: true }
                 data:
                   type: array
-                  items:
-                    $ref: '#/components/schemas/JobHistoryItem'
-            example:
-              success: true
-              data:
-                - id: "01933c5e-7f2d-7a00-8000-1a2b3c4d5e6f"
-                  job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                  old_status: "CREATED"
-                  new_status: "GM_APPROVED"
-                  changed_by: "01933c5e-7f2e-7a00-8000-1a2b3c4d5e6f"
-                  change_reason: "Approved for survey"
-                  created_at: "2026-02-16T10:00:00Z"
-                  User:
-                    name: "John Doe"
-                    email: "gm@example.com"
-                    role: "GM"
+                  items: { $ref: '#/components/schemas/JobHistoryItem' }
 
 /api/v1/jobs/{id}/notes:
   post:
     tags: [Jobs]
-    summary: Add internal note
-    description: Add internal note to job. ADMIN, GM, TM, TO only.
+    summary: Add internal staff note
     operationId: addInternalNote
     x-roles: [ADMIN, GM, TM, TO]
     parameters:
       - name: id
         in: path
         required: true
-        schema:
-          type: string
-          format: uuid
+        schema: { type: string, format: uuid }
     requestBody:
       required: true
       content:
         application/json:
-          schema:
-            $ref: '#/components/schemas/AddNoteRequest'
-          example:
-            note_text: "Client confirmed availability"
+          schema: { $ref: '#/components/schemas/AddNoteRequest' }
     responses:
       "201":
-        description: Note added
         content:
           application/json:
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
-                  $ref: '#/components/schemas/JobNoteResponse'
-            example:
-              success: true
-              data:
-                id: "01933c5e-7f3a-7a00-8000-1a2b3c4d5e6f"
-                job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                user_id: "01933c5e-7f2e-7a00-8000-1a2b3c4d5e6f"
-                note_text: "Client confirmed availability"
-                is_internal: true
-                created_at: "2026-02-16T10:05:00Z"
-
-/api/v1/jobs/{id}/messages/external:
-  get:
-    tags: [Jobs]
-    summary: Get external messages
-    description: Get client-facing messages for the job.
-    operationId: getJobMessagesExternal
-    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    responses:
-      "200":
-        description: External messages
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/JobMessageResponse'
-            example:
-              success: true
-              data:
-                - id: "01933c5e-7f4a-7a00-8000-1a2b3c4d5e6f"
-                  job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                  sender_id: "01933c5e-7f2e-7a00-8000-1a2b3c4d5e6f"
-                  message_text: "Please upload the survey report."
-                  is_internal: false
-                  attachment_url: "https://s3.amazonaws.com/bucket/file.pdf"
-                  created_at: "2026-02-16T10:10:00Z"
-                  Sender:
-                    name: "Jane Smith"
-                    role: "CLIENT"
-
-/api/v1/jobs/{id}/messages/internal:
-  get:
-    tags: [Jobs]
-    summary: Get internal messages
-    description: Get internal staff messages. ADMIN, GM, TM, TO only.
-    operationId: getJobMessagesInternal
-    x-roles: [ADMIN, GM, TM, TO]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    responses:
-      "200":
-        description: Internal messages
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: true
-                data:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/JobMessageResponse'
-            example:
-              success: true
-              data:
-                - id: "01933c5e-7f4b-7a00-8000-1a2b3c4d5e6f"
-                  job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                  sender_id: "01933c5e-7f2d-7a00-8000-1a2b3c4d5e6f"
-                  message_text: "Internal note: Check certification validity."
-                  is_internal: true
-                  attachment_url: null
-                  created_at: "2026-02-16T10:15:00Z"
-                  Sender:
-                    name: "John Doe"
-                    role: "GM"
+                success: { type: boolean, example: true }
+                data: { $ref: '#/components/schemas/JobNoteResponse' }
 
 /api/v1/jobs/{id}/messages:
   post:
     tags: [Jobs]
-    summary: Send message
-    description: Send message on job. Supports file attachment via multipart/form-data.
+    summary: Send communication (with attachment)
+    description: Supports multipart/form-data for files or application/json for text-only.
     operationId: sendJobMessage
     x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
     parameters:
       - name: id
         in: path
         required: true
-        schema:
-          type: string
-          format: uuid
+        schema: { type: string, format: uuid }
     requestBody:
       content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/MessageCreateRequest'
-          example:
-            content: "Survey completed. Awaiting approval."
         multipart/form-data:
           schema:
             type: object
             properties:
-              content:
-                type: string
-              attachment:
-                type: string
-                format: binary
+              content: { type: string }
+              attachment: { type: string, format: binary }
     responses:
       "201":
-        description: Message sent
         content:
           application/json:
             schema:
-                  type: object
-                  properties:
-                    success:
-                      type: boolean
-                      example: true
-                    data:
-                      $ref: '#/components/schemas/JobMessageResponse'
-            example:
-              success: true
-              data:
-                id: "01933c5e-7f5a-7a00-8000-1a2b3c4d5e6f"
-                job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                sender_id: "01933c5e-7f2c-7a00-8000-1a2b3c4d5e6f"
-                message_text: "Survey completed. Awaiting approval."
-                is_internal: false
-                attachment_url: "https://s3.amazonaws.com/bucket/report.pdf"
-                created_at: "2026-02-16T10:20:00Z"
-                Sender:
-                  name: "Surveyor Bob"
-                  role: "SURVEYOR"
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data: { $ref: '#/components/schemas/JobMessageResponse' }

@@ -71,6 +71,61 @@ export const generateSignedUrl = async (key, expiresInSeconds = 300, user = null
 };
 
 /**
+ * Resolve a key/url into a CDN URL or a signed URL based on its prefix.
+ * @param {string} keyOrUrl 
+ * @param {Object} user - Optional user for audit logging
+ * @returns {Promise<string>}
+ */
+export const resolveUrl = async (keyOrUrl, user = null) => {
+    if (!keyOrUrl) return null;
+    const key = getKeyFromUrl(keyOrUrl);
+
+    // Check if it's a public path
+    if (key.startsWith('public/')) {
+        return generatePublicCdnUrl(key);
+    }
+
+    // Otherwise return a signed URL (default 1 hour expiry)
+    return await generateSignedUrl(key, 3600, user);
+};
+
+/**
+ * Recursively search for URL keys and resolve them.
+ * @param {Object|Array} data 
+ * @param {Object} user 
+ * @returns {Promise<Object|Array>}
+ */
+export const resolveEntity = async (data, user = null) => {
+    if (!data) return data;
+
+    if (Array.isArray(data)) {
+        return await Promise.all(data.map(item => resolveEntity(item, user)));
+    }
+
+    if (typeof data === 'object') {
+        // If it's a Sequelize model instance, convert to plain object
+        let plain = (typeof data.get === 'function') ? data.get({ plain: true }) : { ...data };
+
+        const urlKeys = ['url', 'file_url', 'attachment_url', 'attendance_photo_url', 'pdf_file_url', 'qr_code_url', 'document_url', 'cv_file_url', 'id_proof_url', 'certificate_files_url'];
+
+        for (const [key, value] of Object.entries(plain)) {
+            if (urlKeys.includes(key)) {
+                if (typeof value === 'string' && value && !value.startsWith('http')) {
+                    plain[key] = await resolveUrl(value, user);
+                } else if (Array.isArray(value)) {
+                    plain[key] = await Promise.all(value.map(async v => (typeof v === 'string' && v && !v.startsWith('http')) ? await resolveUrl(v, user) : v));
+                }
+            } else if (value && (typeof value === 'object' || Array.isArray(value))) {
+                plain[key] = await resolveEntity(value, user);
+            }
+        }
+        return plain;
+    }
+
+    return data;
+};
+
+/**
  * Validate if a user has access to a specific entity's files.
  * @param {Object} user 
  * @param {string} entityType - JOB, VESSEL, CERTIFICATE
@@ -99,13 +154,6 @@ export const validateUserEntityAccess = async (user, entityType, entityId) => {
             const job = await JobRequest.findOne({ where: { id: entityId, surveyor_id: user.id } });
             return !!job;
         }
-        // Access to vessel documents? Usually only in context of a job, but prompt says "Surveyor can only access files related to assigned jobs."
-        // If entityType is VESSEL, maybe strict no, or check if they have an active job on that vessel?
-        // Let's stick to "assigned jobs" strictly for now.
-        if (entityType === 'DOCUMENTS') {
-            // Generic fallback if passed as DOCUMENTS?
-            return false;
-        }
     }
 
     return false;
@@ -119,12 +167,12 @@ export const validateUserEntityAccess = async (user, entityType, entityId) => {
  */
 export const processFileAccess = async (fileRecord, user) => {
     const key = getKeyFromUrl(fileRecord.file_url);
-    const isPublicCert = key.startsWith('public/certificates/');
+    const isPublic = key.startsWith('public/');
 
     let signedUrl = null;
     let expiresAt = null;
 
-    if (isPublicCert) {
+    if (isPublic) {
         signedUrl = generatePublicCdnUrl(key);
     } else {
         const expiresIn = 600; // 10 minutes

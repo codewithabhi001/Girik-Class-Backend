@@ -2,6 +2,7 @@ import db from '../../models/index.js';
 import * as s3Service from '../../services/s3.service.js';
 import * as notificationService from '../../services/notification.service.js';
 import * as authService from '../auth/auth.service.js';
+import * as fileAccessService from '../../services/fileAccess.service.js';
 import { v4 as uuidv4 } from 'uuid';
 
 const SurveyorApplication = db.SurveyorApplication;
@@ -33,13 +34,15 @@ export const applySurveyor = async (data, files) => {
         }
     }
 
-    return await SurveyorApplication.create({
+    const app = await SurveyorApplication.create({
         ...data,
         cv_file_url: cvUrl,
         id_proof_url: idProofUrl,
         certificate_files_url: certUrls,
         status: 'PENDING'
     });
+
+    return await fileAccessService.resolveEntity(app);
 };
 
 export const getApplications = async (query) => {
@@ -47,11 +50,16 @@ export const getApplications = async (query) => {
     const where = {};
     if (status) where.status = status;
 
-    return await SurveyorApplication.findAndCountAll({
+    const { count, rows } = await SurveyorApplication.findAndCountAll({
         where,
         limit: parseInt(limit),
         offset: (page - 1) * limit
     });
+
+    return {
+        count,
+        rows: await fileAccessService.resolveEntity(rows)
+    };
 };
 
 export const reviewApplication = async (id, status, remarks, reviewerUserId) => {
@@ -76,14 +84,14 @@ export const reviewApplication = async (id, status, remarks, reviewerUserId) => 
             status: 'ACTIVE'
         });
 
-        await app.update({ status, tm_remarks: remarks, approved_user_id: user.id });
+        await app.update({ status, reviewer_remarks: remarks, approved_user_id: user.id });
 
         // Log credentials for demo/dev purposes if no mailer configured
         console.log(`Surveyor Approved: ${app.email} / ${randomPassword}`);
         return app;
     }
 
-    await app.update({ status, tm_remarks: remarks });
+    await app.update({ status, reviewer_remarks: remarks });
     return app;
 };
 
@@ -117,12 +125,12 @@ export const getProfile = async (id) => {
                 model: SurveyorApplication,
                 as: 'application',
                 required: false,
-                attributes: ['id', 'full_name', 'email', 'phone', 'nationality', 'qualification', 'years_of_experience', 'cv_file_url', 'id_proof_url', 'certificate_files_url', 'status', 'tm_remarks']
+                attributes: ['id', 'full_name', 'email', 'phone', 'nationality', 'qualification', 'years_of_experience', 'cv_file_url', 'id_proof_url', 'certificate_files_url', 'status', 'reviewer_remarks']
             }
         ]
     });
     if (!profile) throw { statusCode: 404, message: 'Profile not found' };
-    return profile;
+    return await fileAccessService.resolveEntity(profile);
 };
 
 export const updateProfile = async (id, data) => {

@@ -1,0 +1,234 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Website Contact / Enquiry Module
+# Public: POST /api/v1/contact  – anyone can submit
+# Admin/GM: GET, PATCH, DELETE
+# ─────────────────────────────────────────────────────────────────────────────
+
+/api/v1/contact:
+  post:
+    tags: [Contact]
+    summary: Submit a contact enquiry (public)
+    operationId: submitContactEnquiry
+    description: >
+      Anyone visiting the Girik Shipping portfolio website can send a message
+      via this endpoint. No authentication is required.
+    x-roles: [PUBLIC]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [full_name, corporate_email, message]
+            properties:
+              full_name:
+                type: string
+                minLength: 2
+                maxLength: 100
+                example: "John Maritime"
+              company:
+                type: string
+                maxLength: 150
+                example: "Pacific Shipping Co. Ltd"
+              corporate_email:
+                type: string
+                format: email
+                example: "john@pacificshipping.com"
+              message:
+                type: string
+                minLength: 10
+                maxLength: 5000
+                example: "We are interested in classification services for our fleet of 5 vessels."
+              phone:
+                type: string
+                maxLength: 30
+                example: "+91 98765 43210"
+              subject:
+                type: string
+                maxLength: 200
+                example: "Fleet Classification Inquiry"
+              source_page:
+                type: string
+                maxLength: 50
+                example: "CONTACT"
+                description: Page on the website the form was filled from.
+    responses:
+      "201":
+        description: Enquiry submitted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "Your message has been received. We will get back to you shortly." }
+                data:
+                  type: object
+                  properties:
+                    id:         { type: string, format: uuid }
+                    full_name:  { type: string }
+                    created_at: { type: string, format: date-time }
+      "400":
+        description: Validation error
+
+  get:
+    tags: [Contact]
+    summary: List all enquiries (Admin/GM)
+    operationId: getAllContactEnquiries
+    description: Retrieve all contact form submissions with optional filters and pagination.
+    x-roles: [ADMIN, GM]
+    parameters:
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum: [NEW, READ, REPLIED, ARCHIVED]
+        description: Filter by enquiry status
+      - in: query
+        name: source_page
+        schema: { type: string }
+        description: Filter by the page the form was submitted from
+      - in: query
+        name: q
+        schema: { type: string }
+        description: Full-text search across name, email, company, message
+      - in: query
+        name: from_date
+        schema: { type: string, format: date }
+        description: "Filter: submitted on or after this date (YYYY-MM-DD)"
+      - in: query
+        name: to_date
+        schema: { type: string, format: date }
+        description: "Filter: submitted on or before this date (YYYY-MM-DD)"
+      - in: query
+        name: page
+        schema: { type: integer, default: 1 }
+      - in: query
+        name: limit
+        schema: { type: integer, default: 20 }
+    responses:
+      "200":
+        description: Paginated list of enquiries
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                total:   { type: integer, example: 42 }
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/WebsiteContact'
+      "403":
+        description: Forbidden
+
+/api/v1/contact/stats:
+  get:
+    tags: [Contact]
+    summary: Enquiry stats by status (Admin/GM)
+    operationId: getContactEnquiryStats
+    description: Returns counts of enquiries grouped by status, useful for a dashboard widget.
+    x-roles: [ADMIN, GM]
+    responses:
+      "200":
+        description: Enquiry counts by status
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    NEW:      { type: integer, example: 5 }
+                    READ:     { type: integer, example: 12 }
+                    REPLIED:  { type: integer, example: 20 }
+                    ARCHIVED: { type: integer, example: 3 }
+                    TOTAL:    { type: integer, example: 40 }
+      "403":
+        description: Forbidden
+
+/api/v1/contact/{id}:
+  get:
+    tags: [Contact]
+    summary: Get a single enquiry (Admin/GM)
+    operationId: getContactEnquiryById
+    x-roles: [ADMIN, GM]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200":
+        description: Enquiry details
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean }
+                data:    { $ref: '#/components/schemas/WebsiteContact' }
+      "404":
+        description: Not found
+
+  delete:
+    tags: [Contact]
+    summary: Delete an enquiry (Admin only)
+    operationId: deleteContactEnquiry
+    x-roles: [ADMIN]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "204":
+        description: Deleted successfully
+      "404":
+        description: Not found
+
+/api/v1/contact/{id}/status:
+  patch:
+    tags: [Contact]
+    summary: Update enquiry status / internal note (Admin/GM)
+    operationId: updateContactEnquiryStatus
+    x-roles: [ADMIN, GM]
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status:
+                type: string
+                enum: [NEW, READ, REPLIED, ARCHIVED]
+                example: REPLIED
+              internal_note:
+                type: string
+                maxLength: 2000
+                example: "Responded via email on 20 Feb 2026."
+    responses:
+      "200":
+        description: Enquiry updated
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean }
+                message: { type: string }
+                data:    { $ref: '#/components/schemas/WebsiteContact' }
+      "403":
+        description: Forbidden
+      "404":
+        description: Not found

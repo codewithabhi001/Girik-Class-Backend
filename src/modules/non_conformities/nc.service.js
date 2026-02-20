@@ -6,8 +6,8 @@ const NonConformity = db.NonConformity;
 export const createNC = async (data, user) => {
     const nc = await NonConformity.create({ ...data, status: 'OPEN' });
 
-    // Notify
-    await notificationService.notifyRoles(['TM', 'TO'], 'New Non-Conformity', `NC raised for Job ${data.job_id} by ${user.name}`);
+    // Notify (non-blocking)
+    notificationService.notifyRoles(['TM', 'TO'], 'New Non-Conformity', `NC raised for Job ${data.job_id} by ${user.name}`);
 
     return nc;
 };

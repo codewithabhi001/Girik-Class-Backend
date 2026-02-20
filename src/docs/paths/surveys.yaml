@@ -1,7 +1,8 @@
 /api/v1/surveys/start:
   post:
     tags: [Surveys]
-    summary: Start survey
+    summary: Start survey (Check-in)
+    description: Surveyor checks in at the vessel location. Sets job status to IN_PROGRESS.
     operationId: startSurvey
     x-roles: [SURVEYOR]
     requestBody:
@@ -13,20 +14,31 @@
             required: [job_id, latitude, longitude]
             properties:
               job_id: { type: string, format: uuid }
-              latitude: { type: number }
-              longitude: { type: number }
-          example:
-            job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-            latitude: 1.3521
-            longitude: 103.8198
+              latitude: { type: number, example: 1.3521 }
+              longitude: { type: number, example: 103.8198 }
     responses:
-      "201": { description: Survey started }
+      "201":
+        description: Survey started
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "Survey Started" }
+                data:
+                  type: object
+                  properties:
+                    message: { type: string }
+                    job_id: { type: string, format: uuid }
+                    started_at: { type: string, format: date-time }
       "403": { description: Forbidden }
 
 /api/v1/surveys:
   post:
     tags: [Surveys]
-    summary: Submit survey report
+    summary: Submit survey report (Check-out)
+    description: Surveyor submits final findings and attendance photo. Sets job status to SURVEY_DONE. Requires checklist submission first.
     operationId: submitSurveyReport
     x-roles: [SURVEYOR]
     requestBody:
@@ -36,35 +48,48 @@
             type: object
             required: [job_id, gps_latitude, gps_longitude, survey_statement]
             properties:
-              job_id: { type: string }
+              job_id: { type: string, format: uuid }
               gps_latitude: { type: number }
               gps_longitude: { type: number }
               survey_statement: { type: string }
               reason_if_outside: { type: string }
-              photo: { type: string, format: binary }
-          example:
-            job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-            gps_latitude: 1.3521
-            gps_longitude: 103.8198
-            survey_statement: "Survey completed. All items checked. Vessel in good condition."
-            reason_if_outside: ""
+              photo: { type: string, format: binary, description: "Attendance photo" }
     responses:
-      "201": { description: Survey submitted }
+      "201":
+        description: Survey submitted
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data: { $ref: '#/components/schemas/SurveyReportResponse' }
       "403": { description: Forbidden }
 
   get:
     tags: [Surveys]
-    summary: Get survey reports
+    summary: List survey reports
     operationId: getSurveyReports
     x-roles: [ADMIN, GM, TM, TO]
     responses:
-      "200": { description: List of survey reports }
-      "403": { description: Forbidden }
+      "200":
+        description: List of survey reports
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SurveyReportResponse'
 
 /api/v1/surveys/{id}/finalize:
   put:
     tags: [Surveys]
     summary: Finalize survey
+    description: TM grants final approval to the survey findings. Unlocks certificate generation.
     operationId: finalizeSurvey
     x-roles: [TM]
     parameters:
@@ -73,13 +98,56 @@
         required: true
         schema: { type: string, format: uuid }
     responses:
-      "200": { description: Survey finalized }
+      "200":
+        description: Survey finalized
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "Survey Finalized." }
+      "403": { description: Forbidden }
+
+/api/v1/surveys/{id}/rework:
+  put:
+    tags: [Surveys]
+    summary: Request Rework
+    description: GM or TM requests corrections/rework on a submitted survey.
+    operationId: requestRework
+    x-roles: [GM, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [reason]
+            properties:
+              reason: { type: string, example: "Incomplete proof for engine section." }
+    responses:
+      "200":
+        description: Rework requested
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "Rework requested successfully" }
+      "400": { description: Invalid transition }
       "403": { description: Forbidden }
 
 /api/v1/surveys/{id}/location:
   post:
     tags: [Surveys]
-    summary: Stream location (GPS update)
+    summary: Stream live location
+    description: Real-time GPS tracking during survey execution.
     operationId: streamLocation
     x-roles: [SURVEYOR]
     parameters:
@@ -92,23 +160,18 @@
         application/json:
           schema:
             type: object
-            required: [vessel_id, latitude, longitude]
+            required: [latitude, longitude]
             properties:
-              vessel_id: { type: string, format: uuid }
               latitude: { type: number }
               longitude: { type: number }
-          example:
-            vessel_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-            latitude: 1.3521
-            longitude: 103.8198
     responses:
       "200": { description: Location updated }
-      "403": { description: Forbidden }
 
 /api/v1/surveys/{id}/proof:
   post:
     tags: [Surveys]
-    summary: Upload proof
+    summary: Upload survey evidence
+    description: Supplemental photos or documents for the survey.
     operationId: uploadProof
     x-roles: [SURVEYOR]
     parameters:
@@ -125,12 +188,12 @@
               proof: { type: string, format: binary }
     responses:
       "201": { description: Proof uploaded }
-      "403": { description: Forbidden }
 
 /api/v1/surveys/{id}/timeline:
   get:
     tags: [Surveys]
-    summary: Get survey timeline
+    summary: Get survey execution timeline
+    description: Analytical view of survey duration and GPS variance.
     operationId: getSurveyTimeline
     x-roles: [ADMIN, GM, TM]
     parameters:
@@ -139,13 +202,21 @@
         required: true
         schema: { type: string, format: uuid }
     responses:
-      "200": { description: Survey timeline }
-      "403": { description: Forbidden }
+      "200":
+        description: Survey timeline fetched
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data: { $ref: '#/components/schemas/SurveyTimelineResponse' }
 
 /api/v1/surveys/{id}/violation:
   post:
     tags: [Surveys]
-    summary: Flag violation
+    summary: Flag survey violation
+    description: Flag discrepancies found in survey execution (e.g. location mismatch).
     operationId: flagViolation
     x-roles: [ADMIN, TM]
     parameters:
@@ -153,15 +224,5 @@
         in: path
         required: true
         schema: { type: string, format: uuid }
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              reason: { type: string }
-          example:
-            reason: "Surveyor found non-compliance at location"
     responses:
       "200": { description: Violation flagged }
-      "403": { description: Forbidden }
