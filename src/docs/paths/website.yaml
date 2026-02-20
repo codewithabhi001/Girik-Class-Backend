@@ -2,8 +2,8 @@
   get:
     tags:
       - Public
-    summary: Get all website videos
-    description: Retrieve a list of uploaded videos, optionally filtered by section.
+    summary: Get all website videos (Public)
+    description: Retrieve a list of uploaded videos. This endpoint is public and used by the website frontend.
     parameters:
       - in: query
         name: section
@@ -21,18 +21,32 @@
                 $ref: '#/components/schemas/WebsiteVideo'
     x-roles:
       - PUBLIC
+
+/api/v1/website/videos:
+  get:
+    tags:
+      - Website
+    summary: List all videos (Internal)
+    description: Get a list of videos with full metadata. Requires authentication.
+    responses:
+      200:
+        description: List of videos
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/WebsiteVideo'
+    x-roles:
       - ADMIN
-      - CLIENT
-      - GM
-      - TM
-      - TO
-      - SURVEYOR
 
   post:
     tags:
       - Website
-    summary: Upload a new video
-    description: Upload a video file for a specific website section.
+    summary: Upload a new video (Admin Only)
+    description: Upload a video file and an optional thumbnail for a specific website section.
+    security:
+      - bearerAuth: []
     requestBody:
       content:
         multipart/form-data:
@@ -44,7 +58,7 @@
             properties:
               section:
                 type: string
-                description: Target section (HOME, PORTFOLIO, etc.)
+                description: Target section (e.g., HOME, TRAINING, SERVICES)
               title:
                 type: string
               description:
@@ -57,7 +71,6 @@
                 type: string
                 format: binary
                 description: The video file to upload
-                
     responses:
       201:
         description: Video uploaded successfully
@@ -73,7 +86,7 @@
     tags:
       - Website
     summary: Update video details
-    description: Update metadata (title, description, section) of an existing video.
+    description: Update metadata or replace files for an existing video.
     parameters:
       - in: path
         name: id
@@ -82,6 +95,8 @@
           type: string
           format: uuid
         description: Video ID
+    security:
+      - bearerAuth: []
     requestBody:
       content:
         multipart/form-data:
@@ -90,7 +105,6 @@
             properties:
               section:
                 type: string
-                description: Target section (HOME, PORTFOLIO, etc.)
               title:
                 type: string
               description:
@@ -98,11 +112,9 @@
               thumbnail:
                 type: string
                 format: binary
-                description: The thumbnail image file
               video:
                 type: string
                 format: binary
-                description: The video file to upload
     responses:
       200:
         description: Video updated successfully
@@ -119,7 +131,7 @@
     tags:
       - Website
     summary: Delete a video
-    description: Remove a video and its metadata.
+    description: Remove a video entry and its files from the system.
     parameters:
       - in: path
         name: id
@@ -128,6 +140,8 @@
           type: string
           format: uuid
         description: Video ID
+    security:
+      - bearerAuth: []
     responses:
       204:
         description: Video deleted successfully

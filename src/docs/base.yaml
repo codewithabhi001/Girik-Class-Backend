@@ -9,10 +9,10 @@ info:
     name: Girik Marine
 
 servers:
-  - url: http://localhost:3000
-    description: Local development
   - url: /
     description: Relative (same host)
+  - url: http://localhost:3000
+    description: Local development
 
 security:
   - bearerAuth: []
