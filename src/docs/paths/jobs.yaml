@@ -1,29 +1,77 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Jobs API  –  Full lifecycle from CREATED → CERTIFIED
+# Role access summary:
+#   CLIENT  : create, list (own fleet), get, cancel, messages
+#   GM      : create, list, get, approve-request, finalize, assign, reassign,
+#             reschedule, reject, cancel, priority, history, notes, messages
+#   TM      : list, get, finalize, reassign, reschedule, authorize-survey,
+#             review, send-back, reject, cancel, priority, history, notes, messages
+#   ADMIN   : full access (all endpoints)
+#   TO      : list, get, verify-documents, review, send-back, history, notes, messages
+#   TA/FLAG_ADMIN : list only
+#   SURVEYOR: list (assigned jobs), get, messages
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Collection ──────────────────────────────────────────────────────────────
 /api/v1/jobs:
   get:
     tags: [Jobs]
-    summary: List jobs (Role-filtered)
+    summary: List jobs (role-filtered)
     description: |
-      List all jobs with visibility filters:
-      - **CLIENT:** Sees only jobs for their fleet.
-      - **SURVEYOR:** Sees only assigned jobs.
-      - **ADMIN/GM/TM/TO:** See all matching jobs.
+      Returns a paginated list of job requests. Visible set depends on caller role:
+      - **CLIENT** – Only jobs for their fleet (vessel_id filtered to client).
+      - **SURVEYOR** – Only jobs assigned to them (`assigned_surveyor_id = me`).
+      - **ADMIN / GM / TM / TO / TA / FLAG_ADMIN** – All jobs; defaults to last 30 days
+        unless explicit filters are supplied.
+
+      Supply `status` as a **comma-separated** string to filter by multiple statuses,
+      e.g. `?status=ASSIGNED,SURVEY_AUTHORIZED`.
     operationId: getJobs
     x-roles: [CLIENT, ADMIN, GM, TM, TO, TA, FLAG_ADMIN, SURVEYOR]
     parameters:
       - name: page
         in: query
+        description: Page number (1-indexed)
         schema: { type: integer, default: 1 }
       - name: limit
         in: query
-        schema: { type: integer, default: 20 }
+        description: Records per page
+        schema: { type: integer, default: 10 }
       - name: status
         in: query
+        description: Filter by status (single value or comma-separated list)
         schema:
           type: string
-          enum: [CREATED, APPROVED, ASSIGNED, SURVEY_AUTHORIZED, IN_PROGRESS, SURVEY_DONE, REVIEWED, FINALIZED, REWORK_REQUESTED, PAYMENT_DONE, CERTIFIED, REJECTED]
+          example: "ASSIGNED,SURVEY_AUTHORIZED"
+      - name: vessel_id
+        in: query
+        schema: { type: string, format: uuid }
+      - name: certificate_type_id
+        in: query
+        schema: { type: string, format: uuid }
+      - name: assigned_surveyor_id
+        in: query
+        schema: { type: string, format: uuid }
+      - name: target_port
+        in: query
+        schema: { type: string, example: Singapore }
+      - name: created_from
+        in: query
+        description: ISO date string – start of creation window
+        schema: { type: string, format: date }
+      - name: created_to
+        in: query
+        description: ISO date string – end of creation window
+        schema: { type: string, format: date }
+      - name: recent_days
+        in: query
+        description: |
+          (Internal roles only) Shortcut to filter to last N days when no other date
+          filter is given. Default is 30.
+        schema: { type: integer, example: 30 }
     responses:
       "200":
-        description: List of jobs
+        description: Paginated list of jobs
         content:
           application/json:
             schema:
@@ -31,14 +79,38 @@
               properties:
                 success: { type: boolean, example: true }
                 data:
-                  type: array
-                  items: { $ref: '#/components/schemas/JobResponse' }
-                meta: { $ref: '#/components/schemas/PaginatedMeta' }
+                  type: object
+                  properties:
+                    total: { type: integer, example: 42 }
+                    page: { type: integer, example: 1 }
+                    limit: { type: integer, example: 10 }
+                    totalPages: { type: integer, example: 5 }
+                    jobs:
+                      type: array
+                      items: { $ref: '#/components/schemas/JobResponse' }
+      "401":
+        description: Unauthorized – missing or invalid token
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden – role not allowed
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
 
   post:
     tags: [Jobs]
     summary: Create job request
-    description: CLIENT, ADMIN, GM only. Initializes process from CREATED status.
+    description: |
+      Opens a new certification job request in **CREATED** status.
+      - **CLIENT** – Can only submit for vessels that belong to their account.
+      - **ADMIN / GM** – Can submit for any vessel.
+
+      If the selected `certificate_type_id` has mandatory required documents
+      (`CertificateRequiredDocument` where `is_mandatory=true`), each must be
+      included in `uploaded_documents`; otherwise the request will be rejected
+      with a `400` listing the missing documents.
     operationId: createJob
     x-roles: [CLIENT, ADMIN, GM]
     requestBody:
@@ -46,9 +118,19 @@
       content:
         application/json:
           schema: { $ref: '#/components/schemas/JobCreateRequest' }
+          example:
+            vessel_id: "019c574f-0991-7758-b696-03bb416c7433"
+            certificate_type_id: "019c4001-0001-7000-a000-000000000001"
+            reason: "Annual survey due"
+            target_port: "Singapore"
+            target_date: "2026-04-15"
+            priority: "NORMAL"
+            uploaded_documents:
+              - required_document_id: "019c4001-0002-7000-a000-000000000001"
+                file_url: "https://cdn.example.com/docs/reg-cert.pdf"
     responses:
       "201":
-        description: Job created
+        description: Job created successfully (status = CREATED)
         content:
           application/json:
             schema:
@@ -56,17 +138,52 @@
               properties:
                 success: { type: boolean, example: true }
                 data: { $ref: '#/components/schemas/JobResponse' }
+      "400":
+        description: Validation error or missing mandatory documents
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: false }
+                message: { type: string, example: "Missing mandatory documents for job creation." }
+                missing_documents:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: { type: string, format: uuid }
+                      name: { type: string }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
 
+# ── Single Job ───────────────────────────────────────────────────────────────
 /api/v1/jobs/{id}:
   get:
     tags: [Jobs]
     summary: Get job details
+    description: |
+      Returns full job detail including vessel, certificate type, status history,
+      uploaded documents, reschedule records, and certificate (with signed URL if
+      applicable).
+      - **CLIENT** – Own fleet only.
+      - **SURVEYOR** – Only if assigned to them.
+      - **ADMIN / GM / TM / TO** – Any job.
     operationId: getJobById
     x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
     parameters:
       - name: id
         in: path
         required: true
+        description: Job UUID
         schema: { type: string, format: uuid }
     responses:
       "200":
@@ -77,20 +194,89 @@
               type: object
               properties:
                 success: { type: boolean, example: true }
-                data: { $ref: '#/components/schemas/JobResponse' }
+                data: { $ref: '#/components/schemas/JobDetailResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Job not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
 
-/api/v1/jobs/{id}/approve:
+# ── Workflow Transition Endpoints ────────────────────────────────────────────
+
+/api/v1/jobs/{id}/verify-documents:
   put:
     tags: [Jobs]
-    summary: Approve job (Role-specific logic)
+    summary: "TO: Verify documents → DOCUMENT_VERIFIED"
     description: |
-      Transitions job to next state:
-      - **CREATED -> APPROVED** (By ADMIN/GM/TM)
-      - **ASSIGNED -> SURVEY_AUTHORIZED** (By TM/TO)
-      - **SURVEY_DONE -> REVIEWED** (By TO/TM)
-      - **REVIEWED -> FINALIZED** (By TM)
-    operationId: approveJob
-    x-roles: [ADMIN, GM, TM, TO]
+      **Transition:** `CREATED → DOCUMENT_VERIFIED`
+
+      Technical Officer confirms that all uploaded documents are valid and complete.
+      If the certificate type has mandatory required documents that are not yet
+      uploaded, the request is rejected with a `400` listing the missing documents.
+
+      **Roles:** TO
+    operationId: verifyJobDocuments
+    x-roles: [TO]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200":
+        description: Documents verified. Job moved to DOCUMENT_VERIFIED.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "Documents verified by TO." }
+                data: { $ref: '#/components/schemas/JobResponse' }
+      "400":
+        description: Job not in CREATED state, or mandatory documents are missing
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden – only TO can call this endpoint
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Job not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+/api/v1/jobs/{id}/approve-request:
+  put:
+    tags: [Jobs]
+    summary: "GM/ADMIN: Approve request → APPROVED"
+    description: |
+      **Transition:** `DOCUMENT_VERIFIED → APPROVED`
+
+      General Manager or Admin formally approves the job request after document
+      verification. Records `approved_by_user_id` on the job.
+
+      **Roles:** ADMIN, GM
+    operationId: approveRequest
+    x-roles: [ADMIN, GM]
     parameters:
       - name: id
         in: path
@@ -102,22 +288,466 @@
           schema:
             type: object
             properties:
-              remarks: { type: string, example: "Verified. Moving to next stage." }
+              remarks: { type: string, example: "All documents verified. Request approved." }
     responses:
       "200":
-        description: Job approved
+        description: Job approved. Status → APPROVED.
         content:
           application/json:
             schema:
               type: object
               properties:
                 success: { type: boolean, example: true }
+                message: { type: string, example: "Job approved." }
                 data: { $ref: '#/components/schemas/JobResponse' }
+      "400":
+        description: Job not in DOCUMENT_VERIFIED state
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden – only ADMIN or GM
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Job not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+/api/v1/jobs/{id}/finalize:
+  put:
+    tags: [Jobs]
+    summary: "ADMIN/GM/TM: Finalize non-survey job → FINALIZED"
+    description: |
+      **Transition:** `APPROVED → FINALIZED`
+
+      Only applicable to jobs where `is_survey_required = false`. For jobs that
+      require a survey, finalization happens automatically when the survey is
+      completed and the TM finalizes the survey report.
+
+      **Roles:** ADMIN, GM, TM
+    operationId: finalizeJob
+    x-roles: [ADMIN, GM, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              remarks: { type: string, example: "No survey required. Finalizing." }
+    responses:
+      "200":
+        description: Job finalized. Status → FINALIZED.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "Job finalized." }
+                data: { $ref: '#/components/schemas/JobResponse' }
+      "400":
+        description: Job requires a survey (is_survey_required=true), or not in APPROVED state
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Job not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+/api/v1/jobs/{id}/assign:
+  put:
+    tags: [Jobs]
+    summary: "ADMIN/GM: Assign surveyor → ASSIGNED"
+    description: |
+      **Transition:** `APPROVED → ASSIGNED`
+
+      Assigns a surveyor to the job. The target user must exist and have
+      `role = SURVEYOR`. Records `assigned_surveyor_id` and `assigned_by_user_id`
+      and sends a push notification to the surveyor.
+
+      **Roles:** ADMIN, GM
+    operationId: assignSurveyor
+    x-roles: [ADMIN, GM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/AssignSurveyorRequest' }
+          example:
+            surveyorId: "019c79a4-4930-71fd-aa73-887301791935"
+    responses:
+      "200":
+        description: Surveyor assigned. Status → ASSIGNED.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "Surveyor assigned." }
+                data: { $ref: '#/components/schemas/JobResponse' }
+      "400":
+        description: Job not in APPROVED state, or surveyorId is invalid / not a SURVEYOR
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden – only ADMIN or GM
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Job not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+/api/v1/jobs/{id}/reassign:
+  put:
+    tags: [Jobs]
+    summary: "GM/TM: Reassign surveyor (no status change)"
+    description: |
+      Replaces the assigned surveyor without changing job status.  
+      Can be called on any non-terminal job that already has a surveyor.
+      A `reason` is mandatory for audit purposes.
+
+      **Roles:** GM, TM
+    operationId: reassignSurveyor
+    x-roles: [GM, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ReassignJobRequest' }
+          example:
+            surveyorId: "019c79a4-4930-71fd-aa73-887301791935"
+            reason: "Original surveyor unavailable due to scheduling conflict."
+    responses:
+      "200":
+        description: Surveyor reassigned successfully (status unchanged).
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "Surveyor reassigned." }
+                data: { $ref: '#/components/schemas/JobResponse' }
+      "400":
+        description: Job is in terminal state, or surveyorId is invalid
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden – only GM or TM
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Job not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+/api/v1/jobs/{id}/authorize-survey:
+  put:
+    tags: [Jobs]
+    summary: "ADMIN/TM: Authorize survey → SURVEY_AUTHORIZED"
+    description: |
+      **Transition:** `ASSIGNED → SURVEY_AUTHORIZED`
+
+      Admin or Technical Manager formally authorizes the survey to proceed.
+      Requires a surveyor to already be assigned. Notifies the surveyor and the
+      client. The surveyor can now call `POST /api/v1/surveys/start` to begin.
+
+      **Roles:** ADMIN, TM
+    operationId: authorizeSurvey
+    x-roles: [ADMIN, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              remarks: { type: string, example: "Authorization granted. Proceed to vessel." }
+    responses:
+      "200":
+        description: Survey authorized. Status → SURVEY_AUTHORIZED.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "Survey authorized. Surveyor can now begin field work." }
+                data: { $ref: '#/components/schemas/JobResponse' }
+      "400":
+        description: Job not in ASSIGNED state, or no surveyor assigned
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden – only ADMIN or TM
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Job not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+/api/v1/jobs/{id}/review:
+  put:
+    tags: [Jobs]
+    summary: "TO: Technical review → REVIEWED"
+    description: |
+      **Transition:** `SURVEY_DONE → REVIEWED`
+
+      Technical Officer performs a technical review of the submitted survey findings.
+      Only a TO can call this endpoint.
+
+      **Roles:** TO
+    operationId: reviewJob
+    x-roles: [TO]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              remarks: { type: string, example: "Findings are correct. Technical review passed." }
+    responses:
+      "200":
+        description: Job reviewed. Status → REVIEWED.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "Job marked as reviewed." }
+                data: { $ref: '#/components/schemas/JobResponse' }
+      "400":
+        description: Job not in SURVEY_DONE state
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden – only TO
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Job not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+/api/v1/jobs/{id}/send-back:
+  put:
+    tags: [Jobs]
+    summary: "ADMIN/TM/TO: Request rework → REWORK_REQUESTED"
+    description: |
+      **Transition:** `SURVEY_DONE` or `REVIEWED → REWORK_REQUESTED`
+
+      Sends the job back to the surveyor for corrections.
+      Notifies the assigned surveyor with the `remarks` reason.
+
+      Role-specific from-state constraints:
+      - **ADMIN** – Any non-terminal state.
+      - **TM** – `SURVEY_DONE` or `REVIEWED`.
+      - **TO** – `SURVEY_DONE` only.
+
+      **Roles:** ADMIN, TM, TO
+    operationId: sendBackJob
+    x-roles: [ADMIN, TM, TO]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              remarks: { type: string, example: "Engine section checklist is incomplete. Please revise." }
+    responses:
+      "200":
+        description: Rework requested. Status → REWORK_REQUESTED.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "Rework requested. Surveyor has been notified." }
+                data: { $ref: '#/components/schemas/JobResponse' }
+      "400":
+        description: Role-state constraint violation
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Job not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+/api/v1/jobs/{id}/reschedule:
+  put:
+    tags: [Jobs]
+    summary: "ADMIN/GM: Reschedule job date/port"
+    description: |
+      Updates `target_date` and/or `target_port` for an existing job.
+      Allowed when the job is in any of: `CREATED`, `DOCUMENT_VERIFIED`,
+      `APPROVED`, `ASSIGNED`, `SURVEY_AUTHORIZED`.  
+      Not allowed after survey starts or in terminal states.
+
+      Logs the old and new values in `job_reschedules` and notifies the
+      assigned surveyor (if any).
+
+      **Roles:** ADMIN, GM
+    operationId: rescheduleJob
+    x-roles: [ADMIN, GM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/RescheduleJobRequest' }
+          example:
+            new_target_date: "2026-05-01"
+            new_target_port: "Rotterdam"
+            reason: "Port congestion at Singapore. Rerouted to Rotterdam."
+    responses:
+      "200":
+        description: Job rescheduled successfully.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "Job rescheduled successfully." }
+                data: { $ref: '#/components/schemas/JobResponse' }
+      "400":
+        description: |
+          Rescheduling not allowed in current state (e.g. IN_PROGRESS or terminal),
+          or `reason` is missing.
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden – only ADMIN or GM
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Job not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
 
 /api/v1/jobs/{id}/reject:
   put:
     tags: [Jobs]
-    summary: Reject/Cancel job
+    summary: "ADMIN/GM/TM: Reject job → REJECTED (terminal)"
+    description: |
+      **Terminal transition** – moves job to `REJECTED` permanently.
+
+      Role-specific constraints:
+      - **ADMIN** – Any non-terminal job.
+      - **GM** – Only in `CREATED` state.
+      - **TM** – Only in `ASSIGNED`, `SURVEY_DONE`, or `REVIEWED` states.
+
+      **Roles:** ADMIN, GM, TM
     operationId: rejectJob
     x-roles: [ADMIN, GM, TM]
     parameters:
@@ -131,25 +761,108 @@
           schema:
             type: object
             properties:
-              remarks: { type: string, example: "Rejected due to missing docs." }
+              remarks: { type: string, example: "Insufficient documentation. Cannot proceed." }
     responses:
       "200":
-        description: Job rejected
+        description: Job rejected. Status → REJECTED (terminal).
         content:
           application/json:
             schema:
               type: object
               properties:
                 success: { type: boolean, example: true }
+                message: { type: string, example: "Job rejected." }
                 data: { $ref: '#/components/schemas/JobResponse' }
+      "400":
+        description: Job already in terminal state, or role-state constraint violated
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Job not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
 
-/api/v1/jobs/{id}/assign:
+/api/v1/jobs/{id}/cancel:
   put:
     tags: [Jobs]
-    summary: Assign surveyor
-    description: ADMIN or GM assigns a surveyor. Moves status to ASSIGNED.
-    operationId: assignSurveyor
-    x-roles: [ADMIN, GM]
+    summary: "CLIENT/GM/TM/ADMIN: Cancel job → REJECTED (terminal)"
+    description: |
+      Cancels the job. Maps internally to the `REJECTED` terminal state.
+
+      - **CLIENT** – Must own the vessel; cannot cancel once `FINALIZED`,
+        `CERTIFIED`, or `REJECTED`.
+      - **GM / TM / ADMIN** – Any non-terminal job.
+
+      **Roles:** CLIENT, GM, TM, ADMIN
+    operationId: cancelJob
+    x-roles: [CLIENT, GM, TM, ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              reason: { type: string, example: "No longer required." }
+    responses:
+      "200":
+        description: Job cancelled. Status → REJECTED.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "Job cancelled." }
+                data: { $ref: '#/components/schemas/JobResponse' }
+      "400":
+        description: Job already in terminal state
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden – CLIENT trying to cancel a job for a vessel they don't own
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Job not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+/api/v1/jobs/{id}/priority:
+  put:
+    tags: [Jobs]
+    summary: "ADMIN/GM/TM: Update job priority"
+    description: |
+      Updates the priority flag of a job. Creates an audit log entry with
+      old and new priority values plus an optional reason.
+
+      **Roles:** ADMIN, GM, TM
+    operationId: updateJobPriority
+    x-roles: [ADMIN, GM, TM]
     parameters:
       - name: id
         in: path
@@ -159,10 +872,19 @@
       required: true
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/AssignSurveyorRequest' }
+          schema:
+            type: object
+            required: [priority]
+            properties:
+              priority:
+                type: string
+                enum: [LOW, NORMAL, HIGH, URGENT]
+              reason:
+                type: string
+                example: "Client requested expedited review."
     responses:
       "200":
-        description: Surveyor assigned
+        description: Priority updated successfully.
         content:
           application/json:
             schema:
@@ -170,39 +892,32 @@
               properties:
                 success: { type: boolean, example: true }
                 data: { $ref: '#/components/schemas/JobResponse' }
-
-/api/v1/jobs/{id}/reassign:
-  put:
-    tags: [Jobs]
-    summary: Reassign surveyor
-    description: GM or TM reassigns to another surveyor with mandatory reason.
-    operationId: reassignSurveyor
-    x-roles: [GM, TM]
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema: { type: string, format: uuid }
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema: { $ref: '#/components/schemas/ReassignJobRequest' }
-    responses:
-      "200":
-        description: Job reassigned
+      "401":
+        description: Unauthorized
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                success: { type: boolean, example: true }
-                data: { $ref: '#/components/schemas/JobResponse' }
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Job not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
 
+# ── History & Notes ──────────────────────────────────────────────────────────
 /api/v1/jobs/{id}/history:
   get:
     tags: [Jobs]
-    summary: Job status history & Audit trail
+    summary: "ADMIN/GM/TM/TO: Job status history & audit trail"
+    description: |
+      Returns a chronological list of all status transitions for the job,
+      including who made each change and the reason.
+
+      **Roles:** ADMIN, GM, TM, TO
     operationId: getJobHistory
     x-roles: [ADMIN, GM, TM, TO]
     parameters:
@@ -212,7 +927,7 @@
         schema: { type: string, format: uuid }
     responses:
       "200":
-        description: History fetched
+        description: Status history list
         content:
           application/json:
             schema:
@@ -222,11 +937,31 @@
                 data:
                   type: array
                   items: { $ref: '#/components/schemas/JobHistoryItem' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Job not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
 
 /api/v1/jobs/{id}/notes:
   post:
     tags: [Jobs]
-    summary: Add internal staff note
+    summary: "ADMIN/GM/TM/TO: Add internal staff note"
+    description: |
+      Attaches a private (internal) note to the job visible only to staff roles.
+      Notes are not visible to CLIENT or SURVEYOR.
+
+      **Roles:** ADMIN, GM, TM, TO
     operationId: addInternalNote
     x-roles: [ADMIN, GM, TM, TO]
     parameters:
@@ -239,8 +974,11 @@
       content:
         application/json:
           schema: { $ref: '#/components/schemas/AddNoteRequest' }
+          example:
+            note_text: "Vessel owner confirmed availability for week of Apr 14."
     responses:
       "201":
+        description: Note added successfully.
         content:
           application/json:
             schema:
@@ -248,12 +986,110 @@
               properties:
                 success: { type: boolean, example: true }
                 data: { $ref: '#/components/schemas/JobNoteResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Job not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+# ── Messaging ────────────────────────────────────────────────────────────────
+/api/v1/jobs/{id}/messages/external:
+  get:
+    tags: [Jobs]
+    summary: Get external (client-visible) messages
+    description: |
+      Returns the external message thread for a job — visible to CLIENT,
+      staff, and the assigned SURVEYOR.
+
+      **Roles:** CLIENT, ADMIN, GM, TM, TO, SURVEYOR
+    operationId: getExternalMessages
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200":
+        description: External message thread
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: array
+                  items: { $ref: '#/components/schemas/JobMessageResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+/api/v1/jobs/{id}/messages/internal:
+  get:
+    tags: [Jobs]
+    summary: "ADMIN/GM/TM/TO: Get internal (staff-only) messages"
+    description: |
+      Returns the internal message thread for a job — staff only, not
+      visible to CLIENT or SURVEYOR.
+
+      **Roles:** ADMIN, GM, TM, TO
+    operationId: getInternalMessages
+    x-roles: [ADMIN, GM, TM, TO]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200":
+        description: Internal message thread
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: array
+                  items: { $ref: '#/components/schemas/JobMessageResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
 
 /api/v1/jobs/{id}/messages:
   post:
     tags: [Jobs]
-    summary: Send communication (with attachment)
-    description: Supports multipart/form-data for files or application/json for text-only.
+    summary: Send message (with optional attachment)
+    description: |
+      Posts a new message to the job thread. Supports text-only or multipart
+      with a file attachment.
+
+      **Roles:** CLIENT, ADMIN, GM, TM, TO, SURVEYOR
     operationId: sendJobMessage
     x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
     parameters:
@@ -262,15 +1098,29 @@
         required: true
         schema: { type: string, format: uuid }
     requestBody:
+      required: true
       content:
         multipart/form-data:
           schema:
             type: object
             properties:
-              content: { type: string }
-              attachment: { type: string, format: binary }
+              content:
+                type: string
+                description: Message text
+                example: "Please review the updated checklist attached."
+              attachment:
+                type: string
+                format: binary
+                description: Optional file attachment
+        application/json:
+          schema:
+            type: object
+            required: [content]
+            properties:
+              content: { type: string, example: "Vessel is ready for inspection." }
     responses:
       "201":
+        description: Message sent successfully.
         content:
           application/json:
             schema:
@@ -278,3 +1128,18 @@
               properties:
                 success: { type: boolean, example: true }
                 data: { $ref: '#/components/schemas/JobMessageResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Job not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }

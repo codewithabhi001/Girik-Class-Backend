@@ -126,30 +126,62 @@
 /api/v1/certificates/types:
   get:
     tags: [Certificates]
-    summary: Get certificate types
-    description: List available certificate types.
+    summary: List certificate types (minimal)
+    description: |
+      Returns a lightweight list of all active certificate types.
+      **Does NOT include `required_documents`** — use `GET /types/:id` to fetch
+      the full detail with required documents for a specific type.
+
+      Pass `?include_inactive=true` (ADMIN / GM only) to also see inactive types.
+
+      **Roles:** CLIENT, ADMIN, GM, TM, TO, SURVEYOR
     security: [{ bearerAuth: [] }]
     operationId: getCertificateTypes
     x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
+    parameters:
+      - name: include_inactive
+        in: query
+        description: Include INACTIVE types (ADMIN / GM only)
+        schema: { type: boolean, default: false }
     responses:
       "200":
-        description: Certificate types list
+        description: Minimal list of certificate types
         content:
           application/json:
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
+                success: { type: boolean, example: true }
                 data:
                   type: array
                   items:
-                    $ref: '#/components/schemas/CertificateTypeResponse'
+                    type: object
+                    properties:
+                      id: { type: string, format: uuid }
+                      name: { type: string, example: "Class Certificate" }
+                      issuing_authority:
+                        type: string
+                        enum: [CLASS, FLAG]
+                      validity_years: { type: integer, example: 5 }
+                      status:
+                        type: string
+                        enum: [ACTIVE, INACTIVE]
+                      requires_survey: { type: boolean, example: true }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+
   post:
     tags: [Certificates]
     summary: Create certificate type
-    description: Create a new certificate type. ADMIN only.
+    description: Create a new certificate type with optional required documents. ADMIN only.
     operationId: createCertificateType
     x-roles: [ADMIN]
     requestBody:
@@ -173,10 +205,95 @@
     responses:
       "201":
         description: Certificate type created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "Certificate type created" }
+                data: { $ref: '#/components/schemas/CertificateTypeDetailResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
       "403":
         description: Forbidden
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "409":
+        description: A certificate type with this name already exists
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
 
 /api/v1/certificates/types/{id}:
+  get:
+    tags: [Certificates]
+    summary: Get certificate type detail (with required documents)
+    description: |
+      Returns the **full detail** of a single certificate type, including:
+      - All metadata fields (`description`, `requires_survey`, etc.)
+      - The complete list of `required_documents` with their `is_mandatory` flag
+
+      This is the endpoint to call **before creating a job** to know which
+      documents must be uploaded.
+
+      **Roles:** CLIENT, ADMIN, GM, TM, TO, SURVEYOR
+    security: [{ bearerAuth: [] }]
+    operationId: getCertificateTypeById
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Certificate type UUID
+        schema: { type: string, format: uuid }
+    responses:
+      "200":
+        description: Certificate type detail with required documents
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data: { $ref: '#/components/schemas/CertificateTypeDetailResponse' }
+            example:
+              success: true
+              data:
+                id: "019c79a4-55ba-773c-9454-f6bee169ab03"
+                name: "Class Certificate"
+                issuing_authority: "CLASS"
+                validity_years: 5
+                status: "ACTIVE"
+                description: "Annual classification survey certificate"
+                requires_survey: true
+                CertificateRequiredDocuments:
+                  - id: "019c79a4-0001-0000-0000-000000000001"
+                    document_name: "Registry Certificate"
+                    is_mandatory: true
+                  - id: "019c79a4-0001-0000-0000-000000000002"
+                    document_name: "Previous Survey Report"
+                    is_mandatory: false
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "403":
+        description: Forbidden
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+      "404":
+        description: Certificate type not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
+
   put:
     tags: [Certificates]
     summary: Update certificate type
@@ -218,14 +335,23 @@
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                data:
-                  $ref: '#/components/schemas/CertificateTypeResponse'
+                success: { type: boolean, example: true }
+                data: { $ref: '#/components/schemas/CertificateTypeDetailResponse' }
+      "401":
+        description: Unauthorized
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
       "403":
         description: Forbidden
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
       "404":
         description: Certificate type not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ErrorResponse' }
 
 /api/v1/certificates/bulk-renew:
   post:

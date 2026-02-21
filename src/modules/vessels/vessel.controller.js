@@ -34,7 +34,7 @@ export const getVessels = async (req, res, next) => {
 export const getVesselById = async (req, res, next) => {
     try {
         const scopeFilters = getScopeFilters(req.user);
-        const vessel = await vesselService.getVesselById(req.params.id, scopeFilters);
+        const vessel = await vesselService.getVesselById(req.params.id, scopeFilters, req.user);
         res.json({
             success: true,
             message: 'Vessel details fetched successfully',

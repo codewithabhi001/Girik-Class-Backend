@@ -21,18 +21,28 @@ export const getCertificateScopeFilter = async (user) => {
     return buildCertificateScopeWhere(user, { JobRequest, Vessel });
 };
 
-/** List certificate types (active only by default; pass all for admin). */
+/** List certificate types — minimal fields only (no required_documents for performance). */
 export const getCertificateTypes = async (includeInactive = false) => {
     const where = includeInactive ? {} : { status: 'ACTIVE' };
     return await CertificateType.findAll({
         where,
+        attributes: ['id', 'name', 'issuing_authority', 'validity_years', 'status', 'requires_survey'],
+        order: [['name', 'ASC']],
+    });
+};
+
+/** Get a single certificate type by ID with full detail including all required documents. */
+export const getCertificateTypeById = async (id) => {
+    const type = await CertificateType.findByPk(id, {
         attributes: ['id', 'name', 'issuing_authority', 'validity_years', 'status', 'description', 'requires_survey'],
         include: [{
             model: db.CertificateRequiredDocument,
-            attributes: ['id', 'document_name', 'is_mandatory']
+            attributes: ['id', 'document_name', 'is_mandatory'],
+            order: [['document_name', 'ASC']]
         }],
-        order: [['name', 'ASC']],
     });
+    if (!type) throw { statusCode: 404, message: 'Certificate type not found' };
+    return type;
 };
 
 /** Create a new certificate type (ADMIN). */

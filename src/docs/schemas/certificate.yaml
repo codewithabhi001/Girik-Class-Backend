@@ -109,30 +109,73 @@ CertificateRequiredDocument:
 
 CertificateTypeResponse:
   type: object
+  description: Minimal certificate type — returned in list endpoint only.
   properties:
     id:
       type: string
       format: uuid
     name:
       type: string
-      example: "Safety Construction"
+      example: "Class Certificate"
     issuing_authority:
       type: string
       enum: [CLASS, FLAG]
     validity_years:
       type: integer
+      example: 5
+    status:
+      type: string
+      enum: [ACTIVE, INACTIVE]
+    requires_survey:
+      type: boolean
+      example: true
+
+CertificateTypeDetailResponse:
+  type: object
+  description: Full certificate type detail — returned by GET /types/:id, POST /types, and PUT /types/:id.
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+      example: "Class Certificate"
+    issuing_authority:
+      type: string
+      enum: [CLASS, FLAG]
+    validity_years:
+      type: integer
+      example: 5
     status:
       type: string
       enum: [ACTIVE, INACTIVE]
     description:
       type: string
+      nullable: true
+      example: "Annual classification survey certificate"
     requires_survey:
       type: boolean
       example: true
     CertificateRequiredDocuments:
       type: array
+      description: All required documents for this certificate type, ordered by name.
       items:
         $ref: '#/components/schemas/CertificateRequiredDocument'
+  example:
+    id: "019c79a4-55ba-773c-9454-f6bee169ab03"
+    name: "Class Certificate"
+    issuing_authority: "CLASS"
+    validity_years: 5
+    status: "ACTIVE"
+    description: "Annual classification survey certificate"
+    requires_survey: true
+    CertificateRequiredDocuments:
+      - id: "019c79a4-0001-0000-0000-000000000001"
+        document_name: "Registry Certificate"
+        is_mandatory: true
+      - id: "019c79a4-0001-0000-0000-000000000002"
+        document_name: "Previous Survey Report"
+        is_mandatory: false
 
 CertificateTypeCreateRequest:
   type: object

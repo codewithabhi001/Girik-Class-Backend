@@ -122,16 +122,37 @@ export const getVessels = async (query, scopeFilters = {}, userRole = null) => {
     };
 };
 
-export const getVesselById = async (id, scopeFilters = {}) => {
+export const getVesselById = async (id, scopeFilters = {}, user = null) => {
     const vessel = await Vessel.findOne({
         where: { id, ...scopeFilters },
         include: [
             { model: Client, as: 'Client' },
-            { model: FlagAdministration, as: 'FlagAdministration', attributes: ['flag_state_name'] }
+            { model: FlagAdministration, as: 'FlagAdministration', attributes: ['flag_state_name'] },
+            { model: db.VesselDocument, as: 'Documents' }
         ]
     });
     if (!vessel) throw { statusCode: 404, message: 'Vessel not found' };
-    return vessel;
+
+    const vesselPlain = vessel.get({ plain: true });
+
+    if (vesselPlain.Documents && vesselPlain.Documents.length > 0) {
+        const { processFileAccess } = await import('../../services/fileAccess.service.js');
+        const enrichedDocs = await Promise.all(vesselPlain.Documents.map(async (doc) => {
+            const accessInfo = await processFileAccess(doc, user);
+            return {
+                ...doc,
+                ...accessInfo,
+                file_url: undefined // hide raw s3 url
+            };
+        }));
+        vesselPlain.uploaded_documents = enrichedDocs;
+    } else {
+        vesselPlain.uploaded_documents = [];
+    }
+
+    delete vesselPlain.Documents; // remove raw DB nested object if needed, or keep it, replacing is cleaner.
+
+    return vesselPlain;
 };
 
 export const getVesselsByClientId = async (clientId) => {

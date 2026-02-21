@@ -210,6 +210,13 @@ export const getCertificateTypes = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
+export const getCertificateTypeById = async (req, res, next) => {
+    try {
+        const type = await certService.getCertificateTypeById(req.params.id);
+        res.json({ success: true, data: type });
+    } catch (e) { next(e); }
+};
+
 export const createCertificateType = async (req, res, next) => {
     try {
         const type = await certService.createCertificateType(req.body);
