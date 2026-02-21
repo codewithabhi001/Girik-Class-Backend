@@ -217,6 +217,13 @@ export const createCertificateType = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
+export const updateCertificateType = async (req, res, next) => {
+    try {
+        const type = await certService.updateCertificateType(req.params.id, req.body);
+        res.json({ success: true, message: 'Certificate type updated', data: type });
+    } catch (e) { next(e); }
+};
+
 export const bulkRenew = async (req, res, next) => {
     try {
         const result = await certService.bulkRenew(req.body.ids, req.body.validity_years, req.body.reason, req.user.id);

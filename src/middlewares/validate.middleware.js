@@ -160,6 +160,22 @@ export const schemas = {
         status: Joi.string().valid('ACTIVE', 'INACTIVE').optional().default('ACTIVE'),
         description: Joi.string().allow('', null).optional(),
         requires_survey: Joi.boolean().optional().default(true),
+        required_documents: Joi.array().items(Joi.object({
+            document_name: Joi.string().required(),
+            is_mandatory: Joi.boolean().optional().default(true)
+        })).optional()
+    }),
+    updateCertificateType: Joi.object({
+        name: Joi.string().optional().trim(),
+        issuing_authority: Joi.string().valid('CLASS', 'FLAG').optional(),
+        validity_years: Joi.number().integer().min(1).max(10).optional(),
+        status: Joi.string().valid('ACTIVE', 'INACTIVE').optional(),
+        description: Joi.string().allow('', null).optional(),
+        requires_survey: Joi.boolean().optional(),
+        required_documents: Joi.array().items(Joi.object({
+            document_name: Joi.string().required(),
+            is_mandatory: Joi.boolean().optional().default(true)
+        })).optional()
     }),
     uploadDocument: Joi.object({
         entity_type: Joi.string().required(),
@@ -294,6 +310,11 @@ export const schemas = {
         current_class_society: Joi.string().optional().allow(''),
         engine_type: Joi.string().optional().allow(''),
         builder_name: Joi.string().optional().allow(''),
+        uploaded_documents: Joi.array().items(Joi.object({
+            file_url: Joi.string().required(),
+            document_type: Joi.string().required(),
+            description: Joi.string().optional().allow('')
+        })).optional()
     }),
     updateVessel: Joi.object({
         client_id: Joi.string().guid().optional(),

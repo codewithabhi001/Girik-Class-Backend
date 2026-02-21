@@ -75,3 +75,18 @@ export const getDashboard = async (req, res, next) => {
         res.json({ success: true, data });
     } catch (e) { next(e); }
 };
+
+export const getClientDocuments = async (req, res, next) => {
+    try {
+        const clientId = req.user.role === 'CLIENT' ? req.user.client_id : req.params.id;
+        if (!clientId) throw { statusCode: 400, message: 'Client ID is required' };
+
+        // Ensure user only accesses their own documents if they are a client
+        if (req.user.role === 'CLIENT' && req.params.id && req.params.id !== req.user.client_id) {
+            throw { statusCode: 403, message: 'Forbidden access to other client documents' };
+        }
+
+        const documents = await clientService.getClientDocuments(clientId, req.user);
+        res.json({ success: true, count: documents.length, data: documents });
+    } catch (e) { next(e); }
+};

@@ -58,6 +58,7 @@ export default (sequelize, DataTypes) => {
         });
         Vessel.hasMany(models.JobRequest, { foreignKey: 'vessel_id' });
         Vessel.hasMany(models.Certificate, { foreignKey: 'vessel_id' });
+        Vessel.hasMany(models.VesselDocument, { foreignKey: 'vessel_id', as: 'Documents' });
         Vessel.hasMany(models.GpsTracking, { foreignKey: 'vessel_id' });
     };
 

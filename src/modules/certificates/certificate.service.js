@@ -27,6 +27,10 @@ export const getCertificateTypes = async (includeInactive = false) => {
     return await CertificateType.findAll({
         where,
         attributes: ['id', 'name', 'issuing_authority', 'validity_years', 'status', 'description', 'requires_survey'],
+        include: [{
+            model: db.CertificateRequiredDocument,
+            attributes: ['id', 'document_name', 'is_mandatory']
+        }],
         order: [['name', 'ASC']],
     });
 };
@@ -35,14 +39,74 @@ export const getCertificateTypes = async (includeInactive = false) => {
 export const createCertificateType = async (data) => {
     const existing = await CertificateType.findOne({ where: { name: data.name } });
     if (existing) throw { statusCode: 409, message: 'A certificate type with this name already exists' };
-    return await CertificateType.create({
-        name: data.name,
-        issuing_authority: data.issuing_authority,
-        validity_years: data.validity_years,
-        status: data.status ?? 'ACTIVE',
-        description: data.description ?? null,
-        requires_survey: data.requires_survey ?? true,
-    });
+
+    const { required_documents, ...certData } = data;
+    const txn = await db.sequelize.transaction();
+    try {
+        const type = await CertificateType.create({
+            name: certData.name,
+            issuing_authority: certData.issuing_authority,
+            validity_years: certData.validity_years,
+            status: certData.status ?? 'ACTIVE',
+            description: certData.description ?? null,
+            requires_survey: certData.requires_survey ?? true,
+        }, { transaction: txn });
+
+        if (required_documents && required_documents.length > 0) {
+            const docsToCreate = required_documents.map(doc => ({
+                certificate_type_id: type.id,
+                document_name: doc.document_name,
+                is_mandatory: doc.is_mandatory ?? true
+            }));
+            await db.CertificateRequiredDocument.bulkCreate(docsToCreate, { transaction: txn });
+        }
+
+        await txn.commit();
+        return await CertificateType.findByPk(type.id, {
+            include: [{ model: db.CertificateRequiredDocument, attributes: ['id', 'document_name', 'is_mandatory'] }]
+        });
+    } catch (e) {
+        await txn.rollback();
+        throw e;
+    }
+};
+
+/** Update certificate type and required documents (ADMIN/TM). */
+export const updateCertificateType = async (id, data) => {
+    const type = await CertificateType.findByPk(id);
+    if (!type) throw { statusCode: 404, message: 'Certificate type not found' };
+
+    if (data.name && data.name !== type.name) {
+        const existing = await CertificateType.findOne({ where: { name: data.name } });
+        if (existing) throw { statusCode: 409, message: 'A certificate type with this name already exists' };
+    }
+
+    const { required_documents, ...certData } = data;
+    const txn = await db.sequelize.transaction();
+    try {
+        await type.update(certData, { transaction: txn });
+
+        if (required_documents) {
+            // Re-create the required documents list for simplicity
+            await db.CertificateRequiredDocument.destroy({ where: { certificate_type_id: id }, transaction: txn });
+            if (required_documents.length > 0) {
+                const docsToCreate = required_documents.map(doc => ({
+                    certificate_type_id: id,
+                    document_name: doc.document_name,
+                    is_mandatory: doc.is_mandatory ?? true
+                }));
+                await db.CertificateRequiredDocument.bulkCreate(docsToCreate, { transaction: txn });
+            }
+        }
+
+        await txn.commit();
+        return await CertificateType.findByPk(id, {
+            include: [{ model: db.CertificateRequiredDocument, attributes: ['id', 'document_name', 'is_mandatory'] }]
+        });
+    } catch (e) {
+        await txn.rollback();
+        throw e;
+    }
 };
 
 export const generateCertificate = async (data, userId) => {

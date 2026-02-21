@@ -8,6 +8,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
 router.use(authenticate);
 
+router.post('/upload', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'SURVEYOR'), upload.single('file'), documentController.uploadStandaloneFile);
 router.get('/:entityType/:entityId', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), documentController.getDocuments);
 router.post('/:entityType/:entityId', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'SURVEYOR'), upload.array('files'), documentController.uploadDocument);
 router.delete('/:id', authorizeRoles('ADMIN', 'GM'), documentController.deleteDocument);

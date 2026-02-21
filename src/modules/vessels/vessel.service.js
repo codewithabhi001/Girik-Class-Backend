@@ -14,7 +14,7 @@ const ensureValidFlag = async (flagId) => {
     }
 };
 
-export const createVessel = async (data) => {
+export const createVessel = async (data, userId) => {
     // Check if client exists
     const client = await Client.findByPk(data.client_id || data.vessel_owner_id);
     if (!client) {
@@ -27,7 +27,29 @@ export const createVessel = async (data) => {
         throw { statusCode: 400, message: 'Vessel with this IMO number already exists' };
     }
     await ensureValidFlag(data.flag_administration_id);
-    return await Vessel.create(data);
+
+    const { uploaded_documents, ...vesselData } = data;
+    const txn = await db.sequelize.transaction();
+    try {
+        const vessel = await Vessel.create(vesselData, { transaction: txn });
+
+        if (uploaded_documents && uploaded_documents.length > 0) {
+            const docsToCreate = uploaded_documents.map(doc => ({
+                vessel_id: vessel.id,
+                file_url: doc.file_url,
+                document_type: doc.document_type || 'OTHER',
+                description: doc.description || '',
+                uploaded_by: userId
+            }));
+            await db.VesselDocument.bulkCreate(docsToCreate, { transaction: txn });
+        }
+
+        await txn.commit();
+        return vessel;
+    } catch (error) {
+        await txn.rollback();
+        throw error;
+    }
 };
 
 export const getVessels = async (query, scopeFilters = {}, userRole = null) => {

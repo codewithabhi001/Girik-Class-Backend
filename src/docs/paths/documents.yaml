@@ -1,3 +1,44 @@
+/api/v1/documents/upload:
+  post:
+    tags: [Documents]
+    summary: Upload a standalone document file (No Entity needed yet)
+    description: Upload a file strictly to standard storage and receive its URL. Useful for uploading files before creating vessels or jobs.
+    operationId: uploadStandaloneFile
+    x-roles: [CLIENT, ADMIN, GM, TM, SURVEYOR]
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required: [file]
+            properties:
+              file:
+                type: string
+                format: binary
+              folder:
+                type: string
+                description: "Optional folder name for grouping (e.g. 'vessels', 'user-docs')"
+    responses:
+      "201":
+        description: File uploaded successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    file_url:
+                      type: string
+                      example: "https://bucket.s3.amazonaws.com/temp/my-file.pdf"
+      "400": { description: "No file provided" }
+      "403": { description: Forbidden }
+
 /api/v1/documents/{entityType}/{entityId}:
   get:
     tags: [Documents]

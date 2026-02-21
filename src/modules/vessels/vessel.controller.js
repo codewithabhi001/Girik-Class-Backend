@@ -10,7 +10,7 @@ const getScopeFilters = (user) => {
 
 export const createVessel = async (req, res, next) => {
     try {
-        const vessel = await vesselService.createVessel(req.body);
+        const vessel = await vesselService.createVessel(req.body, req.user.id);
         res.status(201).json({
             success: true,
             message: 'Vessel added successfully',

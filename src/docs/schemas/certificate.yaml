@@ -93,3 +93,128 @@ RenewCertRequest:
   example:
     validity_years: 1
     reason: "Standard renewal"
+
+CertificateRequiredDocument:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    document_name:
+      type: string
+      example: "Bill of Sale"
+    is_mandatory:
+      type: boolean
+      example: true
+
+CertificateTypeResponse:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+      example: "Safety Construction"
+    issuing_authority:
+      type: string
+      enum: [CLASS, FLAG]
+    validity_years:
+      type: integer
+    status:
+      type: string
+      enum: [ACTIVE, INACTIVE]
+    description:
+      type: string
+    requires_survey:
+      type: boolean
+      example: true
+    CertificateRequiredDocuments:
+      type: array
+      items:
+        $ref: '#/components/schemas/CertificateRequiredDocument'
+
+CertificateTypeCreateRequest:
+  type: object
+  required:
+    - name
+    - issuing_authority
+    - validity_years
+  properties:
+    name:
+      type: string
+    issuing_authority:
+      type: string
+      enum: [CLASS, FLAG]
+    validity_years:
+      type: integer
+    status:
+      type: string
+      enum: [ACTIVE, INACTIVE]
+    description:
+      type: string
+    requires_survey:
+      type: boolean
+      default: true
+    required_documents:
+      type: array
+      items:
+        type: object
+        properties:
+          document_name:
+            type: string
+          is_mandatory:
+            type: boolean
+  example:
+    name: "Safety Construction"
+    issuing_authority: "CLASS"
+    validity_years: 5
+    status: "ACTIVE"
+    description: "Main classification certificate for construction"
+    requires_survey: true
+    required_documents:
+      - document_name: "Bill of Sale"
+        is_mandatory: true
+      - document_name: "Builder Certificate"
+        is_mandatory: false
+
+CertificateTypeUpdateRequest:
+  type: object
+  properties:
+    name:
+      type: string
+    issuing_authority:
+      type: string
+      enum: [CLASS, FLAG]
+    validity_years:
+      type: integer
+    status:
+      type: string
+      enum: [ACTIVE, INACTIVE]
+    description:
+      type: string
+    requires_survey:
+      type: boolean
+    required_documents:
+      type: array
+      items:
+        type: object
+        properties:
+          document_name:
+            type: string
+          is_mandatory:
+            type: boolean
+  example:
+    name: "Safety Construction (Updated)"
+    issuing_authority: "CLASS"
+    validity_years: 5
+    status: "ACTIVE"
+    description: "Updated classification certificate for construction"
+    requires_survey: true
+    required_documents:
+      - document_name: "Bill of Sale"
+        is_mandatory: true
+      - document_name: "Builder Certificate"
+        is_mandatory: false
+      - document_name: "Previous Registry Certificate"
+        is_mandatory: true

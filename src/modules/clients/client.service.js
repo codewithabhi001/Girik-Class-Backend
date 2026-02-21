@@ -138,3 +138,73 @@ export const getDashboardData = async (clientId) => {
             .slice(0, 5)
     };
 };
+
+export const getClientDocuments = async (clientId, user) => {
+    if (!clientId) throw { statusCode: 404, message: 'Client not found' };
+
+    const vessels = await Vessel.findAll({ where: { client_id: clientId }, attributes: ['id', 'vessel_name'] });
+    const vesselIds = vessels.map(v => v.id);
+
+    const jobs = await JobRequest.findAll({
+        where: { vessel_id: vesselIds },
+        attributes: ['id'],
+        include: [{ model: db.CertificateType, attributes: ['name'] }]
+    });
+    const jobIds = jobs.map(j => j.id);
+
+    let allDocs = [];
+
+    if (vesselIds.length > 0) {
+        const vesselDocs = await db.VesselDocument.findAll({
+            where: { vessel_id: vesselIds },
+            order: [['created_at', 'DESC']]
+        });
+        allDocs = allDocs.concat(vesselDocs.map(d => ({
+            ...d.toJSON(),
+            entity_type: 'VESSEL',
+            entity_id: d.vessel_id
+        })));
+    }
+
+    if (jobIds.length > 0) {
+        const jobDocs = await db.JobDocument.findAll({
+            where: { job_id: jobIds },
+            order: [['created_at', 'DESC']]
+        });
+        allDocs = allDocs.concat(jobDocs.map(d => ({
+            ...d.toJSON(),
+            entity_type: 'JOB',
+            entity_id: d.job_id
+        })));
+    }
+
+    // You could also fetch from ActivityPlanning/Checklist if needed
+    // Assuming surveys.length > 0 for surveyor docs, but JobDocs should cover most for clients
+
+    // Sort combined docs
+    allDocs.sort((a, b) => new Date(b.created_at || b.createdAt) - new Date(a.created_at || a.createdAt));
+
+    const { processFileAccess } = await import('../../services/fileAccess.service.js');
+
+    const enrichedDocs = await Promise.all(allDocs.map(async (docJson) => {
+        const accessInfo = await processFileAccess(docJson, user);
+
+        let entityName = 'Unknown Entity';
+        if (docJson.entity_type === 'VESSEL') {
+            const v = vessels.find(v => v.id === docJson.entity_id);
+            if (v) entityName = `Vessel (${v.vessel_name})`;
+        } else if (docJson.entity_type === 'JOB') {
+            const j = jobs.find(j => j.id === docJson.entity_id);
+            if (j && j.CertificateType) entityName = `Job (${j.CertificateType.name})`;
+        }
+
+        return {
+            ...docJson,
+            ...accessInfo,
+            entity_name: entityName,
+            file_url: undefined // hide raw S3 url
+        };
+    }));
+
+    return enrichedDocs;
+};

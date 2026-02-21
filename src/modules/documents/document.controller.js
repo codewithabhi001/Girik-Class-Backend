@@ -85,3 +85,14 @@ export const deleteDocument = async (req, res, next) => {
         res.status(200).json({ success: true, message: 'Document deleted' });
     } catch (e) { next(e); }
 };
+
+export const uploadStandaloneFile = async (req, res, next) => {
+    try {
+        if (!req.file) {
+            throw { statusCode: 400, message: 'No file provided' };
+        }
+        const folderName = req.body.folder || 'misc';
+        const result = await documentService.uploadStandaloneFile(req.file, folderName);
+        res.status(201).json({ success: true, data: result });
+    } catch (e) { next(e); }
+};

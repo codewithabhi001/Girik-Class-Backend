@@ -140,6 +140,42 @@
                 data:
                   $ref: '#/components/schemas/ClientResponse'
 
+/api/v1/clients/profile/documents:
+  get:
+    tags: [Clients, Documents]
+    summary: Get client profile documents
+    description: Get all documents related to the current client (Vessels, Jobs, Surveys, Profile). CLIENT role only.
+    operationId: getClientProfileDocuments
+    x-roles: [CLIENT]
+    responses:
+      "200":
+        description: List of documents
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                count:
+                  type: integer
+                  example: 5
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id: { type: string, format: uuid }
+                      entity_type: { type: string, example: "JOB" }
+                      entity_id: { type: string, format: uuid }
+                      entity_name: { type: string, description: "Friendly name of the entity" }
+                      document_type: { type: string }
+                      signedUrl: { type: string, description: "Secure URL to view file" }
+                      fileName: { type: string }
+                      expiresAt: { type: string, format: date-time }
+                      uploaded_at: { type: string, format: date-time }
+
 /api/v1/clients/dashboard:
   get:
     tags: [Clients]
@@ -160,6 +196,39 @@
                   example: true
                 data:
                   type: object
+
+/api/v1/clients/{id}/documents:
+  get:
+    tags: [Clients, Documents]
+    summary: Get client documents by ID
+    description: Get all documents related to a specific client (Vessels, Jobs, Surveys, Profile). ADMIN, GM, TM, TO only.
+    operationId: getClientDocumentsById
+    x-roles: [ADMIN, GM, TM, TO]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: List of documents
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                count:
+                  type: integer
+                  example: 5
+                data:
+                  type: array
+                  items:
+                    type: object
 
 /api/v1/clients/{id}:
   get:

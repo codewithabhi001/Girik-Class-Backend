@@ -11,6 +11,7 @@ router.use(authenticate);
 // Profile
 router.get('/profile', authorizeRoles('CLIENT'), clientController.getProfile);
 router.put('/profile', authorizeRoles('CLIENT'), clientController.updateProfile);
+router.get('/profile/documents', authorizeRoles('CLIENT'), clientController.getClientDocuments);
 
 // Dashboard
 router.get('/dashboard', authorizeRoles('CLIENT'), clientController.getDashboard);
@@ -19,6 +20,7 @@ router.get('/dashboard', authorizeRoles('CLIENT'), clientController.getDashboard
 router.post('/', authorizeRoles('ADMIN', 'GM', 'TM'), validate(schemas.createClient), clientController.createClient);
 router.get('/', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), clientController.getClients);
 router.get('/:id', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), clientController.getClientById);
+router.get('/:id/documents', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), clientController.getClientDocuments);
 router.put('/:id', authorizeRoles('ADMIN', 'GM', 'TM'), clientController.updateClient);
 router.delete('/:id', authorizeRoles('ADMIN'), clientController.deleteClient);
 

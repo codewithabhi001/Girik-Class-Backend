@@ -13,5 +13,9 @@ export default (sequelize, DataTypes) => {
         timestamps: false,
     });
 
+    CertificateType.associate = (models) => {
+        CertificateType.hasMany(models.CertificateRequiredDocument, { foreignKey: 'certificate_type_id' });
+    };
+
     return CertificateType;
 };

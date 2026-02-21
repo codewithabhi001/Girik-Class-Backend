@@ -145,13 +145,7 @@
                 data:
                   type: array
                   items:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                        format: uuid
-                      name:
-                        type: string
+                    $ref: '#/components/schemas/CertificateTypeResponse'
   post:
     tags: [Certificates]
     summary: Create certificate type
@@ -163,17 +157,75 @@
       content:
         application/json:
           schema:
-            type: object
-            required: [name]
-            properties:
-              name: { type: string }
-              issuing_authority: { type: string, enum: [CLASS, FLAG] }
-              validity_years: { type: integer }
+            $ref: '#/components/schemas/CertificateTypeCreateRequest'
+          example:
+            name: "Safety Construction"
+            issuing_authority: "CLASS"
+            validity_years: 5
+            status: "ACTIVE"
+            description: "Main classification certificate for construction"
+            requires_survey: true
+            required_documents:
+              - document_name: "Bill of Sale"
+                is_mandatory: true
+              - document_name: "Builder Certificate"
+                is_mandatory: false
     responses:
       "201":
         description: Certificate type created
       "403":
         description: Forbidden
+
+/api/v1/certificates/types/{id}:
+  put:
+    tags: [Certificates]
+    summary: Update certificate type
+    description: Update an existing certificate type and its required documents. ADMIN or TM only.
+    operationId: updateCertificateType
+    x-roles: [ADMIN, TM]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CertificateTypeUpdateRequest'
+          example:
+            name: "Safety Construction (Updated)"
+            issuing_authority: "CLASS"
+            validity_years: 5
+            status: "ACTIVE"
+            description: "Updated classification certificate for construction"
+            requires_survey: true
+            required_documents:
+              - document_name: "Bill of Sale"
+                is_mandatory: true
+              - document_name: "Builder Certificate"
+                is_mandatory: false
+              - document_name: "Previous Registry Certificate"
+                is_mandatory: true
+    responses:
+      "200":
+        description: Certificate type updated
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                data:
+                  $ref: '#/components/schemas/CertificateTypeResponse'
+      "403":
+        description: Forbidden
+      "404":
+        description: Certificate type not found
 
 /api/v1/certificates/bulk-renew:
   post:

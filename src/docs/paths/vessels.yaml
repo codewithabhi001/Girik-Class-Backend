@@ -61,8 +61,23 @@
             client_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
             vessel_name: "Ocean Pioneer"
             imo_number: "9123456"
-            flag_state: "Singapore"
+            call_sign: "9VSP"
+            mmsi_number: "563123456"
+            flag_administration_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+            port_of_registry: "Singapore"
+            year_built: 2015
             ship_type: "Cargo"
+            gross_tonnage: 30000.0
+            net_tonnage: 15000.0
+            deadweight: 45000.0
+            class_status: "ACTIVE"
+            current_class_society: "DNV"
+            engine_type: "Diesel"
+            builder_name: "Hyundai Heavy Industries"
+            uploaded_documents:
+              - file_url: "https://example-bucket.s3.amazonaws.com/cert.pdf"
+                document_type: "REGISTRY_CERTIFICATE"
+                description: "Ship Registry Certificate"
     responses:
       "201":
         description: Vessel created
@@ -178,6 +193,12 @@
             $ref: '#/components/schemas/VesselUpdateRequest'
           example:
             vessel_name: "Ocean Pioneer II"
+            class_status: "SUSPENDED"
+            deadweight: 50000.5
+            uploaded_documents:
+              - file_url: "https://example-bucket.s3.amazonaws.com/cert-update.pdf"
+                document_type: "REGISTRY_CERTIFICATE"
+                description: "Ship Registry Certificate - Updated"
     responses:
       "200":
         description: Vessel updated

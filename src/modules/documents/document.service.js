@@ -12,6 +12,12 @@ export const getEntityDocuments = async (entityType, entityId) => {
     return await fileAccessService.resolveEntity(documents);
 };
 
+export const uploadStandaloneFile = async (file, folderName = 'temp') => {
+    const folder = `${s3Service.UPLOAD_FOLDERS.DOCUMENTS}/${folderName}`;
+    const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, folder);
+    return { file_url: url };
+};
+
 export const uploadEntityDocument = async (entityType, entityId, file, userId, documentType, description) => {
     const folder = `${s3Service.UPLOAD_FOLDERS.DOCUMENTS}/${String(entityType).toLowerCase()}`;
     const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, folder);
