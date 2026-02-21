@@ -26,8 +26,9 @@ export const JOB_POST_FINALIZATION_STATES = ['FINALIZED', 'PAYMENT_DONE', 'CERTI
  * The extra guard inside updateJobStatus enforces this invariant at runtime.
  */
 export const JOB_TRANSITIONS = {
-    CREATED: ['APPROVED', 'REJECTED'],
-    APPROVED: ['ASSIGNED', 'REJECTED'],
+    CREATED: ['DOCUMENT_VERIFIED', 'REJECTED'],
+    DOCUMENT_VERIFIED: ['APPROVED', 'REJECTED'],
+    APPROVED: ['ASSIGNED', 'REJECTED', 'FINALIZED'],
     ASSIGNED: ['SURVEY_AUTHORIZED', 'REJECTED'],
     SURVEY_AUTHORIZED: ['IN_PROGRESS', 'REJECTED'],
     IN_PROGRESS: ['SURVEY_DONE', 'REWORK_REQUESTED', 'REJECTED'],
@@ -97,8 +98,8 @@ export const updateJobStatus = async (jobId, newStatus, userId, reason = null, o
             throw { statusCode: 400, message: `Job is in a terminal state (${previousStatus}) and cannot be modified.` };
         }
 
-        // ── 2. FINALIZED can only be set via the internal survey-sync path ──
-        if (newStatus === 'FINALIZED' && !_internal) {
+        // ── 2. FINALIZED can only be set via the internal survey-sync path (if survey required) ──
+        if (newStatus === 'FINALIZED' && !_internal && job.is_survey_required) {
             throw { statusCode: 403, message: 'Job cannot be finalized directly. Finalize the survey via PUT /surveys/:id/finalize.' };
         }
 

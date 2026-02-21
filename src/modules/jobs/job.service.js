@@ -11,6 +11,9 @@ const CertificateType = db.CertificateType;
 const Vessel = db.Vessel;
 const Certificate = db.Certificate;
 const AuditLog = db.AuditLog;
+const CertificateRequiredDocument = db.CertificateRequiredDocument;
+const JobDocument = db.JobDocument;
+const JobReschedule = db.JobReschedule;
 
 // ─────────────────────────────────────────────
 // INTERNAL HELPERS
@@ -31,43 +34,86 @@ const requireJob = async (id) => {
 // ─────────────────────────────────────────────
 
 export const createJob = async (data, userId) => {
+    let isSurveyRequired = true;
     if (data.certificate_type_id) {
         const certType = await CertificateType.findByPk(data.certificate_type_id);
         if (!certType) throw { statusCode: 400, message: 'Invalid certificate_type_id.' };
+        isSurveyRequired = certType.requires_survey;
+
+        // Fetch required documents for this certificate type
+        const requiredDocs = await CertificateRequiredDocument.findAll({
+            where: { certificate_type_id: data.certificate_type_id, is_mandatory: true }
+        });
+
+        if (requiredDocs.length > 0) {
+            const uploadedDocIds = data.uploaded_documents?.map(d => d.required_document_id) || [];
+            const missingDocs = requiredDocs.filter(rd => !uploadedDocIds.includes(rd.id));
+
+            if (missingDocs.length > 0) {
+                throw {
+                    statusCode: 400,
+                    message: 'Missing mandatory documents for job creation.',
+                    missing_documents: missingDocs.map(md => ({ id: md.id, name: md.document_name }))
+                };
+            }
+        }
     }
+
     if (data.vessel_id) {
         const vessel = await Vessel.findByPk(data.vessel_id);
         if (!vessel) throw { statusCode: 400, message: 'Invalid vessel_id.' };
     }
 
-    const { job_status: _omit, ...safeData } = data;
-    const job = await JobRequest.create({
-        ...safeData,
-        requested_by_user_id: userId,
-        job_status: 'CREATED'
-    });
+    const { job_status: _omit, uploaded_documents, ...safeData } = data;
 
-    await JobStatusHistory.create({
-        job_id: job.id,
-        old_status: null,
-        new_status: 'CREATED',
-        changed_by: userId,
-        change_reason: 'Initial creation'
-    });
+    const txn = await db.sequelize.transaction();
+    try {
+        const job = await JobRequest.create({
+            ...safeData,
+            requested_by_user_id: userId,
+            job_status: 'CREATED',
+            is_survey_required: isSurveyRequired
+        }, { transaction: txn });
 
-    const jobWithVessel = await JobRequest.findByPk(job.id, { include: ['Vessel'] });
-    await notificationService.notifyRoles(['ADMIN', 'GM', 'TM'], 'JOB_CREATED', {
-        vesselName: jobWithVessel.Vessel.vessel_name,
-        port: jobWithVessel.target_port
-    });
-    const clientUser = await User.findOne({ where: { client_id: jobWithVessel.Vessel.client_id, role: 'CLIENT' } });
-    if (clientUser) {
-        await notificationService.sendNotification(clientUser.id, 'JOB_CREATED', {
-            vesselName: jobWithVessel.Vessel.vessel_name, port: jobWithVessel.target_port
+        // Save uploaded documents if any
+        if (uploaded_documents && uploaded_documents.length > 0) {
+            const docsToCreate = uploaded_documents.map(doc => ({
+                job_id: job.id,
+                required_document_id: doc.required_document_id,
+                file_url: doc.file_url,
+                uploaded_by: userId
+            }));
+            await JobDocument.bulkCreate(docsToCreate, { transaction: txn });
+        }
+
+        await JobStatusHistory.create({
+            job_id: job.id,
+            old_status: null,
+            new_status: 'CREATED',
+            changed_by: userId,
+            change_reason: 'Initial creation'
+        }, { transaction: txn });
+
+        await txn.commit();
+
+        const jobWithVessel = await JobRequest.findByPk(job.id, { include: ['Vessel'] });
+        await notificationService.notifyRoles(['ADMIN', 'GM', 'TM'], 'JOB_CREATED', {
+            vesselName: jobWithVessel.Vessel.vessel_name,
+            port: jobWithVessel.target_port
         });
-    }
 
-    return job;
+        const clientUser = await User.findOne({ where: { client_id: jobWithVessel.Vessel.client_id, role: 'CLIENT' } });
+        if (clientUser) {
+            await notificationService.sendNotification(clientUser.id, 'JOB_CREATED', {
+                vesselName: jobWithVessel.Vessel.vessel_name, port: jobWithVessel.target_port
+            });
+        }
+
+        return job;
+    } catch (error) {
+        await txn.rollback();
+        throw error;
+    }
 };
 
 export const createJobForClient = async (data, clientId, userId) => {
@@ -129,9 +175,9 @@ export const getJobs = async (query, scopeFilters = {}, userRole = null) => {
     const isSurveyor = userRole === 'SURVEYOR';
 
     const jobAttributes = isSurveyor
-        ? ['id', 'vessel_id', 'certificate_type_id', 'target_port', 'target_date', 'job_status', 'createdAt']
+        ? ['id', 'vessel_id', 'certificate_type_id', 'target_port', 'target_date', 'job_status', 'createdAt', 'is_survey_required', 'reschedule_count']
         : ['id', 'vessel_id', 'certificate_type_id', 'requested_by_user_id', 'assigned_surveyor_id',
-            'assigned_by_user_id', 'approved_by_user_id', 'target_port', 'target_date', 'job_status', 'createdAt'];
+            'assigned_by_user_id', 'approved_by_user_id', 'target_port', 'target_date', 'job_status', 'createdAt', 'is_survey_required', 'reschedule_count'];
 
     const include = [
         { model: Vessel, attributes: isSurveyor ? ['id', 'vessel_name', 'imo_number'] : ['id', 'vessel_name', 'imo_number', 'client_id'] },
@@ -160,7 +206,7 @@ export const getJobById = async (id, scopeFilters = {}) => {
     const job = await JobRequest.findOne({
         where: { id, ...scopeFilters },
         include: [
-            'Vessel', 'CertificateType', 'JobStatusHistories',
+            'Vessel', 'CertificateType', 'JobStatusHistories', 'JobDocuments', 'JobReschedules',
             { model: Certificate, as: 'Certificate', attributes: ['id', 'certificate_number', 'pdf_file_url'] },
             { model: User, as: 'approver', attributes: ['id', 'name', 'role'] }
         ]
@@ -186,17 +232,66 @@ export const getJobById = async (id, scopeFilters = {}) => {
 // ─────────────────────────────────────────────
 
 /**
- * CREATED → APPROVED
+ * CREATED → DOCUMENT_VERIFIED
+ * Roles: TO
+ */
+export const verifyJobDocuments = async (id, userId) => {
+    const job = await requireJob(id);
+    if (job.job_status !== 'CREATED') {
+        throw { statusCode: 400, message: `verifyJobDocuments requires job in CREATED state. Current: ${job.job_status}` };
+    }
+
+    // Check if certificate type has mandatory documents
+    const requiredDocs = await CertificateRequiredDocument.findAll({
+        where: { certificate_type_id: job.certificate_type_id, is_mandatory: true }
+    });
+
+    if (requiredDocs.length > 0) {
+        const uploadedDocs = await JobDocument.findAll({
+            where: { job_id: id }
+        });
+        const uploadedDocIds = uploadedDocs.map(d => d.required_document_id);
+        const missingDocs = requiredDocs.filter(rd => !uploadedDocIds.includes(rd.id));
+
+        if (missingDocs.length > 0) {
+            throw {
+                statusCode: 400,
+                message: 'Cannot verify documents: mandatory documents are missing.',
+                missing_documents: missingDocs.map(md => ({ id: md.id, name: md.document_name }))
+            };
+        }
+    }
+
+    return await lifecycleService.updateJobStatus(id, 'DOCUMENT_VERIFIED', userId, 'Technical Officer verified documents');
+};
+
+/**
+ * DOCUMENT_VERIFIED → APPROVED
  * Roles: ADMIN, GM
  */
 export const approveRequest = async (id, remarks, user) => {
     const job = await requireJob(id);
-    if (job.job_status !== 'CREATED') {
-        throw { statusCode: 400, message: `approveRequest requires job in CREATED state. Current: ${job.job_status}` };
+    if (job.job_status !== 'DOCUMENT_VERIFIED') {
+        throw { statusCode: 400, message: `approveRequest requires job in DOCUMENT_VERIFIED state. Current: ${job.job_status}` };
     }
     const updated = await lifecycleService.updateJobStatus(id, 'APPROVED', user.id, remarks || `${user.role} approved request`);
     await updated.update({ approved_by_user_id: user.id });
     return updated;
+};
+
+/**
+ * APPROVED → FINALIZED (for non-survey jobs)
+ * Roles: ADMIN, GM, TM
+ */
+export const finalizeJob = async (id, remarks, user) => {
+    const job = await requireJob(id);
+    if (job.is_survey_required) {
+        throw { statusCode: 400, message: 'This job requires a survey. Finalize the survey instead.' };
+    }
+    if (job.job_status !== 'APPROVED') {
+        throw { statusCode: 400, message: `finalizeJob requires job in APPROVED state. Current: ${job.job_status}` };
+    }
+    return await lifecycleService.updateJobStatus(id, 'FINALIZED', user.id, remarks || `${user.role} finalized non-survey job`);
 };
 
 /**
@@ -287,6 +382,84 @@ export const reviewJob = async (id, remarks, user) => {
         throw { statusCode: 400, message: `reviewJob requires job in SURVEY_DONE state. Current: ${job.job_status}` };
     }
     return await lifecycleService.updateJobStatus(id, 'REVIEWED', user.id, remarks || 'TO technical review passed.');
+};
+
+/**
+ * Job status for rescheduling
+ */
+const RESCHEDULE_ALLOWED_STATUSES = ['CREATED', 'DOCUMENT_VERIFIED', 'APPROVED', 'ASSIGNED', 'SURVEY_AUTHORIZED'];
+const RESCHEDULE_BLOCKED_STATUSES = ['IN_PROGRESS', 'SURVEY_DONE', 'REVIEWED', 'FINALIZED', 'PAYMENT_DONE', 'CERTIFIED', 'REJECTED'];
+
+/**
+ * Reschedule Job
+ * Roles: ADMIN, GM
+ */
+export const rescheduleJob = async (id, data, userId) => {
+    const { new_target_date, new_target_port, reason } = data;
+    if (!reason) throw { statusCode: 400, message: 'Reschedule requires a reason.' };
+
+    const txn = await db.sequelize.transaction();
+    try {
+        const job = await JobRequest.findByPk(id, { transaction: txn, lock: txn.LOCK.UPDATE });
+        if (!job) throw { statusCode: 404, message: 'Job not found' };
+
+        if (!RESCHEDULE_ALLOWED_STATUSES.includes(job.job_status)) {
+            throw { statusCode: 400, message: `Rescheduling is not allowed in current state: ${job.job_status}` };
+        }
+
+        if (RESCHEDULE_BLOCKED_STATUSES.includes(job.job_status)) {
+            throw { statusCode: 400, message: `Cannot reschedule after survey start or terminal state.` };
+        }
+
+        const old_target_date = job.target_date;
+        const old_target_port = job.target_port;
+
+        // Insert into job_reschedules
+        await JobReschedule.create({
+            job_id: id,
+            old_target_date,
+            new_target_date,
+            old_target_port,
+            new_target_port,
+            reason,
+            requested_by: userId
+        }, { transaction: txn });
+
+        // Update job
+        await job.update({
+            target_date: new_target_date,
+            target_port: new_target_port,
+            reschedule_count: (job.reschedule_count || 0) + 1
+        }, { transaction: txn });
+
+        // Audit Log
+        await JobStatusHistory.create({
+            job_id: id,
+            previous_status: job.job_status,
+            new_status: job.job_status,
+            changed_by: userId,
+            reason: `Rescheduled: ${reason} (Port: ${old_target_port} -> ${new_target_port}, Date: ${old_target_date} -> ${new_target_date})`
+        }, { transaction: txn });
+
+        await txn.commit();
+
+        // Notify surveyor if assigned
+        if (job.assigned_surveyor_id) {
+            const jobWithVessel = await JobRequest.findByPk(id, { include: ['Vessel'] });
+            await notificationService.sendNotification(job.assigned_surveyor_id, 'JOB_RESCHEDULED', {
+                jobId: id,
+                vesselName: jobWithVessel.Vessel.vessel_name,
+                newDate: new_target_date,
+                newPort: new_target_port,
+                reason
+            });
+        }
+
+        return job;
+    } catch (error) {
+        await txn.rollback();
+        throw error;
+    }
 };
 
 /**

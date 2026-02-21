@@ -4,13 +4,13 @@ const Vessel = db.Vessel;
 const Client = db.Client;
 const FlagAdministration = db.FlagAdministration;
 
-const ensureValidFlag = async (flagState) => {
-    if (!flagState) return;
+const ensureValidFlag = async (flagId) => {
+    if (!flagId) return;
     const flag = await FlagAdministration.findOne({
-        where: { flag_name: flagState, status: 'ACTIVE' }
+        where: { id: flagId, status: 'ACTIVE' }
     });
     if (!flag) {
-        throw { statusCode: 400, message: `Invalid flag_state "${flagState}". Use an active flag profile.` };
+        throw { statusCode: 400, message: `Invalid or inactive flag administration (ID: ${flagId}).` };
     }
 };
 
@@ -26,7 +26,7 @@ export const createVessel = async (data) => {
     if (existing) {
         throw { statusCode: 400, message: 'Vessel with this IMO number already exists' };
     }
-    await ensureValidFlag(data.flag_state);
+    await ensureValidFlag(data.flag_administration_id);
     return await Vessel.create(data);
 };
 
@@ -40,7 +40,10 @@ export const getVessels = async (query, scopeFilters = {}, userRole = null) => {
             where,
             limit: parseInt(limit),
             offset: (page - 1) * limit,
-            include: [{ model: Client, as: 'Client' }],
+            include: [
+                { model: Client, as: 'Client' },
+                { model: FlagAdministration, as: 'FlagAdministration', attributes: ['flag_state_name'] }
+            ],
             order: [['created_at', 'DESC']]
         });
     }
@@ -48,11 +51,18 @@ export const getVessels = async (query, scopeFilters = {}, userRole = null) => {
     // For other roles, group by company name
     const vessels = await Vessel.findAll({
         where,
-        include: [{
-            model: Client,
-            as: 'Client',
-            attributes: ['id', 'company_name', 'company_code', 'email', 'phone', 'status']
-        }],
+        include: [
+            {
+                model: Client,
+                as: 'Client',
+                attributes: ['id', 'company_name', 'company_code', 'email', 'phone', 'status']
+            },
+            {
+                model: FlagAdministration,
+                as: 'FlagAdministration',
+                attributes: ['flag_state_name']
+            }
+        ],
         order: [['created_at', 'DESC']]
     });
 
@@ -93,7 +103,10 @@ export const getVessels = async (query, scopeFilters = {}, userRole = null) => {
 export const getVesselById = async (id, scopeFilters = {}) => {
     const vessel = await Vessel.findOne({
         where: { id, ...scopeFilters },
-        include: [{ model: Client, as: 'Client' }]
+        include: [
+            { model: Client, as: 'Client' },
+            { model: FlagAdministration, as: 'FlagAdministration', attributes: ['flag_state_name'] }
+        ]
     });
     if (!vessel) throw { statusCode: 404, message: 'Vessel not found' };
     return vessel;
@@ -108,11 +121,18 @@ export const getVesselsByClientId = async (clientId) => {
 
     const vessels = await Vessel.findAll({
         where: { client_id: clientId },
-        include: [{
-            model: Client,
-            as: 'Client',
-            attributes: ['id', 'company_name', 'company_code', 'email', 'phone', 'status']
-        }],
+        include: [
+            {
+                model: Client,
+                as: 'Client',
+                attributes: ['id', 'company_name', 'company_code', 'email', 'phone', 'status']
+            },
+            {
+                model: FlagAdministration,
+                as: 'FlagAdministration',
+                attributes: ['flag_state_name']
+            }
+        ],
         order: [['created_at', 'DESC']]
     });
 
@@ -139,8 +159,8 @@ export const updateVessel = async (id, data, scopeFilters = {}) => {
             throw { statusCode: 400, message: 'Another vessel with this IMO number already exists' };
         }
     }
-    if (data.flag_state) {
-        await ensureValidFlag(data.flag_state);
+    if (data.flag_administration_id) {
+        await ensureValidFlag(data.flag_administration_id);
     }
 
     return await vessel.update(data);

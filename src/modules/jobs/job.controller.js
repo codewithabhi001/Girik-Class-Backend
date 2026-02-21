@@ -51,11 +51,27 @@ export const getJobById = async (req, res, next) => {
 // Workflow Transitions (each maps to exactly one transition)
 // ─────────────────────────────────────────────
 
-/** CREATED → APPROVED  (ADMIN / GM) */
+/** CREATED → DOCUMENT_VERIFIED  (TO) */
+export const verifyJobDocuments = async (req, res, next) => {
+    try {
+        const job = await jobService.verifyJobDocuments(req.params.id, req.user.id);
+        res.json({ success: true, message: 'Documents verified by TO.', data: job });
+    } catch (error) { next(error); }
+};
+
+/** DOCUMENT_VERIFIED → APPROVED  (ADMIN / GM) */
 export const approveRequest = async (req, res, next) => {
     try {
         const job = await jobService.approveRequest(req.params.id, req.body?.remarks, req.user);
         res.json({ success: true, message: 'Job approved.', data: job });
+    } catch (error) { next(error); }
+};
+
+/** APPROVED → FINALIZED  (ADMIN / GM / TM) - only for non-survey jobs */
+export const finalizeJob = async (req, res, next) => {
+    try {
+        const job = await jobService.finalizeJob(req.params.id, req.body?.remarks, req.user);
+        res.json({ success: true, message: 'Job finalized.', data: job });
     } catch (error) { next(error); }
 };
 
@@ -96,6 +112,14 @@ export const sendBackJob = async (req, res, next) => {
     try {
         const job = await jobService.sendBackJob(req.params.id, req.body?.remarks, req.user);
         res.json({ success: true, message: 'Rework requested. Surveyor has been notified.', data: job });
+    } catch (error) { next(error); }
+};
+
+/** Reschedule Job (ADMIN / GM) */
+export const rescheduleJob = async (req, res, next) => {
+    try {
+        const job = await jobService.rescheduleJob(req.params.id, req.body, req.user.id);
+        res.json({ success: true, message: 'Job rescheduled successfully.', data: job });
     } catch (error) { next(error); }
 };
 

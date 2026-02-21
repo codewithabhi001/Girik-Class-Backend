@@ -22,7 +22,10 @@ The process involves moving a `JobRequest` through a series of approval and exec
 
 ### Step 2: Surveyor Assignment
 - **Action**: GM assigns a Surveyor to the approved job.
+admin>gm>tm>to>
+
 - **Status Change**: `APPROVED` -> `ASSIGNED`.
+
 - **System**: Updates `assigned_surveyor_id`.
 
 ### Step 3: Pre-Approval (Desk Review)

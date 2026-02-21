@@ -19,13 +19,22 @@ router.get('/:id', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR
 router.post('/', authorizeRoles('CLIENT', 'ADMIN', 'GM'), validate(schemas.createJob), jobController.createJob);
 
 // ─── Explicit Semantic Workflow Transitions ───────────────
-// CREATED → APPROVED   (GM / ADMIN)
+// CREATED → DOCUMENT_VERIFIED  (TO)
+router.put('/:id/verify-documents', authorizeRoles('TO'), jobController.verifyJobDocuments);
+
+// DOCUMENT_VERIFIED → APPROVED   (GM / ADMIN)
 router.put('/:id/approve-request', authorizeRoles('ADMIN', 'GM'), jobController.approveRequest);
+
+// APPROVED → FINALIZED (for non-survey jobs)
+router.put('/:id/finalize', authorizeRoles('ADMIN', 'GM', 'TM'), jobController.finalizeJob);
 
 // APPROVED → ASSIGNED  (ADMIN / GM — requires surveyorId in body)
 router.put('/:id/assign', authorizeRoles('ADMIN', 'GM'), jobController.assignSurveyor);
 // Re-assign surveyor without status change (GM / TM)
 router.put('/:id/reassign', authorizeRoles('GM', 'TM'), validate(schemas.reassignJob), jobController.reassignSurveyor);
+
+// Reschedule
+router.put('/:id/reschedule', authorizeRoles('ADMIN', 'GM'), validate(schemas.rescheduleJob), jobController.rescheduleJob);
 
 // ASSIGNED → SURVEY_AUTHORIZED   (ADMIN / TM)
 router.put('/:id/authorize-survey', authorizeRoles('ADMIN', 'TM'), jobController.authorizeSurvey);

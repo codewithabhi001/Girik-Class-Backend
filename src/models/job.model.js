@@ -24,6 +24,7 @@ export default (sequelize, DataTypes) => {
         job_status: {
             type: DataTypes.ENUM(
                 'CREATED',
+                'DOCUMENT_VERIFIED',
                 'APPROVED',
                 'ASSIGNED',
                 'SURVEY_AUTHORIZED',

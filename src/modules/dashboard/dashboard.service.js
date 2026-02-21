@@ -3,14 +3,20 @@ import { Op } from 'sequelize';
 
 const { User, Client, Vessel, JobRequest, SurveyorProfile, Certificate, FlagAdministration, SurveyReport, CertificateType, Payment } = db;
 
-const vesselAttrs = ['id', 'vessel_name', 'imo_number', 'flag_state', 'class_status'];
+const vesselAttrs = ['id', 'vessel_name', 'imo_number', 'flag_administration_id', 'class_status'];
 
 export const getAdminDashboard = async () => {
     const [usersByRole, clientsWithVessels, vesselsCount, jobsCount, certificatesCount, surveyorProfiles] = await Promise.all([
         User.findAll({ attributes: ['role'], raw: true }),
         Client.findAll({
             where: { status: 'ACTIVE' },
-            include: [{ model: Vessel, as: 'Vessels', required: false, attributes: vesselAttrs }],
+            include: [{
+                model: Vessel,
+                as: 'Vessels',
+                required: false,
+                attributes: vesselAttrs,
+                include: [{ model: FlagAdministration, as: 'FlagAdministration', attributes: ['flag_state_name'] }]
+            }],
             order: [['company_name', 'ASC']],
         }),
         Vessel.count(),
@@ -34,7 +40,7 @@ export const getAdminDashboard = async () => {
             id: v.id,
             vessel_name: v.vessel_name,
             imo_number: v.imo_number,
-            flag: v.flag_state,
+            flag: v.FlagAdministration?.flag_state_name,
             status: v.class_status,
         })),
     }));
@@ -245,7 +251,7 @@ export const getFlagAdminDashboard = async () => {
     let flagList = [];
     try {
         flagList = await FlagAdministration.findAll({
-            attributes: ['id', 'flag_name', 'country', 'status'],
+            attributes: ['id', 'flag_state_name', 'country', 'status'],
             raw: true,
         });
     } catch (_) { }

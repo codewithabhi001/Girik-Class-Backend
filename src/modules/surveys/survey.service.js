@@ -31,6 +31,10 @@ const assertJobAccessible = async (jobId, userId, { checkSurveyor = true, allowe
         throw { statusCode: 403, message: 'You are not the assigned surveyor for this job.' };
     }
 
+    if (job.is_survey_required === false) {
+        throw { statusCode: 400, message: "Survey not required for this job." };
+    }
+
     return job;
 };
 
@@ -237,6 +241,12 @@ export const requestRework = async (jobId, reason, userId) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const getTimeline = async (id) => {
+    const job = await JobRequest.findByPk(id);
+    if (!job) throw { statusCode: 404, message: 'Job not found' };
+    if (job.is_survey_required === false) {
+        throw { statusCode: 400, message: "Survey not required for this job." };
+    }
+
     const gps = await GpsTracking.findAll({ where: { job_id: id }, order: [['timestamp', 'ASC']] });
     const survey = await Survey.findOne({
         where: { job_id: id },
@@ -273,6 +283,10 @@ export const streamLocation = async (jobId, { latitude, longitude }, userId) => 
     if (!job) throw { statusCode: 404, message: 'Job not found' };
     if (job.assigned_surveyor_id !== userId) {
         throw { statusCode: 403, message: 'You are not the assigned surveyor for this job.' };
+    }
+
+    if (job.is_survey_required === false) {
+        throw { statusCode: 400, message: "Survey not required for this job." };
     }
 
     const survey = await Survey.findOne({ where: { job_id: jobId } });

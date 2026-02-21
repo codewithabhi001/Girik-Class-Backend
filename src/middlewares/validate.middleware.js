@@ -42,6 +42,10 @@ export const schemas = {
         reason: Joi.string().required(),
         target_port: Joi.string().required(),
         target_date: Joi.date().iso().required(),
+        uploaded_documents: Joi.array().items(Joi.object({
+            required_document_id: Joi.string().guid().required(),
+            file_url: Joi.string().required()
+        })).optional()
     }),
     submitSurvey: Joi.object({
         job_id: Joi.string().guid().required(),
@@ -101,7 +105,7 @@ export const schemas = {
         status: Joi.string().valid('ACCEPTED', 'REJECTED').required(),
     }),
     createFlag: Joi.object({
-        flag_name: Joi.string().required(),
+        flag_state_name: Joi.string().required(),
         country: Joi.string().required(),
         authority_name: Joi.string().required(),
         contact_email: Joi.string().email().required(),
@@ -155,6 +159,7 @@ export const schemas = {
         validity_years: Joi.number().integer().min(1).max(10).required(),
         status: Joi.string().valid('ACTIVE', 'INACTIVE').optional().default('ACTIVE'),
         description: Joi.string().allow('', null).optional(),
+        requires_survey: Joi.boolean().optional().default(true),
     }),
     uploadDocument: Joi.object({
         entity_type: Joi.string().required(),
@@ -172,6 +177,11 @@ export const schemas = {
     }),
     reassignJob: Joi.object({
         surveyorId: Joi.string().guid().required(),
+        reason: Joi.string().required(),
+    }),
+    rescheduleJob: Joi.object({
+        new_target_date: Joi.date().iso().required(),
+        new_target_port: Joi.string().required(),
         reason: Joi.string().required(),
     }),
     // escalateJob schema removed (escalation endpoint removed)
@@ -266,10 +276,14 @@ export const schemas = {
     createVessel: Joi.object({
         client_id: Joi.string().guid().required(),
         vessel_name: Joi.string().required(),
-        imo_number: Joi.string().required(),
+        imo_number: Joi.string().pattern(/^[0-9]{7}$/).required().messages({
+            'string.pattern.base': 'IMO number must be a 7-digit number'
+        }),
         call_sign: Joi.string().optional().allow(''),
-        mmsi_number: Joi.string().optional().allow(''),
-        flag_state: Joi.string().required(),
+        mmsi_number: Joi.string().pattern(/^[0-9]{9}$/).optional().allow('').messages({
+            'string.pattern.base': 'MMSI number must be a 9-digit number'
+        }),
+        flag_administration_id: Joi.string().guid().required(),
         port_of_registry: Joi.string().optional().allow(''),
         year_built: Joi.number().integer().optional(),
         ship_type: Joi.string().required(),
@@ -284,10 +298,14 @@ export const schemas = {
     updateVessel: Joi.object({
         client_id: Joi.string().guid().optional(),
         vessel_name: Joi.string().optional(),
-        imo_number: Joi.string().optional(),
+        imo_number: Joi.string().pattern(/^[0-9]{7}$/).optional().messages({
+            'string.pattern.base': 'IMO number must be a 7-digit number'
+        }),
         call_sign: Joi.string().optional().allow(''),
-        mmsi_number: Joi.string().optional().allow(''),
-        flag_state: Joi.string().optional(),
+        mmsi_number: Joi.string().pattern(/^[0-9]{9}$/).optional().allow('').messages({
+            'string.pattern.base': 'MMSI number must be a 9-digit number'
+        }),
+        flag_administration_id: Joi.string().guid().optional(),
         port_of_registry: Joi.string().optional().allow(''),
         year_built: Joi.number().integer().optional(),
         ship_type: Joi.string().optional(),

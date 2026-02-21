@@ -6,6 +6,7 @@ export default (sequelize, DataTypes) => {
         validity_years: DataTypes.INTEGER,
         status: { type: DataTypes.ENUM('ACTIVE', 'INACTIVE'), defaultValue: 'ACTIVE' },
         description: DataTypes.TEXT,
+        requires_survey: { type: DataTypes.BOOLEAN, defaultValue: true },
     }, {
         tableName: 'certificate_types',
         underscored: true,

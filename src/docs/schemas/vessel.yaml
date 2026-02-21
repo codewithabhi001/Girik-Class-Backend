@@ -9,9 +9,8 @@ VesselSummary:
     imo_number:
       type: string
       example: "9123456"
-    flag_state:
-      type: string
-      example: "Singapore"
+    flag_administration_id:
+      $ref: '#/components/schemas/UUID'
     ship_type:
       type: string
       example: "Cargo"
@@ -19,7 +18,7 @@ VesselSummary:
     id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
     vessel_name: "Ocean Pioneer"
     imo_number: "9123456"
-    flag_state: "Singapore"
+    flag_administration_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
     ship_type: "Cargo"
 
 VesselCreateRequest:
@@ -28,7 +27,7 @@ VesselCreateRequest:
     - client_id
     - vessel_name
     - imo_number
-    - flag_state
+    - flag_administration_id
     - ship_type
   properties:
     client_id:
@@ -47,9 +46,10 @@ VesselCreateRequest:
     mmsi_number:
       type: string
       example: "563123456"
-    flag_state:
+    flag_administration_id:
       type: string
-      example: "Singapore"
+      format: uuid
+      example: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
     port_of_registry:
       type: string
       example: "Singapore"
@@ -81,7 +81,7 @@ VesselCreateRequest:
     client_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
     vessel_name: "Ocean Pioneer"
     imo_number: "9123456"
-    flag_state: "Singapore"
+    flag_administration_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
     ship_type: "Cargo"
 
 VesselUpdateRequest:
@@ -98,8 +98,9 @@ VesselUpdateRequest:
       type: string
     mmsi_number:
       type: string
-    flag_state:
+    flag_administration_id:
       type: string
+      format: uuid
     port_of_registry:
       type: string
     year_built:
@@ -160,7 +161,7 @@ VesselResponse:
     id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
     vessel_name: "Ocean Pioneer"
     imo_number: "9123456"
-    flag_state: "Singapore"
+    flag_administration_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
     ship_type: "Cargo"
     client_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
     call_sign: "9VSP"

@@ -48,6 +48,10 @@ export const submitChecklist = async (jobId, items, userId) => {
         throw { statusCode: 403, message: 'You are not the assigned surveyor for this job.' };
     }
 
+    if (job.is_survey_required === false) {
+        throw { statusCode: 400, message: "Survey not required for this job." };
+    }
+
     const survey = await Survey.findOne({ where: { job_id: jobId } });
     if (!survey) throw { statusCode: 400, message: 'Survey has not been started. Please check-in first.' };
 

@@ -26,7 +26,7 @@ export const getCertificateTypes = async (includeInactive = false) => {
     const where = includeInactive ? {} : { status: 'ACTIVE' };
     return await CertificateType.findAll({
         where,
-        attributes: ['id', 'name', 'issuing_authority', 'validity_years', 'status', 'description'],
+        attributes: ['id', 'name', 'issuing_authority', 'validity_years', 'status', 'description', 'requires_survey'],
         order: [['name', 'ASC']],
     });
 };
@@ -41,6 +41,7 @@ export const createCertificateType = async (data) => {
         validity_years: data.validity_years,
         status: data.status ?? 'ACTIVE',
         description: data.description ?? null,
+        requires_survey: data.requires_survey ?? true,
     });
 };
 
@@ -65,10 +66,12 @@ export const generateCertificate = async (data, userId) => {
             throw { statusCode: 400, message: `Certificate can only be generated when job is PAYMENT_DONE. Current: ${job.job_status}` };
         }
 
-        // ── Guard 2: Survey must be FINALIZED ──
-        const survey = await db.Survey.findOne({ where: { job_id }, transaction });
-        if (!survey || survey.survey_status !== 'FINALIZED') {
-            throw { statusCode: 400, message: 'Cannot generate certificate: Survey must be FINALIZED first.' };
+        // ── Guard 2: Survey must be FINALIZED (if required) ──
+        if (job.is_survey_required) {
+            const survey = await db.Survey.findOne({ where: { job_id }, transaction });
+            if (!survey || survey.survey_status !== 'FINALIZED') {
+                throw { statusCode: 400, message: 'Cannot generate certificate: Survey must be FINALIZED first.' };
+            }
         }
 
         // ── Guard 3: No certificate already linked to this job ──
@@ -115,7 +118,7 @@ export const generateCertificate = async (data, userId) => {
             user_id: userId, action: 'GENERATE_CERTIFICATE',
             entity_name: 'Certificate', entity_id: cert.id,
             old_values: null,
-            new_values: { job_id, certificate_number, certificate_type_id: cert.certificate_type_id, vessel_id: cert.vessel_id }
+            new_values: { job_id, certificate_number: certificateNumber, certificate_type_id: cert.certificate_type_id, vessel_id: cert.vessel_id }
         }, { transaction });
 
         await transaction.commit();

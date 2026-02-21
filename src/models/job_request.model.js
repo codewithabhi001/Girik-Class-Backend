@@ -9,7 +9,7 @@ export default (sequelize, DataTypes) => {
         target_date: DataTypes.DATEONLY,
         job_status: {
             type: DataTypes.ENUM(
-                'CREATED', 'APPROVED', 'ASSIGNED', 'SURVEY_AUTHORIZED', 'IN_PROGRESS', 'SURVEY_DONE',
+                'CREATED', 'DOCUMENT_VERIFIED', 'APPROVED', 'ASSIGNED', 'SURVEY_AUTHORIZED', 'IN_PROGRESS', 'SURVEY_DONE',
                 'REVIEWED', 'FINALIZED', 'REWORK_REQUESTED', 'PAYMENT_DONE', 'CERTIFIED', 'REJECTED'
             ),
             defaultValue: 'CREATED',
@@ -23,6 +23,14 @@ export default (sequelize, DataTypes) => {
         generated_certificate_id: DataTypes.UUID,
         approved_by_user_id: DataTypes.UUID,
         remarks: DataTypes.TEXT,
+        is_survey_required: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: true
+        },
+        reschedule_count: {
+            type: DataTypes.INTEGER,
+            defaultValue: 0
+        }
     }, {
         tableName: 'job_requests',
         underscored: true,
@@ -43,6 +51,8 @@ export default (sequelize, DataTypes) => {
         JobRequest.hasMany(models.ActivityPlanning, { foreignKey: 'job_id' });
         JobRequest.hasMany(models.NonConformity, { foreignKey: 'job_id' });
         JobRequest.hasMany(models.Payment, { foreignKey: 'job_id' });
+        JobRequest.hasMany(models.JobDocument, { foreignKey: 'job_id' });
+        JobRequest.hasMany(models.JobReschedule, { foreignKey: 'job_id' });
     };
 
     return JobRequest;

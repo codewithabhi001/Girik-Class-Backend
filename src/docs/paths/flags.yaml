@@ -10,14 +10,14 @@
         application/json:
           schema:
             type: object
-            required: [flag_name, country, authority_name, contact_email]
+            required: [flag_state_name, country, authority_name, contact_email]
             properties:
-              flag_name: { type: string }
+              flag_state_name: { type: string }
               country: { type: string }
               authority_name: { type: string }
               contact_email: { type: string, format: email }
           example:
-            flag_name: "Singapore"
+            flag_state_name: "Singapore"
             country: "Singapore"
             authority_name: "Maritime and Port Authority"
             contact_email: "mpa@gov.sg"
@@ -51,7 +51,7 @@
           schema:
             type: object
             properties:
-              flag_name: { type: string }
+              flag_state_name: { type: string }
               country: { type: string }
               authority_name: { type: string }
               contact_email: { type: string, format: email }
