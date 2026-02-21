@@ -49,6 +49,7 @@ export const createJob = async (data, userId) => {
             const uploadedDocIds = data.uploaded_documents?.map(d => d.required_document_id) || [];
             const missingDocs = requiredDocs.filter(rd => !uploadedDocIds.includes(rd.id));
 
+
             if (missingDocs.length > 0) {
                 throw {
                     statusCode: 400,
@@ -175,9 +176,9 @@ export const getJobs = async (query, scopeFilters = {}, userRole = null) => {
     const isSurveyor = userRole === 'SURVEYOR';
 
     const jobAttributes = isSurveyor
-        ? ['id', 'vessel_id', 'certificate_type_id', 'target_port', 'target_date', 'job_status', 'created_at', 'is_survey_required', 'reschedule_count']
+        ? ['id', 'vessel_id', 'certificate_type_id', 'target_port', 'target_date', 'job_status', 'priority', 'created_at', 'is_survey_required', 'reschedule_count']
         : ['id', 'vessel_id', 'certificate_type_id', 'requested_by_user_id', 'assigned_surveyor_id',
-            'assigned_by_user_id', 'approved_by_user_id', 'target_port', 'target_date', 'job_status', 'created_at', 'is_survey_required', 'reschedule_count'];
+            'assigned_by_user_id', 'approved_by_user_id', 'target_port', 'target_date', 'job_status', 'priority', 'created_at', 'is_survey_required', 'reschedule_count'];
 
     const include = [
         { model: Vessel, attributes: isSurveyor ? ['id', 'vessel_name', 'imo_number'] : ['id', 'vessel_name', 'imo_number', 'client_id'] },

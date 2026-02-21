@@ -120,11 +120,10 @@
           schema: { $ref: '#/components/schemas/JobCreateRequest' }
           example:
             vessel_id: "019c574f-0991-7758-b696-03bb416c7433"
-            certificate_type_id: "019c4001-0001-7000-a000-000000000001"
+            certificate_type_id: "019c79a4-55ba-773c-9454-f6bee169ab03"
             reason: "Annual survey due"
             target_port: "Singapore"
             target_date: "2026-04-15"
-            priority: "NORMAL"
             uploaded_documents:
               - required_document_id: "019c4001-0002-7000-a000-000000000001"
                 file_url: "https://cdn.example.com/docs/reg-cert.pdf"
@@ -857,8 +856,18 @@
     tags: [Jobs]
     summary: "ADMIN/GM/TM: Update job priority"
     description: |
-      Updates the priority flag of a job. Creates an audit log entry with
-      old and new priority values plus an optional reason.
+      Updates the `priority` field of a job. Creates an audit log entry with
+      the old and new values plus an optional reason.
+
+      Priority does **not** affect the job workflow or status — it is a
+      management flag only, used to sort / filter jobs in dashboards.
+
+      | Value | Meaning |
+      |---|---|
+      | `LOW` | Non-urgent, can wait |
+      | `NORMAL` | Standard priority (default) |
+      | `HIGH` | Requires prompt attention |
+      | `URGENT` | Must be actioned immediately |
 
       **Roles:** ADMIN, GM, TM
     operationId: updateJobPriority
@@ -879,6 +888,7 @@
               priority:
                 type: string
                 enum: [LOW, NORMAL, HIGH, URGENT]
+                example: HIGH
               reason:
                 type: string
                 example: "Client requested expedited review."

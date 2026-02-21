@@ -30,6 +30,12 @@ export default (sequelize, DataTypes) => {
         reschedule_count: {
             type: DataTypes.INTEGER,
             defaultValue: 0
+        },
+        priority: {
+            type: DataTypes.ENUM('LOW', 'NORMAL', 'HIGH', 'URGENT'),
+            defaultValue: 'NORMAL',
+            allowNull: false,
+            comment: 'Job priority set via PUT /:id/priority by ADMIN/GM/TM'
         }
     }, {
         tableName: 'job_requests',

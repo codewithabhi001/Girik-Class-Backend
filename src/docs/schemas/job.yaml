@@ -21,10 +21,6 @@ JobCreateRequest:
       type: string
       format: date
       example: "2026-03-15"
-    priority:
-      type: string
-      enum: [LOW, NORMAL, HIGH, URGENT]
-      default: NORMAL
     remarks:
       type: string
 
@@ -60,11 +56,13 @@ JobResponse:
       type: string
     job_status:
       type: string
-      enum: [CREATED, APPROVED, ASSIGNED, SURVEY_AUTHORIZED, IN_PROGRESS, SURVEY_DONE, REVIEWED, FINALIZED, REWORK_REQUESTED, PAYMENT_DONE, CERTIFIED, REJECTED]
+      enum: [CREATED, DOCUMENT_VERIFIED, APPROVED, ASSIGNED, SURVEY_AUTHORIZED, IN_PROGRESS, SURVEY_DONE, REVIEWED, FINALIZED, REWORK_REQUESTED, PAYMENT_DONE, CERTIFIED, REJECTED]
       example: "CREATED"
     priority:
       type: string
       enum: [LOW, NORMAL, HIGH, URGENT]
+      default: NORMAL
+      description: "Management priority flag. Set/changed via PUT /jobs/:id/priority — not accepted at creation time."
     vessel:
       $ref: '#/components/schemas/VesselSummary'
     certificate_type:
