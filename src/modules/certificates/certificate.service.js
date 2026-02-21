@@ -320,9 +320,21 @@ export const getCertificateById = async (id, user) => {
     throw { statusCode: 404, message: 'Certificate not found' };
 };
 
+const CERT_TRANSITIONS = {
+    VALID: ['SUSPENDED', 'REVOKED', 'EXPIRED'],
+    SUSPENDED: ['VALID', 'REVOKED'],
+    REVOKED: [],
+    EXPIRED: ['VALID']
+};
+
 export const updateStatus = async (id, status, reason, userId) => {
     const cert = await Certificate.findByPk(id);
     if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
+
+    if (!CERT_TRANSITIONS[cert.status]?.includes(status)) {
+        throw { statusCode: 400, message: `Invalid certificate status transition: ${cert.status} → ${status}` };
+    }
+    if (cert.status === 'REVOKED') throw { statusCode: 400, message: 'Revoked certificates cannot be modified.' };
 
     await cert.update({ status });
 
@@ -515,7 +527,15 @@ export const verifyCertificate = async (certificateNumber) => {
 
     return {
         valid: cert.status === 'VALID' && new Date(cert.expiry_date) > new Date(),
-        certificate: cert,
+        certificate: {
+            certificate_number: cert.certificate_number,
+            status: cert.status,
+            issue_date: cert.issue_date,
+            expiry_date: cert.expiry_date,
+            vessel_name: cert.Vessel?.vessel_name,
+            imo_number: cert.Vessel?.imo_number,
+            certificate_type: cert.CertificateType?.name
+        },
         pdf_url: pdfUrl
     };
 };

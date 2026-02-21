@@ -1,7 +1,9 @@
 import db from '../../models/index.js';
 
 export const globalSearch = async (query, user) => {
-    const { q } = query;
+    let { q } = query;
+    if (!q || q.trim().length < 2) throw { statusCode: 400, message: 'Search query must be at least 2 characters.' };
+    q = q.trim().replace(/[%_]/g, '\\$&');
     const { Op } = db.Sequelize;
 
     const results = {

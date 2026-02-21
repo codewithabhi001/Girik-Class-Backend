@@ -15,7 +15,7 @@ const JWT_TYPE_REFRESH = 'refresh';
 const generateAccessToken = (user) => {
     return jwt.sign(
         { id: user.id, role: user.role, email: user.email, type: JWT_TYPE_ACCESS },
-        env.jwt.secret,
+        env.jwt.accessSecret,
         { expiresIn: env.jwt.accessExpiresIn }
     );
 };
@@ -24,7 +24,7 @@ const generateAccessToken = (user) => {
 const generateRefreshToken = (user) => {
     return jwt.sign(
         { id: user.id, type: JWT_TYPE_REFRESH },
-        env.jwt.secret,
+        env.jwt.refreshSecret,
         { expiresIn: env.jwt.refreshExpiresIn }
     );
 };
@@ -94,7 +94,10 @@ export const register = async (userData, options = {}) => {
     };
 };
 
-export const logout = async (userId) => {
+export const tokenBlacklist = new Set();
+
+export const logout = async (userId, token) => {
+    if (token) tokenBlacklist.add(token);
     return true;
 };
 
@@ -102,7 +105,7 @@ export const logout = async (userId) => {
 export const refreshToken = async (refreshTokenPayload) => {
     if (!refreshTokenPayload) throw { statusCode: 401, message: 'Refresh token required' };
     try {
-        const decoded = jwt.verify(refreshTokenPayload, env.jwt.secret);
+        const decoded = jwt.verify(refreshTokenPayload, env.jwt.refreshSecret);
         if (decoded.type !== JWT_TYPE_REFRESH) {
             throw { statusCode: 401, message: 'Invalid token type. Use refresh token.' };
         }
@@ -123,7 +126,7 @@ export const refreshToken = async (refreshTokenPayload) => {
 const generatePasswordResetToken = (user) => {
     return jwt.sign(
         { purpose: PASSWORD_RESET_PURPOSE, userId: user.id, email: user.email },
-        env.jwt.secret,
+        env.jwt.resetSecret,
         { expiresIn: env.passwordResetExpiresIn }
     );
 };
@@ -144,7 +147,7 @@ export const forgotPassword = async (email) => {
 export const resetPassword = async (token, newPassword) => {
     let decoded;
     try {
-        decoded = jwt.verify(token, env.jwt.secret);
+        decoded = jwt.verify(token, env.jwt.resetSecret);
     } catch (e) {
         throw { statusCode: 400, message: 'Invalid or expired reset link. Please request a new password reset.' };
     }

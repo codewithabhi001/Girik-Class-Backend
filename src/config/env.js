@@ -15,10 +15,24 @@ export default {
         sslCa: process.env.DB_SSL_CA,
     },
     jwt: {
-        get secret() {
-            const secret = process.env.JWT_SECRET || 'secret';
-            if (process.env.NODE_ENV === 'production' && (!secret || secret === 'secret')) {
-                throw new Error('JWT_SECRET must be set to a strong value in production');
+        get accessSecret() {
+            const secret = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || 'access_secret';
+            if (process.env.NODE_ENV === 'production' && (!secret || secret === 'access_secret' || secret === 'secret')) {
+                throw new Error('JWT_ACCESS_SECRET must be set to a strong value in production');
+            }
+            return secret;
+        },
+        get refreshSecret() {
+            const secret = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || 'refresh_secret';
+            if (process.env.NODE_ENV === 'production' && (!secret || secret === 'refresh_secret' || secret === 'secret')) {
+                throw new Error('JWT_REFRESH_SECRET must be set to a strong value in production');
+            }
+            return secret;
+        },
+        get resetSecret() {
+            const secret = process.env.JWT_RESET_SECRET || process.env.JWT_SECRET || 'reset_secret';
+            if (process.env.NODE_ENV === 'production' && (!secret || secret === 'reset_secret' || secret === 'secret')) {
+                throw new Error('JWT_RESET_SECRET must be set to a strong value in production');
             }
             return secret;
         },

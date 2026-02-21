@@ -89,10 +89,10 @@ export const createJob = async (data, userId) => {
 
         await JobStatusHistory.create({
             job_id: job.id,
-            old_status: null,
+            previous_status: null,
             new_status: 'CREATED',
             changed_by: userId,
-            change_reason: 'Initial creation'
+            reason: 'Initial creation'
         }, { transaction: txn });
 
         await txn.commit();
@@ -335,8 +335,8 @@ export const reassignSurveyor = async (jobId, surveyorId, reason, userId) => {
     const oldSurveyor = job.assigned_surveyor_id;
     await job.update({ assigned_surveyor_id: surveyorId, assigned_by_user_id: userId });
     await JobStatusHistory.create({
-        job_id: jobId, old_status: job.job_status, new_status: job.job_status,
-        changed_by: userId, change_reason: `Reassigned from ${oldSurveyor} to ${surveyorId}: ${reason}`
+        job_id: jobId, previous_status: job.job_status, new_status: job.job_status,
+        changed_by: userId, reason: `Reassigned from ${oldSurveyor} to ${surveyorId}: ${reason}`
     });
     return job;
 };
@@ -469,6 +469,9 @@ export const rescheduleJob = async (id, data, userId) => {
  */
 export const sendBackJob = async (id, remarks, user) => {
     const job = await requireJob(id);
+    if (!job.is_survey_required) {
+        throw { statusCode: 400, message: 'Cannot request rework on a job that does not require a survey.' };
+    }
     const allowedFromStates = { ADMIN: null, TM: ['SURVEY_DONE', 'REVIEWED'], TO: ['SURVEY_DONE'] };
     const allowed = allowedFromStates[user.role];
     if (!allowed && user.role !== 'ADMIN') {
@@ -529,7 +532,7 @@ export const cancelJobForClient = async (id, reason, clientId, userId) => {
     if (job.Vessel.client_id !== clientId) {
         throw { statusCode: 403, message: 'Unauthorized: this job does not belong to your account.' };
     }
-    if (['FINALIZED', 'CERTIFIED', 'REJECTED'].includes(job.job_status)) {
+    if (['FINALIZED', 'CERTIFIED', 'REJECTED', 'PAYMENT_DONE'].includes(job.job_status)) {
         throw { statusCode: 400, message: `Cannot cancel a ${job.job_status} job.` };
     }
     return await lifecycleService.updateJobStatus(id, 'REJECTED', userId, reason || 'Cancelled by client');

@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
  */
 export const uploadFile = async (fileBuffer, fileName, mimeType, folder = '') => {
     if (!env.aws.bucketName || !env.aws.accessKeyId) {
+        if (env.nodeEnv === 'production') throw new Error('FATAL: AWS credentials not configured in production environment.');
         console.warn('AWS Credentials missing, returning mock URL');
         const path = folder ? `${folder}/${fileName}` : fileName;
         return `https://mock-s3.com/${path}`;
@@ -47,6 +48,7 @@ export const UPLOAD_FOLDERS = {
 
 export const getSignedFileUrl = async (key, expiresIn = 3600) => {
     if (!env.aws.bucketName || !env.aws.accessKeyId) {
+        if (env.nodeEnv === 'production') throw new Error('FATAL: AWS credentials not configured in production environment.');
         return `https://mock-s3.com/${key}`;
     }
     const command = new GetObjectCommand({
@@ -58,6 +60,7 @@ export const getSignedFileUrl = async (key, expiresIn = 3600) => {
 
 export const getFileContent = async (key) => {
     if (!env.aws.bucketName || !env.aws.accessKeyId) {
+        if (env.nodeEnv === 'production') throw new Error('FATAL: AWS credentials not configured in production environment.');
         return Buffer.from("Mock Content for Integrity Check");
     }
     const command = new GetObjectCommand({

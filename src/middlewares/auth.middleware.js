@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import env from '../config/env.js';
 import db from '../models/index.js';
+import { tokenBlacklist } from '../modules/auth/auth.service.js';
 
 export const authenticate = async (req, res, next) => {
     try {
@@ -14,7 +15,11 @@ export const authenticate = async (req, res, next) => {
             return res.status(401).json({ message: 'Authentication token missing or invalid' });
         }
 
-        const decoded = jwt.verify(token, env.jwt.secret);
+        if (tokenBlacklist.has(token)) {
+            return res.status(401).json({ message: 'Token has been revoked' });
+        }
+
+        const decoded = jwt.verify(token, env.jwt.accessSecret);
 
         if (decoded.type === 'refresh') {
             return res.status(401).json({ message: 'Use access token for API calls. Use refresh token only at POST /auth/refresh-token.' });
@@ -27,6 +32,7 @@ export const authenticate = async (req, res, next) => {
         }
 
         req.user = user;
+        req.token = token;
         next();
     } catch (error) {
         return res.status(401).json({ message: 'Invalid token' });

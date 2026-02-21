@@ -94,7 +94,9 @@ ResetPasswordRequest:
     newPassword:
       type: string
       format: password
-      minLength: 6
+      minLength: 8
+      pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)'
+      example: 'SecurePass123'
 
 RefreshTokenRequest:
   type: object

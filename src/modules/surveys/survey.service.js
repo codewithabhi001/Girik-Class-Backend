@@ -257,8 +257,13 @@ export const getTimeline = async (id) => {
 
 export const getSurveyReports = async (query) => {
     const { page = 1, limit = 10, ...filters } = query;
+    const allowedFilters = {};
+    if (filters.survey_status) allowedFilters.survey_status = filters.survey_status;
+    if (filters.surveyor_id) allowedFilters.surveyor_id = filters.surveyor_id;
+    if (filters.job_id) allowedFilters.job_id = filters.job_id;
+
     const { count, rows } = await Survey.findAndCountAll({
-        where: filters,
+        where: allowedFilters,
         limit: parseInt(limit),
         offset: (page - 1) * limit,
         include: [

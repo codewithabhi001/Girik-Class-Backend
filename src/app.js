@@ -15,8 +15,18 @@ import './models/index.js'; // Initialize DB
 const app = express();
 
 // Security Headers
-// Security Headers
-// app.use(helmet()); 
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", "data:", "cdn.girikship.com"],
+        }
+    },
+    crossOriginResourcePolicy: { policy: "same-site" },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" }
+}));
 
 // CORS
 // CORS
@@ -47,7 +57,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // API Request/Response Logger - Logs every API hit with details
-if(process.env.NODE_ENV = 'PRODUCTION'){
+if (process.env.NODE_ENV === 'production') {
     app.use('/api/v1', apiLogger);
 }
 

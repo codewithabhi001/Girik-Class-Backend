@@ -91,7 +91,8 @@ export const uploadStandaloneFile = async (req, res, next) => {
         if (!req.file) {
             throw { statusCode: 400, message: 'No file provided' };
         }
-        const folderName = req.body.folder || 'misc';
+        const ALLOWED_UPLOAD_FOLDERS = ['misc', 'documents', 'surveys', 'jobs/attachments'];
+        const folderName = ALLOWED_UPLOAD_FOLDERS.includes(req.body.folder) ? req.body.folder : 'misc';
         const result = await documentService.uploadStandaloneFile(req.file, folderName);
         res.status(201).json({ success: true, data: result });
     } catch (e) { next(e); }

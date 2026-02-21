@@ -45,7 +45,7 @@ export const register = async (req, res, next) => {
 
 export const logout = async (req, res, next) => {
     try {
-        await authService.logout(req.user.id);
+        await authService.logout(req.user.id, req.token);
         const clearOpts = { path: cookieOptions.path, httpOnly: true, secure: cookieOptions.secure, sameSite: cookieOptions.sameSite };
         res.clearCookie('token', clearOpts);
         res.clearCookie('refreshToken', clearOpts);

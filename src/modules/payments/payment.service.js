@@ -122,8 +122,12 @@ export const markPaid = async (paymentId, userId, receiptFile = null, remarks = 
 
 export const getPayments = async (query, scopeFilters = {}) => {
     const { page = 1, limit = 10, ...filters } = query;
+    const allowedFilters = {};
+    const ALLOWED_KEYS = ['payment_status', 'job_id', 'invoice_number'];
+    ALLOWED_KEYS.forEach(key => { if (filters[key]) allowedFilters[key] = filters[key]; });
+
     return await Payment.findAndCountAll({
-        where: { ...filters, ...scopeFilters },
+        where: { ...allowedFilters, ...scopeFilters },
         limit: parseInt(limit),
         offset: (page - 1) * limit,
         include: [{ model: JobRequest, include: [{ model: Vessel, attributes: ['vessel_name'] }] }],

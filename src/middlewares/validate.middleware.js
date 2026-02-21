@@ -27,12 +27,12 @@ export const schemas = {
     }),
     resetPassword: Joi.object({
         token: Joi.string().required(),
-        newPassword: Joi.string().min(6).required(),
+        newPassword: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).required().messages({ 'string.pattern.base': 'Password must contain uppercase, lowercase, and digit' }),
     }),
     register: Joi.object({
         name: Joi.string().required(),
         email: Joi.string().email().required(),
-        password: Joi.string().min(6).required(),
+        password: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).required().messages({ 'string.pattern.base': 'Password must contain uppercase, lowercase, and digit' }),
         role: Joi.string().valid('ADMIN', 'GM', 'TM', 'TO', 'TA', 'SURVEYOR', 'CLIENT', 'FLAG_ADMIN').required(),
         company_name: Joi.string().optional(),
     }),
@@ -123,7 +123,7 @@ export const schemas = {
         user: Joi.object({
             name: Joi.string().required(),
             email: Joi.string().email().required(),
-            password: Joi.string().min(6).required(),
+            password: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).required().messages({ 'string.pattern.base': 'Password must contain uppercase, lowercase, and digit' }),
             role: Joi.string().valid('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'TA', 'SURVEYOR', 'FLAG_ADMIN').optional().default('CLIENT'),
             phone: Joi.string().optional().allow(''),
         }).optional(),
@@ -131,7 +131,7 @@ export const schemas = {
     createUser: Joi.object({
         name: Joi.string().required(),
         email: Joi.string().email().required(),
-        password: Joi.string().min(6).required(),
+        password: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).required().messages({ 'string.pattern.base': 'Password must contain uppercase, lowercase, and digit' }),
         role: Joi.string().valid('ADMIN', 'GM', 'TM', 'TO', 'TA', 'SURVEYOR', 'CLIENT', 'FLAG_ADMIN').required(),
         phone: Joi.string().optional(),
         client_id: Joi.string().guid().optional().allow(null),

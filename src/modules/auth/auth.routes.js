@@ -3,12 +3,19 @@ import * as authController from './auth.controller.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
 
 import { validate, schemas } from '../../middlewares/validate.middleware.js';
+import rateLimit from 'express-rate-limit';
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10,
+    message: { success: false, message: 'Too many attempts, please try again later.' }
+});
 
 const router = express.Router();
 
 // Login with credentials (email/password)
 // Access: Public
-router.post('/login', validate(schemas.login), authController.login);
+router.post('/login', authLimiter, validate(schemas.login), authController.login);
 
 
 
@@ -22,10 +29,10 @@ router.post('/refresh-token', validate(schemas.refreshToken), authController.ref
 
 // Request password reset (Send OTP/Link)
 // Access: Public
-router.post('/forgot-password', validate(schemas.forgotPassword), authController.forgotPassword);
+router.post('/forgot-password', authLimiter, validate(schemas.forgotPassword), authController.forgotPassword);
 
 // Reset password using OTP/Token
 // Access: Public
-router.post('/reset-password', validate(schemas.resetPassword), authController.resetPassword);
+router.post('/reset-password', authLimiter, validate(schemas.resetPassword), authController.resetPassword);
 
 export default router;

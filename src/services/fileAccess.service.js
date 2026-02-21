@@ -151,7 +151,7 @@ export const validateUserEntityAccess = async (user, entityType, entityId) => {
     if (user.role === 'SURVEYOR') {
         // Surveyor can only access assigned jobs
         if (entityType === 'JOB') {
-            const job = await JobRequest.findOne({ where: { id: entityId, surveyor_id: user.id } });
+            const job = await JobRequest.findOne({ where: { id: entityId, assigned_surveyor_id: user.id } });
             return !!job;
         }
     }
