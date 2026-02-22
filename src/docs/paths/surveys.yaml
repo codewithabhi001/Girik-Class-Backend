@@ -85,7 +85,7 @@
                   items:
                     $ref: '#/components/schemas/SurveyReportResponse'
 
-/api/v1/surveys/{id}/finalize:
+/api/v1/surveys/jobs/{jobId}/finalize:
   put:
     tags: [Surveys]
     summary: Finalize survey
@@ -93,7 +93,7 @@
     operationId: finalizeSurvey
     x-roles: [TM]
     parameters:
-      - name: id
+      - name: jobId
         in: path
         required: true
         schema: { type: string, format: uuid }
@@ -109,7 +109,7 @@
                 message: { type: string, example: "Survey Finalized." }
       "403": { description: Forbidden }
 
-/api/v1/surveys/{id}/rework:
+/api/v1/surveys/jobs/{jobId}/rework:
   put:
     tags: [Surveys]
     summary: Request Rework
@@ -117,7 +117,7 @@
     operationId: requestRework
     x-roles: [GM, TM]
     parameters:
-      - name: id
+      - name: jobId
         in: path
         required: true
         schema: { type: string, format: uuid }
@@ -143,7 +143,7 @@
       "400": { description: Invalid transition }
       "403": { description: Forbidden }
 
-/api/v1/surveys/{id}/location:
+/api/v1/surveys/jobs/{jobId}/location:
   post:
     tags: [Surveys]
     summary: Stream live location
@@ -151,7 +151,7 @@
     operationId: streamLocation
     x-roles: [SURVEYOR]
     parameters:
-      - name: id
+      - name: jobId
         in: path
         required: true
         schema: { type: string, format: uuid }
@@ -167,15 +167,15 @@
     responses:
       "200": { description: Location updated }
 
-/api/v1/surveys/{id}/proof:
+/api/v1/surveys/jobs/{jobId}/proof:
   post:
     tags: [Surveys]
     summary: Upload survey evidence
-    description: Supplemental photos or documents for the survey.
+    description: Supplemental photos or documents for the survey. Moves job to PROOF_UPLOADED once done.
     operationId: uploadProof
     x-roles: [SURVEYOR]
     parameters:
-      - name: id
+      - name: jobId
         in: path
         required: true
         schema: { type: string, format: uuid }
@@ -189,7 +189,7 @@
     responses:
       "201": { description: Proof uploaded }
 
-/api/v1/surveys/{id}/timeline:
+/api/v1/surveys/jobs/{jobId}/timeline:
   get:
     tags: [Surveys]
     summary: Get survey execution timeline
@@ -197,7 +197,7 @@
     operationId: getSurveyTimeline
     x-roles: [ADMIN, GM, TM]
     parameters:
-      - name: id
+      - name: jobId
         in: path
         required: true
         schema: { type: string, format: uuid }
@@ -212,7 +212,7 @@
                 success: { type: boolean, example: true }
                 data: { $ref: '#/components/schemas/SurveyTimelineResponse' }
 
-/api/v1/surveys/{id}/violation:
+/api/v1/surveys/jobs/{jobId}/violation:
   post:
     tags: [Surveys]
     summary: Flag survey violation
@@ -220,7 +220,7 @@
     operationId: flagViolation
     x-roles: [ADMIN, TM]
     parameters:
-      - name: id
+      - name: jobId
         in: path
         required: true
         schema: { type: string, format: uuid }
