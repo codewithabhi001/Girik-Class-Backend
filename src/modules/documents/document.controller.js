@@ -20,7 +20,7 @@ export const getDocuments = async (req, res, next) => {
         const data = await Promise.all(documents.map(async (doc) => {
             const accessInfo = await fileAccessService.processFileAccess(doc, req.user);
             return {
-                ...doc.toJSON(),
+                ...doc,
                 ...accessInfo,
                 // Hide raw S3 URL if desired, though key is public/certificates sometimes
                 file_url: undefined // Hide raw URL
@@ -66,7 +66,7 @@ export const uploadDocument = async (req, res, next) => {
         const data = await Promise.all(results.map(async (doc) => {
             const accessInfo = await fileAccessService.processFileAccess(doc, req.user);
             return {
-                ...doc.toJSON(),
+                ...doc,
                 ...accessInfo,
                 file_url: undefined
             };
