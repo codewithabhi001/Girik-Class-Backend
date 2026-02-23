@@ -5,7 +5,6 @@
     operationId: getNotifications
     x-roles: [ADMIN, GM, TM, TO, TA, SURVEYOR, CLIENT, FLAG_ADMIN]
     responses:
-    responses:
       "200":
         description: List of notifications retrieved successfully
         content:

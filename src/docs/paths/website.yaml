@@ -4,6 +4,7 @@
       - Public
     summary: Get all website videos (Public)
     description: Retrieve a list of uploaded videos. This endpoint is public and used by the website frontend.
+    operationId: getPublicVideos
     parameters:
       - in: query
         name: section
@@ -28,6 +29,7 @@
       - Website
     summary: List all videos (Internal)
     description: Get a list of videos with full metadata. Requires authentication.
+    operationId: listVideosInternal
     responses:
       200:
         description: List of videos

@@ -193,7 +193,7 @@
               type: object
               properties:
                 success: { type: boolean, example: true }
-                data: { $ref: '#/components/schemas/JobDetailResponse' }
+                data: { $ref: '#/components/schemas/JobResponse' }
       "401":
         description: Unauthorized
         content:

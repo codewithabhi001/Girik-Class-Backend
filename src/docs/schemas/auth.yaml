@@ -46,10 +46,12 @@ LogoutResponse:
       type: string
       example: "Logged out successfully"
     accessToken:
-      type: "null"
+      type: string
+      nullable: true
       description: "Always null after logout"
     refreshToken:
-      type: "null"
+      type: string
+      nullable: true
       description: "Always null after logout"
 
 UserSummary:

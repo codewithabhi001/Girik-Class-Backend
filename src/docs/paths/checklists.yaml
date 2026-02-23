@@ -1,4 +1,4 @@
-/api/v1/jobs/{jobId}/checklist:
+/api/v1/checklists/jobs/{jobId}:
   get:
     tags:
       - Checklists

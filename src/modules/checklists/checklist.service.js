@@ -10,6 +10,8 @@ const { ActivityPlanning, JobRequest, Survey } = db;
 
 export const getChecklist = async (jobId, filters = {}) => {
     const { answer, question_code, search } = filters;
+    const job = await JobRequest.findByPk(jobId);
+    if (!job) throw { statusCode: 404, message: 'Job not found' };
     const where = { job_id: jobId };
 
     if (answer) where.answer = answer;

@@ -53,7 +53,7 @@ export default (sequelize, DataTypes) => {
         JobRequest.belongsTo(models.CertificateType, { foreignKey: 'certificate_type_id' });
         JobRequest.belongsTo(models.Certificate, { foreignKey: 'generated_certificate_id', as: 'Certificate' });
         JobRequest.hasMany(models.JobStatusHistory, { foreignKey: 'job_id' });
-        JobRequest.hasOne(models.SurveyReport, { foreignKey: 'job_id' });
+
         JobRequest.hasMany(models.ActivityPlanning, { foreignKey: 'job_id' });
         JobRequest.hasMany(models.NonConformity, { foreignKey: 'job_id' });
         JobRequest.hasMany(models.Payment, { foreignKey: 'job_id' });

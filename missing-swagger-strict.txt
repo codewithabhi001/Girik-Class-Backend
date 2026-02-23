@@ -1,0 +1,6 @@
+POST / in checklists (/src/modules/checklists/checklist_template.routes.js)
+GET / in checklists (/src/modules/checklists/checklist_template.routes.js)
+POST / in feedback (/src/modules/feedback/feedback.routes.js)
+GET / in feedback (/src/modules/feedback/feedback.routes.js)
+POST / in templates (/src/modules/templates/template.routes.js)
+GET / in templates (/src/modules/templates/template.routes.js)

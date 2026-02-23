@@ -115,6 +115,19 @@ ReassignJobRequest:
     reason:
       type: string
 
+RescheduleJobRequest:
+  type: object
+  required:
+    - reason
+  properties:
+    new_target_date:
+      type: string
+      format: date
+    new_target_port:
+      type: string
+    reason:
+      type: string
+
 EscalateJobRequest:
   type: object
   required:

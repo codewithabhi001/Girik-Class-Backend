@@ -7,7 +7,7 @@ import { validate, schemas } from '../../middlewares/validate.middleware.js';
 const router = express.Router();
 
 router.use(authenticate);
-router.get('/jobs/:jobId/checklist', checklistController.getChecklist);
-router.put('/jobs/:jobId/checklist', authorizeRoles('SURVEYOR'), validate(schemas.submitChecklist), checklistController.submitChecklist);
+router.get('/jobs/:jobId', checklistController.getChecklist);
+router.put('/jobs/:jobId', authorizeRoles('SURVEYOR'), validate(schemas.submitChecklist), checklistController.submitChecklist);
 
 export default router;

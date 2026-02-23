@@ -36,7 +36,7 @@ async function request(method, path, body = null) {
     let data = null;
     try {
       data = text ? JSON.parse(text) : null;
-    } catch (_) {}
+    } catch (_) { }
     return { status: res.status, ok: res.ok, data, text: text?.slice(0, 200) };
   } catch (err) {
     return { status: 0, ok: false, error: err.message };
@@ -119,7 +119,7 @@ async function runTests() {
   await test('GET', `/surveyors/${PID}/location-history`);
 
   // --- Checklists ---
-  await test('GET', `/jobs/${JOB_ID}/checklist`);
+  await test('GET', `/checklists/jobs/${JOB_ID}`);
 
   // --- Checklist templates ---
   await test('GET', '/checklist-templates');
