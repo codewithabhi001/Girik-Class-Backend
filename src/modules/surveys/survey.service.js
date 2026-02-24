@@ -20,11 +20,11 @@ const assertJobAccessible = async (jobId, userId, { checkSurveyor = true, allowe
     if (!job) throw { statusCode: 404, message: 'Job not found' };
 
     if (lifecycleService.JOB_TERMINAL_STATES.includes(job.job_status)) {
-        throw { statusCode: 400, message: `Job is in a terminal state (${job.job_status}) and cannot be modified.` };
+        throw { statusCode: 400, message: `This job has already been closed and cannot be modified further.` };
     }
 
     if (allowedStatuses && !allowedStatuses.includes(job.job_status)) {
-        throw { statusCode: 400, message: `This action requires job to be in: ${allowedStatuses.join(' / ')}. Current: ${job.job_status}` };
+        throw { statusCode: 400, message: `This action can only be performed when the job is in ${allowedStatuses.join(', ')} state.` };
     }
 
     if (checkSurveyor && job.assigned_surveyor_id !== userId) {
@@ -43,7 +43,7 @@ const assertJobAccessible = async (jobId, userId, { checkSurveyor = true, allowe
  */
 const requireSurvey = async (jobId) => {
     const survey = await Survey.findOne({ where: { job_id: jobId } });
-    if (!survey) throw { statusCode: 404, message: 'Survey not found. Please check-in first.' };
+    if (!survey) throw { statusCode: 404, message: 'Survey report not found. Please start the survey inspection first.' };
     return survey;
 };
 
@@ -75,7 +75,7 @@ export const startSurvey = async (data, userId) => {
 
         // Guard: cannot re-start an already-started survey
         if (!created && survey.survey_status !== 'NOT_STARTED') {
-            throw { statusCode: 400, message: `Survey cannot be started: already in ${survey.survey_status} state.` };
+            throw { statusCode: 400, message: `This survey has already been started or processed.` };
         }
 
         await lifecycleService.updateSurveyStatus(survey.id, 'STARTED', userId, 'Surveyor checked in', { transaction: txn });
@@ -111,7 +111,7 @@ export const uploadProof = async (jobId, file, userId) => {
 
     // Guard: must have submitted checklist first
     if (!['CHECKLIST_SUBMITTED', 'REWORK_REQUIRED'].includes(survey.survey_status)) {
-        throw { statusCode: 400, message: `Proof can only be uploaded when survey is CHECKLIST_SUBMITTED or REWORK_REQUIRED. Current: ${survey.survey_status}` };
+        throw { statusCode: 400, message: `Please complete the inspection checklist before uploading evidence proof.` };
     }
 
     // S3 upload (outside transaction — idempotent/reversible)
@@ -145,20 +145,20 @@ export const submitSurveyReport = async (data, file, userId) => {
 
     // Guard: once payment is done, survey can no longer be submitted
     if (lifecycleService.JOB_POST_FINALIZATION_STATES.includes(job.job_status)) {
-        throw { statusCode: 400, message: `Survey submission is not allowed when job is ${job.job_status}.` };
+        throw { statusCode: 400, message: `Survey report cannot be submitted as the job is already being finalized or certified.` };
     }
 
     const survey = await requireSurvey(job_id);
 
     // Guard: submission requires PROOF_UPLOADED or REWORK_REQUIRED
     if (!['PROOF_UPLOADED', 'REWORK_REQUIRED'].includes(survey.survey_status)) {
-        throw { statusCode: 400, message: `Survey cannot be submitted from ${survey.survey_status} state. Upload proof first.` };
+        throw { statusCode: 400, message: `Please upload all required evidence proofs before submitting the survey report.` };
     }
 
     // Guard: checklist required
     const checklistCount = await ActivityPlanning.count({ where: { job_id } });
     if (checklistCount === 0) {
-        throw { statusCode: 400, message: 'Checklist must be submitted before the survey report.' };
+        throw { statusCode: 400, message: 'Please complete the inspection checklist before submitting the final report.' };
     }
 
     // ── Compliance Enforcement: GPS & Photo ──
@@ -203,7 +203,7 @@ export const finalizeSurvey = async (jobId, userId) => {
     const survey = await requireSurvey(jobId);
 
     if (survey.survey_status !== 'SUBMITTED') {
-        throw { statusCode: 400, message: `Survey must be SUBMITTED before it can be finalized. Current: ${survey.survey_status}` };
+        throw { statusCode: 400, message: `Only submitted survey reports can be finalized.` };
     }
 
     // lifecycle service handles TM role check, NC check, and job sync
@@ -237,7 +237,7 @@ export const requestRework = async (jobId, reason, userId) => {
     const survey = await requireSurvey(jobId);
 
     if (survey.survey_status !== 'SUBMITTED') {
-        throw { statusCode: 400, message: `Rework can only be requested when survey is SUBMITTED. Current: ${survey.survey_status}` };
+        throw { statusCode: 400, message: `Rework can only be requested for submitted survey reports.` };
     }
 
     await lifecycleService.updateSurveyStatus(survey.id, 'REWORK_REQUIRED', userId, reason);
@@ -263,7 +263,7 @@ export const issueSurveyStatement = async (jobId, file, userId) => {
     await assertJobAccessible(jobId, userId, { checkSurveyor: false });
     const survey = await requireSurvey(jobId);
 
-    if (!file) throw { statusCode: 400, message: 'Signed Survey Statement PDF is required for issuance.' };
+    if (!file) throw { statusCode: 400, message: 'Please upload the signed Survey Statement PDF to issue it.' };
 
     const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PROOF);
 
@@ -336,7 +336,7 @@ export const streamLocation = async (jobId, { latitude, longitude }, userId) => 
     const survey = await Survey.findOne({ where: { job_id: jobId } });
     const activeStatuses = ['STARTED', 'CHECKLIST_SUBMITTED', 'PROOF_UPLOADED'];
     if (!survey || !activeStatuses.includes(survey.survey_status)) {
-        throw { statusCode: 400, message: 'Location can only be streamed during an active survey.' };
+        throw { statusCode: 400, message: 'GPS tracking is only available during an active survey inspection.' };
     }
 
     const record = await GpsTracking.create({ surveyor_id: userId, job_id: jobId, latitude, longitude });

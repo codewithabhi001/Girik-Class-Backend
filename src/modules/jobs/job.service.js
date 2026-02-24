@@ -26,7 +26,7 @@ const Survey = db.Survey;
  */
 const requireJob = async (id) => {
     const job = await JobRequest.findByPk(id);
-    if (!job) throw { statusCode: 404, message: 'Job not found' };
+    if (!job) throw { statusCode: 404, message: 'The requested job could not be found.' };
     return job;
 };
 
@@ -38,7 +38,7 @@ export const createJob = async (data, userId) => {
     let isSurveyRequired = true;
     if (data.certificate_type_id) {
         const certType = await CertificateType.findByPk(data.certificate_type_id);
-        if (!certType) throw { statusCode: 400, message: 'Invalid certificate_type_id.' };
+        if (!certType) throw { statusCode: 400, message: 'The selected certificate type is invalid.' };
         isSurveyRequired = certType.requires_survey;
 
         // Fetch required documents for this certificate type
@@ -54,7 +54,7 @@ export const createJob = async (data, userId) => {
             if (missingDocs.length > 0) {
                 throw {
                     statusCode: 400,
-                    message: 'Missing mandatory documents for job creation.',
+                    message: 'Please upload all mandatory documents to create the job.',
                     missing_documents: missingDocs.map(md => ({ id: md.id, name: md.document_name }))
                 };
             }
@@ -63,7 +63,7 @@ export const createJob = async (data, userId) => {
 
     if (data.vessel_id) {
         const vessel = await Vessel.findByPk(data.vessel_id);
-        if (!vessel) throw { statusCode: 400, message: 'Invalid vessel_id.' };
+        if (!vessel) throw { statusCode: 400, message: 'The selected vessel is invalid.' };
     }
 
     const { job_status: _omit, uploaded_documents, ...safeData } = data;
@@ -120,7 +120,7 @@ export const createJob = async (data, userId) => {
 
 export const createJobForClient = async (data, clientId, userId) => {
     const vessel = await Vessel.findOne({ where: { id: data.vessel_id, client_id: clientId } });
-    if (!vessel) throw { statusCode: 403, message: 'Unauthorized vessel selection' };
+    if (!vessel) throw { statusCode: 403, message: 'Access denied: you do not have permission to select this vessel.' };
     return createJob(data, userId);
 };
 
@@ -226,7 +226,7 @@ export const getJobById = async (id, scopeFilters = {}) => {
             { model: User, as: 'approver', attributes: ['id', 'name', 'role'] }
         ]
     });
-    if (!job) throw { statusCode: 404, message: 'Job not found' };
+    if (!job) throw { statusCode: 404, message: 'The requested job could not be found.' };
 
     if (job.Certificate?.pdf_file_url) {
         const key = fileAccessService.getKeyFromUrl(job.Certificate.pdf_file_url);
@@ -258,7 +258,7 @@ export const getJobById = async (id, scopeFilters = {}) => {
 export const verifyJobDocuments = async (id, userId) => {
     const job = await requireJob(id);
     if (job.job_status !== 'CREATED') {
-        throw { statusCode: 400, message: `verifyJobDocuments requires job in CREATED state. Current: ${job.job_status}` };
+        throw { statusCode: 400, message: `Documents can only be verified when the job is in CREATED status.` };
     }
 
     // Check if certificate type has mandatory documents
@@ -276,7 +276,7 @@ export const verifyJobDocuments = async (id, userId) => {
         if (missingDocs.length > 0) {
             throw {
                 statusCode: 400,
-                message: 'Cannot verify documents: mandatory documents are missing.',
+                message: 'Mandatory documents are missing. Please ensure all required files are uploaded.',
                 missing_documents: missingDocs.map(md => ({ id: md.id, name: md.document_name }))
             };
         }
@@ -292,7 +292,7 @@ export const verifyJobDocuments = async (id, userId) => {
 export const approveRequest = async (id, remarks, user) => {
     const job = await requireJob(id);
     if (job.job_status !== 'DOCUMENT_VERIFIED') {
-        throw { statusCode: 400, message: `approveRequest requires job in DOCUMENT_VERIFIED state. Current: ${job.job_status}` };
+        throw { statusCode: 400, message: `Jobs can only be approved after documents have been verified.` };
     }
     const updated = await lifecycleService.updateJobStatus(id, 'APPROVED', user.id, remarks || `${user.role} approved request`);
     await updated.update({ approved_by_user_id: user.id });
@@ -306,10 +306,10 @@ export const approveRequest = async (id, remarks, user) => {
 export const finalizeJob = async (id, remarks, user) => {
     const job = await requireJob(id);
     if (job.is_survey_required) {
-        throw { statusCode: 400, message: 'This job requires a survey. Finalize the survey instead.' };
+        throw { statusCode: 400, message: 'This job requires a survey report. Please finalize the survey instead.' };
     }
     if (job.job_status !== 'APPROVED') {
-        throw { statusCode: 400, message: `finalizeJob requires job in APPROVED state. Current: ${job.job_status}` };
+        throw { statusCode: 400, message: `Only approved jobs can be finalized.` };
     }
     return await lifecycleService.updateJobStatus(id, 'FINALIZED', user.id, remarks || `${user.role} finalized non-survey job`);
 };
@@ -321,11 +321,11 @@ export const finalizeJob = async (id, remarks, user) => {
 export const assignSurveyor = async (jobId, surveyorId, userId) => {
     const job = await requireJob(jobId);
     if (job.job_status !== 'APPROVED') {
-        throw { statusCode: 400, message: 'Surveyor can only be assigned when job is APPROVED.' };
+        throw { statusCode: 400, message: 'A surveyor can only be assigned after the job has been approved.' };
     }
     const surveyor = await User.findByPk(surveyorId);
     if (!surveyor || surveyor.role !== 'SURVEYOR') {
-        throw { statusCode: 400, message: 'Invalid surveyorId: user must exist with SURVEYOR role.' };
+        throw { statusCode: 400, message: 'Invalid surveyor selection. Please select a user with the Surveyor role.' };
     }
     await job.update({ assigned_surveyor_id: surveyorId, assigned_by_user_id: userId });
     const updated = await lifecycleService.updateJobStatus(jobId, 'ASSIGNED', userId, `Surveyor ${surveyorId} assigned`);
@@ -345,11 +345,11 @@ export const reassignSurveyor = async (jobId, surveyorId, reason, userId) => {
     const job = await requireJob(jobId);
     // Guard: cannot reassign a terminal job
     if (lifecycleService.JOB_TERMINAL_STATES.includes(job.job_status)) {
-        throw { statusCode: 400, message: `Cannot reassign surveyor on a ${job.job_status} job.` };
+        throw { statusCode: 400, message: `Surveyor reassignment is not possible as the job is already in ${job.job_status} status.` };
     }
     const surveyor = await User.findByPk(surveyorId);
     if (!surveyor || surveyor.role !== 'SURVEYOR') {
-        throw { statusCode: 400, message: 'Invalid surveyorId: user must exist with SURVEYOR role.' };
+        throw { statusCode: 400, message: 'Invalid surveyor selection. Please select a user with the Surveyor role.' };
     }
     const oldSurveyor = job.assigned_surveyor_id;
     await job.update({ assigned_surveyor_id: surveyorId, assigned_by_user_id: userId });
@@ -367,10 +367,10 @@ export const reassignSurveyor = async (jobId, surveyorId, reason, userId) => {
 export const authorizeSurvey = async (id, remarks, user) => {
     const job = await requireJob(id);
     if (job.job_status !== 'ASSIGNED') {
-        throw { statusCode: 400, message: `authorizeSurvey requires job in ASSIGNED state. Current: ${job.job_status}` };
+        throw { statusCode: 400, message: `Survey authorization is possible only after a surveyor has been assigned.` };
     }
     if (!job.assigned_surveyor_id) {
-        throw { statusCode: 400, message: 'Cannot authorize survey: no surveyor has been assigned yet.' };
+        throw { statusCode: 400, message: 'Cannot authorize survey: please assign a surveyor first.' };
     }
     const updated = await lifecycleService.updateJobStatus(id, 'SURVEY_AUTHORIZED', user.id,
         remarks || `${user.role} authorized survey`);
@@ -395,11 +395,11 @@ export const authorizeSurvey = async (id, remarks, user) => {
  */
 export const reviewJob = async (id, remarks, user) => {
     if (user.role !== 'TO') {
-        throw { statusCode: 403, message: 'Only Technical Officer (TO) can mark a job as REVIEWED.' };
+        throw { statusCode: 403, message: 'Only Technical Officers (TO) have permission to mark a job as reviewed.' };
     }
     const job = await requireJob(id);
     if (job.job_status !== 'SURVEY_DONE') {
-        throw { statusCode: 400, message: `reviewJob requires job in SURVEY_DONE state. Current: ${job.job_status}` };
+        throw { statusCode: 400, message: `Jobs can only be reviewed after the survey has been completed.` };
     }
     return await lifecycleService.updateJobStatus(id, 'REVIEWED', user.id, remarks || 'TO technical review passed.');
 };
@@ -416,19 +416,19 @@ const RESCHEDULE_BLOCKED_STATUSES = ['IN_PROGRESS', 'SURVEY_DONE', 'REVIEWED', '
  */
 export const rescheduleJob = async (id, data, userId) => {
     const { new_target_date, new_target_port, reason } = data;
-    if (!reason) throw { statusCode: 400, message: 'Reschedule requires a reason.' };
+    if (!reason) throw { statusCode: 400, message: 'Reschedule requires a specific reason.' };
 
     const txn = await db.sequelize.transaction();
     try {
         const job = await JobRequest.findByPk(id, { transaction: txn, lock: txn.LOCK.UPDATE });
-        if (!job) throw { statusCode: 404, message: 'Job not found' };
+        if (!job) throw { statusCode: 404, message: 'The requested job could not be found.' };
 
         if (!RESCHEDULE_ALLOWED_STATUSES.includes(job.job_status)) {
-            throw { statusCode: 400, message: `Rescheduling is not allowed in current state: ${job.job_status}` };
+            throw { statusCode: 400, message: `Rescheduling is not possible while the job is in ${job.job_status} status.` };
         }
 
         if (RESCHEDULE_BLOCKED_STATUSES.includes(job.job_status)) {
-            throw { statusCode: 400, message: `Cannot reschedule after survey start or terminal state.` };
+            throw { statusCode: 400, message: `Rescheduling is blocked as the survey has already started or the job is closed.` };
         }
 
         const old_target_date = job.target_date;
@@ -489,15 +489,15 @@ export const rescheduleJob = async (id, data, userId) => {
 export const sendBackJob = async (id, remarks, user) => {
     const job = await requireJob(id);
     if (!job.is_survey_required) {
-        throw { statusCode: 400, message: 'Cannot request rework on a job that does not require a survey.' };
+        throw { statusCode: 400, message: 'Rework requests are only applicable for jobs that require a survey.' };
     }
     const allowedFromStates = { ADMIN: null, TM: ['SURVEY_DONE', 'REVIEWED'], TO: ['SURVEY_DONE'] };
     const allowed = allowedFromStates[user.role];
     if (!allowed && user.role !== 'ADMIN') {
-        throw { statusCode: 403, message: `${user.role} cannot send back jobs.` };
+        throw { statusCode: 403, message: `You do not have permission to request rework for this job.` };
     }
     if (allowed && !allowed.includes(job.job_status)) {
-        throw { statusCode: 400, message: `${user.role} can only send back from: ${allowed.join(', ')}. Current: ${job.job_status}` };
+        throw { statusCode: 400, message: `Rework can only be requested when the job status is ${allowed.join(' or ')}.` };
     }
     const updated = await lifecycleService.updateJobStatus(id, 'REWORK_REQUESTED', user.id,
         remarks || `${user.role} requested rework`);
@@ -522,13 +522,13 @@ export const rejectJob = async (id, remarks, user) => {
 
     // Terminal guard
     if (lifecycleService.JOB_TERMINAL_STATES.includes(current)) {
-        throw { statusCode: 400, message: `Cannot reject a ${current} job.` };
+        throw { statusCode: 400, message: `This job is already closed (${current}) and cannot be rejected.` };
     }
     if (role === 'GM' && current !== 'CREATED') {
-        throw { statusCode: 403, message: 'GM can only reject CREATED jobs.' };
+        throw { statusCode: 403, message: 'General Managers can only reject jobs that are in CREATED status.' };
     }
     if (role === 'TM' && !['ASSIGNED', 'SURVEY_DONE', 'REVIEWED'].includes(current)) {
-        throw { statusCode: 403, message: 'TM can only reject ASSIGNED, SURVEY_DONE, or REVIEWED jobs.' };
+        throw { statusCode: 403, message: 'Technical Managers can only reject jobs that are in ASSIGNED, SURVEY_DONE, or REVIEWED status.' };
     }
 
     return await lifecycleService.updateJobStatus(id, 'REJECTED', user.id, remarks || `${role} rejected job`);
@@ -540,19 +540,19 @@ export const rejectJob = async (id, remarks, user) => {
 export const cancelJob = async (id, reason, userId) => {
     const job = await requireJob(id);
     if (lifecycleService.JOB_TERMINAL_STATES.includes(job.job_status)) {
-        throw { statusCode: 400, message: `Cannot cancel a ${job.job_status} job.` };
+        throw { statusCode: 400, message: `This job is already closed (${job.job_status}) and cannot be cancelled.` };
     }
     return await lifecycleService.updateJobStatus(id, 'REJECTED', userId, reason || 'Job cancelled');
 };
 
 export const cancelJobForClient = async (id, reason, clientId, userId) => {
     const job = await JobRequest.findByPk(id, { include: ['Vessel'] });
-    if (!job) throw { statusCode: 404, message: 'Job not found' };
+    if (!job) throw { statusCode: 404, message: 'The requested job could not be found.' };
     if (job.Vessel.client_id !== clientId) {
-        throw { statusCode: 403, message: 'Unauthorized: this job does not belong to your account.' };
+        throw { statusCode: 403, message: 'Access denied: this job does not belong to your account.' };
     }
     if (['FINALIZED', 'CERTIFIED', 'REJECTED', 'PAYMENT_DONE'].includes(job.job_status)) {
-        throw { statusCode: 400, message: `Cannot cancel a ${job.job_status} job.` };
+        throw { statusCode: 400, message: `This job is already closed (${job.job_status}) and cannot be cancelled.` };
     }
     return await lifecycleService.updateJobStatus(id, 'REJECTED', userId, reason || 'Cancelled by client');
 };

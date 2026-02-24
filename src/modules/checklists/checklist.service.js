@@ -11,7 +11,7 @@ const { ActivityPlanning, JobRequest, Survey } = db;
 export const getChecklist = async (jobId, filters = {}) => {
     const { answer, question_code, search } = filters;
     const job = await JobRequest.findByPk(jobId);
-    if (!job) throw { statusCode: 404, message: 'Job not found' };
+    if (!job) throw { statusCode: 404, message: 'The requested job could not be found.' };
     const where = { job_id: jobId };
 
     if (answer) where.answer = answer;
@@ -33,16 +33,16 @@ export const getChecklist = async (jobId, filters = {}) => {
 
 export const submitChecklist = async (jobId, items, userId) => {
     const job = await JobRequest.findByPk(jobId);
-    if (!job) throw { statusCode: 404, message: 'Job not found' };
+    if (!job) throw { statusCode: 404, message: 'The requested job could not be found.' };
 
     // ── Guard 1: Terminal state ──
     if (lifecycleService.JOB_TERMINAL_STATES.includes(job.job_status)) {
-        throw { statusCode: 400, message: `Job is in a terminal state (${job.job_status}) and cannot be modified.` };
+        throw { statusCode: 400, message: `This job has already been closed and cannot be modified further.` };
     }
 
     // ── Guard 2: Post-finalization (payment / certified) ──
     if (lifecycleService.JOB_POST_FINALIZATION_STATES.includes(job.job_status)) {
-        throw { statusCode: 400, message: `Checklist cannot be updated when job is ${job.job_status}.` };
+        throw { statusCode: 400, message: `The checklist cannot be updated as the job has already moved to ${job.job_status} status.` };
     }
 
     // ── Guard 3: Only the assigned surveyor ──
@@ -55,14 +55,14 @@ export const submitChecklist = async (jobId, items, userId) => {
     }
 
     const survey = await Survey.findOne({ where: { job_id: jobId } });
-    if (!survey) throw { statusCode: 400, message: 'Survey has not been started. Please check-in first.' };
+    if (!survey) throw { statusCode: 400, message: 'The survey has not been started yet. Please check-in first.' };
 
     // ── Guard 4: Survey must be STARTED or REWORK_REQUIRED (not before, not after) ──
     if (lifecycleService.SURVEY_TERMINAL_STATES.includes(survey.survey_status)) {
-        throw { statusCode: 400, message: 'Survey is finalized and cannot be modified.' };
+        throw { statusCode: 400, message: 'This survey has already been finalized and cannot be modified.' };
     }
     if (!['STARTED', 'REWORK_REQUIRED'].includes(survey.survey_status)) {
-        throw { statusCode: 400, message: `Checklist can only be submitted when survey is STARTED or REWORK_REQUIRED. Current: ${survey.survey_status}` };
+        throw { statusCode: 400, message: `The checklist can only be submitted after starting the survey or when rework is requested.` };
     }
 
     const txn = await db.sequelize.transaction();

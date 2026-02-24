@@ -62,7 +62,7 @@ export const SURVEY_TRANSITIONS = {
 const validateTransition = (current, next, map) => {
     const allowed = map[current] || [];
     if (!allowed.includes(next)) {
-        throw { statusCode: 400, message: `Invalid status transition: ${current} → ${next}` };
+        throw { statusCode: 400, message: `Action not allowed: cannot move from ${current} to ${next} status.` };
     }
 };
 
@@ -95,12 +95,12 @@ export const updateJobStatus = async (jobId, newStatus, userId, reason = null, o
 
         // ── 1. Absolute terminal state guard ──
         if (JOB_TERMINAL_STATES.includes(previousStatus)) {
-            throw { statusCode: 400, message: `Job is in a terminal state (${previousStatus}) and cannot be modified.` };
+            throw { statusCode: 400, message: `This job has already been closed and cannot be modified further.` };
         }
 
         // ── 2. FINALIZED can only be set via the internal survey-sync path (if survey required) ──
         if (newStatus === 'FINALIZED' && !_internal && job.is_survey_required) {
-            throw { statusCode: 403, message: 'Job cannot be finalized directly. Finalize the survey via PUT /surveys/:id/finalize.' };
+            throw { statusCode: 403, message: 'Job cannot be finalized directly. Please finalize the survey report first.' };
         }
 
         // ── 3. Idempotency ──
@@ -182,10 +182,10 @@ export const updateSurveyStatus = async (surveyId, newStatus, userId, reason = n
         if (newStatus === 'FINALIZED') {
             const actor = await User.findByPk(userId, { transaction: txn });
             if (!actor || actor.role !== 'TM') {
-                throw { statusCode: 403, message: 'Only Technical Manager (TM) can finalize a survey.' };
+                throw { statusCode: 403, message: 'Only Technical Managers (TM) have permission to finalize surveys.' };
             }
             if (previousStatus !== 'SUBMITTED') {
-                throw { statusCode: 400, message: 'Survey can only be FINALIZED from SUBMITTED status.' };
+                throw { statusCode: 400, message: 'Only submitted surveys can be finalized.' };
             }
 
             // ── 4a. NC guard: no open Non-Conformities ──
@@ -195,7 +195,7 @@ export const updateSurveyStatus = async (surveyId, newStatus, userId, reason = n
                     transaction: txn
                 });
                 if (openNCs > 0) {
-                    throw { statusCode: 400, message: `Cannot finalize: ${openNCs} open Non-Conformit${openNCs > 1 ? 'ies' : 'y'} must be resolved first.` };
+                    throw { statusCode: 400, message: `Cannot finalize survey: please resolve the ${openNCs} open Non-Conformity report${openNCs > 1 ? 's' : ''} first.` };
                 }
             }
         }
@@ -203,13 +203,13 @@ export const updateSurveyStatus = async (surveyId, newStatus, userId, reason = n
         // ── 5. SUBMITTED guard ──
         if (newStatus === 'SUBMITTED') {
             if (!['PROOF_UPLOADED', 'REWORK_REQUIRED'].includes(previousStatus)) {
-                throw { statusCode: 400, message: 'Survey cannot be SUBMITTED unless current status is PROOF_UPLOADED or REWORK_REQUIRED.' };
+                throw { statusCode: 400, message: 'Please upload evidence proof before submitting the survey.' };
             }
             if (!survey.attendance_photo_url) {
-                throw { statusCode: 400, message: 'Attendance photo is mandatory before submitting survey.' };
+                throw { statusCode: 400, message: 'Attendance photo is required before submitting the survey.' };
             }
             if (!survey.gps_latitude || !survey.gps_longitude) {
-                throw { statusCode: 400, message: 'GPS location must be recorded onsite before submission.' };
+                throw { statusCode: 400, message: 'GPS coordinates must be recorded on-site before submission.' };
             }
         }
 
