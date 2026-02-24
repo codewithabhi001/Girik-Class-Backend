@@ -5,8 +5,18 @@ export const validate = (schema) => {
         const { error } = schema.validate(req.body, { abortEarly: false });
 
         if (error) {
-            const errorMessage = error.details.map((detail) => detail.message).join(', ');
-            return res.status(400).json({ message: 'Validation Error', error: errorMessage });
+            const formattedErrors = {};
+            error.details.forEach((detail) => {
+                const key = detail.path.join('.');
+                formattedErrors[key] = detail.message.replace(/"/g, '');
+            });
+
+            return res.status(400).json({
+                success: false,
+                error_code: 'VALIDATION_ERROR',
+                message: 'Invalid input data. Please check the fields.',
+                errors: formattedErrors
+            });
         }
 
         next();
