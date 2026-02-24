@@ -265,6 +265,10 @@ export function filterSpecByRole(spec, role) {
 
       // Include if role matches or operation is PUBLIC
       if (roles.includes(role) || roles.includes('PUBLIC')) {
+        // Special case: Surveyor doesn't need to see Contact/Enquiry APIs in their documentation
+        if (role === 'SURVEYOR' && op.tags && op.tags.includes('Contact')) {
+          continue;
+        }
         filteredPath[method] = op;
         hasOperations = true;
       }
