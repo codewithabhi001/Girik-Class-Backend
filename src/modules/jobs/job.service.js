@@ -184,7 +184,7 @@ export const getJobs = async (query, scopeFilters = {}, userRole = null) => {
     const include = [
         { model: Vessel, attributes: isSurveyor ? ['id', 'vessel_name', 'imo_number'] : ['id', 'vessel_name', 'imo_number', 'client_id'] },
         { model: CertificateType, attributes: ['id', 'name', 'issuing_authority'] },
-        { model: Survey, as: 'survey', attributes: ['id', 'survey_status', 'started_at', 'submitted_at'] }
+        { model: Survey, as: 'survey', attributes: ['id', 'survey_status', 'survey_statement_status', 'started_at', 'submitted_at'] }
     ];
     if (!isSurveyor) include.push(
         { model: User, as: 'requester', attributes: ['id', 'name', 'email', 'role'] },
@@ -198,10 +198,17 @@ export const getJobs = async (query, scopeFilters = {}, userRole = null) => {
         order: [['updatedAt', 'DESC']], include
     });
 
+    const resolvedJobs = await fileAccessService.resolveEntity(rows);
+    const jobs = resolvedJobs.map(job => ({
+        ...job,
+        survey_status: job.survey?.survey_status || (job.is_survey_required ? 'NOT_STARTED' : 'N/A'),
+        survey_statement_status: job.survey?.survey_statement_status || (job.is_survey_required ? 'NOT_PREPARED' : 'N/A')
+    }));
+
     return {
         total: count, page: parseInt(page), limit: parseInt(limit),
         totalPages: Math.ceil(count / pageLimit),
-        jobs: await fileAccessService.resolveEntity(rows)
+        jobs
     };
 };
 
@@ -231,7 +238,12 @@ export const getJobById = async (id, scopeFilters = {}) => {
         job.setDataValue('certificate_id', job.Certificate.id);
     }
 
-    return await fileAccessService.resolveEntity(job);
+    const resolvedJob = await fileAccessService.resolveEntity(job);
+    return {
+        ...resolvedJob,
+        survey_status: resolvedJob.survey?.survey_status || (resolvedJob.is_survey_required ? 'NOT_STARTED' : 'N/A'),
+        survey_statement_status: resolvedJob.survey?.survey_statement_status || (resolvedJob.is_survey_required ? 'NOT_PREPARED' : 'N/A')
+    };
 };
 
 // ─────────────────────────────────────────────
