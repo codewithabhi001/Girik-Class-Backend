@@ -33,6 +33,17 @@ export const getCertificatesByVessel = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
+export const getCertificateByJobId = async (req, res, next) => {
+    try {
+        const cert = await certService.getCertificateByJobId(req.params.jobId, req.user);
+        res.json({
+            success: true,
+            message: 'Certificate for job fetched successfully',
+            data: cert
+        });
+    } catch (error) { next(error); }
+};
+
 export const getCertificateById = async (req, res, next) => {
     try {
         const cert = await certService.getCertificateById(req.params.id, req.user);

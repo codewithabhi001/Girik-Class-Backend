@@ -25,6 +25,9 @@ router.get('/expiring', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), cer
 // Get certificates for a specific vessel
 router.get('/vessel/:vesselId', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), certController.getCertificatesByVessel);
 
+// Get certificate for a specific job
+router.get('/job/:jobId', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), certController.getCertificateByJobId);
+
 // Generate a new certificate
 router.post('/', authorizeRoles('ADMIN', 'GM', 'TM'), certController.generateCertificate);
 

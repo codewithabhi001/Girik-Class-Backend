@@ -64,6 +64,14 @@ export default (sequelize, DataTypes) => {
         finalized_at: {
             type: DataTypes.DATE,
             allowNull: true
+        },
+        survey_statement_status: {
+            type: DataTypes.ENUM('NOT_PREPARED', 'DRAFTED', 'ISSUED'),
+            defaultValue: 'NOT_PREPARED'
+        },
+        survey_statement_pdf_url: {
+            type: DataTypes.STRING,
+            allowNull: true
         }
     }, {
         tableName: 'surveys',

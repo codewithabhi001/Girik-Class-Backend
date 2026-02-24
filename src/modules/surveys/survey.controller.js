@@ -72,3 +72,19 @@ export const getTimeline = async (req, res, next) => {
         res.json({ success: true, message: 'Survey timeline fetched successfully.', data: result });
     } catch (error) { next(error); }
 };
+
+// POST /surveys/jobs/:jobId/statement/draft
+export const draftStatement = async (req, res, next) => {
+    try {
+        const result = await surveyService.draftSurveyStatement(req.params.jobId, req.body, req.user.id);
+        res.json({ success: true, data: result });
+    } catch (e) { next(e); }
+};
+
+// POST /surveys/jobs/:jobId/statement/issue
+export const issueStatement = async (req, res, next) => {
+    try {
+        const result = await surveyService.issueSurveyStatement(req.params.jobId, req.file, req.user.id);
+        res.json({ success: true, data: result });
+    } catch (e) { next(e); }
+};

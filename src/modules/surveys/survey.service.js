@@ -161,6 +161,14 @@ export const submitSurveyReport = async (data, file, userId) => {
         throw { statusCode: 400, message: 'Checklist must be submitted before the survey report.' };
     }
 
+    // ── Compliance Enforcement: GPS & Photo ──
+    if (!gps_latitude || !gps_longitude) {
+        throw { statusCode: 400, message: "GPS location must be recorded onsite before submission." };
+    }
+    if (!file && !survey.attendance_photo_url) {
+        throw { statusCode: 400, message: "Attendance photo is mandatory before submitting survey." };
+    }
+
     let photoUrl = survey.attendance_photo_url;
     if (file) photoUrl = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PHOTO);
 
@@ -234,6 +242,37 @@ export const requestRework = async (jobId, reason, userId) => {
 
     await lifecycleService.updateSurveyStatus(survey.id, 'REWORK_REQUIRED', userId, reason);
     return { message: 'Rework requested.' };
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SURVEY STATEMENT MANAGEMENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const draftSurveyStatement = async (jobId, data, userId) => {
+    await assertJobAccessible(jobId, userId, { checkSurveyor: false });
+    const survey = await requireSurvey(jobId);
+
+    await survey.update({
+        survey_statement: data.survey_statement,
+        survey_statement_status: 'DRAFTED'
+    });
+    return { message: 'Survey statement drafted.', status: 'DRAFTED' };
+};
+
+export const issueSurveyStatement = async (jobId, file, userId) => {
+    await assertJobAccessible(jobId, userId, { checkSurveyor: false });
+    const survey = await requireSurvey(jobId);
+
+    if (!file) throw { statusCode: 400, message: 'Signed Survey Statement PDF is required for issuance.' };
+
+    const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PROOF);
+
+    await survey.update({
+        survey_statement_pdf_url: url,
+        survey_statement_status: 'ISSUED'
+    });
+
+    return { message: 'Survey statement issued.', status: 'ISSUED', pdf_url: await fileAccessService.resolveUrl(url, { id: userId }) };
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

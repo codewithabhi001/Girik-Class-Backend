@@ -45,7 +45,7 @@ export const applySurveyor = async (data, files) => {
     return await fileAccessService.resolveEntity(app);
 };
 
-export const getApplications = async (query) => {
+export const getApplications = async (query, user = null) => {
     const { page = 1, limit = 10, status } = query;
     const where = {};
     if (status) where.status = status;
@@ -58,7 +58,7 @@ export const getApplications = async (query) => {
 
     return {
         count,
-        rows: await fileAccessService.resolveEntity(rows)
+        rows: await fileAccessService.resolveEntity(rows, user)
     };
 };
 
@@ -116,7 +116,7 @@ export const createSurveyor = async (data) => {
     return { user, profile };
 };
 
-export const getProfile = async (id) => {
+export const getProfile = async (id, user = null) => {
     const profile = await SurveyorProfile.findOne({
         where: { user_id: id },
         include: [
@@ -130,7 +130,7 @@ export const getProfile = async (id) => {
         ]
     });
     if (!profile) throw { statusCode: 404, message: 'Profile not found' };
-    return await fileAccessService.resolveEntity(profile);
+    return await fileAccessService.resolveEntity(profile, user);
 };
 
 export const updateProfile = async (id, data) => {

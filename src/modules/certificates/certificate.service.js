@@ -140,11 +140,25 @@ export const generateCertificate = async (data, userId) => {
             throw { statusCode: 400, message: `Certificate can only be generated when job is PAYMENT_DONE. Current: ${job.job_status}` };
         }
 
-        // ── Guard 2: Survey must be FINALIZED (if required) ──
+        // ── Guard 2: Survey Compliance (if required) ──
         if (job.is_survey_required) {
-            const survey = await db.Survey.findOne({ where: { job_id }, transaction });
-            if (!survey || survey.survey_status !== 'FINALIZED') {
+            const survey = await db.Survey.findOne({ where: { job_id }, transaction, lock: transaction.LOCK.UPDATE });
+            if (!survey) throw { statusCode: 400, message: 'Cannot generate certificate: Survey not found.' };
+
+            if (survey.survey_status !== 'FINALIZED') {
                 throw { statusCode: 400, message: 'Cannot generate certificate: Survey must be FINALIZED first.' };
+            }
+
+            if (survey.survey_statement_status !== 'ISSUED') {
+                throw { statusCode: 400, message: 'Certificate cannot be generated before Survey Statement is issued.' };
+            }
+
+            if (!survey.attendance_photo_url) {
+                throw { statusCode: 400, message: 'Compliance Violation: Attendance photo missing in survey records.' };
+            }
+
+            if (!survey.gps_latitude || !survey.gps_longitude) {
+                throw { statusCode: 400, message: 'Compliance Violation: GPS coordinates missing in survey records.' };
             }
         }
 
@@ -291,6 +305,20 @@ export const getCertificatesByVessel = async (vesselId, user) => {
         include: [{ model: db.CertificateType, attributes: ['name'] }],
         order: [['expiry_date', 'ASC']]
     });
+};
+
+/** Get certificate generated for a specific job. */
+export const getCertificateByJobId = async (jobId, user) => {
+    const job = await JobRequest.findByPk(jobId, {
+        attributes: ['id', 'generated_certificate_id']
+    });
+
+    if (!job) throw { statusCode: 404, message: 'Job not found' };
+    if (!job.generated_certificate_id) {
+        throw { statusCode: 404, message: 'Certificate not yet generated for this job' };
+    }
+
+    return await getCertificateById(job.generated_certificate_id, user);
 };
 
 /** Returns certificate by id. Throws 403 if certificate exists but user has no access (ownership scope). */

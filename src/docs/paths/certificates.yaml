@@ -408,6 +408,46 @@
                   items:
                     $ref: '#/components/schemas/CertificateResponse'
 
+/api/v1/certificates/job/{jobId}:
+  get:
+    tags: [Certificates]
+    summary: Get certificate by job ID
+    description: |
+      Get the certificate associated with a specific job ID.
+      **Access:** Limited by job ownership/assignment.
+    security: [{ bearerAuth: [] }]
+    operationId: getCertificateByJobId
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
+    parameters:
+      - name: jobId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      "200":
+        description: Certificate details
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: "Certificate for job fetched successfully"
+                data:
+                  $ref: '#/components/schemas/CertificateResponse'
+      "404":
+        description: Job not found or certificate not yet generated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+
 /api/v1/certificates/vessel/{vesselId}:
   get:
     tags: [Certificates]

@@ -14,6 +14,7 @@ const AuditLog = db.AuditLog;
 const CertificateRequiredDocument = db.CertificateRequiredDocument;
 const JobDocument = db.JobDocument;
 const JobReschedule = db.JobReschedule;
+const Survey = db.Survey;
 
 // ─────────────────────────────────────────────
 // INTERNAL HELPERS
@@ -176,13 +177,14 @@ export const getJobs = async (query, scopeFilters = {}, userRole = null) => {
     const isSurveyor = userRole === 'SURVEYOR';
 
     const jobAttributes = isSurveyor
-        ? ['id', 'vessel_id', 'certificate_type_id', 'target_port', 'target_date', 'job_status', 'priority', 'created_at', 'is_survey_required', 'reschedule_count']
+        ? ['id', 'vessel_id', 'certificate_type_id', 'target_port', 'target_date', 'job_status', 'priority', 'createdAt', 'updatedAt', 'is_survey_required', 'reschedule_count']
         : ['id', 'vessel_id', 'certificate_type_id', 'requested_by_user_id', 'assigned_surveyor_id',
-            'assigned_by_user_id', 'approved_by_user_id', 'target_port', 'target_date', 'job_status', 'priority', 'created_at', 'is_survey_required', 'reschedule_count'];
+            'assigned_by_user_id', 'approved_by_user_id', 'target_port', 'target_date', 'job_status', 'priority', 'createdAt', 'updatedAt', 'is_survey_required', 'reschedule_count'];
 
     const include = [
         { model: Vessel, attributes: isSurveyor ? ['id', 'vessel_name', 'imo_number'] : ['id', 'vessel_name', 'imo_number', 'client_id'] },
-        { model: CertificateType, attributes: ['id', 'name', 'issuing_authority'] }
+        { model: CertificateType, attributes: ['id', 'name', 'issuing_authority'] },
+        { model: Survey, as: 'survey', attributes: ['id', 'survey_status', 'started_at', 'submitted_at'] }
     ];
     if (!isSurveyor) include.push(
         { model: User, as: 'requester', attributes: ['id', 'name', 'email', 'role'] },
@@ -193,7 +195,7 @@ export const getJobs = async (query, scopeFilters = {}, userRole = null) => {
     const { count, rows } = await JobRequest.findAndCountAll({
         where: whereClause, attributes: jobAttributes,
         limit: pageLimit, offset: (pageNum - 1) * pageLimit,
-        order: [['createdAt', 'DESC']], include
+        order: [['updatedAt', 'DESC']], include
     });
 
     return {
@@ -208,6 +210,11 @@ export const getJobById = async (id, scopeFilters = {}) => {
         where: { id, ...scopeFilters },
         include: [
             'Vessel', 'CertificateType', 'JobStatusHistories', 'JobDocuments', 'JobReschedules',
+            {
+                model: Survey,
+                as: 'survey',
+                include: [{ model: db.SurveyStatusHistory, as: 'SurveyStatusHistories', include: [{ model: db.User, as: 'User', attributes: ['name'] }] }]
+            },
             { model: Certificate, as: 'Certificate', attributes: ['id', 'certificate_number', 'pdf_file_url'] },
             { model: User, as: 'approver', attributes: ['id', 'name', 'role'] }
         ]
@@ -555,11 +562,23 @@ export const updatePriority = async (jobId, priority, reason, userId) => {
 };
 
 export const getJobHistory = async (id) => {
-    return await JobStatusHistory.findAll({
+    const jobHistory = await JobStatusHistory.findAll({
         where: { job_id: id },
-        order: [['changed_at', 'ASC']],
+        order: [['created_at', 'ASC']],
         include: [{ model: User, attributes: ['name', 'email', 'role'] }]
     });
+
+    const survey = await Survey.findOne({ where: { job_id: id } });
+    const surveyHistory = survey ? await db.SurveyStatusHistory.findAll({
+        where: { survey_id: survey.id },
+        order: [['created_at', 'ASC']],
+        include: [{ model: User, as: 'User', attributes: ['name', 'email', 'role'] }]
+    }) : [];
+
+    return {
+        job_history: jobHistory,
+        survey_history: surveyHistory
+    };
 };
 
 export const addInternalNote = async (jobId, noteText, userId) => {

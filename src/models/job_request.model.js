@@ -41,7 +41,7 @@ export default (sequelize, DataTypes) => {
         tableName: 'job_requests',
         underscored: true,
         timestamps: true,
-        updatedAt: false,
+        updatedAt: true,
     });
 
     JobRequest.associate = (models) => {
@@ -59,6 +59,7 @@ export default (sequelize, DataTypes) => {
         JobRequest.hasMany(models.Payment, { foreignKey: 'job_id' });
         JobRequest.hasMany(models.JobDocument, { foreignKey: 'job_id' });
         JobRequest.hasMany(models.JobReschedule, { foreignKey: 'job_id' });
+        JobRequest.hasOne(models.Survey, { foreignKey: 'job_id', as: 'survey' });
     };
 
     return JobRequest;

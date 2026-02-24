@@ -76,6 +76,22 @@ router.post(
     surveyController.flagViolation
 );
 
+// Draft Survey Statement (Surveyor / TM)
+router.post(
+    '/jobs/:jobId/statement/draft',
+    authorizeRoles('SURVEYOR', 'TM'),
+    validate(schemas.draftSurveyStatement),
+    surveyController.draftStatement
+);
+
+// Issue Survey Statement (TM only - requires signed PDF)
+router.post(
+    '/jobs/:jobId/statement/issue',
+    authorizeRoles('TM'),
+    upload.single('statement'),
+    surveyController.issueStatement
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // READ — All internal roles
 // ─────────────────────────────────────────────────────────────────────────────

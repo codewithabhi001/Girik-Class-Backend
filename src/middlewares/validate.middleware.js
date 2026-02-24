@@ -52,7 +52,9 @@ export const schemas = {
         gps_latitude: Joi.number().required(),
         gps_longitude: Joi.number().required(),
         survey_statement: Joi.string().required(),
-        reason_if_outside: Joi.string().optional().allow(''),
+    }),
+    draftSurveyStatement: Joi.object({
+        survey_statement: Joi.string().required(),
     }),
     generateCertificate: Joi.object({
         job_id: Joi.string().guid().required(),

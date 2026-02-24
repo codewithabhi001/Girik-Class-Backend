@@ -102,6 +102,7 @@ export const resolveEntity = async (data, user = null) => {
         return await Promise.all(data.map(item => resolveEntity(item, user)));
     }
 
+    if (data instanceof Date) return data;
     if (typeof data === 'object') {
         // If it's a Sequelize model instance, convert to plain object
         let plain = (typeof data.get === 'function') ? data.get({ plain: true }) : { ...data };

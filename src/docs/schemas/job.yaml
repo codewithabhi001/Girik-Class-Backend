@@ -58,6 +58,35 @@ JobResponse:
       type: string
       enum: [CREATED, DOCUMENT_VERIFIED, APPROVED, ASSIGNED, SURVEY_AUTHORIZED, IN_PROGRESS, SURVEY_DONE, REVIEWED, FINALIZED, REWORK_REQUESTED, PAYMENT_DONE, CERTIFIED, REJECTED]
       example: "CREATED"
+    survey:
+      type: object
+      nullable: true
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        survey_status:
+          type: string
+          enum: [NOT_STARTED, STARTED, CHECKLIST_SUBMITTED, PROOF_UPLOADED, SUBMITTED, REWORK_REQUIRED, FINALIZED]
+          example: "NOT_STARTED"
+        started_at:
+          type: string
+          format: date-time
+          nullable: true
+        submitted_at:
+          type: string
+          format: date-time
+          nullable: true
+        SurveyStatusHistories:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { $ref: '#/components/schemas/UUID' }
+              previous_status: { type: string, nullable: true }
+              new_status: { type: string }
+              changed_by: { $ref: '#/components/schemas/UUID' }
+              reason: { type: string, nullable: true }
+              created_at: { type: string, format: date-time }
     priority:
       type: string
       enum: [LOW, NORMAL, HIGH, URGENT]

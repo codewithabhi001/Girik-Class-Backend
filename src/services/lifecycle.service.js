@@ -205,6 +205,12 @@ export const updateSurveyStatus = async (surveyId, newStatus, userId, reason = n
             if (!['PROOF_UPLOADED', 'REWORK_REQUIRED'].includes(previousStatus)) {
                 throw { statusCode: 400, message: 'Survey cannot be SUBMITTED unless current status is PROOF_UPLOADED or REWORK_REQUIRED.' };
             }
+            if (!survey.attendance_photo_url) {
+                throw { statusCode: 400, message: 'Attendance photo is mandatory before submitting survey.' };
+            }
+            if (!survey.gps_latitude || !survey.gps_longitude) {
+                throw { statusCode: 400, message: 'GPS location must be recorded onsite before submission.' };
+            }
         }
 
         // ── 6. REWORK_REQUIRED guard: job must not be past FINALIZED ──
