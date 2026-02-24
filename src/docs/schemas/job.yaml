@@ -76,6 +76,13 @@ JobResponse:
           type: string
           format: date-time
           nullable: true
+        start_latitude: { type: number, nullable: true }
+        start_longitude: { type: number, nullable: true }
+        submit_latitude: { type: number, nullable: true }
+        submit_longitude: { type: number, nullable: true }
+        declared_by: { $ref: '#/components/schemas/UUID', nullable: true }
+        declared_at: { type: string, format: date-time, nullable: true }
+        declaration_hash: { type: string, nullable: true }
         SurveyStatusHistories:
           type: array
           items:
