@@ -12,6 +12,12 @@ export const getEntityDocuments = async (entityType, entityId) => {
     return await fileAccessService.resolveEntity(documents);
 };
 
+export const getDocumentById = async (id) => {
+    const document = await Document.findByPk(id);
+    if (!document) throw { statusCode: 404, message: 'Document not found' };
+    return await fileAccessService.resolveEntity(document);
+};
+
 export const uploadStandaloneFile = async (file, folderName = 'temp') => {
     const folder = `${s3Service.UPLOAD_FOLDERS.DOCUMENTS}/${folderName}`;
     const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, folder);

@@ -31,6 +31,27 @@ export const getDocuments = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
+export const getDocumentById = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const document = await documentService.getDocumentById(id);
+
+        const hasAccess = await fileAccessService.validateUserEntityAccess(req.user, document.entity_type, document.entity_id);
+        if (!hasAccess) {
+            throw { statusCode: 403, message: `Unauthorized access to this document` };
+        }
+
+        const accessInfo = await fileAccessService.processFileAccess(document, req.user);
+        const data = {
+            ...document,
+            ...accessInfo,
+            file_url: undefined
+        };
+
+        res.json({ success: true, data });
+    } catch (e) { next(e); }
+};
+
 export const uploadDocument = async (req, res, next) => {
     try {
         const { entityId } = req.params;

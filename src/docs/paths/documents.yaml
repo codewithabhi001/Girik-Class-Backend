@@ -136,6 +136,36 @@
       "403": { description: Forbidden }
 
 /api/v1/documents/{id}:
+  get:
+    tags: [Documents]
+    summary: Get document by ID
+    operationId: getDocumentById
+    x-roles: [CLIENT, ADMIN, GM, TM, TO, SURVEYOR]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200":
+        description: Document retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  type: object
+                  properties:
+                    id: { type: string, format: uuid }
+                    entity_type: { type: string }
+                    entity_id: { type: string, format: uuid }
+                    file_url: { type: string }
+                    uploaded_at: { type: string, format: date-time }
+      "404": { description: Document not found }
+      "403": { description: Forbidden }
+
   delete:
     tags: [Documents]
     summary: Delete document
