@@ -8,6 +8,9 @@ export const createFlag = async (data) => {
 export const getFlags = async () => {
     return await FlagAdministration.findAll();
 };
+export const getFlag = async (id) => {
+    return await FlagAdministration.findByPk(id);
+};  
 
 export const updateFlag = async (id, data) => {
     const flag = await FlagAdministration.findByPk(id);

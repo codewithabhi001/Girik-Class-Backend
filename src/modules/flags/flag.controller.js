@@ -13,6 +13,12 @@ export const getFlags = async (req, res, next) => {
         res.json({ success: true, data: list });
     } catch (error) { next(error); }
 };
+export const getFlag = async (req, res, next) => {
+    try {
+        const flag = await flagService.getFlag(req.params.id);
+        res.json({ success: true, data: flag });
+    } catch (error) { next(error); }
+};  
 
 export const updateFlag = async (req, res, next) => {
     try {

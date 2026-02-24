@@ -9,6 +9,7 @@ router.use(authenticate);
 
 router.post('/', authorizeRoles('ADMIN'), validate(schemas.createFlag), flagController.createFlag);
 router.get('/', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), flagController.getFlags);
+router.get('/:id', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), flagController.getFlag);
 router.put('/:id', authorizeRoles('ADMIN'), flagController.updateFlag);
 
 export default router;
