@@ -1,7 +1,7 @@
 import db from '../../models/index.js';
 import { Op } from 'sequelize';
 
-const { User, Client, Vessel, JobRequest, SurveyorProfile, Certificate, FlagAdministration, Survey, CertificateType, Payment } = db;
+const { User, Client, Vessel, JobRequest, SurveyorProfile, Certificate, FlagAdministration, Survey, CertificateType, Payment, NonConformity } = db;
 
 const vesselAttrs = ['id', 'vessel_name', 'imo_number', 'flag_administration_id', 'class_status'];
 
@@ -137,20 +137,43 @@ export const getTADashboard = async (user) => {
 }
 
 export const getSurveyorDashboard = async (user) => {
-    const [assignedJobsCount, assignedJobs, completedSurveys, profile] = await Promise.all([
-        JobRequest.count({ where: { assigned_surveyor_id: user.id } }),
+    const [assignedJobs, allJobsRaw, allSurveysRaw, openNCsCount, profile] = await Promise.all([
         JobRequest.findAll({
             where: { assigned_surveyor_id: user.id },
             include: ['Vessel', 'CertificateType'],
             order: [['createdAt', 'DESC']],
             limit: 10,
         }),
-        Survey.count({ where: { surveyor_id: user.id, survey_status: 'FINALIZED' } }),
+        JobRequest.findAll({
+            where: { assigned_surveyor_id: user.id },
+            attributes: ['job_status'],
+            raw: true
+        }),
+        Survey.findAll({
+            where: { surveyor_id: user.id },
+            attributes: ['survey_status'],
+            raw: true
+        }),
+        NonConformity.count({
+            include: [{
+                model: JobRequest,
+                where: { assigned_surveyor_id: user.id },
+                required: true
+            }],
+            where: { status: 'OPEN' }
+        }),
         SurveyorProfile.findOne({ where: { user_id: user.id }, raw: true }),
     ]);
 
-    const byStatus = assignedJobs.reduce((acc, j) => {
-        acc[j.job_status || 'CREATED'] = (acc[j.job_status || 'CREATED'] || 0) + 1;
+    const jobsByStatus = allJobsRaw.reduce((acc, j) => {
+        const s = j.job_status || 'CREATED';
+        acc[s] = (acc[s] || 0) + 1;
+        return acc;
+    }, {});
+
+    const surveysByStatus = allSurveysRaw.reduce((acc, s) => {
+        const status = s.survey_status || 'NOT_STARTED';
+        acc[status] = (acc[status] || 0) + 1;
         return acc;
     }, {});
 
@@ -159,15 +182,18 @@ export const getSurveyorDashboard = async (user) => {
         user: { id: user.id, name: user.name, email: user.email },
         profile: profile || null,
         summary: {
-            assigned_jobs_total: assignedJobsCount,
-            assigned_jobs_by_status: byStatus,
-            completed_surveys: completedSurveys,
+            assigned_jobs_total: allJobsRaw.length,
+            jobs_by_status: jobsByStatus,
+            surveys_by_status: surveysByStatus,
+            completed_surveys: surveysByStatus['FINALIZED'] || 0,
+            open_non_conformities: openNCsCount
         },
         recent_assigned_jobs: assignedJobs.map((j) => ({
             id: j.id,
             job_status: j.job_status,
             target_date: j.target_date,
             vessel: j.Vessel ? { vessel_name: j.Vessel.vessel_name, imo_number: j.Vessel.imo_number } : null,
+            certificate_type: j.CertificateType?.name
         })),
     };
 }
