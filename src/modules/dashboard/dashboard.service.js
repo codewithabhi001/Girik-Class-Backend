@@ -45,9 +45,10 @@ export const getAdminDashboard = async () => {
         })),
     }));
 
-    const [jobStatusCounts, certStatusCounts] = await Promise.all([
+    const [jobStatusCounts, certStatusCounts, surveyStatusCounts] = await Promise.all([
         JobRequest.findAll({ attributes: ['job_status'], raw: true }),
         Certificate.findAll({ attributes: ['status'], raw: true }),
+        Survey.findAll({ attributes: ['survey_status'], raw: true }),
     ]);
 
     const jobsByStatus = jobStatusCounts.reduce((acc, j) => {
@@ -56,6 +57,10 @@ export const getAdminDashboard = async () => {
     }, {});
     const certsByStatus = certStatusCounts.reduce((acc, c) => {
         acc[c.status || 'VALID'] = (acc[c.status || 'VALID'] || 0) + 1;
+        return acc;
+    }, {});
+    const surveysByStatus = surveyStatusCounts.reduce((acc, s) => {
+        acc[s.survey_status || 'NOT_STARTED'] = (acc[s.survey_status || 'NOT_STARTED'] || 0) + 1;
         return acc;
     }, {});
 
@@ -77,6 +82,7 @@ export const getAdminDashboard = async () => {
             clients: clients.length,
             vessels: vesselsCount,
             jobs: { total: jobsCount, by_status: jobsByStatus },
+            surveys: { total: surveyStatusCounts.length, by_status: surveysByStatus },
             certificates: { total: certificatesCount, by_status: certsByStatus },
         },
         client_with_vessels: clients,
@@ -140,7 +146,11 @@ export const getSurveyorDashboard = async (user) => {
     const [assignedJobs, allJobsRaw, allSurveysRaw, openNCsCount, profile] = await Promise.all([
         JobRequest.findAll({
             where: { assigned_surveyor_id: user.id },
-            include: ['Vessel', 'CertificateType'],
+            include: [
+                'Vessel',
+                'CertificateType',
+                { model: Survey, as: 'survey', attributes: ['survey_status'] }
+            ],
             order: [['createdAt', 'DESC']],
             limit: 10,
         }),
@@ -191,6 +201,7 @@ export const getSurveyorDashboard = async (user) => {
         recent_assigned_jobs: assignedJobs.map((j) => ({
             id: j.id,
             job_status: j.job_status,
+            survey_status: j.survey?.survey_status || 'NOT_STARTED',
             target_date: j.target_date,
             vessel: j.Vessel ? { vessel_name: j.Vessel.vessel_name, imo_number: j.Vessel.imo_number } : null,
             certificate_type: j.CertificateType?.name
