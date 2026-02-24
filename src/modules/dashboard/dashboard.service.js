@@ -1,7 +1,7 @@
 import db from '../../models/index.js';
 import { Op } from 'sequelize';
 
-const { User, Client, Vessel, JobRequest, SurveyorProfile, Certificate, FlagAdministration, SurveyReport, CertificateType, Payment } = db;
+const { User, Client, Vessel, JobRequest, SurveyorProfile, Certificate, FlagAdministration, Survey, CertificateType, Payment } = db;
 
 const vesselAttrs = ['id', 'vessel_name', 'imo_number', 'flag_administration_id', 'class_status'];
 
@@ -105,7 +105,7 @@ export const getTODashboard = async (user) => {
         Client.count({ where: { status: 'ACTIVE' } }),
     ]);
 
-    const surveys = await SurveyReport.count();
+    const surveys = await Survey.count({ where: { survey_status: { [Op.in]: ['SUBMITTED', 'FINALIZED'] } } });
 
     return {
         role: 'TO',
@@ -145,7 +145,7 @@ export const getSurveyorDashboard = async (user) => {
             order: [['createdAt', 'DESC']],
             limit: 10,
         }),
-        SurveyReport.count({ where: { surveyor_id: user.id } }),
+        Survey.count({ where: { surveyor_id: user.id, survey_status: 'FINALIZED' } }),
         SurveyorProfile.findOne({ where: { user_id: user.id }, raw: true }),
     ]);
 

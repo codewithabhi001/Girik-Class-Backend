@@ -1,7 +1,7 @@
 import db from '../../models/index.js';
 import { Op } from 'sequelize';
 
-const { Certificate, NonConformity, Payment, SurveyReport, JobRequest } = db;
+const { Certificate, NonConformity, Payment, Survey, JobRequest } = db;
 
 export const getCertificateReport = async (filters = {}) => {
     const where = {};
@@ -48,7 +48,7 @@ export const getSurveyorPerformanceReport = async (filters = {}) => {
         };
     }
 
-    const surveys = await SurveyReport.findAll({
+    const surveys = await Survey.findAll({
         where,
         include: [
             { model: db.User, attributes: ['id', 'name', 'email'] },
