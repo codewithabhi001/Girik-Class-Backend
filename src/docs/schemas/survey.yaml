@@ -12,9 +12,18 @@ SurveyReportResponse:
       enum: [NOT_STARTED, STARTED, CHECKLIST_SUBMITTED, PROOF_UPLOADED, SUBMITTED, REWORK_REQUIRED, FINALIZED]
     submission_count:
       type: integer
-    gps_latitude:
+    declared_by:
+      $ref: '#/components/schemas/UUID'
+    declared_at:
+      type: string
+      format: date-time
+    start_latitude:
       type: number
-    gps_longitude:
+    start_longitude:
+      type: number
+    submit_latitude:
+      type: number
+    submit_longitude:
       type: number
     attendance_photo_url:
       type: string
@@ -22,6 +31,11 @@ SurveyReportResponse:
     evidence_proof_url:
       type: string
       format: uri
+    signature_url:
+      type: string
+      format: uri
+    declaration_hash:
+      type: string
     survey_statement:
       type: string
     started_at:
@@ -38,11 +52,14 @@ SurveyReportResponse:
     job_id: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
     survey_status: "SUBMITTED"
     submission_count: 1
-    gps_latitude: 1.3521
-    gps_longitude: 103.8198
+    submit_latitude: 1.3521
+    submit_longitude: 103.8198
     survey_statement: "Survey completed successfully."
-    started_at: "2026-02-20T10:00:00Z"
-    submitted_at: "2026-02-20T12:00:00Z"
+    declared_by: "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+    declared_at: "2026-02-25T12:00:00Z"
+    declaration_hash: "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e"
+    started_at: "2026-02-25T10:00:00Z"
+    submitted_at: "2026-02-25T12:00:00Z"
 
 SurveyTimelineResponse:
   type: object

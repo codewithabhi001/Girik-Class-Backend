@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import db from '../../models/index.js';
 import * as s3Service from '../../services/s3.service.js';
 import * as notificationService from '../../services/notification.service.js';
@@ -6,6 +7,15 @@ import * as lifecycleService from '../../services/lifecycle.service.js';
 import logger from '../../utils/logger.js';
 
 const { Survey, JobRequest, GpsTracking, ActivityPlanning, AuditLog } = db;
+
+/**
+ * Enforces immutability for finalized surveys.
+ */
+const assertSurveyNotFinalized = (survey) => {
+    if (survey.survey_status === 'FINALIZED') {
+        throw { statusCode: 400, message: 'Survey is finalized and cannot be modified.' };
+    }
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SHARED ACCESS GUARD
@@ -80,6 +90,12 @@ export const startSurvey = async (data, userId) => {
 
         await lifecycleService.updateSurveyStatus(survey.id, 'STARTED', userId, 'Surveyor checked in', { transaction: txn });
 
+        await survey.update({
+            started_at: new Date(),
+            start_latitude: latitude,
+            start_longitude: longitude
+        }, { transaction: txn });
+
         await GpsTracking.create({ surveyor_id: userId, job_id, latitude, longitude }, { transaction: txn });
 
         await txn.commit();
@@ -108,6 +124,7 @@ export const uploadProof = async (jobId, file, userId) => {
     await assertJobAccessible(jobId, userId, { checkSurveyor: true });
 
     const survey = await requireSurvey(jobId);
+    assertSurveyNotFinalized(survey);
 
     // Guard: must have submitted checklist first
     if (!['CHECKLIST_SUBMITTED', 'REWORK_REQUIRED'].includes(survey.survey_status)) {
@@ -138,8 +155,8 @@ export const uploadProof = async (jobId, file, userId) => {
  * Survey must be PROOF_UPLOADED or REWORK_REQUIRED.
  * Job must not be PAYMENT_DONE or beyond.
  */
-export const submitSurveyReport = async (data, file, userId) => {
-    const { job_id, gps_latitude, gps_longitude, survey_statement } = data;
+export const submitSurveyReport = async (data, files, userId) => {
+    const { job_id, submit_latitude, submit_longitude, survey_statement } = data;
 
     const job = await assertJobAccessible(job_id, userId, { checkSurveyor: true });
 
@@ -149,6 +166,7 @@ export const submitSurveyReport = async (data, file, userId) => {
     }
 
     const survey = await requireSurvey(job_id);
+    assertSurveyNotFinalized(survey);
 
     // Guard: submission requires PROOF_UPLOADED or REWORK_REQUIRED
     if (!['PROOF_UPLOADED', 'REWORK_REQUIRED'].includes(survey.survey_status)) {
@@ -162,24 +180,65 @@ export const submitSurveyReport = async (data, file, userId) => {
     }
 
     // ── Compliance Enforcement: GPS & Photo ──
-    if (!gps_latitude || !gps_longitude) {
+    if (!submit_latitude || !submit_longitude) {
         throw { statusCode: 400, message: "GPS location must be recorded onsite before submission." };
     }
-    if (!file && !survey.attendance_photo_url) {
+
+    const photoFile = files?.photo?.[0];
+    const signatureFile = files?.signature?.[0];
+
+    if (!photoFile && !survey.attendance_photo_url) {
         throw { statusCode: 400, message: "Attendance photo is mandatory before submitting survey." };
     }
 
     let photoUrl = survey.attendance_photo_url;
-    if (file) photoUrl = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PHOTO);
+    if (photoFile) photoUrl = await s3Service.uploadFile(photoFile.buffer, photoFile.originalname, photoFile.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PHOTO);
+
+    let signatureUrl = survey.signature_url;
+    if (signatureFile) signatureUrl = await s3Service.uploadFile(signatureFile.buffer, signatureFile.originalname, signatureFile.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PROOF);
 
     const txn = await db.sequelize.transaction();
     try {
-        await survey.update({ gps_latitude, gps_longitude, attendance_photo_url: photoUrl, survey_statement }, { transaction: txn });
+        // 1. Initial update of report fields
+        await survey.update({
+            submit_latitude,
+            submit_longitude,
+            attendance_photo_url: photoUrl,
+            signature_url: signatureUrl,
+            survey_statement
+        }, { transaction: txn });
+
+        // 2. Advance status (updates submission_count, declared_by, declared_at)
         await lifecycleService.updateSurveyStatus(survey.id, 'SUBMITTED', userId, 'Survey report submitted', { transaction: txn });
-        await GpsTracking.create({ surveyor_id: userId, job_id, latitude: gps_latitude, longitude: gps_longitude }, { transaction: txn });
+
+        // 3. Reload to get updated timestamps and iteration
+        await survey.reload({ transaction: txn });
+
+        // 4. Generate Declaration Hash
+        const checklistData = await ActivityPlanning.findAll({
+            where: { job_id },
+            attributes: ['question_code', 'question_text', 'answer', 'remarks', 'file_url'],
+            transaction: txn
+        });
+
+        const hashPayload = JSON.stringify({
+            survey_statement: survey.survey_statement,
+            checklist_data: checklistData,
+            evidence_proof_url: survey.evidence_proof_url,
+            submit_latitude: survey.submit_latitude,
+            submit_longitude: survey.submit_longitude,
+            declared_at: survey.declared_at,
+            submission_count: survey.submission_count
+        });
+
+        const declarationHash = crypto.createHash('sha256').update(hashPayload).digest('hex');
+        await survey.update({ declaration_hash: declarationHash }, { transaction: txn });
+
+        // 5. Log final GPS
+        await GpsTracking.create({ surveyor_id: userId, job_id, latitude: submit_latitude, longitude: submit_longitude }, { transaction: txn });
 
         await txn.commit();
-        await survey.reload(); // Refresh the instance state (SUBMITTED)
+        await survey.reload();
         logger.info({ entity: 'SURVEY', event: 'SUBMITTED', jobId: job_id, surveyId: survey.id, triggeredBy: userId });
         return await fileAccessService.resolveEntity(survey, { id: userId });
     } catch (error) {
@@ -251,6 +310,7 @@ export const requestRework = async (jobId, reason, userId) => {
 export const draftSurveyStatement = async (jobId, data, userId) => {
     await assertJobAccessible(jobId, userId, { checkSurveyor: false });
     const survey = await requireSurvey(jobId);
+    assertSurveyNotFinalized(survey);
 
     await survey.update({
         survey_statement: data.survey_statement,
@@ -262,6 +322,7 @@ export const draftSurveyStatement = async (jobId, data, userId) => {
 export const issueSurveyStatement = async (jobId, file, userId) => {
     await assertJobAccessible(jobId, userId, { checkSurveyor: false });
     const survey = await requireSurvey(jobId);
+    assertSurveyNotFinalized(survey);
 
     if (!file) throw { statusCode: 400, message: 'Please upload the signed Survey Statement PDF to issue it.' };
 
@@ -340,8 +401,6 @@ export const streamLocation = async (jobId, { latitude, longitude }, userId) => 
     }
 
     const record = await GpsTracking.create({ surveyor_id: userId, job_id: jobId, latitude, longitude });
-    // Keep survey's last known coordinates current
-    await survey.update({ gps_latitude: latitude, gps_longitude: longitude });
     return record;
 };
 

@@ -208,7 +208,7 @@ export const updateSurveyStatus = async (surveyId, newStatus, userId, reason = n
             if (!survey.attendance_photo_url) {
                 throw { statusCode: 400, message: 'Attendance photo is required before submitting the survey.' };
             }
-            if (!survey.gps_latitude || !survey.gps_longitude) {
+            if (!survey.submit_latitude || !survey.submit_longitude) {
                 throw { statusCode: 400, message: 'GPS coordinates must be recorded on-site before submission.' };
             }
         }
@@ -227,6 +227,8 @@ export const updateSurveyStatus = async (surveyId, newStatus, userId, reason = n
         if (newStatus === 'SUBMITTED') {
             updateData.submitted_at = new Date();
             updateData.submission_count = (survey.submission_count || 0) + 1;
+            updateData.declared_by = userId;
+            updateData.declared_at = new Date();
         }
         if (newStatus === 'FINALIZED') updateData.finalized_at = new Date();
 

@@ -59,8 +59,8 @@ export const schemas = {
     }),
     submitSurvey: Joi.object({
         job_id: Joi.string().guid().required(),
-        gps_latitude: Joi.number().required(),
-        gps_longitude: Joi.number().required(),
+        submit_latitude: Joi.number().required(),
+        submit_longitude: Joi.number().required(),
         survey_statement: Joi.string().required(),
     }),
     draftSurveyStatement: Joi.object({

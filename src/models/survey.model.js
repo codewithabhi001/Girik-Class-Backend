@@ -31,11 +31,19 @@ export default (sequelize, DataTypes) => {
             defaultValue: 0
         },
         // Report Data (Merged from SurveyReport for Single-Survey-per-Job approach)
-        gps_latitude: {
+        start_latitude: {
             type: DataTypes.DECIMAL(10, 8),
             allowNull: true
         },
-        gps_longitude: {
+        start_longitude: {
+            type: DataTypes.DECIMAL(11, 8),
+            allowNull: true
+        },
+        submit_latitude: {
+            type: DataTypes.DECIMAL(10, 8),
+            allowNull: true
+        },
+        submit_longitude: {
             type: DataTypes.DECIMAL(11, 8),
             allowNull: true
         },
@@ -43,8 +51,16 @@ export default (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: true
         },
+        signature_url: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
         survey_statement: {
             type: DataTypes.TEXT,
+            allowNull: true
+        },
+        declaration_hash: {
+            type: DataTypes.STRING(64),
             allowNull: true
         },
         // Evidence Proof (Last uploaded)
@@ -65,6 +81,14 @@ export default (sequelize, DataTypes) => {
             type: DataTypes.DATE,
             allowNull: true
         },
+        declared_by: {
+            type: DataTypes.UUID,
+            allowNull: true
+        },
+        declared_at: {
+            type: DataTypes.DATE,
+            allowNull: true
+        },
         survey_statement_status: {
             type: DataTypes.ENUM('NOT_PREPARED', 'DRAFTED', 'ISSUED'),
             defaultValue: 'NOT_PREPARED'
@@ -82,6 +106,7 @@ export default (sequelize, DataTypes) => {
     Survey.associate = (models) => {
         Survey.belongsTo(models.JobRequest, { foreignKey: 'job_id' });
         Survey.belongsTo(models.User, { foreignKey: 'surveyor_id' });
+        Survey.belongsTo(models.User, { foreignKey: 'declared_by', as: 'Declarer' });
         Survey.hasMany(models.SurveyStatusHistory, { foreignKey: 'survey_id' });
     };
 

@@ -157,7 +157,7 @@ export const generateCertificate = async (data, userId) => {
                 throw { statusCode: 400, message: 'Compliance Violation: Attendance photo missing in survey records.' };
             }
 
-            if (!survey.gps_latitude || !survey.gps_longitude) {
+            if (!survey.submit_latitude || !survey.submit_longitude) {
                 throw { statusCode: 400, message: 'Compliance Violation: GPS coordinates missing in survey records.' };
             }
         }

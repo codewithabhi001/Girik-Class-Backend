@@ -28,7 +28,7 @@ export const streamLocation = async (req, res, next) => {
 // POST /surveys
 export const submitSurveyReport = async (req, res, next) => {
     try {
-        const report = await surveyService.submitSurveyReport(req.body, req.file, req.user.id);
+        const report = await surveyService.submitSurveyReport(req.body, req.files, req.user.id);
         res.status(201).json({ success: true, message: 'Survey report submitted successfully.', data: report });
     } catch (error) { next(error); }
 };

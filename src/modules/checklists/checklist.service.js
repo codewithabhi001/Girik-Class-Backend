@@ -58,6 +58,9 @@ export const submitChecklist = async (jobId, items, userId) => {
     if (!survey) throw { statusCode: 400, message: 'The survey has not been started yet. Please check-in first.' };
 
     // ── Guard 4: Survey must be STARTED or REWORK_REQUIRED (not before, not after) ──
+    if (survey.survey_status === 'FINALIZED') {
+        throw { statusCode: 400, message: 'Survey is finalized and cannot be modified.' };
+    }
     if (lifecycleService.SURVEY_TERMINAL_STATES.includes(survey.survey_status)) {
         throw { statusCode: 400, message: 'This survey has already been finalized and cannot be modified.' };
     }

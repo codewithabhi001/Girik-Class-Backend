@@ -47,7 +47,7 @@ router.post(
     '/',
     authorizeRoles('SURVEYOR'),
     validate(schemas.submitSurvey),
-    upload.single('photo'),
+    upload.fields([{ name: 'photo', maxCount: 1 }, { name: 'signature', maxCount: 1 }]),
     surveyController.submitSurveyReport
 );
 

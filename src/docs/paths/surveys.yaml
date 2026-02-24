@@ -46,14 +46,15 @@
         multipart/form-data:
           schema:
             type: object
-            required: [job_id, gps_latitude, gps_longitude, survey_statement]
+            required: [job_id, submit_latitude, submit_longitude, survey_statement]
             properties:
               job_id: { type: string, format: uuid }
-              gps_latitude: { type: number }
-              gps_longitude: { type: number }
+              submit_latitude: { type: number, description: "Latitude at submission (check-out)" }
+              submit_longitude: { type: number, description: "Longitude at submission (check-out)" }
               survey_statement: { type: string }
               reason_if_outside: { type: string }
               photo: { type: string, format: binary, description: "Attendance photo" }
+              signature: { type: string, format: binary, description: "Surveyor digital signature" }
     responses:
       "201":
         description: Survey submitted

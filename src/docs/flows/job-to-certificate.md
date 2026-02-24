@@ -60,19 +60,19 @@ This document describes the end-to-end flow in the GIRIK_BACKEND codebase from c
 
   - Roles: SURVEYOR
   - Body: `{ "job_id": <id>, "latitude": <lat>, "longitude": <lon> }`
-  - Transitions job_status => `IN_PROGRESS` and logs GPS.
+  - Transitions job_status => `IN_PROGRESS` and records `start_latitude/longitude`.
 
 - Submit checklist
 
   (Checklist endpoints exist in the checklists module; at least one checklist row must exist before submitting survey report.)
 
-- Submit survey report (with optional attendance photo)
+- Submit survey report (with attendance photo & signature)
 
   POST /api/v1/surveys
 
   - Roles: SURVEYOR
   - Requires: job.status === `IN_PROGRESS` and checklists submitted
-  - Uploads photo to S3, creates SurveyReport, creates a GPS tracking entry, and sets job_status => `SURVEY_DONE`
+  - Uploads photo to S3, updates Survey record with `submit_latitude/longitude` and `signature_url`, generates `declaration_hash`, and sets job_status => `SURVEY_DONE`
 
 - Finalize survey
 
@@ -130,22 +130,19 @@ export const startSurvey = async (data, userId) => {
 - Submit survey report — upload photo to S3, create SurveyReport, update job status to `SURVEY_DONE`, log gps:
 
 ```11:60:/Users/abhinavvishwakarma/work/Project/GIRIK_BACKEND/src/modules/surveys/survey.service.js
-export const submitSurveyReport = async (data, file, userId) => {
-    const { job_id, gps_latitude, gps_longitude, survey_statement } = data;
+export const submitSurveyReport = async (data, files, userId) => {
+    const { job_id, submit_latitude, submit_longitude, survey_statement } = data;
     const job = await JobRequest.findByPk(job_id);
     ...
-    const report = await SurveyReport.create({
-        job_id,
-        surveyor_id: userId,
-        survey_date: new Date(),
-        gps_latitude,
-        gps_longitude,
+    const survey = await requireSurvey(job_id);
+    await survey.update({
+        submit_latitude,
+        submit_longitude,
         attendance_photo_url: photoUrl,
         survey_statement
     });
-    await job.update({ job_status: 'SURVEY_DONE' });
-    await GpsTracking.create({...});
-    return report;
+    ...
+    return survey;
 };
 ```
 
