@@ -45,8 +45,8 @@
   post:
     tags:
       - Website
-    summary: Upload a new video (Admin Only)
-    description: Upload a video file and an optional thumbnail for a specific website section.
+    summary: Upload a new video or image (Admin Only)
+    description: Upload a video file or an image (thumbnail) for a specific website section. At least one of video or thumbnail is required.
     security:
       - bearerAuth: []
     requestBody:
@@ -56,7 +56,6 @@
             type: object
             required:
               - section
-              - video
             properties:
               section:
                 type: string

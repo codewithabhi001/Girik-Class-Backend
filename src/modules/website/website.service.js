@@ -6,7 +6,10 @@ const WebsiteVideo = db.WebsiteVideo;
 
 export const uploadVideo = async (file, section, title, description, thumbnailFile, userId) => {
     const folder = s3Service.UPLOAD_FOLDERS.WEBSITE_VIDEOS || 'website/videos';
-    const videoUrl = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, folder);
+    let videoUrl = null;
+    if (file) {
+        videoUrl = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, folder);
+    }
 
     let thumbnailUrl = null;
     if (thumbnailFile) {

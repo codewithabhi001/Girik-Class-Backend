@@ -18,6 +18,7 @@ WebsiteVideo:
     video_url:
       type: string
       format: uri
+      nullable: true
       example: "https://bucket.s3.region.amazonaws.com/website/videos/video.mp4"
     thumbnail_url:
       type: string

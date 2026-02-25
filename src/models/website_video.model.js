@@ -22,7 +22,7 @@ export default (sequelize, DataTypes) => {
         },
         video_url: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
         thumbnail_url: {
             type: DataTypes.STRING,

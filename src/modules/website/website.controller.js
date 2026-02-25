@@ -12,8 +12,8 @@ export const uploadVideo = async (req, res, next) => {
         if (files['thumbnail']) thumbnail = files['thumbnail'][0];
         else if (files['thumbnail_url']) thumbnail = files['thumbnail_url'][0];
 
-        if (!videoFile) {
-            return res.status(400).json({ message: 'No video file uploaded' });
+        if (!videoFile && !thumbnail) {
+            return res.status(400).json({ message: 'Either video or thumbnail is required' });
         }
         if (!section) {
             return res.status(400).json({ message: 'Section is required' });
