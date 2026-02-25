@@ -68,6 +68,10 @@ JobResponse:
           type: string
           enum: [NOT_STARTED, STARTED, CHECKLIST_SUBMITTED, PROOF_UPLOADED, SUBMITTED, REWORK_REQUIRED, FINALIZED]
           example: "NOT_STARTED"
+        survey_statement_status:
+          type: string
+          enum: [NOT_PREPARED, DRAFT, ISSUED]
+          example: "NOT_PREPARED"
         started_at:
           type: string
           format: date-time

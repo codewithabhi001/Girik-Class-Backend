@@ -198,13 +198,7 @@ export const getJobs = async (query, scopeFilters = {}, userRole = null) => {
         order: [['updatedAt', 'DESC']], include
     });
 
-    const resolvedJobs = await fileAccessService.resolveEntity(rows);
-    const jobs = resolvedJobs.map(job => ({
-        ...job,
-        survey_status: job.survey?.survey_status || (job.is_survey_required ? 'NOT_STARTED' : 'N/A'),
-        survey_statement_status: job.survey?.survey_statement_status || (job.is_survey_required ? 'NOT_PREPARED' : 'N/A')
-    }));
-
+    const jobs = await fileAccessService.resolveEntity(rows);
     return {
         total: count, page: parseInt(page), limit: parseInt(limit),
         totalPages: Math.ceil(count / pageLimit),
@@ -238,12 +232,7 @@ export const getJobById = async (id, scopeFilters = {}) => {
         job.setDataValue('certificate_id', job.Certificate.id);
     }
 
-    const resolvedJob = await fileAccessService.resolveEntity(job);
-    return {
-        ...resolvedJob,
-        survey_status: resolvedJob.survey?.survey_status || (resolvedJob.is_survey_required ? 'NOT_STARTED' : 'N/A'),
-        survey_statement_status: resolvedJob.survey?.survey_statement_status || (resolvedJob.is_survey_required ? 'NOT_PREPARED' : 'N/A')
-    };
+    return await fileAccessService.resolveEntity(job);
 };
 
 // ─────────────────────────────────────────────
