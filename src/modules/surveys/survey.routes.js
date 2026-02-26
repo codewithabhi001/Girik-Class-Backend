@@ -103,12 +103,6 @@ router.get(
     surveyController.getSurveyReports
 );
 
-// Get survey details for a job
-router.get(
-    '/jobs/:jobId',
-    authorizeRoles('ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'),
-    surveyController.getSurveyDetails
-);
 
 // Survey execution timeline for a job
 router.get(
