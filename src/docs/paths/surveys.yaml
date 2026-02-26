@@ -84,7 +84,31 @@
                 data:
                   type: array
                   items:
-                    $ref: '#/components/schemas/SurveyReportResponse'
+                    $ref: '#/components/schemas/SurveyListResponse'
+
+/api/v1/surveys/jobs/{jobId}:
+  get:
+    tags: [Surveys]
+    summary: Get survey details
+    description: Fetches full details of a survey for a specific job, including related objects.
+    operationId: getSurveyDetails
+    x-roles: [ADMIN, GM, TM, TO, SURVEYOR]
+    parameters:
+      - name: jobId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      "200":
+        description: Survey details fetched
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data: { $ref: '#/components/schemas/SurveyReportResponse' }
+      "404": { description: Survey not found }
 
 /api/v1/surveys/jobs/{jobId}/finalize:
   put:
