@@ -121,14 +121,13 @@ export const startSurvey = async (data, userId) => {
  * Survey must be CHECKLIST_SUBMITTED (or REWORK_REQUIRED to allow re-upload).
  */
 export const uploadProof = async (jobId, file, userId) => {
-    await assertJobAccessible(jobId, userId, { checkSurveyor: true });
+    const job = await assertJobAccessible(jobId, userId, { checkSurveyor: true });
 
     const survey = await requireSurvey(jobId);
     assertSurveyNotFinalized(survey);
 
     // Guard: must have submitted checklist first
-    const isRework = job.job_status === 'REWORK_REQUESTED';
-    if (!['CHECKLIST_SUBMITTED', 'REWORK_REQUIRED'].includes(survey.survey_status) && !isRework) {
+    if (!['CHECKLIST_SUBMITTED', 'REWORK_REQUIRED'].includes(survey.survey_status)) {
         throw { statusCode: 400, message: `Please complete the inspection checklist before uploading evidence proof.` };
     }
 
@@ -170,8 +169,7 @@ export const submitSurveyReport = async (data, files, userId) => {
     assertSurveyNotFinalized(survey);
 
     // Guard: submission requires PROOF_UPLOADED or REWORK_REQUIRED
-    const isRework = job.job_status === 'REWORK_REQUESTED';
-    if (!['PROOF_UPLOADED', 'REWORK_REQUIRED'].includes(survey.survey_status) && !isRework) {
+    if (!['PROOF_UPLOADED', 'REWORK_REQUIRED'].includes(survey.survey_status)) {
         throw { statusCode: 400, message: `Please upload all required evidence proofs before submitting the survey report.` };
     }
 
@@ -417,9 +415,8 @@ export const streamLocation = async (jobId, { latitude, longitude }, userId) => 
 
     const survey = await Survey.findOne({ where: { job_id: jobId } });
     const activeStatuses = ['STARTED', 'CHECKLIST_SUBMITTED', 'PROOF_UPLOADED', 'REWORK_REQUIRED'];
-    const isRework = job.job_status === 'REWORK_REQUESTED';
 
-    if (!survey || (!activeStatuses.includes(survey.survey_status) && !isRework)) {
+    if (!survey || !activeStatuses.includes(survey.survey_status)) {
         throw { statusCode: 400, message: 'GPS tracking is only available during an active survey inspection.' };
     }
 
