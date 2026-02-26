@@ -65,6 +65,14 @@ export const getSurveyReports = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
+// GET /surveys/jobs/:jobId
+export const getSurveyDetails = async (req, res, next) => {
+    try {
+        const details = await surveyService.getSurveyDetails(req.params.jobId);
+        res.json({ success: true, message: 'Survey details fetched successfully.', data: details });
+    } catch (error) { next(error); }
+};
+
 // GET /surveys/jobs/:jobId/timeline
 export const getTimeline = async (req, res, next) => {
     try {

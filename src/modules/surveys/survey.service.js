@@ -366,13 +366,31 @@ export const getSurveyReports = async (query) => {
         where: allowedFilters,
         limit: parseInt(limit),
         offset: (page - 1) * limit,
+        attributes: [
+            'id', 'job_id', 'surveyor_id', 'survey_status', 'submission_count',
+            'started_at', 'submitted_at', 'finalized_at', 'survey_statement_status'
+        ],
         include: [
-            { model: JobRequest, include: [{ model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }] },
+            { model: JobRequest, attributes: ['id', 'job_status'], include: [{ model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }] },
             { model: db.User, attributes: ['name', 'email'] }
         ],
         order: [['submitted_at', 'DESC']]
     });
     return { count, rows: await fileAccessService.resolveEntity(rows) };
+};
+
+export const getSurveyDetails = async (jobId) => {
+    const survey = await Survey.findOne({
+        where: { job_id: jobId },
+        include: [
+            { model: JobRequest, include: [{ model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }] },
+            { model: db.User, attributes: ['name', 'email'] },
+            { model: db.User, as: 'Declarer', attributes: ['name', 'email'] },
+            { model: db.SurveyStatusHistory, order: [['created_at', 'DESC']] }
+        ]
+    });
+    if (!survey) throw { statusCode: 404, message: 'Survey not found for this job.' };
+    return await fileAccessService.resolveEntity(survey);
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
