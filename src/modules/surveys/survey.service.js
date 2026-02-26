@@ -127,7 +127,8 @@ export const uploadProof = async (jobId, file, userId) => {
     assertSurveyNotFinalized(survey);
 
     // Guard: must have submitted checklist first
-    if (!['CHECKLIST_SUBMITTED', 'REWORK_REQUIRED'].includes(survey.survey_status)) {
+    const isRework = job.job_status === 'REWORK_REQUESTED';
+    if (!['CHECKLIST_SUBMITTED', 'REWORK_REQUIRED'].includes(survey.survey_status) && !isRework) {
         throw { statusCode: 400, message: `Please complete the inspection checklist before uploading evidence proof.` };
     }
 
@@ -169,7 +170,8 @@ export const submitSurveyReport = async (data, files, userId) => {
     assertSurveyNotFinalized(survey);
 
     // Guard: submission requires PROOF_UPLOADED or REWORK_REQUIRED
-    if (!['PROOF_UPLOADED', 'REWORK_REQUIRED'].includes(survey.survey_status)) {
+    const isRework = job.job_status === 'REWORK_REQUESTED';
+    if (!['PROOF_UPLOADED', 'REWORK_REQUIRED'].includes(survey.survey_status) && !isRework) {
         throw { statusCode: 400, message: `Please upload all required evidence proofs before submitting the survey report.` };
     }
 
