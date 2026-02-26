@@ -413,7 +413,7 @@ export const streamLocation = async (jobId, { latitude, longitude }, userId) => 
     }
 
     const survey = await Survey.findOne({ where: { job_id: jobId } });
-    const activeStatuses = ['STARTED', 'CHECKLIST_SUBMITTED', 'PROOF_UPLOADED'];
+    const activeStatuses = ['STARTED', 'CHECKLIST_SUBMITTED', 'PROOF_UPLOADED', 'REWORK_REQUIRED'];
     if (!survey || !activeStatuses.includes(survey.survey_status)) {
         throw { statusCode: 400, message: 'GPS tracking is only available during an active survey inspection.' };
     }
