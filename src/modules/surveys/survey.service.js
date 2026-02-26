@@ -307,8 +307,8 @@ export const requestRework = async (jobId, reason, userId) => {
 // SURVEY STATEMENT MANAGEMENT
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const draftSurveyStatement = async (jobId, data, userId) => {
-    await assertJobAccessible(jobId, userId, { checkSurveyor: false });
+export const draftSurveyStatement = async (jobId, data, user) => {
+    await assertJobAccessible(jobId, user.id, { checkSurveyor: user.role === 'SURVEYOR' });
     const survey = await requireSurvey(jobId);
     assertSurveyNotFinalized(survey);
 
@@ -316,7 +316,7 @@ export const draftSurveyStatement = async (jobId, data, userId) => {
         survey_statement: data.survey_statement,
         survey_statement_status: 'DRAFTED'
     });
-    return { message: 'Survey statement drafted.', status: 'DRAFTED' };
+    return { message: 'Survey statement drafted.', status: 'DRAFTED', survey_statement: data.survey_statement };
 };
 
 export const issueSurveyStatement = async (jobId, file, userId) => {

@@ -38,6 +38,12 @@ SurveyReportResponse:
       type: string
     survey_statement:
       type: string
+    survey_statement_status:
+      type: string
+      enum: [NOT_PREPARED, DRAFTED, ISSUED]
+    survey_statement_pdf_url:
+      type: string
+      format: uri
     started_at:
       type: string
       format: date-time

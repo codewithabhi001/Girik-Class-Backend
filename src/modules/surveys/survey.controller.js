@@ -81,10 +81,9 @@ export const getTimeline = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
-// POST /surveys/jobs/:jobId/statement/draft
 export const draftStatement = async (req, res, next) => {
     try {
-        const result = await surveyService.draftSurveyStatement(req.params.jobId, req.body, req.user.id);
+        const result = await surveyService.draftSurveyStatement(req.params.jobId, req.body, req.user);
         res.json({ success: true, data: result });
     } catch (e) { next(e); }
 };
