@@ -196,7 +196,8 @@ export const getSurveyorDashboard = async (user) => {
             jobs_by_status: jobsByStatus,
             surveys_by_status: surveysByStatus,
             completed_surveys: surveysByStatus['FINALIZED'] || 0,
-            open_non_conformities: openNCsCount
+            open_non_conformities: openNCsCount,
+            rework_requested: jobsByStatus['REWORK_REQUESTED'] || 0
         },
         recent_assigned_jobs: assignedJobs.map((j) => ({
             id: j.id,
