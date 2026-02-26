@@ -534,6 +534,13 @@
           format: uuid
         description: Certificate ID
     responses:
+      "200":
+        description: Successful download (in case of direct file stream rather than redirect)
+        content:
+          application/pdf:
+            schema:
+              type: string
+              format: binary
       "302":
         description: Redirect to certificate PDF URL
         headers:
