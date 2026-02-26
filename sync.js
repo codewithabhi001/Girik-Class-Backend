@@ -5,9 +5,10 @@ async function run() {
     try {
         console.log('Authenticating db...');
         await db.sequelize.authenticate();
-        console.log('Syncing VesselDocument...');
-        // Only run alter for VesselDocument (if not exists)
+        console.log('Syncing VesselDocument and Survey...');
+        // Sync models that might have missing columns
         await db.VesselDocument.sync({ alter: true });
+        await db.Survey.sync({ alter: true });
         console.log('Done!');
         process.exit(0);
     } catch (e) {
