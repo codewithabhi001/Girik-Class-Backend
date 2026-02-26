@@ -111,4 +111,11 @@ router.get(
     surveyController.getTimeline
 );
 
+// Get survey details for a job
+router.get(
+    '/jobs/:jobId',
+    authorizeRoles('ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'),
+    surveyController.getSurveyDetails
+);
+
 export default router;

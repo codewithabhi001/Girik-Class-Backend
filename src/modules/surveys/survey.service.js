@@ -350,7 +350,8 @@ export const getTimeline = async (id) => {
     const gps = await GpsTracking.findAll({ where: { job_id: id }, order: [['timestamp', 'ASC']] });
     const survey = await Survey.findOne({
         where: { job_id: id },
-        include: [{ model: db.SurveyStatusHistory, order: [['created_at', 'ASC']] }]
+        include: [{ model: db.SurveyStatusHistory, as: 'SurveyStatusHistories' }],
+        order: [[{ model: db.SurveyStatusHistory, as: 'SurveyStatusHistories' }, 'created_at', 'ASC']]
     });
     return { job_id: id, gps_trace: gps, survey_details: await fileAccessService.resolveEntity(survey) };
 };
