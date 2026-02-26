@@ -131,6 +131,25 @@ export const updateJobStatus = async (jobId, newStatus, userId, reason = null, o
             triggeredBy: userId, reason: reason ?? undefined,
         });
 
+        // ── 8. Automatic Survey sync (reverse path) ──
+        if (newStatus === 'REWORK_REQUESTED') {
+            const survey = await Survey.findOne({ where: { job_id: jobId }, transaction: txn });
+            if (survey && survey.survey_status !== 'REWORK_REQUIRED') {
+                // We use a simpler update here to avoid circular calls to updateSurveyStatus if we were to add more complex logic there
+                // However, since we want full auditing, we'll actually import and call updateSurveyStatus but with a guard or just update the survey.
+                // Best approach: If we are in Job update, and it's rework, the survey MUST follow.
+                await survey.update({ survey_status: 'REWORK_REQUIRED' }, { transaction: txn });
+                await SurveyStatusHistory.create({
+                    survey_id: survey.id,
+                    previous_status: survey.survey_status,
+                    new_status: 'REWORK_REQUIRED',
+                    changed_by: userId,
+                    reason: `Auto-sync: Job → ${newStatus} (Reason: ${reason || 'N/A'})`,
+                    submission_iteration: survey.submission_count
+                }, { transaction: txn });
+            }
+        }
+
         if (!externalTxn) await txn.commit();
         return job;
     } catch (error) {
