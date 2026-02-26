@@ -64,8 +64,7 @@ export const submitChecklist = async (jobId, items, userId) => {
     if (lifecycleService.SURVEY_TERMINAL_STATES.includes(survey.survey_status)) {
         throw { statusCode: 400, message: 'This survey has already been finalized and cannot be modified.' };
     }
-    const isRework = job.job_status === 'REWORK_REQUESTED';
-    if (!['STARTED', 'REWORK_REQUIRED'].includes(survey.survey_status) && !isRework) {
+    if (!['STARTED', 'REWORK_REQUIRED'].includes(survey.survey_status)) {
         throw { statusCode: 400, message: `The checklist can only be submitted after starting the survey or when rework is requested.` };
     }
 

@@ -373,4 +373,7 @@ export const schemas = {
         status: Joi.string().valid('NEW', 'READ', 'REPLIED', 'ARCHIVED').required(),
         internal_note: Joi.string().max(2000).optional().allow('', null),
     }),
+    updateFcmToken: Joi.object({
+        fcmToken: Joi.string().required(),
+    }),
 };

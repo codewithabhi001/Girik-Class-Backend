@@ -50,7 +50,7 @@ export const SURVEY_TRANSITIONS = {
     STARTED: ['CHECKLIST_SUBMITTED'],
     CHECKLIST_SUBMITTED: ['PROOF_UPLOADED'],
     PROOF_UPLOADED: ['SUBMITTED'],
-    SUBMITTED: ['REWORK_REQUIRED', 'FINALIZED', 'CHECKLIST_SUBMITTED', 'PROOF_UPLOADED', 'SUBMITTED'],
+    SUBMITTED: ['REWORK_REQUIRED', 'FINALIZED'],
     REWORK_REQUIRED: ['CHECKLIST_SUBMITTED', 'PROOF_UPLOADED', 'SUBMITTED'],
     FINALIZED: [],  // terminal
 };
@@ -189,8 +189,8 @@ export const updateSurveyStatus = async (surveyId, newStatus, userId, reason = n
             throw { statusCode: 400, message: 'Survey is finalized and cannot be modified.' };
         }
 
-        // ── 2. Idempotency → 409 (Allow SUBMITTED -> SUBMITTED for re-submissions) ──
-        if (previousStatus === newStatus && newStatus !== 'SUBMITTED') {
+        // ── 2. Idempotency → 409 (not silent success) ──
+        if (previousStatus === newStatus) {
             throw { statusCode: 409, message: `Survey is already in ${newStatus} state.` };
         }
 

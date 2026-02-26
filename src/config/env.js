@@ -61,5 +61,8 @@ export default {
     },
     bcrypt: {
         saltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS) || 10,
+    },
+    firebase: {
+        serviceAccountPath: process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './girik-class-firebase-adminsdk-fbsvc-9297fb6be9.json'
     }
 };

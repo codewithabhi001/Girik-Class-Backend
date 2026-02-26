@@ -1,4 +1,4 @@
-
+import firebaseApp from '../config/firebase.js';
 import db from '../models/index.js';
 import * as emailService from './email.service.js';
 import logger from '../utils/logger.js';
@@ -21,24 +21,51 @@ export const sendNotification = async (userId, eventType, data) => {
         const pref = await NotificationPreference.findOne({ where: { user_id: userId } });
 
         // Logic: Enabled if no preference set, or if explicitly enabled
-        // If alert_types is empty array, it implies "ALL" (default behavior) or maybe "NONE"? 
-        // Typically empty whitelist means specific filtering is OFF, so allow all.
         const matchesType = !pref || pref.alert_types.length === 0 || pref.alert_types.includes(eventType);
 
         const emailAllowed = !pref || (pref.email_enabled && matchesType);
         const appAllowed = !pref || (pref.app_enabled && matchesType);
 
-        // 1. In-App Notification
+        // 1. In-App Notification (Database)
         if (appAllowed) {
             await Notification.create({
                 user_id: userId,
-                title: data.title || eventType, // Fallback title
+                title: data.title || eventType,
                 message: data.message || 'New notification',
                 type: eventType
             });
         }
 
-        // 2. Email Notification
+        // 2. Push Notification (Firebase FCM)
+        if (appAllowed && user.fcm_token && firebaseApp) {
+            try {
+                const message = {
+                    notification: {
+                        title: data.title || eventType,
+                        body: data.message || 'New notification',
+                    },
+                    data: {
+                        eventType: eventType,
+                        ...Object.fromEntries(
+                            Object.entries(data).map(([k, v]) => [k, String(v)])
+                        )
+                    },
+                    token: user.fcm_token,
+                };
+
+                await firebaseApp.messaging().send(message);
+                logger.debug(`FCM notification sent to user ${userId}`);
+            } catch (fcmError) {
+                logger.error(`Failed to send FCM notification to user ${userId}:`, fcmError);
+                // If token is invalid/expired, we might want to clear it
+                if (fcmError.code === 'messaging/registration-token-not-registered' ||
+                    fcmError.code === 'messaging/invalid-registration-token') {
+                    await user.update({ fcm_token: null });
+                }
+            }
+        }
+
+        // 3. Email Notification
         if (emailAllowed && user.email) {
             await emailService.sendTemplateEmail(user.email, eventType, data);
         }

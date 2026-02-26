@@ -10,6 +10,9 @@ router.use(authenticate);
 // Get own profile
 router.get('/me', userController.getProfile);
 
+// Update FCM token
+router.put('/fcm-token', validate(schemas.updateFcmToken), userController.updateFcmToken);
+
 // List all users
 router.get('/', authorizeRoles('ADMIN'), userController.getUsers);
 

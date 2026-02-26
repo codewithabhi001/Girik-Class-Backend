@@ -37,6 +37,10 @@ export default (sequelize, DataTypes) => {
             defaultValue: false,
         },
         last_login_at: DataTypes.DATE,
+        fcm_token: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
     }, {
         tableName: 'users',
         underscored: true,

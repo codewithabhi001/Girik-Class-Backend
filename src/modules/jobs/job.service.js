@@ -271,7 +271,15 @@ export const verifyJobDocuments = async (id, userId) => {
         }
     }
 
-    return await lifecycleService.updateJobStatus(id, 'DOCUMENT_VERIFIED', userId, 'Technical Officer verified documents');
+    const updated = await lifecycleService.updateJobStatus(id, 'DOCUMENT_VERIFIED', userId, 'Technical Officer verified documents');
+
+    // Notify ADMIN/GM/TM
+    const jobWithVessel = await JobRequest.findByPk(id, { include: ['Vessel'] });
+    await notificationService.notifyRoles(['ADMIN', 'GM', 'TM'], 'JOB_DOCUMENT_VERIFIED', {
+        jobId: id, vesselName: jobWithVessel.Vessel.vessel_name
+    }).catch(() => { });
+
+    return updated;
 };
 
 /**
@@ -285,6 +293,16 @@ export const approveRequest = async (id, remarks, user) => {
     }
     const updated = await lifecycleService.updateJobStatus(id, 'APPROVED', user.id, remarks || `${user.role} approved request`);
     await updated.update({ approved_by_user_id: user.id });
+
+    // Notify Client
+    const jobWithVessel = await JobRequest.findByPk(id, { include: ['Vessel'] });
+    const clientUser = await User.findOne({ where: { client_id: jobWithVessel.Vessel.client_id, role: 'CLIENT' } });
+    if (clientUser) {
+        await notificationService.sendNotification(clientUser.id, 'JOB_APPROVED', {
+            jobId: id, vesselName: jobWithVessel.Vessel.vessel_name
+        }).catch(() => { });
+    }
+
     return updated;
 };
 
@@ -390,7 +408,15 @@ export const reviewJob = async (id, remarks, user) => {
     if (job.job_status !== 'SURVEY_DONE') {
         throw { statusCode: 400, message: `Jobs can only be reviewed after the survey has been completed.` };
     }
-    return await lifecycleService.updateJobStatus(id, 'REVIEWED', user.id, remarks || 'TO technical review passed.');
+    const updated = await lifecycleService.updateJobStatus(id, 'REVIEWED', user.id, remarks || 'TO technical review passed.');
+
+    // Notify ADMIN/TM
+    const jobWithVessel = await JobRequest.findByPk(id, { include: ['Vessel'] });
+    await notificationService.notifyRoles(['ADMIN', 'TM'], 'JOB_REVIEWED', {
+        jobId: id, vesselName: jobWithVessel.Vessel.vessel_name
+    }).catch(() => { });
+
+    return updated;
 };
 
 /**

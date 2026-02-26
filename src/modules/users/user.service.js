@@ -66,3 +66,10 @@ export const deleteUser = async (id) => {
     await user.update({ status: 'DELETED' }); // Soft delete
     return { message: 'User deleted' };
 };
+
+export const updateFcmToken = async (id, fcmToken) => {
+    const user = await User.findByPk(id);
+    if (!user) throw { statusCode: 404, message: 'User not found' };
+    await user.update({ fcm_token: fcmToken });
+    return { success: true };
+};

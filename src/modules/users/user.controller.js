@@ -61,3 +61,14 @@ export const deleteUser = async (req, res, next) => {
         });
     } catch (error) { next(error); }
 };
+
+export const updateFcmToken = async (req, res, next) => {
+    try {
+        const result = await userService.updateFcmToken(req.user.id, req.body.fcmToken);
+        res.json({
+            success: true,
+            message: 'FCM token updated successfully',
+            data: result
+        });
+    } catch (error) { next(error); }
+};

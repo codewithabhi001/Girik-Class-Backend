@@ -100,6 +100,13 @@ export const startSurvey = async (data, userId) => {
 
         await txn.commit();
         logger.info({ entity: 'SURVEY', event: 'CHECKIN', jobId: job_id, surveyId: survey.id, triggeredBy: userId });
+
+        // Notify ADMIN/TM/TO
+        const jobWithVessel = await JobRequest.findByPk(job_id, { include: ['Vessel'] });
+        await notificationService.notifyRoles(['ADMIN', 'TM', 'TO'], 'SURVEY_STARTED', {
+            jobId: job_id, vesselName: jobWithVessel.Vessel.vessel_name, surveyorName: (await User.findByPk(userId)).name
+        }).catch(() => { });
+
         return { message: 'Survey started.', survey_id: survey.id, job_id };
     } catch (error) {
         await txn.rollback();
@@ -139,6 +146,13 @@ export const uploadProof = async (jobId, file, userId) => {
         await survey.update({ evidence_proof_url: url }, { transaction: txn });
         await lifecycleService.updateSurveyStatus(survey.id, 'PROOF_UPLOADED', userId, 'Evidence proof uploaded', { transaction: txn });
         await txn.commit();
+
+        // Notify ADMIN/TM/TO
+        const jobWithVessel = await JobRequest.findByPk(jobId, { include: ['Vessel'] });
+        await notificationService.notifyRoles(['ADMIN', 'TM', 'TO'], 'SURVEY_PROOF_UPLOADED', {
+            jobId, vesselName: jobWithVessel.Vessel.vessel_name
+        }).catch(() => { });
+
         return await fileAccessService.resolveEntity({ url }, { id: userId });
     } catch (error) {
         await txn.rollback();
@@ -240,6 +254,13 @@ export const submitSurveyReport = async (data, files, userId) => {
         await txn.commit();
         await survey.reload();
         logger.info({ entity: 'SURVEY', event: 'SUBMITTED', jobId: job_id, surveyId: survey.id, triggeredBy: userId });
+
+        // Notify ADMIN/TM/TO
+        const jobWithVessel = await JobRequest.findByPk(job_id, { include: ['Vessel'] });
+        await notificationService.notifyRoles(['ADMIN', 'TM', 'TO'], 'SURVEY_SUBMITTED', {
+            jobId: job_id, vesselName: jobWithVessel.Vessel.vessel_name
+        }).catch(() => { });
+
         return await fileAccessService.resolveEntity(survey, { id: userId });
     } catch (error) {
         await txn.rollback();
@@ -300,6 +321,15 @@ export const requestRework = async (jobId, reason, userId) => {
     }
 
     await lifecycleService.updateSurveyStatus(survey.id, 'REWORK_REQUIRED', userId, reason);
+
+    // Notify Surveyor
+    const jobWithVessel = await JobRequest.findByPk(jobId, { include: ['Vessel'] });
+    if (job.assigned_surveyor_id) {
+        await notificationService.sendNotification(job.assigned_surveyor_id, 'SURVEY_REWORK_REQUESTED', {
+            jobId, vesselName: jobWithVessel.Vessel.vessel_name, reason
+        }).catch(() => { });
+    }
+
     return { message: 'Rework requested.' };
 };
 

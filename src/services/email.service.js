@@ -77,6 +77,34 @@ export const sendTemplateEmail = async (to, templateName, data) => {
             subject = `Job Finalized: ${data.vesselName}`;
             text = `The survey for ${data.vesselName} has been finalized.`;
             break;
+        case 'JOB_DOCUMENT_VERIFIED':
+            subject = `Documents Verified: ${data.vesselName}`;
+            text = `Technical Officer has verified the documents for job on ${data.vesselName}.`;
+            break;
+        case 'JOB_REVIEWED':
+            subject = `Technical Review Passed: ${data.vesselName}`;
+            text = `The technical review for ${data.vesselName} has been passed.`;
+            break;
+        case 'SURVEY_STARTED':
+            subject = `Survey Started: ${data.vesselName}`;
+            text = `Surveyor ${data.surveyorName} has started the survey inspection on ${data.vesselName}.`;
+            break;
+        case 'SURVEY_PROOF_UPLOADED':
+            subject = `Evidence Uploaded: ${data.vesselName}`;
+            text = `The evidence proof has been uploaded for the survey on ${data.vesselName}.`;
+            break;
+        case 'SURVEY_SUBMITTED':
+            subject = `Survey Report Submitted: ${data.vesselName}`;
+            text = `The final survey report for ${data.vesselName} has been submitted and is ready for review.`;
+            break;
+        case 'SURVEY_REWORK_REQUESTED':
+            subject = `Rework Requested: ${data.vesselName}`;
+            text = `A rework has been requested for the survey report on ${data.vesselName}. Reason: ${data.reason}`;
+            break;
+        case 'JOB_RESCHEDULED':
+            subject = `Job Rescheduled: ${data.vesselName}`;
+            text = `The job for ${data.vesselName} has been rescheduled to ${data.newDate} at ${data.newPort}. Reason: ${data.reason}`;
+            break;
         default:
             subject = 'Notification from GIRIK';
             text = JSON.stringify(data, null, 2);
