@@ -118,3 +118,14 @@ export const uploadStandaloneFile = async (req, res, next) => {
         res.status(201).json({ success: true, data: result });
     } catch (e) { next(e); }
 };
+
+export const getUploadUrl = async (req, res, next) => {
+    try {
+        const { fileName, fileType, folder } = req.query;
+        if (!fileName || !fileType) {
+            throw { statusCode: 400, message: 'fileName and fileType (MIME) are required in query params.' };
+        }
+        const data = await documentService.generatePresignedUrl(fileName, fileType, folder);
+        res.json({ success: true, data });
+    } catch (e) { next(e); }
+};

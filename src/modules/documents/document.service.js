@@ -1,6 +1,7 @@
 import db from '../../models/index.js';
 import * as s3Service from '../../services/s3.service.js';
 import * as fileAccessService from '../../services/fileAccess.service.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const Document = db.Document;
 
@@ -59,4 +60,11 @@ export const deleteDocument = async (id) => {
     const doc = await Document.findByPk(id);
     if (!doc) throw { statusCode: 404, message: 'Document not found' };
     return await doc.destroy();
+};
+
+export const generatePresignedUrl = async (fileName, fileType, folderName = 'misc') => {
+    const folder = `${s3Service.UPLOAD_FOLDERS.DOCUMENTS}/${folderName}`;
+    const key = `${folder}/${uuidv4()}-${fileName}`;
+    const uploadUrl = await s3Service.getUploadSignedUrl(key, fileType);
+    return { uploadUrl, fileKey: key };
 };

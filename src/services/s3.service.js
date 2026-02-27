@@ -58,6 +58,27 @@ export const getSignedFileUrl = async (key, expiresIn = 3600) => {
     return await getSignedUrl(s3Client, command, { expiresIn });
 };
 
+/**
+ * Generate a signed URL for uploading a file directly to S3.
+ * @param {string} key - The S3 key (path) where the file will be stored.
+ * @param {string} contentType - The MIME type of the file (e.g., 'image/jpeg').
+ * @param {number} [expiresIn=3600] - URL expiration time in seconds.
+ */
+export const getUploadSignedUrl = async (key, contentType, expiresIn = 3600) => {
+    if (!env.aws.bucketName || !env.aws.accessKeyId) {
+        if (env.nodeEnv === 'production') throw new Error('FATAL: AWS credentials not configured.');
+        return `https://mock-s3.com/upload/${key}`;
+    }
+
+    const command = new PutObjectCommand({
+        Bucket: env.aws.bucketName,
+        Key: key,
+        ContentType: contentType,
+    });
+
+    return await getSignedUrl(s3Client, command, { expiresIn });
+};
+
 export const getFileContent = async (key) => {
     if (!env.aws.bucketName || !env.aws.accessKeyId) {
         if (env.nodeEnv === 'production') throw new Error('FATAL: AWS credentials not configured in production environment.');
