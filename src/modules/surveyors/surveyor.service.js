@@ -10,10 +10,6 @@ const User = db.User;
 const SurveyorProfile = db.SurveyorProfile;
 
 export const applySurveyor = async (data, files) => {
-    if (!files || !files.cv || !files.id_proof) {
-        throw { statusCode: 400, message: 'CV and ID Proof are required.' };
-    }
-
     const existingUser = await User.findOne({ where: { email: data.email } });
     if (existingUser) throw { statusCode: 400, message: 'A user with this email already exists.' };
 
@@ -23,11 +19,24 @@ export const applySurveyor = async (data, files) => {
     if (existingApp) throw { statusCode: 400, message: 'An application is already under review.' };
 
     const folder = s3Service.UPLOAD_FOLDERS.SURVEYOR;
-    const cvUrl = await s3Service.uploadFile(files.cv[0].buffer, files.cv[0].originalname, files.cv[0].mimetype, `${folder}/cv`);
-    const idProofUrl = await s3Service.uploadFile(files.id_proof[0].buffer, files.id_proof[0].originalname, files.id_proof[0].mimetype, `${folder}/id-proof`);
 
-    let certUrls = [];
-    if (files.certificates) {
+    // Support keys in body or files in request
+    let cvUrl = data.cvKey || null;
+    if (files?.cv) {
+        cvUrl = await s3Service.uploadFile(files.cv[0].buffer, files.cv[0].originalname, files.cv[0].mimetype, `${folder}/cv`);
+    }
+
+    let idProofUrl = data.idProofKey || null;
+    if (files?.id_proof) {
+        idProofUrl = await s3Service.uploadFile(files.id_proof[0].buffer, files.id_proof[0].originalname, files.id_proof[0].mimetype, `${folder}/id-proof`);
+    }
+
+    if (!cvUrl || !idProofUrl) {
+        throw { statusCode: 400, message: 'CV and ID Proof are required (files or keys).' };
+    }
+
+    let certUrls = data.certificateKeys || [];
+    if (files?.certificates) {
         for (const file of files.certificates) {
             const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, `${folder}/certificates`);
             certUrls.push(url);

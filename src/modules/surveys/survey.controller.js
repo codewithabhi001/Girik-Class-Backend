@@ -11,8 +11,11 @@ export const startSurvey = async (req, res, next) => {
 // POST /surveys/jobs/:jobId/proof
 export const uploadProof = async (req, res, next) => {
     try {
-        if (!req.file) return res.status(400).json({ success: false, message: 'No proof file uploaded.' });
-        const result = await surveyService.uploadProof(req.params.jobId, req.file, req.user.id);
+        // Support both file upload and pre-signed key registration
+        if (!req.file && !req.body.fileKey) {
+            return res.status(400).json({ success: false, message: 'No proof file or fileKey provided.' });
+        }
+        const result = await surveyService.uploadProof(req.params.jobId, req.file, req.body, req.user.id);
         res.json({ success: true, message: 'Proof uploaded successfully.', data: result });
     } catch (error) { next(error); }
 };
@@ -91,7 +94,7 @@ export const draftStatement = async (req, res, next) => {
 // POST /surveys/jobs/:jobId/statement/issue
 export const issueStatement = async (req, res, next) => {
     try {
-        const result = await surveyService.issueSurveyStatement(req.params.jobId, req.file, req.user.id);
+        const result = await surveyService.issueSurveyStatement(req.params.jobId, req.file, req.body, req.user.id);
         res.json({ success: true, data: result });
     } catch (e) { next(e); }
 };

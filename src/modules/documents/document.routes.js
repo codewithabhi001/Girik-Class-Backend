@@ -15,9 +15,12 @@ router.use(authenticate);
 
 router.get('/get-upload-url', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'SURVEYOR'), documentController.getUploadUrl);
 router.post('/upload', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'SURVEYOR'), upload.single('file'), documentController.uploadStandaloneFile);
+router.post('/register', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'SURVEYOR'), documentController.registerStandaloneFile);
+
 router.get('/:id', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), documentController.getDocumentById);
 router.get('/:entityType/:entityId', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), documentController.getDocuments);
 router.post('/:entityType/:entityId', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'SURVEYOR'), upload.array('files'), documentController.uploadDocument);
+router.post('/:entityType/:entityId/register', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'SURVEYOR'), documentController.uploadDocument);
 router.delete('/:id', authorizeRoles('ADMIN', 'GM'), documentController.deleteDocument);
 
 export default router;

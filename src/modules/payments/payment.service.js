@@ -54,7 +54,8 @@ export const createInvoice = async (data, userId = null) => {
 // MARK PAID
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const markPaid = async (paymentId, userId, receiptFile = null, remarks = '') => {
+export const markPaid = async (paymentId, userId, receiptFile = null, data = {}) => {
+    const remarks = data.remarks || '';
     const txn = await db.sequelize.transaction();
     try {
         // Lock payment row
@@ -66,7 +67,7 @@ export const markPaid = async (paymentId, userId, receiptFile = null, remarks = 
             throw { statusCode: 409, message: 'Payment has already been marked as paid.' };
         }
 
-        // ── Guard 2: Job must be FINALIZED (not PAYMENT_DONE, CERTIFIED, or terminal) ──
+        // ── Guard 2: Job must be FINALIZED ──
         const job = await JobRequest.findByPk(payment.job_id, { transaction: txn, lock: txn.LOCK.UPDATE });
         if (!job) throw { statusCode: 404, message: 'Job not found for this payment' };
 
@@ -79,7 +80,7 @@ export const markPaid = async (paymentId, userId, receiptFile = null, remarks = 
 
         // ── Upload receipt (optional) ──
         const oldPaymentStatus = payment.payment_status;
-        let receiptUrl = payment.receipt_url || null;
+        let receiptUrl = data.receiptKey || payment.receipt_url || null;
         if (receiptFile) {
             receiptUrl = await s3Service.uploadFile(
                 receiptFile.buffer, receiptFile.originalname, receiptFile.mimetype,

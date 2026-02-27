@@ -127,7 +127,7 @@ export const startSurvey = async (data, userId) => {
  * SURVEYOR action.
  * Survey must be CHECKLIST_SUBMITTED (or REWORK_REQUIRED to allow re-upload).
  */
-export const uploadProof = async (jobId, file, userId) => {
+export const uploadProof = async (jobId, file, data, userId) => {
     const job = await assertJobAccessible(jobId, userId, { checkSurveyor: true });
 
     const survey = await requireSurvey(jobId);
@@ -139,7 +139,12 @@ export const uploadProof = async (jobId, file, userId) => {
     }
 
     // S3 upload (outside transaction — idempotent/reversible)
-    const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PROOF);
+    let url = data.fileKey; // Support pre-signed upload key
+    if (file) {
+        url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PROOF);
+    }
+
+    if (!url) throw { statusCode: 400, message: 'No file or fileKey provided' };
 
     const txn = await db.sequelize.transaction();
     try {
@@ -201,15 +206,23 @@ export const submitSurveyReport = async (data, files, userId) => {
     const photoFile = files?.photo?.[0];
     const signatureFile = files?.signature?.[0];
 
-    if (!photoFile && !survey.attendance_photo_url) {
+    let photoUrl = survey.attendance_photo_url;
+    if (data.photoKey) {
+        photoUrl = data.photoKey;
+    } else if (photoFile) {
+        photoUrl = await s3Service.uploadFile(photoFile.buffer, photoFile.originalname, photoFile.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PHOTO);
+    }
+
+    if (!photoUrl) {
         throw { statusCode: 400, message: "Attendance photo is mandatory before submitting survey." };
     }
 
-    let photoUrl = survey.attendance_photo_url;
-    if (photoFile) photoUrl = await s3Service.uploadFile(photoFile.buffer, photoFile.originalname, photoFile.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PHOTO);
-
     let signatureUrl = survey.signature_url;
-    if (signatureFile) signatureUrl = await s3Service.uploadFile(signatureFile.buffer, signatureFile.originalname, signatureFile.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PROOF);
+    if (data.signatureKey) {
+        signatureUrl = data.signatureKey;
+    } else if (signatureFile) {
+        signatureUrl = await s3Service.uploadFile(signatureFile.buffer, signatureFile.originalname, signatureFile.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PROOF);
+    }
 
     const txn = await db.sequelize.transaction();
     try {
@@ -349,14 +362,17 @@ export const draftSurveyStatement = async (jobId, data, user) => {
     return { message: 'Survey statement drafted.', status: 'DRAFTED', survey_statement: data.survey_statement };
 };
 
-export const issueSurveyStatement = async (jobId, file, userId) => {
+export const issueSurveyStatement = async (jobId, file, data, userId) => {
     await assertJobAccessible(jobId, userId, { checkSurveyor: false });
     const survey = await requireSurvey(jobId);
     assertSurveyNotFinalized(survey);
 
-    if (!file) throw { statusCode: 400, message: 'Please upload the signed Survey Statement PDF to issue it.' };
+    let url = data.fileKey;
+    if (file) {
+        url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PROOF);
+    }
 
-    const url = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, s3Service.UPLOAD_FOLDERS.SURVEYS_PROOF);
+    if (!url) throw { statusCode: 400, message: 'Please upload the signed Survey Statement PDF or provide a fileKey.' };
 
     await survey.update({
         survey_statement_pdf_url: url,

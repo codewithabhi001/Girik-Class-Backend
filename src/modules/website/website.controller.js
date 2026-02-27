@@ -12,14 +12,14 @@ export const uploadVideo = async (req, res, next) => {
         if (files['thumbnail']) thumbnail = files['thumbnail'][0];
         else if (files['thumbnail_url']) thumbnail = files['thumbnail_url'][0];
 
-        if (!videoFile && !thumbnail) {
-            return res.status(400).json({ message: 'Either video or thumbnail is required' });
+        if (!videoFile && !thumbnail && !req.body.videoKey && !req.body.thumbnailKey) {
+            return res.status(400).json({ message: 'Either video/thumbnail file or videoKey/thumbnailKey is required' });
         }
         if (!section) {
             return res.status(400).json({ message: 'Section is required' });
         }
 
-        const video = await websiteService.uploadVideo(videoFile, section, title, description, thumbnail, req.user.id);
+        const video = await websiteService.uploadVideo(videoFile, section, title, description, thumbnail, req.user.id, req.body);
         res.status(201).json(video);
     } catch (error) {
         next(error);
@@ -48,7 +48,7 @@ export const updateVideo = async (req, res, next) => {
         if (files['thumbnail']) thumbnail = files['thumbnail'][0];
         else if (files['thumbnail_url']) thumbnail = files['thumbnail_url'][0];
 
-        const updatedVideo = await websiteService.updateVideo(id, { section, title, description }, videoFile, thumbnail);
+        const updatedVideo = await websiteService.updateVideo(id, { section, title, description, ...req.body }, videoFile, thumbnail);
         res.status(200).json(updatedVideo);
     } catch (error) {
         next(error);

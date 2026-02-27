@@ -4,16 +4,16 @@ import * as fileAccessService from '../../services/fileAccess.service.js';
 
 const WebsiteVideo = db.WebsiteVideo;
 
-export const uploadVideo = async (file, section, title, description, thumbnailFile, userId) => {
+export const uploadVideo = async (file, section, title, description, thumbnailFile, userId, data = {}) => {
     const folder = s3Service.UPLOAD_FOLDERS.WEBSITE_VIDEOS || 'website/videos';
-    let videoUrl = null;
+
+    let videoUrl = data.videoKey || null;
     if (file) {
         videoUrl = await s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, folder);
     }
 
-    let thumbnailUrl = null;
+    let thumbnailUrl = data.thumbnailKey || null;
     if (thumbnailFile) {
-        // Check if thumbnailFile is a file object or a string (just in case)
         if (thumbnailFile.buffer) {
             thumbnailUrl = await s3Service.uploadFile(thumbnailFile.buffer, thumbnailFile.originalname, thumbnailFile.mimetype, folder + '/thumbnails');
         } else if (typeof thumbnailFile === 'string') {
@@ -73,12 +73,16 @@ export const updateVideo = async (id, data, videoFile, thumbnailFile) => {
     const folder = s3Service.UPLOAD_FOLDERS.WEBSITE_VIDEOS || 'website/videos';
     const updates = { ...data };
 
-    if (videoFile) {
+    if (data.videoKey) {
+        updates.video_url = data.videoKey;
+    } else if (videoFile) {
         const videoUrl = await s3Service.uploadFile(videoFile.buffer, videoFile.originalname, videoFile.mimetype, folder);
         updates.video_url = videoUrl;
     }
 
-    if (thumbnailFile) {
+    if (data.thumbnailKey) {
+        updates.thumbnail_url = data.thumbnailKey;
+    } else if (thumbnailFile) {
         let thumbnailUrl = null;
         if (thumbnailFile.buffer) {
             thumbnailUrl = await s3Service.uploadFile(thumbnailFile.buffer, thumbnailFile.originalname, thumbnailFile.mimetype, folder + '/thumbnails');
