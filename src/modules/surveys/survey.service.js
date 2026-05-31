@@ -87,17 +87,17 @@ const assertJobAccessible = async (jobId, userId, { checkSurveyor = true, allowe
  * Can look up by job_certificate_id directly.
  */
 const requireSurvey = async (jobId, jobCertificateId = null) => {
-    // jobId here refers to the job_request_id; find via JobCertificate
-    const jobCerts = await db.JobCertificate.findAll({ where: { job_request_id: jobId }, useMaster: true });
-    if (!jobCerts.length) throw { statusCode: 404, message: 'No certificates found for this job.' };
-
     if (jobCertificateId) {
-        const belongsToJob = jobCerts.some(jc => jc.id === jobCertificateId);
-        if (!belongsToJob) throw { statusCode: 400, message: 'Certificate does not belong to this job.' };
         const survey = await Survey.findOne({ where: { job_certificate_id: jobCertificateId }, useMaster: true });
         if (!survey) throw { statusCode: 404, message: 'Survey report not found for this certificate. Please start the survey inspection first.' };
         return survey;
     }
+
+    if (!jobId) throw { statusCode: 400, message: 'Either jobId or jobCertificateId must be provided.' };
+
+    // jobId here refers to the job_request_id; find via JobCertificate
+    const jobCerts = await db.JobCertificate.findAll({ where: { job_request_id: jobId }, useMaster: true });
+    if (!jobCerts.length) throw { statusCode: 404, message: 'No certificates found for this job.' };
 
     if (jobCerts.length > 1) {
         throw { statusCode: 400, message: 'This job has multiple certificates. Please specify the job_certificate_id.' };
@@ -134,79 +134,74 @@ const requireAllSurveys = async (jobId) => {
  * Survey must be NOT_STARTED.
  */
 export const startSurvey = async (data, userId) => {
-    const { job_certificate_id, job_id, latitude, longitude } = data;
+    const { job_id, latitude, longitude } = data;
 
-    if (!job_certificate_id && !job_id) {
-        throw { statusCode: 400, message: 'Either job_certificate_id or job_id is required.' };
+    if (!job_id) {
+        throw { statusCode: 400, message: 'job_id is required.' };
     }
 
-    // Resolve job_certificate_id
-    let certId = job_certificate_id;
-    let resolvedJobId = job_id;
-    if (!certId && job_id) {
-        // Fallback: pick the first certificate for this job
-        const jc = await db.JobCertificate.findOne({ where: { job_request_id: job_id }, useMaster: true });
-        if (!jc) throw { statusCode: 404, message: 'No certificate found for this job.' };
-        certId = jc.id;
-    } else if (certId && !resolvedJobId) {
-        const jc = await db.JobCertificate.findByPk(certId, { useMaster: true });
-        if (!jc) throw { statusCode: 404, message: 'Certificate not found.' };
-        resolvedJobId = jc.job_request_id;
-    }
+    const jobCerts = await db.JobCertificate.findAll({ where: { job_request_id: job_id }, useMaster: true });
+    if (!jobCerts.length) throw { statusCode: 404, message: 'No certificates found for this job.' };
 
     // Guard: job must be SURVEY_AUTHORIZED or REWORK_REQUESTED
-    await assertJobAccessible(resolvedJobId, userId, {
+    await assertJobAccessible(job_id, userId, {
         checkSurveyor: true,
-        allowedStatuses: ['SURVEY_AUTHORIZED', 'REWORK_REQUESTED'],
-        jobCertificateId: certId
+        allowedStatuses: ['SURVEY_AUTHORIZED', 'REWORK_REQUESTED']
     });
 
     const txn = await db.sequelize.transaction();
-    let surveyResult;
+    let startedCount = 0;
     try {
-        const [survey, created] = await Survey.findOrCreate({
-            where: { job_certificate_id: certId },
-            defaults: { surveyor_id: userId, survey_status: 'NOT_STARTED' },
-            transaction: txn
-        });
+        for (const cert of jobCerts) {
+            const [survey, created] = await Survey.findOrCreate({
+                where: { job_certificate_id: cert.id },
+                defaults: { surveyor_id: userId, survey_status: 'NOT_STARTED' },
+                transaction: txn
+            });
 
-        // Guard: cannot re-start an already-started survey
-        if (!created && !['NOT_STARTED', 'REWORK_REQUIRED'].includes(survey.survey_status)) {
-            throw { statusCode: 400, message: `This survey has already been started or processed.` };
+            // Guard: cannot re-start an already-started survey
+            if (!created && !['NOT_STARTED', 'REWORK_REQUIRED'].includes(survey.survey_status)) {
+                // If it's already started, just skip to next certificate
+                continue;
+            }
+
+            if (survey.survey_status !== 'STARTED') {
+                await lifecycleService.updateSurveyStatus(survey.id, 'STARTED', userId, 'Surveyor checked in', { transaction: txn, _skipSurveyLog: true });
+            }
+
+            await survey.update({
+                started_at: new Date(),
+                start_latitude: latitude,
+                start_longitude: longitude
+            }, { transaction: txn });
+
+            await GpsTracking.create({ surveyor_id: userId, job_id, job_certificate_id: cert.id, latitude, longitude }, { transaction: txn });
+            startedCount++;
         }
 
-        if (survey.survey_status !== 'STARTED') {
-            await lifecycleService.updateSurveyStatus(survey.id, 'STARTED', userId, 'Surveyor checked in', { transaction: txn });
+        if (startedCount === 0 && jobCerts.length > 0) {
+            throw { statusCode: 400, message: 'All surveys for this job have already been started or processed.' };
         }
-
-        await survey.update({
-            started_at: new Date(),
-            start_latitude: latitude,
-            start_longitude: longitude
-        }, { transaction: txn });
-
-        await GpsTracking.create({ surveyor_id: userId, job_id: resolvedJobId, job_certificate_id: certId, latitude, longitude }, { transaction: txn });
 
         await txn.commit();
-        surveyResult = { survey_id: survey.id, job_certificate_id: certId, job_id: resolvedJobId };
     } catch (error) {
         if (!txn.finished) await txn.rollback();
         throw error;
     }
 
     // ── Post-commit notifications (non-transactional, fire-and-forget) ──
-    logger.info({ entity: 'SURVEY', event: 'CHECKIN', jobId: resolvedJobId, certId, surveyId: surveyResult.survey_id, triggeredBy: userId });
+    logger.info({ entity: 'SURVEY', event: 'CHECKIN', jobId: job_id, triggeredBy: userId });
     try {
-        const jobWithVessel = await JobRequest.findByPk(resolvedJobId, { include: ['Vessel'], useMaster: true });
+        const jobWithVessel = await JobRequest.findByPk(job_id, { include: ['Vessel'], useMaster: true });
         const actor = await User.findByPk(userId, { useMaster: true });
         notificationService.notifyRoles(['ADMIN', 'TM', 'TO'], 'SURVEY_STARTED', {
-            jobId: resolvedJobId, vesselName: jobWithVessel?.Vessel?.vessel_name, surveyorName: actor?.name
+            jobId: job_id, vesselName: jobWithVessel?.Vessel?.vessel_name, surveyorName: actor?.name
         }).catch(() => { });
     } catch (notifErr) {
         logger.error('Non-critical: notification error in startSurvey', notifErr);
     }
 
-    return { message: 'Survey started.', ...surveyResult };
+    return { message: `Started ${startedCount} surveys for the job.`, job_id };
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -222,13 +217,13 @@ export const startSurvey = async (data, userId) => {
  * SURVEYOR action.
  * Survey must be CHECKLIST_SUBMITTED (or REWORK_REQUIRED to allow re-upload).
  */
-export const uploadProof = async (jobId, file, data, userId) => {
-    const certId = data.job_certificate_id;
-    const job = await assertJobAccessible(jobId, userId, { checkSurveyor: true, jobCertificateId: certId });
-    const survey = await requireSurvey(jobId, certId);
-    assertSurveyNotFinalized(survey);
+export const uploadProof = async (jobCertificateId, file, data, userId) => {
+    const survey = await requireSurvey(null, jobCertificateId);
+    const jc = await db.JobCertificate.findByPk(jobCertificateId, { useMaster: true });
+    
+    await assertJobAccessible(jc.job_request_id, userId, { checkSurveyor: true, jobCertificateId });
 
-    // Guard: must have submitted checklist first OR already uploaded proof OR rework
+    assertSurveyNotFinalized(survey);
     const allowedProofStatuses = ['CHECKLIST_SUBMITTED', 'PROOF_UPLOADED', 'REWORK_REQUIRED'];
     if (!allowedProofStatuses.includes(survey.survey_status)) {
         throw { statusCode: 400, message: `Please complete the inspection checklist before uploading evidence proof.` };
@@ -251,14 +246,15 @@ export const uploadProof = async (jobId, file, data, userId) => {
 
         // Advance survey status ONLY if it's in a previous state (CHECKLIST_SUBMITTED or REWORK_REQUIRED)
         if (survey.survey_status !== 'PROOF_UPLOADED') {
-            await lifecycleService.updateSurveyStatus(survey.id, 'PROOF_UPLOADED', userId, 'Evidence proof uploaded', { transaction: txn });
+            // Note: _skipSurveyLog is removed because this is now a per-certificate action and we WANT the log in survey_history.
+            await lifecycleService.updateSurveyStatus(survey.id, 'PROOF_UPLOADED', userId, 'Evidence proof uploaded', { transaction: txn, _skipJobSync: true });
         }
         await txn.commit();
 
         // Notify ADMIN/TM/TO
-        const jobWithVessel = await JobRequest.findByPk(jobId, { include: ['Vessel'], useMaster: true });
+        const jobWithVessel = await db.JobRequest.findByPk(jc.job_request_id, { include: ['Vessel'], useMaster: true });
         notificationService.notifyRoles(['ADMIN', 'TM', 'TO'], 'SURVEY_PROOF_UPLOADED', {
-            jobId, vesselName: jobWithVessel.Vessel.vessel_name
+            jobId: jc.job_request_id, vesselName: jobWithVessel?.Vessel?.vessel_name
         }).catch(() => { });
 
         return await fileAccessService.resolveEntity({ url }, { id: userId });
@@ -277,76 +273,58 @@ export const uploadProof = async (jobId, file, data, userId) => {
  * Survey must be PROOF_UPLOADED or REWORK_REQUIRED.
  * Job must not be PAYMENT_DONE or beyond.
  */
-export const submitSurveyReport = async (data, files, userId) => {
-    const { job_id, job_certificate_id, submit_latitude, submit_longitude, survey_statement, skip_validation } = data;
+export const submitSurveyReport = async (jobCertificateId, data, files, userId) => {
+    const { submit_latitude, submit_longitude, survey_statement } = data;
 
-    // Resolve job details
-    let resolvedJobId = job_id;
-    let certId = job_certificate_id;
-    if (!resolvedJobId && certId) {
-        const jc = await db.JobCertificate.findByPk(certId, { useMaster: true });
-        if (!jc) throw { statusCode: 404, message: 'Certificate not found.' };
-        resolvedJobId = jc.job_request_id;
-    }
-    if (!certId && resolvedJobId) {
-        const jc = await db.JobCertificate.findOne({ where: { job_request_id: resolvedJobId }, useMaster: true });
-        if (jc) certId = jc.id;
-    }
+    const jc = await db.JobCertificate.findByPk(jobCertificateId, { useMaster: true });
+    if (!jc) throw { statusCode: 404, message: 'Job Certificate not found.' };
 
-    const job = await assertJobAccessible(resolvedJobId, userId, { checkSurveyor: true, jobCertificateId: certId });
+    const job_id = jc.job_request_id;
+    const job = await assertJobAccessible(job_id, userId, { checkSurveyor: true });
 
     // Guard: once payment is done, survey can no longer be submitted
     if (lifecycleService.JOB_POST_FINALIZATION_STATES.includes(job.job_status)) {
         throw { statusCode: 400, message: `Survey report cannot be submitted as the job is already being finalized or certified.` };
     }
 
-    const survey = await requireSurvey(resolvedJobId, certId);
-    assertSurveyNotFinalized(survey);
+    const survey = await requireSurvey(null, jobCertificateId);
 
-    // Guard: submission requires PROOF_UPLOADED, CHECKLIST_SUBMITTED or REWORK_REQUIRED
-    // skip_validation allows ADMIN-authorized bypass for E2E testing
+    // Validate ALL surveys
     const allowedStatuses = ['PROOF_UPLOADED', 'CHECKLIST_SUBMITTED', 'REWORK_REQUIRED', 'STARTED'];
-    if (!skip_validation && !allowedStatuses.includes(survey.survey_status)) {
+    
+    assertSurveyNotFinalized(survey);
+    if (!allowedStatuses.includes(survey.survey_status)) {
         throw { statusCode: 400, message: `Please upload all required evidence proofs before submitting the survey report.` };
     }
 
-    // Guard: checklist required (skippable for testing)
-    if (!skip_validation) {
-        // Check by job_certificate_id if available, fall back to job_id
-        const checklistWhere = certId
-            ? { job_certificate_id: certId }
-            : { job_id: resolvedJobId };
-        const checklistCount = await ActivityPlanning.count({ where: checklistWhere, useMaster: true });
-        if (checklistCount === 0) {
-            throw { statusCode: 400, message: 'Please complete the inspection checklist before submitting the final report.' };
-        }
+    const checklistCount = await ActivityPlanning.count({ where: { job_certificate_id: survey.job_certificate_id }, useMaster: true });
+    if (checklistCount === 0) {
+        throw { statusCode: 400, message: 'Please complete the inspection checklist before submitting the final report.' };
+    }
 
-        // Guard: signed checklist document upload required
-        if (!survey.signed_checklist_files || !Array.isArray(survey.signed_checklist_files) || survey.signed_checklist_files.length === 0) {
-            throw { statusCode: 400, message: 'Please upload the filled and signed checklist document before submitting the survey report.' };
-        }
+    if (!survey.signed_checklist_files || !Array.isArray(survey.signed_checklist_files) || survey.signed_checklist_files.length === 0) {
+        throw { statusCode: 400, message: 'Please upload the filled and signed checklist document before submitting the survey report.' };
+    }
 
-        // Guard: Ensure no items are in REJECTED state
-        const rejectedItems = await ActivityPlanning.count({ where: { ...checklistWhere, status: 'REJECTED' }, useMaster: true });
-        if (rejectedItems > 0) {
-            throw { statusCode: 400, message: `Cannot submit report: ${rejectedItems} checklist items are still marked as REJECTED. Please correct them first.` };
-        }
+    const rejectedItems = await ActivityPlanning.count({ where: { job_certificate_id: survey.job_certificate_id, status: 'REJECTED' }, useMaster: true });
+    if (rejectedItems > 0) {
+        throw { statusCode: 400, message: `Cannot submit report: ${rejectedItems} checklist items are still marked as REJECTED. Please correct them first.` };
+    }
 
-        // Guard: Ensure no signed documents are in REJECTED state
-        const rejectedFiles = (survey.signed_checklist_files || []).filter(f => f.status === 'REJECTED');
-        if (rejectedFiles.length > 0) {
-            throw { statusCode: 400, message: `Cannot submit report: ${rejectedFiles.length} signed documents are still marked as REJECTED. Please re-upload them first.` };
-        }
+    const rejectedFiles = (survey.signed_checklist_files || []).filter(f => f.status === 'REJECTED');
+    if (rejectedFiles.length > 0) {
+        throw { statusCode: 400, message: `Cannot submit report: ${rejectedFiles.length} signed documents are still marked as REJECTED. Please re-upload them first.` };
     }
 
     // ── Compliance Enforcement: GPS & Photo ──
-    if (!skip_validation && (!submit_latitude || !submit_longitude)) {
+    if (!submit_latitude || !submit_longitude) {
         throw { statusCode: 400, message: "GPS location must be recorded onsite before submission." };
     }
 
     const photoFile = files?.photo?.[0];
     const signatureFile = files?.signature?.[0];
 
+    // Assuming we use the first survey's photo/signature if not provided
     let photoUrl = survey.attendance_photo_url;
     if (data.photoKey) {
         photoUrl = data.photoKey;
@@ -356,7 +334,7 @@ export const submitSurveyReport = async (data, files, userId) => {
             .catch(err => logger.error('Background S3 upload error (photo):', err));
     }
 
-    if (!photoUrl && !skip_validation) {
+    if (!photoUrl) {
         throw { statusCode: 400, message: "Attendance photo is mandatory before submitting survey." };
     }
 
@@ -381,40 +359,11 @@ export const submitSurveyReport = async (data, files, userId) => {
         }, { transaction: txn });
 
         // 2. Advance status (updates submission_count, declared_by, declared_at)
-        if (skip_validation) {
-            // Bypass lifecycle guard — force directly to SUBMITTED for E2E testing
-            await survey.update({
-                survey_status: 'SUBMITTED',
-                submission_count: (survey.submission_count || 0) + 1,
-                submitted_at: new Date(),
-                declared_by: userId,
-                declared_at: new Date()
-            }, { transaction: txn });
-
-            // Manually trigger job auto-sync: if ALL certificate surveys are now SUBMITTED, advance job
-            const allCerts   = await db.JobCertificate.findAll({ where: { job_request_id: resolvedJobId }, transaction: txn });
-            const allSurveys = await Survey.findAll({ where: { job_certificate_id: allCerts.map(c => c.id) }, transaction: txn });
-            const allSubmitted = allSurveys.every(s => s.id === survey.id ? true : s.survey_status === 'SUBMITTED');
-            if (allSubmitted) {
-                const currentJob = await db.JobRequest.findByPk(resolvedJobId, { transaction: txn });
-                if (currentJob && currentJob.job_status !== 'SURVEY_DONE') {
-                    await lifecycleService.updateJobStatus(resolvedJobId, 'SURVEY_DONE', userId,
-                        'Auto-sync: All surveys submitted (skip_validation)', { transaction: txn, _internal: true });
-                }
-            }
-        } else {
-            await lifecycleService.updateSurveyStatus(survey.id, 'SUBMITTED', userId, 'Survey report submitted', { transaction: txn });
-        }
-
-        // 3. Reload to get updated timestamps and iteration
-        await survey.reload({ transaction: txn });
+        await lifecycleService.updateSurveyStatus(survey.id, 'SUBMITTED', userId, 'Survey report submitted', { transaction: txn, _skipJobSync: true });
 
         // 4. Generate Declaration Hash
-        const checklistWhere2 = certId
-            ? { job_certificate_id: certId }
-            : { job_id: resolvedJobId };
         const checklistData = await ActivityPlanning.findAll({
-            where: checklistWhere2,
+            where: { job_certificate_id: survey.job_certificate_id },
             attributes: ['question_code', 'question_text', 'answer', 'remarks', 'file_url'],
             transaction: txn
         });
@@ -432,22 +381,33 @@ export const submitSurveyReport = async (data, files, userId) => {
         const declarationHash = crypto.createHash('sha256').update(hashPayload).digest('hex');
         await survey.update({ declaration_hash: declarationHash }, { transaction: txn });
 
-        // 5. Log final GPS (only when coords provided)
+        // Job sync logic: Check if all active surveys for this job are submitted
+        const jobCerts = await db.JobCertificate.findAll({ where: { job_request_id: job_id }, transaction: txn });
+        const activeSurveys = await Survey.findAll({ where: { job_certificate_id: jobCerts.map(cert => cert.id) }, transaction: txn });
+        const allSubmitted = activeSurveys.length > 0 && activeSurveys.every(s => ['SUBMITTED', 'FINALIZED'].includes(s.survey_status));
+
+        if (allSubmitted) {
+            await lifecycleService.updateJobStatus(job_id, 'SURVEY_DONE', userId, 'All survey reports submitted', { transaction: txn, _skipSurveySync: true });
+        }
+
+        // 5. Log final GPS (only when coords provided) - log once per certificate submission
         if (submit_latitude && submit_longitude) {
-            await GpsTracking.create({ surveyor_id: userId, job_id: resolvedJobId, job_certificate_id: certId, latitude: submit_latitude, longitude: submit_longitude }, { transaction: txn });
+            await GpsTracking.create({ surveyor_id: userId, job_id, job_certificate_id: jobCertificateId, latitude: submit_latitude, longitude: submit_longitude }, { transaction: txn });
         }
 
         await txn.commit();
-        await survey.reload();
-        logger.info({ entity: 'SURVEY', event: 'SUBMITTED', jobId: resolvedJobId, surveyId: survey.id, triggeredBy: userId });
+        logger.info({ entity: 'SURVEY', event: 'SUBMITTED', jobCertificateId, jobId: job_id, triggeredBy: userId });
 
-        // Notify ADMIN/TM/TO
-        const jobWithVessel = await JobRequest.findByPk(resolvedJobId, { include: ['Vessel'], useMaster: true });
-        notificationService.notifyRoles(['ADMIN', 'TM', 'TO'], 'SURVEY_SUBMITTED', {
-            jobId: resolvedJobId, vesselName: jobWithVessel.Vessel.vessel_name
-        }).catch(() => { });
+        // Notify ADMIN/TM/TO only when job is fully SURVEY_DONE
+        if (allSubmitted) {
+            const jobWithVessel = await db.JobRequest.findByPk(job_id, { include: ['Vessel'], useMaster: true });
+            notificationService.notifyRoles(['ADMIN', 'TM', 'TO'], 'SURVEY_SUBMITTED', {
+                jobId: job_id, vesselName: jobWithVessel?.Vessel?.vessel_name
+            }).catch(() => { });
+        }
 
-        return await fileAccessService.resolveEntity(survey, { id: userId });
+        // Return updated survey
+        return await Survey.findByPk(survey.id);
     } catch (error) {
         await txn.rollback();
         throw error;
@@ -460,10 +420,10 @@ export const submitSurveyReport = async (data, files, userId) => {
 
 /**
  * TM/ADMIN action.
- * Survey must be SUBMITTED (skippable with skip_validation for E2E testing).
+ * Survey must be SUBMITTED.
  * No open Non-Conformities (checked inside lifecycle.service).
  */
-export const finalizeSurvey = async (jobId, user, { skip_validation = false, job_certificate_id = null } = {}) => {
+export const finalizeSurvey = async (jobId, user) => {
     if (!['TM', 'ADMIN'].includes(user.role)) {
         throw { statusCode: 403, message: 'Only Technical Managers (TM) or Admins have permission to finalize surveys.' };
     }
@@ -473,49 +433,26 @@ export const finalizeSurvey = async (jobId, user, { skip_validation = false, job
     const jobCerts = await db.JobCertificate.findAll({ where: { job_request_id: jobId }, useMaster: true });
     if (!jobCerts.length) throw { statusCode: 404, message: 'No certificates found for this job.' };
 
-    let surveys = [];
-    if (job_certificate_id) {
-        const belongsToJob = jobCerts.some(jc => jc.id === job_certificate_id);
-        if (!belongsToJob) throw { statusCode: 400, message: 'Certificate does not belong to this job.' };
-        const survey = await Survey.findOne({ where: { job_certificate_id: job_certificate_id }, useMaster: true });
-        if (!survey) throw { statusCode: 404, message: 'Survey not found for this certificate.' };
-        surveys = [survey];
-    } else {
-        if (jobCerts.length > 1) {
-            throw { statusCode: 400, message: 'This job has multiple certificates. Please specify the job_certificate_id to finalize a specific survey.' };
-        }
-        const survey = await Survey.findOne({ where: { job_certificate_id: jobCerts[0].id }, useMaster: true });
-        if (!survey) throw { statusCode: 404, message: 'No survey found for this job.' };
-        surveys = [survey];
+    const surveys = await Survey.findAll({ where: { job_certificate_id: jobCerts.map(c => c.id) }, useMaster: true });
+    if (surveys.length === 0) throw { statusCode: 404, message: 'No survey found for this job.' };
+
+    const submittedSurveys = surveys.filter(s => s.survey_status === 'SUBMITTED');
+    if (submittedSurveys.length === 0) {
+        throw { statusCode: 400, message: 'No submitted surveys found to finalize.' };
     }
 
-    if (skip_validation) {
-        // Bypass lifecycle guard — force directly to FINALIZED for E2E testing
-        for (const survey of surveys) {
-            await survey.update({ survey_status: 'FINALIZED', finalized_at: new Date() });
-        }
-    } else {
-        // Filter out surveys that are not SUBMITTED, but ensure at least one is being finalized
-        const submittedSurveys = surveys.filter(s => s.survey_status === 'SUBMITTED');
-        if (submittedSurveys.length === 0) {
-            throw { statusCode: 400, message: 'No submitted surveys found to finalize.' };
-        }
+    const txn = await db.sequelize.transaction();
+    try {
         for (const survey of submittedSurveys) {
-            await lifecycleService.updateSurveyStatus(survey.id, 'FINALIZED', userId, `Final approval granted by ${user.role}`);
+            await lifecycleService.updateSurveyStatus(survey.id, 'FINALIZED', userId, `Final approval granted by ${user.role}`, { transaction: txn });
+            // NOTE: JobCertificate intentionally stays at SURVEY_DONE after finalization.
+            // The GM must explicitly generate + issue the physical certificate
+            // (POST /certificates then POST /certificates/:id/issue) to advance to ISSUED.
         }
-    }
-
-    // Manual job sync when bypassing lifecycle
-    if (skip_validation) {
-        const currentJob = await JobRequest.findByPk(jobId, { useMaster: true });
-        if (currentJob && !['FINALIZED', 'PAYMENT_DONE', 'CERTIFIED'].includes(currentJob.job_status)) {
-            const allSurveys = await Survey.findAll({ where: { job_certificate_id: jobCerts.map(c => c.id) }, useMaster: true });
-            const allFinalized = allSurveys.every(s => s.survey_status === 'FINALIZED');
-            if (allFinalized) {
-                await lifecycleService.updateJobStatus(jobId, 'FINALIZED', userId,
-                    'Auto-sync: All surveys finalized (skip_validation)', { _internal: true });
-            }
-        }
+        await txn.commit();
+    } catch (error) {
+        await txn.rollback();
+        throw error;
     }
 
     const job = await JobRequest.findByPk(jobId, { include: ['Vessel'], useMaster: true });
@@ -525,13 +462,14 @@ export const finalizeSurvey = async (jobId, user, { skip_validation = false, job
         }).catch(() => { });
     }
 
+    // Refresh surveys after update
     const allSurveys = await Survey.findAll({ where: { job_certificate_id: jobCerts.map(c => c.id) }, useMaster: true });
     const allFinalized = allSurveys.every(s => s.survey_status === 'FINALIZED');
 
     return {
         message: allFinalized
             ? 'All surveys finalized. Job is now FINALIZED.'
-            : 'Survey finalized successfully. Remaining surveys still pending.'
+            : 'Surveys finalized successfully.'
     };
 };
 // ─────────────────────────────────────────────────────────────────────────────
@@ -541,129 +479,80 @@ export const finalizeSurvey = async (jobId, user, { skip_validation = false, job
 /**
  * Allowed only when survey is SUBMITTED and job has not passed FINALIZED.
  */
-export const requestRework = async (jobId, reason, userId, jobCertificateId = null) => {
+export const requestRework = async (jobId, data, userId) => {
     const job = await assertJobAccessible(jobId, userId, { checkSurveyor: false });
 
     if (lifecycleService.JOB_POST_FINALIZATION_STATES.includes(job.job_status)) {
         throw { statusCode: 400, message: `Rework cannot be requested when job is ${job.job_status}.` };
     }
 
-    if (!jobCertificateId) {
-        const jobCerts = await db.JobCertificate.findAll({ where: { job_request_id: jobId }, useMaster: true });
-        const hasEligibleCert = jobCerts.some((c) => ['SURVEY_DONE', 'REWORK_REQUESTED'].includes(c.status));
-        if (!hasEligibleCert && !['REVIEWED', 'IN_PROGRESS', 'REWORK_REQUESTED'].includes(job.job_status)) {
-            throw {
-                statusCode: 400,
-                message: 'Rework can only be requested after at least one certificate survey has been submitted.',
-            };
-        }
+    // We can accept an array of rejected_certificates
+    const { rejected_certificates, reason } = data;
+
+    if (!rejected_certificates || !Array.isArray(rejected_certificates) || rejected_certificates.length === 0) {
+        throw { statusCode: 400, message: 'Please specify which certificates require rework (rejected_certificates array required).' };
     }
 
-    // ── Per-Certificate Rework ──────────────────────────────────────────────
-    // When job_certificate_id is provided, only THAT certificate's survey goes
-    // to REWORK_REQUIRED. The job itself stays in REVIEWED so the surveyor can
-    // resubmit just that one certificate without affecting others.
-    if (jobCertificateId) {
-        const jc = await db.JobCertificate.findOne({
-            where: { id: jobCertificateId, job_request_id: jobId },
-            useMaster: true
-        });
-        if (!jc) {
-            throw { statusCode: 404, message: 'Certificate not found for this job.' };
+    const jobCerts = await db.JobCertificate.findAll({ 
+        where: { id: rejected_certificates.map(r => r.job_certificate_id), job_request_id: jobId }, 
+        useMaster: true 
+    });
+
+    if (jobCerts.length === 0) {
+        throw { statusCode: 404, message: 'None of the specified certificates belong to this job.' };
+    }
+
+    const surveys = await Survey.findAll({ 
+        where: { job_certificate_id: jobCerts.map(jc => jc.id) }, 
+        useMaster: true 
+    });
+
+    let reworkTriggered = false;
+
+    for (const jc of jobCerts) {
+        const survey = surveys.find(s => s.job_certificate_id === jc.id);
+        if (!survey) continue;
+
+        if (!['SUBMITTED', 'REWORK_REQUIRED'].includes(survey.survey_status)) {
+            continue; // Skip surveys that aren't submitted
         }
 
-        const survey = await Survey.findOne({ where: { job_certificate_id: jobCertificateId }, useMaster: true });
-        if (!survey) {
-            throw { statusCode: 404, message: 'Survey not found for this certificate.' };
-        }
-        if (!['SUBMITTED', 'REWORK_REQUIRED'].includes(survey.survey_status)) {
-            throw { statusCode: 400, message: `Rework can only be requested for submitted surveys. Current status: ${survey.survey_status}` };
-        }
+        const rejectData = rejected_certificates.find(r => r.job_certificate_id === jc.id);
+        let finalReason = rejectData.reason || reason || 'Rework requested.';
 
         const rejectedItems = await ActivityPlanning.count({
-            where: { job_certificate_id: jobCertificateId, status: 'REJECTED' },
+            where: { job_certificate_id: jc.id, status: 'REJECTED' },
             useMaster: true
         });
         const rejectedFiles = (survey.signed_checklist_files || []).filter(f => f.status === 'REJECTED').length;
 
-        let finalReason = reason;
         if (rejectedItems > 0 || rejectedFiles > 0) {
-            finalReason = `Granular Rejection: ${rejectedItems} items and ${rejectedFiles} documents rejected. ${reason || ''}`.trim();
+            finalReason = `Granular Rejection: ${rejectedItems} items and ${rejectedFiles} documents rejected. ${finalReason}`.trim();
         }
 
-        // Mark JobCertificate with REWORK_REQUESTED status and rework remarks
         await jc.update({ status: 'REWORK_REQUESTED', rework_remarks: finalReason });
-
-        // Set survey to REWORK_REQUIRED — with _skipJobSync so job stays REVIEWED
-        // for now; we check below whether ALL certs are in rework.
         await lifecycleService.updateSurveyStatus(survey.id, 'REWORK_REQUIRED', userId, finalReason, { _skipJobSync: true });
-
-        // ── Maritime rule: if ANY survey is now REWORK_REQUIRED, advance job ──
-        // The job MUST go to REWORK_REQUESTED so that it becomes visible in the
-        // surveyor's mobile app. They cannot see REVIEWED jobs.
-        const allJobCerts = await db.JobCertificate.findAll({ where: { job_request_id: jobId }, useMaster: true });
-        const allSurveys  = await Survey.findAll({
-            where: { job_certificate_id: { [db.Sequelize.Op.in]: allJobCerts.map(c => c.id) } },
-            useMaster: true
-        });
-        const anyNeedRework = allSurveys.length > 0 &&
-            allSurveys.some(s => ['REWORK_REQUIRED'].includes(s.survey_status));
-
-        let jobStatusOutcome = 'REVIEWED';
-        if (anyNeedRework) {
-            // ANY cert needs rework → advance job to REWORK_REQUESTED
-            // We pass _skipSurveySync: true so that the other certificates that are fine
-            // don't get forced into REWORK_REQUIRED state.
-            await lifecycleService.updateJobStatus(jobId, 'REWORK_REQUESTED', userId,
-                `Rework required for certificate ${jc.certificate_type_id}. Job moved to REWORK_REQUESTED so surveyor can take action.`,
-                { _skipSurveySync: true });
-            jobStatusOutcome = 'REWORK_REQUESTED';
-        }
-
-        const jobWithVessel = await JobRequest.findByPk(jobId, { include: ['Vessel'], useMaster: true });
-        if (job.assigned_surveyor_id) {
-            const certType = await db.CertificateType.findByPk(jc.certificate_type_id, { useMaster: true });
-            notificationService.sendNotification(job.assigned_surveyor_id, 'SURVEY_REWORK_REQUESTED', {
-                jobId, vesselName: jobWithVessel.Vessel.vessel_name,
-                reason: finalReason,
-                certificate_name: certType?.name || 'Certificate'
-            }).catch(() => { });
-        }
-
-        const msg = `Rework requested for certificate ${jc.certificate_type_id}. Job moved to REWORK_REQUESTED.`;
-        return { message: msg, job_status: jobStatusOutcome };
+        reworkTriggered = true;
     }
 
-    // ── Legacy: Global Rework (no specific certificate) ────────────────────
-    // Backward-compatible: finds ANY submitted survey and requests rework.
-    const surveys = await requireAllSurveys(jobId);
-    const submittedSurvey = surveys.find(s => s.survey_status === 'SUBMITTED');
-    if (!submittedSurvey) {
-        throw { statusCode: 400, message: `Rework can only be requested for submitted survey reports.` };
+    if (!reworkTriggered) {
+        throw { statusCode: 400, message: 'Could not trigger rework on any submitted surveys.' };
     }
 
-    // BUG FIX: ActivityPlanning is scoped by job_certificate_id, not job_id
-    const rejectedItems = await ActivityPlanning.count({
-        where: { job_certificate_id: submittedSurvey.job_certificate_id, status: 'REJECTED' },
-        useMaster: true
-    });
-    const rejectedFiles = (submittedSurvey.signed_checklist_files || []).filter(f => f.status === 'REJECTED').length;
-
-    let finalReason = reason;
-    if (rejectedItems > 0 || rejectedFiles > 0) {
-        finalReason = `Granular Rejection: ${rejectedItems} items and ${rejectedFiles} documents rejected. ${reason || ''}`.trim();
-    }
-
-    await lifecycleService.updateSurveyStatus(submittedSurvey.id, 'REWORK_REQUIRED', userId, finalReason);
+    // Since AT LEAST ONE survey is REWORK_REQUIRED, the Job MUST go to REWORK_REQUESTED
+    await lifecycleService.updateJobStatus(jobId, 'REWORK_REQUESTED', userId,
+        `Rework required for some certificates. Job moved to REWORK_REQUESTED.`,
+        { _skipSurveySync: true });
 
     const jobWithVessel = await JobRequest.findByPk(jobId, { include: ['Vessel'], useMaster: true });
     if (job.assigned_surveyor_id) {
         notificationService.sendNotification(job.assigned_surveyor_id, 'SURVEY_REWORK_REQUESTED', {
-            jobId, vesselName: jobWithVessel.Vessel.vessel_name, reason
+            jobId, vesselName: jobWithVessel.Vessel.vessel_name,
+            reason: reason || 'Multiple certificates require rework.'
         }).catch(() => { });
     }
 
-    return { message: 'Rework requested.' };
+    return { message: 'Rework requested for selected certificates. Job moved to REWORK_REQUESTED.', job_status: 'REWORK_REQUESTED' };
 };
 
 import { buildSurveyReportHtml } from './templates/survey-report.template.js';
@@ -747,6 +636,14 @@ export const draftSurveyStatement = async (jobId, data, user) => {
         await survey.update(updateData);
     }
 
+    // Guard: ensure all active surveys are SUBMITTED
+    const surveys = await Survey.findAll({ where: { job_certificate_id: survey.job_certificate_id } });
+    for (const s of surveys) {
+        if (s.survey_status !== 'SUBMITTED') {
+            throw { statusCode: 400, message: `All active surveys must be SUBMITTED before finalization. Found survey in ${s.survey_status} status.` };
+        }
+    }
+
     // Role-based PDF generation trigger (NON-BLOCKING)
     if (isManagement) {
         if (!survey.survey_statement && !updateData.survey_statement) {
@@ -770,20 +667,27 @@ export const issueSurveyStatement = async (jobId, file, data, user) => {
         throw { statusCode: 403, message: 'Only Technical Managers (TM) or Admins have permission to issue survey statements.' };
     }
     const userId = user.id;
-    await assertJobAccessible(jobId, userId, { checkSurveyor: false });
-    const { job_certificate_id } = data || {};
+
+    // NOTE: issueStatement is allowed even when job is CERTIFIED/FINALIZED
+    // (issuing the statement is a post-finalization action). We only check the job exists.
+    const job = await JobRequest.findByPk(jobId, { useMaster: true });
+    if (!job) throw { statusCode: 404, message: 'Job not found.' };
+
+    const { job_certificate_id, statementFileKey } = data || {};
     const survey = await requireSurvey(jobId, job_certificate_id);
-    assertSurveyNotFinalized(survey);
 
     let finalUrl = null;
 
     if (file) {
-        // A: Custom file upload (Fast)
+        // A: Binary file uploaded directly (multipart/form-data)
         finalUrl = s3Service.generateKey(file.originalname, s3Service.UPLOAD_FOLDERS.SURVEYS_PROOF);
         s3Service.uploadFile(file.buffer, file.originalname, file.mimetype, '', finalUrl)
             .catch(err => logger.error('Issue Statement File Upload Failed:', err));
+    } else if (statementFileKey) {
+        // B: Pre-uploaded S3 key passed via JSON body
+        finalUrl = statementFileKey;
     } else if (survey.survey_statement) {
-        // B: Automated promotion (Background)
+        // C: Automated promotion from drafted text (Background PDF generation)
         const updatedSurveyStatus = { survey_statement_status: 'ISSUED' };
         await survey.update(updatedSurveyStatus);
         
@@ -791,7 +695,7 @@ export const issueSurveyStatement = async (jobId, file, data, user) => {
             .then(url => survey.update({ survey_statement_pdf_url: url }))
             .catch(err => logger.error('Background Official PDF generation failed:', err));
     } else {
-        throw { statusCode: 400, message: 'No survey statement has been drafted. Please provide text before issuing.' };
+        throw { statusCode: 400, message: 'No survey statement has been drafted. Please provide a statementFileKey, upload a file, or draft a survey statement first.' };
     }
 
     // Update status immediately so UI changes

@@ -65,10 +65,19 @@ async function makeJob(fx, status) {
         target_port: 'Singapore',
         target_date: '2026-12-31'
     });
+
+    let certStatus = 'PENDING';
+    if (status === 'DOCUMENT_VERIFIED') certStatus = 'DOCUMENT_VERIFIED';
+    if (['APPROVED', 'ASSIGNED', 'SURVEY_AUTHORIZED', 'IN_PROGRESS'].includes(status)) certStatus = 'SURVEY_AUTHORIZED';
+    if (['SURVEY_DONE', 'REVIEWED', 'FINALIZED', 'PAYMENT_DONE'].includes(status)) certStatus = 'SURVEY_DONE';
+    if (status === 'CERTIFIED') certStatus = 'ISSUED';
+    if (status === 'REJECTED') certStatus = 'REJECTED';
+    if (status === 'REWORK_REQUESTED') certStatus = 'REWORK_REQUESTED';
+
     await db.JobCertificate.create({
         job_request_id: id,
         certificate_type_id: fx.certTypeId,
-        status: 'PENDING'
+        status: certStatus
     });
     await db.JobStatusHistory.create({ job_id: id, old_status: null, new_status: status, changed_by: fx.requesterId });
     return id;

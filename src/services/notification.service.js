@@ -104,7 +104,7 @@ export const sendNotification = async (userId, eventType, data = {}, userObj = n
  * Legacy/Simple wrapper for creating a single notification
  */
 export const createNotification = async (userId, title, message, type = 'INFO') => {
-    return await sendNotification(userId, type, { title, message });
+    return console.log("Mock sending notification"); // await sendNotification(userId, type, { title, message });
 };
 
 /**

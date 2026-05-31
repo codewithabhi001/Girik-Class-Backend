@@ -92,22 +92,19 @@ export const schemas = {
         skip_mandatory_check: Joi.boolean().optional().default(false)
     }),
     submitSurvey: Joi.object({
-        job_id: Joi.string().guid().optional(),
-        job_certificate_id: Joi.string().guid().optional(),
         submit_latitude: Joi.number().optional(),
         submit_longitude: Joi.number().optional(),
         survey_statement: Joi.string().allow('').optional(),
-        photoKey: Joi.string().optional(),        // optional when skip_validation=true
-        signatureKey: Joi.string().optional(),    // optional when skip_validation=true
-        skip_validation: Joi.boolean().optional().default(false), // ADMIN-only bypass for E2E testing
-    }).or('job_id', 'job_certificate_id'),
+        photoKey: Joi.string().optional(),
+        signatureKey: Joi.string().optional(),
+    }),
     draftSurveyStatement: Joi.object({
         survey_statement: Joi.string().optional(),
         job_certificate_id: Joi.string().guid().allow('', null).optional()
     }),
     finalizeSurvey: Joi.object({
         job_certificate_id: Joi.string().guid().allow('', null).optional(),
-        skip_validation: Joi.boolean().optional().default(false)
+        skip_validation: Joi.boolean().optional()
     }),
     generateCertificate: Joi.object({
         job_id: Joi.string().guid().optional(),

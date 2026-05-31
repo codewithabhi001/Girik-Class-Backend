@@ -1040,6 +1040,10 @@ components:
           minimum: 1
           maximum: 5
           default: 1
+        issue_date:
+          type: string
+          format: date
+          description: 'Custom issue date (defaults to current date if omitted)'
         flag_administration_id:
           $ref: '#/components/schemas/UUID'
         certificate_term:

@@ -1468,6 +1468,11 @@
             "maximum": 5,
             "default": 1
           },
+          "issue_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Custom issue date (defaults to current date if omitted)"
+          },
           "flag_administration_id": {
             "$ref": "#/components/schemas/UUID"
           },
@@ -6974,6 +6979,139 @@
         }
       }
     },
+    "/api/v1/jobs/{id}/verify-all-documents": {
+      "put": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "TO/GM/ADMIN: Verify all documents for all pending certificates of a Job",
+        "description": "Technical Officer (or Admin/GM) reviews and bulk-approves all uploaded documents for all pending certificates of a job.\nMoves all pending/rework-requested certificates to `DOCUMENT_VERIFIED`.\nTransitions the parent job status to `IN_PROGRESS` if it was not already.\n\n**Roles:** TO, GM, ADMIN\n",
+        "operationId": "verifyAllJobDocuments",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "TO",
+          "GM",
+          "ADMIN"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "remarks": {
+                    "type": "string",
+                    "description": "Verification remarks",
+                    "example": "All documents verified successfully."
+                  }
+                }
+              },
+              "example": {
+                "remarks": "All documents verified successfully."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Documents verified successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "All documents verified successfully for this certificate."
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "All documents verified successfully for this certificate."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No pending certificates found or mandatory documents missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/jobs/{id}/approve-request": {
       "put": {
         "tags": [
@@ -7976,6 +8114,160 @@
         }
       }
     },
+    "/api/v1/jobs/{id}/authorize-all-surveys": {
+      "put": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "ADMIN/TM: Bulk authorize all valid assigned surveys for a Job",
+        "description": "**Bulk Transition:** `DOCUMENT_VERIFIED → SURVEY_AUTHORIZED`\n\nAdmin or Technical Manager authorizes all surveys for a job at once.\nIt filters out any certificates that do not have a surveyor assigned yet,\nand successfully authorizes the rest. Sends push notifications to all assigned surveyors.\n\n**Roles:** ADMIN, TM\n",
+        "operationId": "authorizeAllSurveys",
+        "x-roles": [
+          "ADMIN",
+          "TM"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "remarks": {
+                    "type": "string",
+                    "example": "Bulk authorization granted for all assigned certificates."
+                  }
+                }
+              },
+              "example": {
+                "remarks": "Bulk authorization granted for all assigned certificates."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Surveys authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Successfully authorized surveys for 3 certificate(s)."
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Successfully authorized surveys for 3 certificate(s).",
+                  "data": [
+                    {}
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No certificates found with an assigned surveyor to authorize.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden – only ADMIN or TM",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/jobs/{id}/review": {
       "put": {
         "tags": [
@@ -8158,6 +8450,138 @@
           },
           "404": {
             "description": "Job not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{id}/review-all": {
+      "put": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "TO/ADMIN: Review all completed surveys for a Job",
+        "description": "Technical Officer (or Admin) bulk-reviews all completed surveys under the job (which are in `SURVEY_DONE` status).\nApproves all checklist items and signed files for those surveys.\nIf parent Job status is `SURVEY_DONE`, transitions it to `REVIEWED`.\n\n**Roles:** TO, ADMIN\n",
+        "operationId": "reviewAllJobCertificates",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "TO",
+          "ADMIN"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "remarks": {
+                    "type": "string",
+                    "description": "Review remarks/feedback",
+                    "example": "Checklist and signed scans are approved."
+                  }
+                }
+              },
+              "example": {
+                "remarks": "Checklist and signed scans are approved."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Review recorded successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "All completed surveys marked as reviewed."
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "All completed surveys marked as reviewed."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No certificates in SURVEY_DONE status found to review.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job not found.",
             "content": {
               "application/json": {
                 "schema": {

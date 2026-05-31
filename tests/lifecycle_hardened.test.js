@@ -71,10 +71,19 @@ async function makeJob(vesselId, requesterId, surveyorId, certTypeId, startStatu
         assigned_surveyor_id: surveyorId,
         job_status: startStatus, reason: 'Annual', target_port: 'Singapore', target_date: '2026-12-31'
     });
+
+    let certStatus = 'PENDING';
+    if (startStatus === 'DOCUMENT_VERIFIED') certStatus = 'DOCUMENT_VERIFIED';
+    if (['APPROVED', 'ASSIGNED', 'SURVEY_AUTHORIZED', 'IN_PROGRESS'].includes(startStatus)) certStatus = 'SURVEY_AUTHORIZED';
+    if (['SURVEY_DONE', 'REVIEWED', 'FINALIZED', 'PAYMENT_DONE'].includes(startStatus)) certStatus = 'SURVEY_DONE';
+    if (startStatus === 'CERTIFIED') certStatus = 'ISSUED';
+    if (startStatus === 'REJECTED') certStatus = 'REJECTED';
+    if (startStatus === 'REWORK_REQUESTED') certStatus = 'REWORK_REQUESTED';
+
     await db.JobCertificate.create({
         job_request_id: id,
         certificate_type_id: certTypeId,
-        status: 'PENDING'
+        status: certStatus
     });
     await db.JobStatusHistory.create({ job_id: id, old_status: null, new_status: startStatus, changed_by: requesterId });
     return id;

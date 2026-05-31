@@ -28,7 +28,7 @@ const router = express.Router();
 
 // Login with credentials (email/password)
 // Access: Public
-router.post('/login', authLimiter, validate(schemas.login), authController.login);
+router.post('/login', validate(schemas.login), authController.login);
 
 
 

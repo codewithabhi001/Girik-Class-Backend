@@ -834,10 +834,19 @@ export const verifyJobCertificateDocuments = async (jobCertificateId, body, user
  * Verify ALL documents for ALL PENDING certificates of a Job
  * Roles: TO, GM, ADMIN
  */
-export const verifyAllJobDocuments = async (jobId, user) => {
-    if (!['TO', 'GM', 'ADMIN'].includes(user.role)) {
+export const verifyAllJobDocuments = async (jobId, body, user) => {
+    let actualUser = user;
+    let actualBody = body;
+    if (body && body.role && !user) {
+        actualUser = body;
+        actualBody = {};
+    }
+    
+    if (!['TO', 'GM', 'ADMIN'].includes(actualUser.role)) {
         throw { statusCode: 403, message: 'Only Technical Officers (TO), General Managers (GM) or Admins have permission to verify documents.' };
     }
+
+    const userId = actualUser.id;
 
     const job = await requireJob(jobId, { includeVessel: true, useMaster: true });
     
@@ -1375,6 +1384,15 @@ export const authorizeAllSurveysForJob = async (jobId, remarks, user) => {
             });
         }
 
+        await job.update({ job_status: 'SURVEY_AUTHORIZED' }, { transaction: txn });
+        await db.JobStatusHistory.create({
+            job_id: job.id,
+            previous_status: job.job_status,
+            new_status: 'SURVEY_AUTHORIZED',
+            changed_by: user.id,
+            reason: remarks || `${user.role} bulk authorized surveys`
+        }, { transaction: txn });
+
         await txn.commit();
         return { message: `Successfully authorized surveys for ${authorizedCerts.length} certificate(s).`, data: authorizedCerts };
     } catch (error) {
@@ -1450,6 +1468,101 @@ export const reviewJobCertificate = async (jobCertificateId, remarks, user) => {
 
     return jc;
 };
+
+/**
+ * Technical review for all SURVEY_DONE certificates of a Job
+ * Roles: TO, ADMIN
+ */
+export const reviewAllJobCertificates = async (jobId, remarks, user) => {
+    if (!['TO', 'ADMIN'].includes(user.role)) {
+        throw { statusCode: 403, message: 'Only Technical Officers (TO) and Admins have permission to mark surveys as reviewed.' };
+    }
+
+    const job = await requireJob(jobId, { includeVessel: true, useMaster: true });
+    
+    // Find all certificates that are in SURVEY_DONE status
+    const certs = await JobCertificate.findAll({
+        where: { job_request_id: jobId },
+        useMaster: true
+    });
+
+    if (certs.length === 0) {
+        throw { statusCode: 404, message: 'No certificates found for this job.' };
+    }
+
+    const surveyDoneCerts = certs.filter(c => c.status === 'SURVEY_DONE');
+    if (surveyDoneCerts.length === 0) {
+        throw { statusCode: 400, message: 'No certificates are in SURVEY_DONE status to review.' };
+    }
+
+    const txn = await db.sequelize.transaction();
+    try {
+        for (const jc of surveyDoneCerts) {
+            // Automatically approve all checklist items scoped to this certificate or parent job
+            await db.ActivityPlanning.update(
+                { status: 'APPROVED' },
+                { 
+                    where: { 
+                        [Op.or]: [
+                            { job_certificate_id: jc.id },
+                            { job_id: jobId }
+                        ]
+                    }, 
+                    transaction: txn 
+                }
+            );
+
+            const survey = await db.Survey.findOne({
+                where: { job_certificate_id: jc.id },
+                transaction: txn,
+                lock: txn.LOCK.UPDATE
+            });
+
+            if (survey) {
+                let signedFiles = survey.signed_checklist_files;
+                if (Array.isArray(signedFiles) && signedFiles.length > 0) {
+                    const updatedFiles = signedFiles.map(file => {
+                        if (typeof file === 'object' && file !== null) {
+                            return { ...file, status: 'APPROVED' };
+                        }
+                        return file;
+                    });
+                    await survey.update({ signed_checklist_files: updatedFiles }, { transaction: txn });
+                }
+            }
+
+            // Audit log TO review approval
+            await db.JobStatusHistory.create({
+                job_id: jobId,
+                previous_status: `CERT_${jc.status}`,
+                new_status: `CERT_${jc.status}`,
+                changed_by: user.id,
+                reason: `TO marked survey checklist and files as APPROVED for cert ${jc.id}: ${remarks || 'N/A'}`
+            }, { transaction: txn });
+        }
+
+        // If parent job is in SURVEY_DONE status, transition it to REVIEWED
+        if (job.job_status === 'SURVEY_DONE') {
+            await lifecycleService.updateJobStatus(jobId, 'REVIEWED', user.id, remarks || 'Bulk reviewed all certificates', { transaction: txn });
+        }
+
+        await txn.commit();
+    } catch (error) {
+        await txn.rollback();
+        throw error;
+    }
+
+    // Notify ADMIN/TM
+    notificationService.notifyRoles(['ADMIN', 'TM'], 'JOB_REVIEWED', {
+        jobId: jobId, vesselName: job.Vessel?.vessel_name
+    }).catch(() => { });
+
+    return { message: `Successfully reviewed ${surveyDoneCerts.length} certificate(s).` };
+};
+
+export const reviewJob = reviewAllJobCertificates;
+
+
 
 /**
  * Job status for rescheduling

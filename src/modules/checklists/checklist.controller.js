@@ -1,68 +1,79 @@
 import * as checklistService from './checklist.service.js';
+import db from '../../models/index.js';
 
-// GET /checklists/jobs/:jobId?job_certificate_id=<uuid>
+// GET /checklists/job-certificates/:jobCertificateId
 export const getChecklist = async (req, res, next) => {
     try {
+        const jc = await db.JobCertificate.findByPk(req.params.jobCertificateId);
+        if (!jc) return res.status(404).json({ success: false, message: 'Job certificate not found' });
         const list = await checklistService.getChecklist(
-            req.params.jobId,
-            req.query,   // includes job_certificate_id if provided
+            jc.job_request_id,
+            { ...req.query, job_certificate_id: jc.id },
             req.user
         );
         res.json({ success: true, data: list });
     } catch (error) { next(error); }
 };
 
-// PUT /checklists/jobs/:jobId
-// Body: { items, job_certificate_id?, signed_checklist_files? }
+// PUT /checklists/job-certificates/:jobCertificateId
+// Body: { items, signed_checklist_files? }
 export const submitChecklist = async (req, res, next) => {
     try {
+        const jc = await db.JobCertificate.findByPk(req.params.jobCertificateId);
+        if (!jc) return res.status(404).json({ success: false, message: 'Job certificate not found' });
         const list = await checklistService.submitChecklist(
-            req.params.jobId,
+            jc.job_request_id,
             req.body.items,
             req.user,
             req.body.signed_checklist_files,
-            req.body.job_certificate_id || req.query.job_certificate_id
+            jc.id
         );
         res.json({ success: true, data: list });
     } catch (error) { next(error); }
 };
 
-// PUT /checklists/jobs/:jobId/signed-checklist-files
+// PUT /checklists/job-certificates/:jobCertificateId/signed-checklist-files
 export const updateSignedChecklistFiles = async (req, res, next) => {
     try {
+        const jc = await db.JobCertificate.findByPk(req.params.jobCertificateId);
+        if (!jc) return res.status(404).json({ success: false, message: 'Job certificate not found' });
         const list = await checklistService.updateSignedChecklistFiles(
-            req.params.jobId,
+            jc.job_request_id,
             req.body.signed_checklist_files,
             req.user,
-            req.body.job_certificate_id || req.query.job_certificate_id
+            jc.id
         );
         res.json({ success: true, data: list });
     } catch (error) { next(error); }
 };
 
-// GET /checklists/jobs/:jobId/get-upload-url?job_certificate_id=<uuid>
+// GET /checklists/job-certificates/:jobCertificateId/get-upload-url
 export const getUploadUrl = async (req, res, next) => {
     try {
-        const { fileName, contentType, job_certificate_id } = req.query;
+        const { fileName, contentType } = req.query;
         if (!fileName || !contentType) {
             return res.status(400).json({ success: false, message: 'fileName and contentType are required query parameters.' });
         }
+        const jc = await db.JobCertificate.findByPk(req.params.jobCertificateId);
+        if (!jc) return res.status(404).json({ success: false, message: 'Job certificate not found' });
         const result = await checklistService.getSignedUploadUrl(
-            req.params.jobId, fileName, contentType, req.user.id, job_certificate_id
+            jc.job_request_id, fileName, contentType, req.user.id, jc.id
         );
         res.json({ success: true, data: result });
     } catch (error) { next(error); }
 };
 
-// GET /checklists/jobs/:jobId/signed-checklist-upload-url?job_certificate_id=<uuid>
+// GET /checklists/job-certificates/:jobCertificateId/signed-checklist-upload-url
 export const getSignedChecklistUploadUrl = async (req, res, next) => {
     try {
-        const { fileName, contentType, job_certificate_id } = req.query;
+        const { fileName, contentType } = req.query;
         if (!fileName || !contentType) {
             return res.status(400).json({ success: false, message: 'fileName and contentType are required query parameters.' });
         }
+        const jc = await db.JobCertificate.findByPk(req.params.jobCertificateId);
+        if (!jc) return res.status(404).json({ success: false, message: 'Job certificate not found' });
         const result = await checklistService.getSignedChecklistUploadUrl(
-            req.params.jobId, fileName, contentType, req.user.id, job_certificate_id
+            jc.job_request_id, fileName, contentType, req.user.id, jc.id
         );
         res.json({ success: true, data: result });
     } catch (error) { next(error); }

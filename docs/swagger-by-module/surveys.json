@@ -1468,6 +1468,11 @@
             "maximum": 5,
             "default": 1
           },
+          "issue_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Custom issue date (defaults to current date if omitted)"
+          },
           "flag_administration_id": {
             "$ref": "#/components/schemas/UUID"
           },
@@ -6018,6 +6023,11 @@
         "summary": "Start survey / Check-in (per certificate)",
         "description": "Surveyor checks in at the vessel location for a **specific certificate**.\nA separate check-in is required for each `JobCertificate` in the job.\n\n- Sets that certificate's survey status to `STARTED`.\n- Records a GPS entry scoped to this certificate's survey.\n- When the **first** certificate survey is started, the parent Job status moves to `IN_PROGRESS`.\n",
         "operationId": "startSurvey",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "x-roles": [
           "SURVEYOR"
         ],
@@ -6035,7 +6045,7 @@
                   "job_id": {
                     "type": "string",
                     "format": "uuid",
-                    "description": "Job Certificate ID (provide either this OR job_certificate_id)"
+                    "description": "Parent Job ID (provide either this OR job_certificate_id)"
                   },
                   "job_certificate_id": {
                     "type": "string",
@@ -6153,16 +6163,33 @@
         }
       }
     },
-    "/api/v1/surveys": {
+    "/api/v1/surveys/{jobCertificateId}/proof": {
       "post": {
         "tags": [
           "Surveys"
         ],
-        "summary": "Submit survey report / Check-out (per certificate)",
-        "description": "Surveyor submits final findings for a **specific certificate**. Each\n`JobCertificate` has its own independent survey that must be submitted\nseparately.\n\n- Sets this certificate's survey to `SUBMITTED`.\n- When **all** certificates' surveys are `SUBMITTED`, the parent Job status\n  automatically advances to `SURVEY_DONE`.\n\n**Note:** In production, `photoKey` and `signatureKey` are required (obtained\nfrom pre-signed S3 upload URLs). For E2E testing, `skip_validation: true`\n(ADMIN only) bypasses these file checks.\n",
-        "operationId": "submitSurveyReport",
+        "summary": "Upload survey evidence proof (per certificate)",
+        "description": "Upload supplemental photos or documents for a specific certificate's survey.\nMoves that certificate's survey to `PROOF_UPLOADED`.\n\nAccepts either:\n- `multipart/form-data` with a `proof` binary field\n- `application/json` with a `fileKey` (S3 key, pre-uploaded via presigned URL)\n",
+        "operationId": "uploadProof",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "x-roles": [
           "SURVEYOR"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "jobCertificateId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Job Certificate ID"
+          }
         ],
         "requestBody": {
           "content": {
@@ -6170,15 +6197,142 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "job_id": {
+                  "proof": {
                     "type": "string",
-                    "format": "uuid"
+                    "format": "binary"
                   },
                   "job_certificate_id": {
                     "type": "string",
-                    "format": "uuid",
-                    "description": "The specific certificate being surveyed (preferred)"
+                    "format": "uuid"
+                  }
+                }
+              },
+              "example": {
+                "proof": "file.bin",
+                "job_certificate_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fileKey": {
+                    "type": "string",
+                    "description": "S3 key for evidence proof"
                   },
+                  "job_certificate_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              },
+              "example": {
+                "fileKey": "surveys/proof/019e640c-0000-0000-0000-000000000001/photo.jpg"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Proof uploaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Request successful"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid state or missing proof",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — not the assigned surveyor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/surveys/{jobCertificateId}/submit": {
+      "post": {
+        "tags": [
+          "Surveys"
+        ],
+        "summary": "Submit survey report / Check-out (per certificate)",
+        "description": "Surveyor submits final findings for a **specific certificate**. Each\n`JobCertificate` has its own independent survey that must be submitted\nseparately.\n\n- Sets this certificate's survey to `SUBMITTED`.\n- When **all** certificates' surveys are `SUBMITTED`, the parent Job status\n  automatically advances to `SURVEY_DONE`.\n\n**Note:** `photoKey` and `signatureKey` must be pre-uploaded S3 keys.\n",
+        "operationId": "submitSurveyReport",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "SURVEYOR"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "jobCertificateId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Job Certificate ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
                   "submit_latitude": {
                     "type": "number",
                     "description": "GPS latitude at submission"
@@ -6208,39 +6362,23 @@
                   "signatureKey": {
                     "type": "string",
                     "description": "S3 key for signature (if pre-uploaded)"
-                  },
-                  "skip_validation": {
-                    "type": "boolean",
-                    "description": "ADMIN only — skip file/GPS checks (E2E testing)"
                   }
                 }
               },
               "example": {
-                "job_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
-                "job_certificate_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
                 "submit_latitude": 1.5,
                 "submit_longitude": 1.5,
                 "survey_statement": "string",
                 "photo": "file.bin",
                 "signature": "file.bin",
                 "photoKey": "string",
-                "signatureKey": "string",
-                "skip_validation": true
+                "signatureKey": "string"
               }
             },
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "job_id": {
-                    "type": "string",
-                    "format": "uuid"
-                  },
-                  "job_certificate_id": {
-                    "type": "string",
-                    "format": "uuid",
-                    "description": "The specific certificate (preferred)"
-                  },
                   "submit_latitude": {
                     "type": "number"
                   },
@@ -6257,20 +6395,15 @@
                   "signatureKey": {
                     "type": "string",
                     "description": "S3 key for surveyor signature"
-                  },
-                  "skip_validation": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "ADMIN only — bypass file/GPS checks"
                   }
                 }
               },
               "example": {
-                "job_certificate_id": "019e640c-0000-0000-0000-000000000001",
                 "submit_latitude": 19.076,
                 "submit_longitude": 72.8777,
                 "survey_statement": "Vessel hull in satisfactory condition. Anti-fouling paint intact.",
-                "skip_validation": false
+                "photoKey": "surveys/photos/019e640c.jpg",
+                "signatureKey": "surveys/signatures/019e640c.png"
               }
             }
           }
@@ -6351,13 +6484,20 @@
             }
           }
         }
-      },
+      }
+    },
+    "/api/v1/surveys": {
       "get": {
         "tags": [
           "Surveys"
         ],
         "summary": "List survey reports",
         "operationId": "getSurveyReports",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "x-roles": [
           "ADMIN",
           "GM",
@@ -6491,14 +6631,19 @@
         }
       }
     },
-    "/api/v1/surveys/job-certificates/{jobCertificateId}": {
+    "/api/v1/surveys/jobs/{jobId}": {
       "get": {
         "tags": [
           "Surveys"
         ],
-        "summary": "Get survey details for a job certificate",
-        "description": "Returns survey execution details for the given `jobCertificateId`\n(checklist items, GPS trace, status, statement).\n",
+        "summary": "Get survey details for a job (all certificates)",
+        "description": "Returns an **array** of survey objects — one per `JobCertificate` — for\nthe given job. Use this to see status, checklist progress, and statement\ndetails across all certificates.\n",
         "operationId": "getSurveyDetails",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "x-roles": [
           "ADMIN",
           "GM",
@@ -6509,19 +6654,19 @@
         ],
         "parameters": [
           {
-            "name": "jobCertificateId",
+            "name": "jobId",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "format": "uuid"
             },
-            "description": "Job Certificate ID"
+            "description": "Job ID"
           }
         ],
         "responses": {
           "200": {
-            "description": "Survey details (array for multi-cert jobs)",
+            "description": "Survey details array (one per certificate)",
             "content": {
               "application/json": {
                 "schema": {
@@ -6532,32 +6677,37 @@
                       "example": true
                     },
                     "data": {
-                      "$ref": "#/components/schemas/SurveyReportResponse"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SurveyReportResponse"
+                      }
                     }
                   }
                 },
                 "example": {
                   "success": true,
-                  "data": {
-                    "id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
-                    "job_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
-                    "survey_status": "SUBMITTED",
-                    "submission_count": 1,
-                    "submit_latitude": 1.3521,
-                    "submit_longitude": 103.8198,
-                    "survey_statement": "Survey completed successfully.",
-                    "declared_by": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
-                    "declared_at": "2026-02-25T12:00:00Z",
-                    "declaration_hash": "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
-                    "started_at": "2026-02-25T10:00:00Z",
-                    "submitted_at": "2026-02-25T12:00:00Z"
-                  }
+                  "data": [
+                    {
+                      "id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
+                      "job_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
+                      "survey_status": "SUBMITTED",
+                      "submission_count": 1,
+                      "submit_latitude": 1.3521,
+                      "submit_longitude": 103.8198,
+                      "survey_statement": "Survey completed successfully.",
+                      "declared_by": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
+                      "declared_at": "2026-02-25T12:00:00Z",
+                      "declaration_hash": "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
+                      "started_at": "2026-02-25T10:00:00Z",
+                      "submitted_at": "2026-02-25T12:00:00Z"
+                    }
+                  ]
                 }
               }
             }
           },
           "404": {
-            "description": "Survey not found",
+            "description": "Job not found",
             "content": {
               "application/json": {
                 "schema": {
@@ -6578,13 +6728,13 @@
         }
       }
     },
-    "/api/v1/surveys/job-certificates/{jobCertificateId}/finalize": {
+    "/api/v1/surveys/jobs/{jobId}/finalize": {
       "put": {
         "tags": [
           "Surveys"
         ],
-        "summary": "Finalize submitted survey for a job certificate (TM)",
-        "description": "Allows a Technical Manager (TM) to grant final approval to the submitted survey for this certificate.\n\n**Workflow Logic:**\n- Transition: `SUBMITTED → FINALIZED`.\n- Unlocks certificate drafting and generation for this certificate.\n- Parent job status advances when all certificate surveys are finalized.\n\n**Roles:** TM\n",
+        "summary": "Finalize all submitted surveys for a job (TM)",
+        "description": "Allows a Technical Manager (TM) to grant final approval to **all** submitted\nsurveys for this job in one call.\n\n**Workflow Logic:**\n- Transitions all `SUBMITTED` certificate surveys to `FINALIZED`.\n- `JobCertificate` status remains at `SURVEY_DONE` after finalization.\n  The GM must then explicitly generate + issue physical certificates\n  (`POST /certificates` + `POST /certificates/{id}/issue`) to advance to `ISSUED`.\n- Parent Job advances to `FINALIZED` when all certs are done.\n\n**Roles:** TM, ADMIN\n",
         "operationId": "finalizeSurvey",
         "security": [
           {
@@ -6592,18 +6742,19 @@
           }
         ],
         "x-roles": [
-          "TM"
+          "TM",
+          "ADMIN"
         ],
         "parameters": [
           {
-            "name": "jobCertificateId",
+            "name": "jobId",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "format": "uuid"
             },
-            "description": "Job Certificate ID"
+            "description": "Job ID"
           }
         ],
         "requestBody": {
@@ -6613,15 +6764,14 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "skip_validation": {
-                    "type": "boolean",
-                    "description": "ADMIN only — Force status directly to FINALIZED, skipping guard checks (E2E testing)",
-                    "default": false
+                  "remarks": {
+                    "type": "string",
+                    "description": "Optional finalization remarks"
                   }
                 }
               },
               "example": {
-                "skip_validation": false
+                "remarks": "string"
               }
             }
           }
@@ -6640,13 +6790,13 @@
                     },
                     "message": {
                       "type": "string",
-                      "example": "All surveys finalized. Job is now FINALIZED."
+                      "example": "All surveys finalized."
                     }
                   }
                 },
                 "example": {
                   "success": true,
-                  "message": "All surveys finalized. Job is now FINALIZED."
+                  "message": "All surveys finalized."
                 }
               }
             }
@@ -6692,13 +6842,13 @@
         }
       }
     },
-    "/api/v1/surveys/job-certificates/{jobCertificateId}/rework": {
+    "/api/v1/surveys/jobs/{jobId}/rework": {
       "put": {
         "tags": [
           "Surveys"
         ],
-        "summary": "Request rework on a survey (ADMIN/GM/TM)",
-        "description": "Allows ADMIN, GM, or TM to request corrections on a submitted survey for this certificate.\n\n**Workflow Logic:**\n- Sets this certificate's survey status to `REWORK_REQUIRED`.\n- Parent job must be in `REVIEWED` (technical review completed for this certificate).\n\n**Roles:** ADMIN, GM, TM\n",
+        "summary": "Request rework on submitted survey (ADMIN/GM/TM)",
+        "description": "Allows ADMIN, GM, or TM to request corrections on a submitted survey.\n\n- Sets the target certificate's survey status to `REWORK_REQUIRED`.\n- The surveyor must re-complete checklist, re-upload proof, and re-submit.\n\n**Roles:** ADMIN, GM, TM\n",
         "operationId": "requestRework",
         "security": [
           {
@@ -6712,14 +6862,14 @@
         ],
         "parameters": [
           {
-            "name": "jobCertificateId",
+            "name": "jobId",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
               "format": "uuid"
             },
-            "description": "Job Certificate ID"
+            "description": "Job ID"
           }
         ],
         "requestBody": {
@@ -6740,7 +6890,7 @@
                   "job_certificate_id": {
                     "type": "string",
                     "format": "uuid",
-                    "description": "Optional alternative target certificate ID"
+                    "description": "Target a specific certificate (if job has multiple)"
                   }
                 }
               },
@@ -6776,7 +6926,7 @@
             }
           },
           "400": {
-            "description": "Job is not in REVIEWED state, or job is already finalized",
+            "description": "Job is not in a reworkable state",
             "content": {
               "application/json": {
                 "schema": {
@@ -6795,7 +6945,7 @@
             }
           },
           "403": {
-            "description": "Forbidden — caller does not have ADMIN/GM/TM privileges",
+            "description": "Forbidden",
             "content": {
               "application/json": {
                 "schema": {
@@ -6816,20 +6966,427 @@
         }
       }
     },
-    "/api/v1/surveys/job-certificates/{jobCertificateId}/location": {
+    "/api/v1/surveys/jobs/{jobId}/violation": {
       "post": {
         "tags": [
           "Surveys"
         ],
-        "summary": "Stream live GPS location (per certificate)",
-        "description": "Real-time GPS tracking during survey execution.\nGPS points are now scoped to the specific `JobCertificate` survey.\n",
+        "summary": "Flag a survey violation",
+        "operationId": "flagViolation",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "SURVEYOR",
+          "TM",
+          "ADMIN"
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "violation_type",
+                  "description"
+                ],
+                "properties": {
+                  "violation_type": {
+                    "type": "string",
+                    "example": "SAFETY_BREACH"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Fire suppression system not operational."
+                  }
+                }
+              },
+              "example": {
+                "violation_type": "SAFETY_BREACH",
+                "description": "Fire suppression system not operational."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Violation flagged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Request successful"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/surveys/jobs/{jobId}/statement/draft": {
+      "post": {
+        "tags": [
+          "Surveys"
+        ],
+        "summary": "Draft survey statement / Generate preview",
+        "description": "Saves the survey statement text and/or triggers report generation.\n- **SURVEYOR**: Must provide `survey_statement` text and `job_certificate_id`.\n- **TM/ADMIN**: Can omit text to trigger/refresh the branded \"DRAFT\" PDF.\n",
+        "operationId": "draftSurveyStatement",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "SURVEYOR",
+          "TM",
+          "ADMIN"
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "survey_statement": {
+                    "type": "string"
+                  },
+                  "job_certificate_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Target a specific certificate (required for SURVEYOR)"
+                  }
+                }
+              },
+              "example": {
+                "survey_statement": "string",
+                "job_certificate_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Statement drafted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "DRAFTED"
+                        },
+                        "pdf_url": {
+                          "type": "string",
+                          "format": "uri",
+                          "description": "Branded draft PDF URL (TM/ADMIN only)"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "message": "string",
+                    "status": "DRAFTED",
+                    "pdf_url": "https://example.com/resource"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/surveys/jobs/{jobId}/statement/issue": {
+      "post": {
+        "tags": [
+          "Surveys"
+        ],
+        "summary": "Issue signed survey statement (PDF)",
+        "description": "Finalizes the survey statement as official for a specific certificate.\nRemoves the \"DRAFT\" watermark and marks the statement as issued.\n\nAccepts either:\n- `multipart/form-data` with a `statement` binary PDF file\n- `application/json` with a `statementFileKey` (S3 key, pre-uploaded)\n\n**Note:** Can be called after job is `CERTIFIED` or `FINALIZED` since\nstatement issuance is a post-finalization action.\n",
+        "operationId": "issueSurveyStatement",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "TM",
+          "ADMIN"
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "statement": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "job_certificate_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              },
+              "example": {
+                "statement": "file.bin",
+                "job_certificate_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "statementFileKey": {
+                    "type": "string",
+                    "description": "S3 key for pre-uploaded signed PDF",
+                    "example": "surveys/statements/019e640c.pdf"
+                  },
+                  "job_certificate_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The certificate to issue the statement for"
+                  }
+                }
+              },
+              "example": {
+                "statementFileKey": "surveys/statements/019e640c.pdf",
+                "job_certificate_id": "019e640c-0000-0000-0000-000000000001"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Statement issued successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Statement issued"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Statement issued"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No statement file provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/surveys/jobs/{jobId}/timeline": {
+      "get": {
+        "tags": [
+          "Surveys"
+        ],
+        "summary": "Get survey execution timeline (all certificates)",
+        "description": "Returns GPS trace and status history for all certificate surveys of this job.\nGPS points are scoped per `JobCertificate`.\n",
+        "operationId": "getSurveyTimeline",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR"
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Survey timeline",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/SurveyTimelineResponse"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "job_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
+                    "gps_trace": [
+                      {
+                        "latitude": 1.5,
+                        "longitude": 1.5,
+                        "timestamp": "2026-03-15T10:00:00.000Z"
+                      }
+                    ],
+                    "survey_details": {
+                      "id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
+                      "job_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
+                      "survey_status": "SUBMITTED",
+                      "submission_count": 1,
+                      "submit_latitude": 1.3521,
+                      "submit_longitude": 103.8198,
+                      "survey_statement": "Survey completed successfully.",
+                      "declared_by": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
+                      "declared_at": "2026-02-25T12:00:00Z",
+                      "declaration_hash": "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
+                      "started_at": "2026-02-25T10:00:00Z",
+                      "submitted_at": "2026-02-25T12:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/surveys/jobs/{jobId}/location": {
+      "post": {
+        "tags": [
+          "Surveys"
+        ],
+        "summary": "Stream live GPS location during survey",
+        "description": "Real-time GPS tracking during survey execution.\nGPS points are scoped to the specific `JobCertificate` survey.\n",
         "operationId": "streamLocation",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "x-roles": [
           "SURVEYOR"
         ],
         "parameters": [
           {
-            "name": "jobCertificateId",
+            "name": "jobId",
             "in": "path",
             "required": true,
             "schema": {
@@ -6896,405 +7453,7 @@
         }
       }
     },
-    "/api/v1/surveys/job-certificates/{jobCertificateId}/proof": {
-      "post": {
-        "tags": [
-          "Surveys"
-        ],
-        "summary": "Upload survey evidence proof (per certificate)",
-        "description": "Upload supplemental photos or documents for a specific certificate's survey.\nMoves that certificate's survey to `PROOF_UPLOADED`.\n",
-        "operationId": "uploadProof",
-        "x-roles": [
-          "SURVEYOR"
-        ],
-        "parameters": [
-          {
-            "name": "jobCertificateId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "proof": {
-                    "type": "string",
-                    "format": "binary"
-                  },
-                  "job_certificate_id": {
-                    "type": "string",
-                    "format": "uuid"
-                  },
-                  "skip_validation": {
-                    "type": "boolean",
-                    "description": "ADMIN only — bypass state guards"
-                  }
-                }
-              },
-              "example": {
-                "proof": "file.bin",
-                "job_certificate_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
-                "skip_validation": true
-              }
-            },
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "fileKey": {
-                    "type": "string",
-                    "description": "S3 key for evidence proof"
-                  },
-                  "job_certificate_id": {
-                    "type": "string",
-                    "format": "uuid"
-                  }
-                }
-              },
-              "example": {
-                "fileKey": "string",
-                "job_certificate_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Proof uploaded",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "message": "Request successful"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/surveys/job-certificates/{jobCertificateId}/timeline": {
-      "get": {
-        "tags": [
-          "Surveys"
-        ],
-        "summary": "Get survey execution timeline (all certificates)",
-        "description": "Returns GPS trace and status history for all certificate surveys of this job.\nGPS points are now scoped per `JobCertificate`.\n",
-        "operationId": "getSurveyTimeline",
-        "x-roles": [
-          "ADMIN",
-          "GM",
-          "TM",
-          "TO",
-          "SURVEYOR"
-        ],
-        "parameters": [
-          {
-            "name": "jobCertificateId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Survey timeline",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/SurveyTimelineResponse"
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "data": {
-                    "job_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
-                    "gps_trace": [
-                      {
-                        "latitude": 1.5,
-                        "longitude": 1.5,
-                        "timestamp": "2026-03-15T10:00:00.000Z"
-                      }
-                    ],
-                    "survey_details": {
-                      "id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
-                      "job_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
-                      "survey_status": "SUBMITTED",
-                      "submission_count": 1,
-                      "submit_latitude": 1.3521,
-                      "submit_longitude": 103.8198,
-                      "survey_statement": "Survey completed successfully.",
-                      "declared_by": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
-                      "declared_at": "2026-02-25T12:00:00Z",
-                      "declaration_hash": "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
-                      "started_at": "2026-02-25T10:00:00Z",
-                      "submitted_at": "2026-02-25T12:00:00Z"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/surveys/job-certificates/{jobCertificateId}/violation": {
-      "post": {
-        "tags": [
-          "Surveys"
-        ],
-        "summary": "Flag survey violation",
-        "operationId": "flagViolation",
-        "x-roles": [
-          "SURVEYOR",
-          "TM",
-          "ADMIN"
-        ],
-        "parameters": [
-          {
-            "name": "jobCertificateId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Violation flagged",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "message": "Request successful"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/surveys/job-certificates/{jobCertificateId}/statement/draft": {
-      "post": {
-        "tags": [
-          "Surveys"
-        ],
-        "summary": "Draft survey statement / Generate preview",
-        "description": "Saves the survey statement text and/or triggers report generation.\n- **SURVEYOR**: Must provide `survey_statement` text.\n- **TM/ADMIN**: Can leave empty to trigger/refresh the branded \"DRAFT\" PDF.\n",
-        "operationId": "draftSurveyStatement",
-        "x-roles": [
-          "SURVEYOR",
-          "TM"
-        ],
-        "parameters": [
-          {
-            "name": "jobCertificateId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "survey_statement": {
-                    "type": "string"
-                  },
-                  "job_certificate_id": {
-                    "type": "string",
-                    "format": "uuid",
-                    "description": "Target specific cert"
-                  }
-                }
-              },
-              "example": {
-                "survey_statement": "string",
-                "job_certificate_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Statement drafted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        },
-                        "status": {
-                          "type": "string",
-                          "example": "DRAFTED"
-                        },
-                        "pdf_url": {
-                          "type": "string",
-                          "format": "uri",
-                          "description": "Only for TM/ADMIN"
-                        }
-                      }
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "data": {
-                    "message": "string",
-                    "status": "DRAFTED",
-                    "pdf_url": "https://example.com/resource"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/surveys/job-certificates/{jobCertificateId}/statement/issue": {
-      "post": {
-        "tags": [
-          "Surveys"
-        ],
-        "summary": "Issue signed survey statement (PDF)",
-        "description": "Finalizes the statement as official. Removes \"DRAFT\" watermark.",
-        "operationId": "issueSurveyStatement",
-        "x-roles": [
-          "TM"
-        ],
-        "parameters": [
-          {
-            "name": "jobCertificateId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "statement": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                }
-              },
-              "example": {
-                "statement": "file.bin"
-              }
-            },
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "fileKey": {
-                    "type": "string"
-                  }
-                }
-              },
-              "example": {
-                "fileKey": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Issued",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "message": "Request successful"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/surveys/job-certificates/{jobCertificateId}/sync": {
+    "/api/v1/surveys/jobs/{jobId}/sync": {
       "post": {
         "tags": [
           "Surveys"
@@ -7302,12 +7461,17 @@
         "summary": "Offline sync — replay batched data",
         "description": "Replays checklist answers and GPS points captured while offline.\nInclude `job_certificate_id` to scope data to the correct certificate survey.\n",
         "operationId": "syncOfflineData",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "x-roles": [
           "SURVEYOR"
         ],
         "parameters": [
           {
-            "name": "jobCertificateId",
+            "name": "jobId",
             "in": "path",
             "required": true,
             "schema": {

@@ -23,8 +23,6 @@ router.get('/:id/eligible-surveyors', authorizeRoles('ADMIN', 'GM', 'TM'), jobCo
 router.post('/', authorizeRoles('CLIENT', 'ADMIN', 'GM'), validate(schemas.createJob), jobController.createJob);
 
 // ─── Explicit Semantic Workflow Transitions ───────────────
-// CREATED → DOCUMENT_VERIFIED  (TO / GM / ADMIN) (per JobCertificate)
-router.put('/certificates/:jobCertificateId/verify-documents', authorizeRoles('TO', 'GM', 'ADMIN'), jobController.verifyJobDocuments);
 
 // CREATED → DOCUMENT_VERIFIED (TO / GM / ADMIN) (Bulk verify all certificates for a job)
 router.put('/:id/verify-all-documents', authorizeRoles('TO', 'GM', 'ADMIN'), jobController.verifyAllJobDocuments);
@@ -37,26 +35,20 @@ router.put('/:id/finalize', authorizeRoles('TM'), validate(schemas.finalizeSurve
 
 // APPROVED → ASSIGNED  (ADMIN / GM — bulk assign surveyor to all certificates)
 router.put('/:id/assign', authorizeRoles(...RBAC.ASSIGN_JOB), validate(schemas.assignJob), jobController.assignSurveyor);
-// Split assign surveyor to a specific certificate row
-router.put('/certificates/:jobCertificateId/assign', authorizeRoles(...RBAC.ASSIGN_JOB), validate(schemas.assignJob), jobController.assignSurveyorToCertificate);
-// Re-assign surveyor on one certificate row
-router.put('/certificates/:jobCertificateId/reassign', authorizeRoles(...RBAC.REASSIGN_JOB), validate(schemas.reassignJob), jobController.reassignSurveyorToCertificate);
 // Re-assign surveyor without status change (GM / TM / ADMIN) — all certificates
 router.put('/:id/reassign', authorizeRoles(...RBAC.REASSIGN_JOB), validate(schemas.reassignJob), jobController.reassignSurveyor);
 
 // Reschedule
 router.put('/:id/reschedule', authorizeRoles('GM', 'ADMIN'), validate(schemas.rescheduleJob), jobController.rescheduleJob);
 
-// ASSIGNED → SURVEY_AUTHORIZED (per JobCertificate)
-router.put('/certificates/:jobCertificateId/authorize-survey', authorizeRoles(...RBAC.AUTHORIZE_SURVEY), jobController.authorizeSurvey);
 
 // ASSIGNED → SURVEY_AUTHORIZED (Bulk for all valid certificates in a Job)
 router.put('/:id/authorize-all-surveys', authorizeRoles(...RBAC.AUTHORIZE_SURVEY), jobController.authorizeAllSurveys);
 
 // IN_PROGRESS / REWORK_REQUESTED → automatically handled by survey lifecycle
 
-// SURVEY_DONE → REVIEWED (per JobCertificate)
-router.put('/certificates/:jobCertificateId/review', authorizeRoles('TO', 'ADMIN'), jobController.reviewJob);
+// SURVEY_DONE → REVIEWED (Bulk for all valid certificates in a Job)
+router.put('/:id/review-all', authorizeRoles('TO', 'ADMIN'), jobController.reviewAllJobCertificates);
 
 // REVIEWED → REWORK_REQUESTED  (ADMIN / TM / TO — requests surveyor correction)
 // NOTE: preferred path is PUT /api/v1/surveys/:id/rework

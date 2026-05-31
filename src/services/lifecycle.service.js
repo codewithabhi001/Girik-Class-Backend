@@ -102,30 +102,25 @@ export const updateJobCertificateStatus = async (jobCertificateId, newStatus, us
         const syncParentJobStatus = async (certRow, certStatus) => {
             const job = await db.JobRequest.findByPk(certRow.job_request_id, { transaction: txn, lock: txn.LOCK.UPDATE });
             if (!job) return;
+
+            // Only sync terminal states automatically (e.g. CERTIFIED) when all certificates are ISSUED/REJECTED.
+            // Other states like IN_PROGRESS or REWORK_REQUESTED are explicitly managed at the Job level.
             const allCerts = await db.JobCertificate.findAll({ where: { job_request_id: certRow.job_request_id }, transaction: txn });
             const allTerminal = allCerts.every(c =>
                 c.id === certRow.id
                     ? ['ISSUED', 'REJECTED'].includes(certStatus)
                     : ['ISSUED', 'REJECTED'].includes(c.status)
             );
-            let targetJobStatus = 'IN_PROGRESS';
-            if (allTerminal) {
-                targetJobStatus = 'CERTIFIED';
-            } else {
-                const hasStarted = allCerts.some(c =>
-                    c.id === certRow.id ? certStatus !== 'PENDING' : c.status !== 'PENDING'
-                );
-                targetJobStatus = hasStarted ? 'IN_PROGRESS' : 'CREATED';
-            }
-            if (job.job_status !== targetJobStatus) {
+
+            if (allTerminal && job.job_status !== 'CERTIFIED') {
                 const previousJobStatus = job.job_status;
-                await job.update({ job_status: targetJobStatus }, { transaction: txn });
+                await job.update({ job_status: 'CERTIFIED' }, { transaction: txn });
                 await db.JobStatusHistory.create({
                     job_id: job.id,
                     previous_status: previousJobStatus,
-                    new_status: targetJobStatus,
+                    new_status: 'CERTIFIED',
                     changed_by: userId,
-                    reason: `Auto-sync: Child certificate status is ${certStatus}`,
+                    reason: `Auto-sync: All child certificates reached terminal status`,
                 }, { transaction: txn });
             }
         };
@@ -296,7 +291,7 @@ export const updateJobStatus = async (jobId, newStatus, userId, reason = null, o
  * @param {object}  [options]   - { transaction }
  */
 export const updateSurveyStatus = async (surveyId, newStatus, userId, reason = null, options = {}) => {
-    const { transaction: externalTxn, _skipJobSync = false } = options;
+    const { transaction: externalTxn, _skipJobSync = false, _skipSurveyLog = false } = options;
     const txn = externalTxn || await db.sequelize.transaction();
 
     try {
@@ -387,14 +382,16 @@ export const updateSurveyStatus = async (surveyId, newStatus, userId, reason = n
         await survey.update(updateData, { transaction: txn });
 
         // ── 8. Audit history (in same transaction) ──
-        await SurveyStatusHistory.create({
-            survey_id: surveyId,
-            previous_status: previousStatus,
-            new_status: newStatus,
-            changed_by: userId,
-            reason,
-            submission_iteration: updateData.submission_count || survey.submission_count
-        }, { transaction: txn });
+        if (!_skipSurveyLog) {
+            await SurveyStatusHistory.create({
+                survey_id: surveyId,
+                previous_status: previousStatus,
+                new_status: newStatus,
+                changed_by: userId,
+                reason,
+                submission_iteration: updateData.submission_count || survey.submission_count
+            }, { transaction: txn });
+        }
 
         // ── 9. Structured log ──
         const jcForLog = await db.JobCertificate.findByPk(survey.job_certificate_id, { transaction: txn });
@@ -410,10 +407,39 @@ export const updateSurveyStatus = async (surveyId, newStatus, userId, reason = n
         if (jcForLog) {
             if (newStatus === 'STARTED') {
                 // Ensure parent JobRequest is IN_PROGRESS when survey starts
-                await updateJobCertificateStatus(jcForLog.id, 'SURVEY_AUTHORIZED', userId, 'Survey started by surveyor', { transaction: txn });
+                if (!_skipJobSync) {
+                    const job = await JobRequest.findByPk(jcForLog.job_request_id, { transaction: txn });
+                    if (job && job.job_status === 'SURVEY_AUTHORIZED') {
+                        // The updateJobStatus function is exported above in the same file.
+                        // We must await its result.
+                        await updateJobStatus(jcForLog.job_request_id, 'IN_PROGRESS', userId, 'Survey started by surveyor', { transaction: txn, _internal: true });
+                    }
+                }
             } else if (newStatus === 'SUBMITTED' || newStatus === 'FINALIZED') {
                 if (!['SURVEY_DONE', 'ISSUED'].includes(jcForLog.status)) {
                     await updateJobCertificateStatus(jcForLog.id, 'SURVEY_DONE', userId, `Survey transitioned to ${newStatus}`, { transaction: txn });
+                }
+
+                if (!_skipJobSync) {
+                    const parentJobId = jcForLog.job_request_id;
+                    const jobCerts = await db.JobCertificate.findAll({ where: { job_request_id: parentJobId }, transaction: txn });
+                    const certIds = jobCerts.map(c => c.id);
+                    const surveys = await Survey.findAll({ where: { job_certificate_id: certIds }, transaction: txn });
+
+                    const checkStatus = (surveyRow) => {
+                        if (surveyRow.id === survey.id) return newStatus;
+                        return surveyRow.survey_status;
+                    };
+
+                    const allFinalized = surveys.length > 0 && surveys.every(s => checkStatus(s) === 'FINALIZED');
+                    if (allFinalized) {
+                        await updateJobStatus(parentJobId, 'FINALIZED', userId, 'All surveys finalized by TM', { transaction: txn, _internal: true });
+                    } else {
+                        const allSubmitted = surveys.length > 0 && surveys.every(s => ['SUBMITTED', 'FINALIZED'].includes(checkStatus(s)));
+                        if (allSubmitted) {
+                            await updateJobStatus(parentJobId, 'SURVEY_DONE', userId, 'All survey reports submitted', { transaction: txn, _internal: true });
+                        }
+                    }
                 }
             } else if (newStatus === 'REWORK_REQUIRED') {
                 if (jcForLog.status !== 'REWORK_REQUESTED') {

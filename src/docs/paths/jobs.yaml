@@ -406,6 +406,52 @@
           application/json:
             schema: { $ref: '#/components/schemas/ErrorResponse' }
 
+/api/v1/jobs/{id}/verify-all-documents:
+  put:
+    tags: [Jobs]
+    summary: "TO/GM/ADMIN: Verify all documents for all pending certificates of a Job"
+    description: |
+      Technical Officer (or Admin/GM) reviews and bulk-approves all uploaded documents for all pending certificates of a job.
+      Moves all pending/rework-requested certificates to `DOCUMENT_VERIFIED`.
+      Transitions the parent job status to `IN_PROGRESS` if it was not already.
+
+      **Roles:** TO, GM, ADMIN
+    operationId: verifyAllJobDocuments
+    security:
+      - bearerAuth: []
+    x-roles: [TO, GM, ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              remarks:
+                type: string
+                description: Verification remarks
+                example: "All documents verified successfully."
+    responses:
+      "200":
+        description: Documents verified successfully.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "All documents verified successfully for this certificate." }
+      "400":
+        description: No pending certificates found or mandatory documents missing.
+      "403":
+        description: Forbidden.
+      "404":
+        description: Job not found.
+
 /api/v1/jobs/{id}/approve-request:
   put:
     tags: [Jobs]
@@ -819,6 +865,52 @@
         content:
           application/json:
             schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+/api/v1/jobs/{id}/review-all:
+  put:
+    tags: [Jobs]
+    summary: "TO/ADMIN: Review all completed surveys for a Job"
+    description: |
+      Technical Officer (or Admin) bulk-reviews all completed surveys under the job (which are in `SURVEY_DONE` status).
+      Approves all checklist items and signed files for those surveys.
+      If parent Job status is `SURVEY_DONE`, transitions it to `REVIEWED`.
+
+      **Roles:** TO, ADMIN
+    operationId: reviewAllJobCertificates
+    security:
+      - bearerAuth: []
+    x-roles: [TO, ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              remarks:
+                type: string
+                description: Review remarks/feedback
+                example: "Checklist and signed scans are approved."
+    responses:
+      "200":
+        description: Review recorded successfully.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                message: { type: string, example: "All completed surveys marked as reviewed." }
+      "400":
+        description: No certificates in SURVEY_DONE status found to review.
+      "403":
+        description: Forbidden.
+      "404":
+        description: Job not found.
 
 /api/v1/jobs/{id}/reschedule:
   put:

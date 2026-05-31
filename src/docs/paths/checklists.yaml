@@ -1,12 +1,28 @@
-/api/v1/checklists/jobs/{jobId}:
+# ─────────────────────────────────────────────────────────────────────────────
+# CHECKLISTS
+#
+# All SURVEYOR read/write operations are scoped to:
+#   /api/v1/checklists/job-certificates/{jobCertificateId}
+#
+# TO/ADMIN review operations remain job-scoped (item & signed-file reviews):
+#   /api/v1/checklists/jobs/{jobId}/items/{itemId}/review
+#   /api/v1/checklists/jobs/{jobId}/signed-files/{fileIndex}/review
+#
+# Role summary:
+#   SURVEYOR — read checklist, save answers, upload evidence, update signed docs
+#   TO/ADMIN — review individual items and signed docs
+#   GM, TM    — read checklist (ADMIN role check on GET route)
+# ─────────────────────────────────────────────────────────────────────────────
+
+/api/v1/checklists/job-certificates/{jobCertificateId}:
   get:
     tags:
       - Checklists
-    summary: Get checklist for a job
+    summary: Get checklist for a job certificate
     description: |
-      Returns the checklist items for a job **plus** the resolved (signed)
-      HTTPS URLs of any full signed-checklist scan documents that were
-      attached to the underlying survey.
+      Returns checklist items, signed-checklist scan URLs, and survey details
+      for a **specific JobCertificate**. Each certificate in a multi-cert job
+      has its own independent checklist.
 
       All `file_url` fields and `signed_checklist_files` entries are guaranteed
       to be either fully-qualified HTTPS URLs or `null` — raw S3 keys are never
@@ -17,19 +33,12 @@
     x-roles: [ADMIN, GM, TM, TO, SURVEYOR]
     parameters:
       - in: path
-        name: jobId
+        name: jobCertificateId
         schema:
           type: string
           format: uuid
         required: true
-        description: Unique identifier of the job
-      - in: query
-        name: job_certificate_id
-        schema:
-          type: string
-          format: uuid
-        required: false
-        description: Target a specific certificate (recommended for multi-cert jobs)
+        description: Unique identifier of the JobCertificate
       - in: query
         name: answer
         schema:
@@ -66,7 +75,7 @@
             schema:
               $ref: '#/components/schemas/ErrorResponse'
       '404':
-        description: Job not found
+        description: JobCertificate not found
         content:
           application/json:
             schema:
@@ -75,12 +84,12 @@
   put:
     tags:
       - Checklists
-    summary: Submit checklist (answers + optional signed-scan files)
+    summary: Save checklist answers (+ optional signed-scan files)
     description: |
-      Submit / replace the checklist answers for a job. In the **same call**
-      the surveyor can also attach the S3 keys of the full signed-checklist
-      scan document(s) — obtained earlier from
-      `GET /checklists/jobs/{jobId}/signed-checklist-upload-url`.
+      Submit or replace checklist answers for a specific `JobCertificate`.
+      In the same call the surveyor can attach the S3 keys of the full
+      signed-checklist scan document(s) — obtained earlier from
+      `GET /checklists/job-certificates/{jobCertificateId}/signed-checklist-upload-url`.
 
       Re-submission is allowed until the survey is finalized. Only the
       assigned `SURVEYOR` can perform this action while the survey is in an
@@ -92,12 +101,12 @@
     x-roles: [SURVEYOR]
     parameters:
       - in: path
-        name: jobId
+        name: jobCertificateId
         schema:
           type: string
           format: uuid
         required: true
-        description: Unique identifier of the job
+        description: Unique identifier of the JobCertificate
     requestBody:
       required: true
       content:
@@ -105,7 +114,6 @@
           schema:
             $ref: '#/components/schemas/ChecklistSubmission'
           example:
-            job_certificate_id: "019e640c-0000-0000-0000-000000000001"
             items:
               - question_code: "LSE001"
                 question_text: "Are life jackets available?"
@@ -116,14 +124,9 @@
                 question_text: "Is the fire extinguisher charged?"
                 answer: "NO"
                 remarks: "Pressure low, needs replacement"
-                file_url: "surveys/checklist-evidence/<jobId>/1714000000000_fire_ext.jpg"
-              - question_code: "LSE003"
-                question_text: "Is the fire alarm functional?"
-                answer: "NA"
-                remarks: "Not applicable for this vessel type"
-                file_url: ""
+                file_url: "surveys/checklist-evidence/<jobCertificateId>/1714000000000_fire_ext.jpg"
             signed_checklist_files:
-              - "surveys/signed-checklists/<jobId>/1714000000000_signed.pdf"
+              - "surveys/signed-checklists/<jobCertificateId>/1714000000000_signed.pdf"
     responses:
       '200':
         description: Checklist submitted successfully
@@ -150,34 +153,35 @@
             schema:
               $ref: '#/components/schemas/ErrorResponse'
       '404':
-        description: Job not found
+        description: JobCertificate not found
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ErrorResponse'
 
-/api/v1/checklists/jobs/{jobId}/get-upload-url:
+/api/v1/checklists/job-certificates/{jobCertificateId}/get-upload-url:
   get:
     tags:
       - Checklists
     summary: Get upload URL for a single checklist-item evidence photo
     description: |
       Generates a pre-signed S3 URL so the surveyor can directly upload one
-      photo of evidence for a **single** checklist item (e.g. a failing item).
-      The returned `fileKey` is then passed back as `file_url` on that item
-      in the next `PUT /checklists/jobs/{jobId}` call.
+      photo of evidence for a **single** checklist item (e.g. a failing item)
+      for this certificate's survey. The returned `fileKey` is then passed back
+      as `file_url` on that item in the next
+      `PUT /checklists/job-certificates/{jobCertificateId}` call.
     operationId: getChecklistItemUploadUrl
     security:
       - bearerAuth: []
     x-roles: [SURVEYOR]
     parameters:
       - in: path
-        name: jobId
+        name: jobCertificateId
         schema:
           type: string
           format: uuid
         required: true
-        description: Unique identifier of the job
+        description: Unique identifier of the JobCertificate
       - in: query
         name: fileName
         schema:
@@ -210,37 +214,37 @@
             schema:
               $ref: '#/components/schemas/ErrorResponse'
       '404':
-        description: Job not found
+        description: JobCertificate not found
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ErrorResponse'
 
-/api/v1/checklists/jobs/{jobId}/signed-checklist-upload-url:
+/api/v1/checklists/job-certificates/{jobCertificateId}/signed-checklist-upload-url:
   get:
     tags:
       - Checklists
     summary: Get upload URL for the full signed-checklist scan
     description: |
       Generates a pre-signed S3 URL so the surveyor can upload the full
-      filled & signed checklist document (PDF / image) — one or more files
-      representing the actual signed sheet.
+      filled & signed checklist document (PDF / image) for this certificate's
+      survey — one or more files representing the actual signed sheet.
 
       After uploading directly to S3 with the returned `uploadUrl`, send the
       `fileKey` back inside the `signed_checklist_files` array on the next
-      `PUT /checklists/jobs/{jobId}` call.
+      `PUT /checklists/job-certificates/{jobCertificateId}` call.
     operationId: getSignedChecklistUploadUrl
     security:
       - bearerAuth: []
     x-roles: [SURVEYOR]
     parameters:
       - in: path
-        name: jobId
+        name: jobCertificateId
         schema:
           type: string
           format: uuid
         required: true
-        description: Unique identifier of the job
+        description: Unique identifier of the JobCertificate
       - in: query
         name: fileName
         schema:
@@ -273,22 +277,22 @@
             schema:
               $ref: '#/components/schemas/ErrorResponse'
       '404':
-        description: Job not found
+        description: JobCertificate not found
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ErrorResponse'
 
-/api/v1/checklists/jobs/{jobId}/signed-checklist-files:
+/api/v1/checklists/job-certificates/{jobCertificateId}/signed-checklist-files:
   put:
     tags:
       - Checklists
     summary: Update signed checklist scan files (keys only)
     description: |
-      Updates **only** the `signed_checklist_files` array for the job's survey.
+      Updates **only** the `signed_checklist_files` array for this certificate's survey.
 
       Use this when your UI flow is split into two screens:
-      1) Save checklist answers (PUT `/checklists/jobs/{jobId}`)
+      1) Save checklist answers (`PUT /checklists/job-certificates/{jobCertificateId}`)
       2) Upload signed checklist scan(s) and attach them here
 
       The array is treated as a **full replace**:
@@ -296,19 +300,19 @@
       - To remove all: send `[]`
 
       Each entry must be an S3 key obtained from
-      `GET /checklists/jobs/{jobId}/signed-checklist-upload-url`.
+      `GET /checklists/job-certificates/{jobCertificateId}/signed-checklist-upload-url`.
     operationId: updateSignedChecklistFiles
     security:
       - bearerAuth: []
     x-roles: [SURVEYOR]
     parameters:
       - in: path
-        name: jobId
+        name: jobCertificateId
         schema:
           type: string
           format: uuid
         required: true
-        description: Unique identifier of the job
+        description: Unique identifier of the JobCertificate
     requestBody:
       required: true
       content:
@@ -317,17 +321,12 @@
             type: object
             required: [signed_checklist_files]
             properties:
-              job_certificate_id:
-                type: string
-                format: uuid
-                description: Target certificate survey
               signed_checklist_files:
                 type: array
                 items: { type: string }
           example:
-            job_certificate_id: "019e640c-0000-0000-0000-000000000001"
             signed_checklist_files:
-              - "surveys/signed-checklists/<jobId>/1714000000000_signed.pdf"
+              - "surveys/signed-checklists/<jobCertificateId>/1714000000000_signed.pdf"
     responses:
       '200':
         description: Updated signed checklist files
@@ -350,12 +349,6 @@
           application/json:
             schema:
               $ref: '#/components/schemas/ErrorResponse'
-      '401':
-        description: Unauthorized
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ErrorResponse'
       '403':
         description: Forbidden — caller is not the assigned surveyor
         content:
@@ -363,7 +356,7 @@
             schema:
               $ref: '#/components/schemas/ErrorResponse'
       '404':
-        description: Job not found
+        description: JobCertificate not found
         content:
           application/json:
             schema:
@@ -373,14 +366,15 @@
   put:
     tags:
       - Checklists
-    summary: TO Review checklist item
+    summary: Review a specific checklist question answer (TO/ADMIN)
     description: |
-      Allows a Technical Officer (TO) to approve or reject a specific checklist question answer.
-      **Roles:** TO
+      Allows a Technical Officer (TO) or ADMIN to approve or reject a specific
+      checklist question answer for a job.
+      **Roles:** TO, ADMIN
     operationId: reviewChecklistItem
     security:
       - bearerAuth: []
-    x-roles: [TO]
+    x-roles: [TO, ADMIN]
     parameters:
       - in: path
         name: jobId
@@ -414,7 +408,7 @@
               job_certificate_id:
                 type: string
                 format: uuid
-                description: Optional job certificate ID
+                description: Optional job certificate ID to scope the review
             example:
               status: "REJECTED"
               rejection_reason: "Evidence photo is blurry"
@@ -437,14 +431,15 @@
   put:
     tags:
       - Checklists
-    summary: TO Review signed document scan
+    summary: Review a signed document scan (TO/ADMIN)
     description: |
-      Allows a Technical Officer (TO) to approve or reject a specific uploaded signed checklist document scan (by its index in the array).
-      **Roles:** TO
+      Allows a Technical Officer (TO) or ADMIN to approve or reject a specific
+      uploaded signed checklist document scan (by its index in the array).
+      **Roles:** TO, ADMIN
     operationId: reviewSignedDocument
     security:
       - bearerAuth: []
-    x-roles: [TO]
+    x-roles: [TO, ADMIN]
     parameters:
       - in: path
         name: jobId
@@ -494,4 +489,3 @@
         description: Bad Request (validation error)
       '403':
         description: Forbidden
-

@@ -98,7 +98,7 @@ export const verifyJobDocuments = async (req, res, next) => {
 
 export const verifyAllJobDocuments = async (req, res, next) => {
     try {
-        const result = await jobService.verifyAllJobDocuments(req.params.id, req.user);
+        const result = await jobService.verifyAllJobDocuments(req.params.id, req.body, req.user);
         res.json({ success: true, message: result.message, data: result.data });
     } catch (error) { next(error); }
 };
@@ -183,6 +183,14 @@ export const reviewJob = async (req, res, next) => {
     try {
         const jc = await jobService.reviewJobCertificate(req.params.jobCertificateId, req.body?.remarks, req.user);
         res.json({ success: true, message: 'Certificate survey marked as reviewed.', data: jc });
+    } catch (error) { next(error); }
+};
+
+/** SURVEY_DONE → REVIEWED (Bulk for all valid certificates in a Job) (TO / ADMIN) */
+export const reviewAllJobCertificates = async (req, res, next) => {
+    try {
+        const result = await jobService.reviewAllJobCertificates(req.params.id, req.body?.remarks, req.user);
+        res.json({ success: true, message: 'All completed surveys marked as reviewed.', data: result });
     } catch (error) { next(error); }
 };
 

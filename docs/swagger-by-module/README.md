@@ -19,7 +19,6 @@ Generated from `src/docs/paths/*.yaml` and merged OpenAPI components.
 - `flags`: [flags.yaml](./flags.yaml), [flags.json](./flags.json)
 - `health`: [health.yaml](./health.yaml), [health.json](./health.json)
 - `incidents`: [incidents.yaml](./incidents.yaml), [incidents.json](./incidents.json)
-- `jobs-certificate-workflow`: [jobs-certificate-workflow.yaml](./jobs-certificate-workflow.yaml), [jobs-certificate-workflow.json](./jobs-certificate-workflow.json)
 - `jobs`: [jobs.yaml](./jobs.yaml), [jobs.json](./jobs.json)
 - `non_conformities`: [non_conformities.yaml](./non_conformities.yaml), [non_conformities.json](./non_conformities.json)
 - `notifications`: [notifications.yaml](./notifications.yaml), [notifications.json](./notifications.json)

@@ -8,16 +8,16 @@ const router = express.Router();
 
 router.use(authenticate);
 
-// View checklist + signed-checklist scan URLs for a job
+// View checklist + signed-checklist scan URLs for a certificate
 router.get(
-    '/jobs/:jobId',
+    '/job-certificates/:jobCertificateId',
     authorizeRoles('ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'),
     checklistController.getChecklist
 );
 
 // Submit checklist answers + (optionally) attach signed-checklist scan keys
 router.put(
-    '/jobs/:jobId',
+    '/job-certificates/:jobCertificateId',
     authorizeRoles('SURVEYOR'),
     validate(schemas.submitChecklist),
     checklistController.submitChecklist
@@ -25,7 +25,7 @@ router.put(
 
 // Update ONLY signed-checklist scan keys (separate screen after answers)
 router.put(
-    '/jobs/:jobId/signed-checklist-files',
+    '/job-certificates/:jobCertificateId/signed-checklist-files',
     authorizeRoles('SURVEYOR'),
     validate(schemas.updateSignedChecklistFiles),
     checklistController.updateSignedChecklistFiles
@@ -33,14 +33,14 @@ router.put(
 
 // Get pre-signed S3 URL to upload a single per-question evidence photo
 router.get(
-    '/jobs/:jobId/get-upload-url',
+    '/job-certificates/:jobCertificateId/get-upload-url',
     authorizeRoles('SURVEYOR'),
     checklistController.getUploadUrl
 );
 
 // Get pre-signed S3 URL to upload the full signed-checklist document scan
 router.get(
-    '/jobs/:jobId/signed-checklist-upload-url',
+    '/job-certificates/:jobCertificateId/signed-checklist-upload-url',
     authorizeRoles('SURVEYOR'),
     checklistController.getSignedChecklistUploadUrl
 );
