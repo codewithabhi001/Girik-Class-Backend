@@ -417,12 +417,30 @@ export const generateCertificate = async (data, user) => {
             jobCert = allJobCerts[0] || null;
         }
 
+        // ── Resolve certificate type from JobCertificate ──
+        const certTypeId = jobCert?.certificate_type_id;
+        if (!certTypeId) throw { statusCode: 400, message: 'Certificate type not found for this job/certificate' };
+
+        const certType = await db.CertificateType.findByPk(certTypeId, { attributes: ['id', 'name', 'issuing_authority', 'short_code', 'requires_survey'], transaction });
+        if (!certType) throw { statusCode: 404, message: 'Certificate type not found' };
+
         // ── Guard 1: Status Check ──
         if (!skip_validation) {
             const targetStatus = jobCert ? jobCert.status : job.job_status;
-            const allowedStatuses = jobCert
+            let allowedStatuses = jobCert
                 ? ['SURVEY_DONE', 'REWORK_REQUESTED']
                 : ['FINALIZED', 'PAYMENT_DONE', 'REWORK_REQUESTED', 'SURVEY_DONE', 'REVIEWED'];
+
+            if (jobCert && certType.requires_survey === false) {
+                if (!job.approved_by_user_id) {
+                    throw {
+                        statusCode: 400,
+                        message: `Certificate can only be generated after the job request has been approved by a General Manager.`
+                    };
+                }
+                allowedStatuses = ['DOCUMENT_VERIFIED', 'SURVEY_DONE', 'REWORK_REQUESTED'];
+            }
+
             if (!allowedStatuses.includes(targetStatus)) {
                 throw {
                     statusCode: 400,
@@ -431,14 +449,8 @@ export const generateCertificate = async (data, user) => {
             }
         }
 
-        // ── Resolve certificate type from JobCertificate ──
-        const certTypeId = jobCert?.certificate_type_id;
-        if (!certTypeId) throw { statusCode: 400, message: 'Certificate type not found for this job/certificate' };
-
-        const certType = await db.CertificateType.findByPk(certTypeId, { attributes: ['id', 'name', 'issuing_authority', 'short_code'], transaction });
-
         // ── Guard 2: Survey Compliance (if required, skippable) ──
-        if (!skip_validation && job.is_survey_required) {
+        if (!skip_validation && certType.requires_survey) {
             let surveyQuery;
             if (jobCert) {
                 surveyQuery = { job_certificate_id: jobCert.id };
