@@ -771,12 +771,15 @@ export const verifyJobCertificateDocuments = async (jobCertificateId, body, user
         );
 
         // Audit trail
+        const certType = await CertificateType.findByPk(jc.certificate_type_id);
+        const certName = certType ? certType.name : 'Unknown Certificate';
+
         await JobStatusHistory.create({
             job_id: jobId,
             previous_status: `CERT_${jc.status}`,
             new_status: `CERT_${jc.status}`,
             changed_by: userId,
-            reason: `Documents rejected for certificate ${jc.id} by ${user.role}`
+            reason: `Documents rejected for certificate (${certName}) by ${user.role}`
         });
 
         // Notify client to re-upload
@@ -821,6 +824,12 @@ export const verifyJobCertificateDocuments = async (jobCertificateId, body, user
     }
 
     const updatedJc = await lifecycleService.updateJobCertificateStatus(jobCertificateId, 'DOCUMENT_VERIFIED', userId, 'Technical Officer verified all documents');
+
+    const allCerts = await db.JobCertificate.findAll({ where: { job_request_id: jobId } });
+    const allVerified = allCerts.every(c => c.status === 'DOCUMENT_VERIFIED' || ['ISSUED', 'REJECTED'].includes(c.status));
+    if (allVerified) {
+        await lifecycleService.updateJobStatus(jobId, 'DOCUMENT_VERIFIED', userId, 'All certificate documents verified');
+    }
 
     // Notify ADMIN/GM/TM
     notificationService.notifyRoles(['ADMIN', 'GM', 'TM'], 'JOB_DOCUMENT_VERIFIED', {
@@ -897,6 +906,12 @@ export const verifyAllJobDocuments = async (jobId, body, user) => {
         // Update the certificate status
         const updatedJc = await lifecycleService.updateJobCertificateStatus(jc.id, 'DOCUMENT_VERIFIED', user.id, `${user.role} bulk verified all documents`);
         verifiedCerts.push(updatedJc);
+    }
+
+    const allCerts = await db.JobCertificate.findAll({ where: { job_request_id: jobId } });
+    const allVerified = allCerts.every(c => c.status === 'DOCUMENT_VERIFIED' || ['ISSUED', 'REJECTED'].includes(c.status));
+    if (allVerified) {
+        await lifecycleService.updateJobStatus(jobId, 'DOCUMENT_VERIFIED', user.id, 'All certificate documents verified');
     }
 
     // Notify ADMIN/GM/TM
@@ -997,6 +1012,10 @@ export const assignSurveyor = async (jobId, surveyorId, user) => {
     // Validate surveyor authority
     await validateSurveyorAuthority(job, surveyorId);
 
+    if (job.job_status !== 'APPROVED') {
+        throw { statusCode: 400, message: 'Cannot assign surveyor. Job request must be approved first.' };
+    }
+
     if (job.assigned_surveyor_id) {
         if (job.assigned_surveyor_id === surveyorId) {
             throw { statusCode: 400, message: 'This surveyor is already assigned to this job.' };
@@ -1010,38 +1029,45 @@ export const assignSurveyor = async (jobId, surveyorId, user) => {
         throw { statusCode: 400, message: 'Cannot bulk assign surveyor. Some certificates do not have verified documents yet.' };
     }
 
-    await job.update({ assigned_surveyor_id: surveyorId, assigned_by_user_id: userId });
+    const txn = await db.sequelize.transaction();
+    try {
+        await job.update({ assigned_surveyor_id: surveyorId, assigned_by_user_id: userId }, { transaction: txn });
 
-    // Bulk update all child certificates
-    await db.JobCertificate.update(
-        { assigned_surveyor_id: surveyorId },
-        { where: { job_request_id: jobId } }
-    );
+        // Bulk update all child certificates
+        await db.JobCertificate.update(
+            { assigned_surveyor_id: surveyorId },
+            { where: { job_request_id: jobId }, transaction: txn }
+        );
 
-    // Sync or create active surveys for these certificates
-    if (activeCerts.length > 0) {
-        for (const cert of activeCerts) {
-            const [survey, created] = await db.Survey.findOrCreate({
-                where: { job_certificate_id: cert.id },
-                defaults: {
-                    surveyor_id: surveyorId,
-                    survey_status: 'NOT_STARTED'
+        // Sync or create active surveys for these certificates
+        if (activeCerts.length > 0) {
+            for (const cert of activeCerts) {
+                const [survey, created] = await db.Survey.findOrCreate({
+                    where: { job_certificate_id: cert.id },
+                    defaults: {
+                        surveyor_id: surveyorId,
+                        survey_status: 'NOT_STARTED'
+                    },
+                    transaction: txn
+                });
+                if (!created && survey.surveyor_id !== surveyorId) {
+                    await survey.update({ surveyor_id: surveyorId }, { transaction: txn });
                 }
-            });
-            if (!created && survey.surveyor_id !== surveyorId) {
-                await survey.update({ surveyor_id: surveyorId });
             }
         }
-    }
 
-    // Create status history log
-    await db.JobStatusHistory.create({
-        job_id: jobId,
-        previous_status: job.job_status,
-        new_status: job.job_status,
-        changed_by: userId,
-        reason: `Bulk assigned Surveyor ${surveyorId} to all certificates`
-    });
+        // Update Job Status through Lifecycle
+        await lifecycleService.updateJobStatus(
+            jobId, 'ASSIGNED', userId,
+            `Bulk assigned Surveyor ${surveyor.name || surveyorId} to all certificates`,
+            { transaction: txn }
+        );
+
+        await txn.commit();
+    } catch (error) {
+        await txn.rollback();
+        throw error;
+    }
 
     // Vessel already loaded
     notificationService.sendNotification(surveyorId, 'JOB_ASSIGNED', {
@@ -1108,12 +1134,15 @@ export const assignSurveyorToCertificate = async (jobCertificateId, surveyorId, 
         await survey.update({ surveyor_id: surveyorId });
     }
 
+    const surveyorName = surveyor ? surveyor.name : surveyorId;
+    const certName = certType ? certType.name : 'Unknown Certificate';
+
     await db.JobStatusHistory.create({
         job_id: job.id,
         previous_status: job.job_status,
         new_status: job.job_status,
         changed_by: userId,
-        reason: `Assigned Surveyor ${surveyorId} to certificate ${jc.id}`
+        reason: `Assigned Surveyor ${surveyorName} to certificate (${certName})`
     });
 
     notificationService.sendNotification(surveyorId, 'JOB_ASSIGNED', {
@@ -1181,9 +1210,14 @@ export const reassignSurveyor = async (jobId, surveyorId, reason, user) => {
     // Actually, for reassignment specifically, we update the job and add history. The lifecycle will see the new surveyor on next transition.
     // If we want immediate survey sync, we'd trigger a dummy 'updateJobStatus' but better to just call it reassignment history.
 
+    const oldSurveyorUser = await User.findByPk(oldSurveyor);
+    const newSurveyorUser = await User.findByPk(surveyorId);
+    const oldName = oldSurveyorUser ? oldSurveyorUser.name : oldSurveyor;
+    const newName = newSurveyorUser ? newSurveyorUser.name : surveyorId;
+
     await JobStatusHistory.create({
         job_id: jobId, previous_status: job.job_status, new_status: job.job_status,
-        changed_by: userId, reason: `Reassigned from ${oldSurveyor} to ${surveyorId}: ${reason}`
+        changed_by: userId, reason: `Reassigned from Surveyor ${oldName} to Surveyor ${newName}: ${reason}`
     });
 
     // Explicitly sync survey in reassignment case since it doesn't change job status
@@ -1256,12 +1290,19 @@ export const reassignSurveyorToCertificate = async (jobCertificateId, surveyorId
         }
     }
 
+    const certType = await CertificateType.findByPk(jc.certificate_type_id);
+    const certName = certType ? certType.name : 'Unknown Certificate';
+    const oldSurveyorUser = await User.findByPk(oldSurveyor);
+    const newSurveyorUser = await User.findByPk(surveyorId);
+    const oldName = oldSurveyorUser ? oldSurveyorUser.name : oldSurveyor;
+    const newName = newSurveyorUser ? newSurveyorUser.name : surveyorId;
+
     await JobStatusHistory.create({
         job_id: job.id,
         previous_status: job.job_status,
         new_status: job.job_status,
         changed_by: userId,
-        reason: `Certificate ${jobCertificateId}: reassigned from ${oldSurveyor} to ${surveyorId}: ${reason}`,
+        reason: `Certificate (${certName}): reassigned from Surveyor ${oldName} to Surveyor ${newName}: ${reason}`,
     });
 
     notificationService.sendNotification(surveyorId, 'JOB_ASSIGNED', {
@@ -2024,9 +2065,27 @@ export const getJobHistory = async (id, scopeFilters = {}) => {
         useReplica: true
     }) : [];
 
+    const formattedJobHistory = jobHistory.map(h => {
+        const plain = h.get({ plain: true });
+        return {
+            ...plain,
+            changed_by_name: plain.User?.name || 'System/Admin',
+            changed_by_role: plain.User?.role || 'SYSTEM'
+        };
+    });
+
+    const formattedSurveyHistory = surveyHistory.map(h => {
+        const plain = h.get({ plain: true });
+        return {
+            ...plain,
+            changed_by_name: plain.User?.name || 'System/Admin',
+            changed_by_role: plain.User?.role || 'SYSTEM'
+        };
+    });
+
     return {
-        job_history: jobHistory,
-        survey_history: surveyHistory
+        job_history: formattedJobHistory,
+        survey_history: formattedSurveyHistory
     };
 };
 

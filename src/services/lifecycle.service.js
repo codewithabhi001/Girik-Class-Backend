@@ -139,12 +139,15 @@ export const updateJobCertificateStatus = async (jobCertificateId, newStatus, us
         await jc.update({ status: newStatus }, { transaction: txn });
 
         // Audit log status change
+        const certType = await db.CertificateType.findByPk(jc.certificate_type_id, { transaction: txn });
+        const certName = certType ? certType.name : 'Unknown Certificate';
+
         await db.JobStatusHistory.create({
             job_id: jc.job_request_id,
             previous_status: `CERT_${previousStatus}`,
             new_status: `CERT_${newStatus}`,
             changed_by: userId,
-            reason: `JobCertificate (${jc.id}): ${reason || 'Status updated'}`
+            reason: `Certificate (${certName}): ${reason || 'Status updated'}`
         }, { transaction: txn });
 
         await syncParentJobStatus(jc, newStatus);
