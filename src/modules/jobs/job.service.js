@@ -1913,6 +1913,7 @@ export const uploadJobDocuments = async (jobId, documents, user) => {
             await existingPending.update({
                 file_url: doc.file_url,
                 uploaded_by: user.id,
+                job_certificate_id: doc.job_certificate_id || existingPending.job_certificate_id || null,
                 rejection_reason: null // Clear any old rejection reason if it was somehow reused
             });
             created.push(existingPending);
