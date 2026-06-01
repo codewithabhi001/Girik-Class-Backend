@@ -27,6 +27,9 @@ router.post('/', authorizeRoles('CLIENT', 'ADMIN', 'GM'), validate(schemas.creat
 // CREATED → DOCUMENT_VERIFIED (TO / GM / ADMIN) (Bulk verify all certificates for a job)
 router.put('/:id/verify-all-documents', authorizeRoles('TO', 'GM', 'ADMIN'), jobController.verifyAllJobDocuments);
 
+// Verify specific certificate documents (TO / GM / ADMIN)
+router.put('/certificates/:jobCertificateId/verify-documents', authorizeRoles('TO', 'GM', 'ADMIN'), jobController.verifyJobDocuments);
+
 // DOCUMENT_VERIFIED → APPROVED   (GM / ADMIN)
 router.put('/:id/approve-request', authorizeRoles('GM', 'ADMIN'), jobController.approveRequest);
 
