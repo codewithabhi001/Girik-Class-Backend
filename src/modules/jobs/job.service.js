@@ -1051,15 +1051,17 @@ export const assignSurveyor = async (jobId, surveyorId, user) => {
     try {
         await job.update({ assigned_surveyor_id: surveyorId, assigned_by_user_id: userId }, { transaction: txn });
 
-        // Bulk update all child certificates
-        await db.JobCertificate.update(
-            { assigned_surveyor_id: surveyorId },
-            { where: { job_request_id: jobId }, transaction: txn }
-        );
-
         // Sync or create active surveys for these certificates
         if (activeCerts.length > 0) {
             for (const cert of activeCerts) {
+                const certType = await db.CertificateType.findByPk(cert.certificate_type_id, { transaction: txn });
+                if (certType && certType.requires_survey === false) {
+                    continue; // Skip survey assignment for non-survey certificates
+                }
+                
+                // Update surveyor on the specific certificate
+                await cert.update({ assigned_surveyor_id: surveyorId }, { transaction: txn });
+
                 const [survey, created] = await db.Survey.findOrCreate({
                     where: { job_certificate_id: cert.id },
                     defaults: {
@@ -1420,6 +1422,11 @@ export const authorizeAllSurveysForJob = async (jobId, remarks, user) => {
     const txn = await db.sequelize.transaction();
     try {
         for (const jc of assignedCerts) {
+            const certType = await db.CertificateType.findByPk(jc.certificate_type_id, { transaction: txn });
+            if (certType && certType.requires_survey === false) {
+                continue; // Do not authorize survey for non-survey certificates
+            }
+
             const updatedJc = await lifecycleService.updateJobCertificateStatus(
                 jc.id, 'SURVEY_AUTHORIZED', user.id,
                 remarks || `${user.role} bulk authorized survey`, { transaction: txn }
