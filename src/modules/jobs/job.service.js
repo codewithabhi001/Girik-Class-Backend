@@ -514,7 +514,7 @@ export const getJobById = async (id, scopeFilters = {}, user = null) => {
                 include: [
                     'CertificateType',
                     { model: Survey, as: 'survey' },
-                    { model: Certificate, as: 'Certificate', attributes: ['id', 'certificate_number', 'status', 'source_type', 'uploaded_file_url', 'generated_pdf_url', 'pdf_file_url'] }
+                    { model: Certificate, as: 'Certificate', attributes: ['id', 'certificate_number', 'status', 'source_type', 'issue_date', 'expiry_date', 'uploaded_file_url', 'generated_pdf_url', 'pdf_file_url'] }
                 ]
             },
             {
