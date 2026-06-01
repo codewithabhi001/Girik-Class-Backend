@@ -317,7 +317,7 @@ export const submitSurveyReport = async (jobCertificateId, data, files, userId) 
     }
 
     // ── Compliance Enforcement: GPS & Photo ──
-    if (!submit_latitude || !submit_longitude) {
+    if (submit_latitude == null || submit_longitude == null) {
         throw { statusCode: 400, message: "GPS location must be recorded onsite before submission." };
     }
 
