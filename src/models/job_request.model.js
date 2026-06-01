@@ -34,7 +34,7 @@ export default (sequelize, DataTypes) => {
                 if (status === 'CREATED') {
                     return {
                         role: 'TO',
-                        fallbackRoles: [],
+                        fallbackRoles: ['ADMIN', 'TM'],
                         message: 'Waiting for Document Verification'
                     };
                 }
@@ -46,7 +46,7 @@ export default (sequelize, DataTypes) => {
                 if (certs.length === 0) {
                     return {
                         role: 'TO',
-                        fallbackRoles: [],
+                        fallbackRoles: ['ADMIN', 'TM'],
                         message: 'Waiting for Document Verification'
                     };
                 }
@@ -76,7 +76,7 @@ export default (sequelize, DataTypes) => {
                 if (hasPending) {
                     return {
                         role: 'TO',
-                        fallbackRoles: [],
+                        fallbackRoles: ['ADMIN', 'TM'],
                         message: 'Waiting for Document Verification (Certificates pending)'
                     };
                 }
@@ -89,12 +89,21 @@ export default (sequelize, DataTypes) => {
                     };
                 }
 
-                const hasDocVerified = certs.some(c => c.status === 'DOCUMENT_VERIFIED');
-                if (hasDocVerified) {
+                const unassignedDocVerified = certs.some(c => c.status === 'DOCUMENT_VERIFIED' && !c.assigned_surveyor_id);
+                if (unassignedDocVerified && ['CREATED', 'DOCUMENT_VERIFIED', 'APPROVED'].includes(status)) {
                     return {
                         role: 'GM',
                         fallbackRoles: ['ADMIN'],
                         message: isSurveyReq ? 'Waiting for GM to Approve Job / Assign Surveyor' : 'Waiting for GM to Approve Job'
+                    };
+                }
+
+                const assignedDocVerified = certs.some(c => c.status === 'DOCUMENT_VERIFIED' && c.assigned_surveyor_id);
+                if (assignedDocVerified && ['APPROVED', 'ASSIGNED'].includes(status)) {
+                    return {
+                        role: 'TM',
+                        fallbackRoles: ['ADMIN'],
+                        message: 'Waiting for TM to Authorize Survey'
                     };
                 }
 
@@ -103,7 +112,7 @@ export default (sequelize, DataTypes) => {
                     return {
                         role: 'SURVEYOR',
                         fallbackRoles: [],
-                        message: 'Waiting for Surveyor to upload corrected documents'
+                        message: 'Waiting for Surveyor to Submit Corrected Survey'
                     };
                 }
 
@@ -112,20 +121,27 @@ export default (sequelize, DataTypes) => {
                     return {
                         role: 'SURVEYOR',
                         fallbackRoles: [],
-                        message: 'Waiting for Surveyor to Start Survey'
+                        message: 'Waiting for Surveyor to Complete Survey'
                     };
                 }
 
                 const hasSurveyDone = certs.some(c => c.status === 'SURVEY_DONE');
                 if (hasSurveyDone) {
+                    if (status === 'REVIEWED') {
+                        return {
+                            role: 'TM',
+                            fallbackRoles: ['ADMIN'],
+                            message: 'Waiting for TM to Finalize Survey'
+                        };
+                    }
                     return {
-                        role: 'TO',
-                        fallbackRoles: ['ADMIN', 'TM'],
-                        message: 'Waiting for Document Review'
+                        role: 'TM',
+                        fallbackRoles: ['ADMIN', 'TO'],
+                        message: 'Waiting for TM to Review Survey'
                     };
                 }
 
-                const hasPendingDraft = certs.some(c => !c.generated_certificate_id);
+                const hasPendingDraft = certs.some(c => !c.generated_certificate_id && c.status !== 'REJECTED');
                 if (hasPendingDraft) {
                     return {
                         role: 'TM',
