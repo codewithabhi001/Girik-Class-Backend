@@ -94,7 +94,7 @@ export default (sequelize, DataTypes) => {
                     return {
                         role: 'GM',
                         fallbackRoles: ['ADMIN'],
-                        message: isSurveyReq ? 'Waiting for GM to Assign Surveyor / Approve' : 'Waiting for GM to Approve Job'
+                        message: isSurveyReq ? 'Waiting for GM to Approve Job / Assign Surveyor' : 'Waiting for GM to Approve Job'
                     };
                 }
 
