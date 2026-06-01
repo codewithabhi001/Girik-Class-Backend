@@ -232,6 +232,11 @@ export const updateJobStatus = async (jobId, newStatus, userId, reason = null, o
             if (['ASSIGNED', 'SURVEY_AUTHORIZED', 'IN_PROGRESS'].includes(newStatus) && job.assigned_surveyor_id) {
                 // Provision/sync one Survey per JobCertificate
                 for (const jc of jobCerts) {
+                    const certType = await db.CertificateType.findByPk(jc.certificate_type_id, { transaction: txn });
+                    if (certType && certType.requires_survey === false) {
+                        continue; // Skip survey creation and status update for non-survey certs
+                    }
+
                     const existingSurvey = await Survey.findOne({ where: { job_certificate_id: jc.id }, transaction: txn });
                     if (!existingSurvey) {
                         await Survey.create({
