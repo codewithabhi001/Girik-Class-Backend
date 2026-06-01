@@ -739,11 +739,17 @@ export const getTimeline = async (id, user) => {
 
     const surveys = await Survey.findAll({
         where: { job_certificate_id: certIds },
-        include: [{
-            model: db.SurveyStatusHistory,
-            as: 'SurveyStatusHistories',
-            attributes: ['id', 'survey_id', 'previous_status', 'new_status', 'changed_by', 'reason', 'submission_iteration', 'createdAt']
-        }],
+        include: [
+            {
+                model: db.SurveyStatusHistory,
+                as: 'SurveyStatusHistories',
+                attributes: ['id', 'survey_id', 'previous_status', 'new_status', 'changed_by', 'reason', 'submission_iteration', 'createdAt']
+            },
+            {
+                model: db.JobCertificate,
+                include: [{ model: db.CertificateType, attributes: ['id', 'name'] }]
+            }
+        ],
         order: [[{ model: db.SurveyStatusHistory, as: 'SurveyStatusHistories' }, 'created_at', 'ASC']]
     });
     return { job_id: id, gps_trace: gps, survey_details: await fileAccessService.resolveEntity(surveys, { id: user?.id }) };
