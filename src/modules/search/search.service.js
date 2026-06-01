@@ -28,6 +28,7 @@ export const globalSearch = async (query, user) => {
     let jobWhere = {
         [Op.or]: [
             { id: { [Op.like]: `%${q}%` } },
+            { job_request_number: { [Op.like]: `%${q}%` } },
             { remarks: { [Op.like]: `%${q}%` } }
         ]
     };
@@ -106,7 +107,7 @@ export const globalSearch = async (query, user) => {
 
     const jobs = await db.JobRequest.findAll({
         where: jobWhere,
-        attributes: ['id', 'job_status', 'vessel_id', 'created_at'],
+        attributes: ['id', 'job_request_number', 'job_status', 'vessel_id', 'created_at'],
         include: [{ model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }],
         limit: 10,
         useReplica: true

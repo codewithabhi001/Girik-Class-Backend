@@ -269,6 +269,7 @@ export const flatSearchJobRow = (row) => {
     const j = toPlain(row);
     return {
         id: j.id,
+        job_number: na(j.job_request_number),
         job_status: na(j.job_status),
         vessel_id: j.vessel_id,
         created_at: na(j.createdAt),

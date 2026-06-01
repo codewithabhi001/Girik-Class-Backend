@@ -286,7 +286,7 @@ export const updateSignedChecklistFiles = async (jobId, signedChecklistFiles, us
     const userObj = (typeof user === 'object' && user !== null) ? user : (user ? { id: user } : null);
     const userId = userObj?.id;
 
-    const { job, certId, survey } = await resolveJobAndCert(jobId, jobCertificateId);
+    const { job, jobCert, certId, survey } = await resolveJobAndCert(jobId, jobCertificateId);
 
     if (lifecycleService.JOB_TERMINAL_STATES.includes(job.job_status)) {
         throw { statusCode: 400, message: `This job has already been closed and cannot be modified further.` };
