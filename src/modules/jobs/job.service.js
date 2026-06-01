@@ -730,16 +730,24 @@ export const verifyJobCertificateDocuments = async (jobCertificateId, body, user
             where: { job_certificate_id: jc.id },
             useMaster: true
         });
-        const uploadedDocIds = uploadedDocs.map(d => d.required_document_id);
-        const missingDocs = requiredDocs.filter(rd => !uploadedDocIds.includes(rd.id));
-        if (missingDocs.length > 0) {
-            hasMissingDocs = true;
-            missing.push(...missingDocs.map(m => ({ id: m.id, name: m.document_name })));
+        
+        for (const rd of requiredDocs) {
+            const docsForReq = uploadedDocs.filter(d => d.required_document_id === rd.id);
+            if (docsForReq.length === 0) {
+                hasMissingDocs = true;
+                missing.push({ id: rd.id, name: rd.document_name });
+            } else {
+                docsForReq.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                if (docsForReq[0].verification_status === 'REJECTED') {
+                    hasMissingDocs = true;
+                    missing.push({ id: rd.id, name: rd.document_name });
+                }
+            }
         }
     }
 
     if (hasMissingDocs && actualBody?.approved !== false) {
-        throw { statusCode: 400, message: 'Mandatory documents are missing for this certificate.', missing_documents: missing };
+        throw { statusCode: 400, message: 'Mandatory documents are missing or rejected and not resubmitted for this certificate.', missing_documents: missing };
     }
 
     const approved = actualBody?.approved !== false; // default true
@@ -886,12 +894,22 @@ export const verifyAllJobDocuments = async (jobId, body, user) => {
                 where: { job_certificate_id: jc.id },
                 useMaster: true
             });
-            const uploadedDocIds = uploadedDocs.map(d => d.required_document_id);
-            const missingDocs = requiredDocs.filter(rd => !uploadedDocIds.includes(rd.id));
+            const missingDocs = [];
+            for (const rd of requiredDocs) {
+                const docsForReq = uploadedDocs.filter(d => d.required_document_id === rd.id);
+                if (docsForReq.length === 0) {
+                    missingDocs.push(rd);
+                } else {
+                    docsForReq.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    if (docsForReq[0].verification_status === 'REJECTED') {
+                        missingDocs.push(rd);
+                    }
+                }
+            }
             if (missingDocs.length > 0) {
                 throw { 
                     statusCode: 400, 
-                    message: `Mandatory documents are missing for certificate ${jc.id}. Cannot bulk approve.`,
+                    message: `Mandatory documents are missing or rejected and not resubmitted for certificate ${jc.id}. Cannot bulk approve.`,
                     missing_documents: missingDocs.map(m => ({ id: m.id, name: m.document_name }))
                 };
             }
