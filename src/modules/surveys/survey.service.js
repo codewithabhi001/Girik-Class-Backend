@@ -381,19 +381,27 @@ export const submitSurveyReport = async (jobCertificateId, data, files, userId) 
         const declarationHash = crypto.createHash('sha256').update(hashPayload).digest('hex');
         await survey.update({ declaration_hash: declarationHash }, { transaction: txn });
 
-        // Job sync logic: Check if all active surveys for this job are submitted
+        // Job sync logic: Check if all surveys for survey-required certs are submitted/finalized
         const jobCerts = await db.JobCertificate.findAll({ where: { job_request_id: job_id }, transaction: txn });
-        const activeSurveys = await Survey.findAll({ where: { job_certificate_id: jobCerts.map(cert => cert.id) }, transaction: txn });
+
+        // Only count certificates that require a survey
+        const surveyCertIds = [];
+        for (const cert of jobCerts) {
+            const certType = await db.CertificateType.findByPk(cert.certificate_type_id, { transaction: txn });
+            if (!certType || certType.requires_survey !== false) {
+                surveyCertIds.push(cert.id);
+            }
+        }
+
+        const activeSurveys = await Survey.findAll({ where: { job_certificate_id: surveyCertIds }, transaction: txn });
         const allSubmitted = activeSurveys.length > 0 && activeSurveys.every(s => ['SUBMITTED', 'FINALIZED'].includes(s.survey_status));
 
+        const jobReq = await db.JobRequest.findByPk(job_id, { transaction: txn });
+
         if (allSubmitted) {
-            await lifecycleService.updateJobStatus(job_id, 'SURVEY_DONE', userId, 'All survey reports submitted', { transaction: txn, _skipSurveySync: true });
-        } else {
-            // Check if there are no REWORK_REQUIRED surveys left and job is currently REWORK_REQUESTED
-            const hasRework = activeSurveys.some(s => s.survey_status === 'REWORK_REQUIRED');
-            const jobReq = await db.JobRequest.findByPk(job_id, { transaction: txn });
-            if (!hasRework && jobReq && jobReq.job_status === 'REWORK_REQUESTED') {
-                await lifecycleService.updateJobStatus(job_id, 'IN_PROGRESS', userId, 'Rework completed on requested certificates. Returning to IN_PROGRESS.', { transaction: txn, _skipSurveySync: true });
+            // All surveys done — move to SURVEY_DONE regardless of current job status
+            if (!['SURVEY_DONE', 'REVIEWED', 'FINALIZED', 'CERTIFIED'].includes(jobReq.job_status)) {
+                await lifecycleService.updateJobStatus(job_id, 'SURVEY_DONE', userId, 'All survey reports submitted', { transaction: txn, _skipSurveySync: true });
             }
         }
 
