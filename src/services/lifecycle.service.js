@@ -52,11 +52,11 @@ export const JOB_TRANSITIONS = {
  */
 export const SURVEY_TRANSITIONS = {
     NOT_STARTED: ['STARTED'],
-    STARTED: ['CHECKLIST_SUBMITTED'],
+    STARTED: ['CHECKLIST_SUBMITTED', 'SUBMITTED'],          // SUBMITTED edge: surveyor may skip checklist on rework
     CHECKLIST_SUBMITTED: ['PROOF_UPLOADED', 'SUBMITTED'],
     PROOF_UPLOADED: ['SUBMITTED'],
     SUBMITTED: ['REWORK_REQUIRED', 'FINALIZED'],
-    REWORK_REQUIRED: ['CHECKLIST_SUBMITTED', 'PROOF_UPLOADED', 'SUBMITTED'],
+    REWORK_REQUIRED: ['STARTED', 'CHECKLIST_SUBMITTED', 'PROOF_UPLOADED', 'SUBMITTED'], // STARTED: surveyor re-checks in for rework
     FINALIZED: [],  // terminal
 };
 
@@ -354,7 +354,7 @@ export const updateSurveyStatus = async (surveyId, newStatus, userId, reason = n
 
         // ── 5. SUBMITTED guard ──
         if (newStatus === 'SUBMITTED') {
-            if (!['PROOF_UPLOADED', 'CHECKLIST_SUBMITTED', 'REWORK_REQUIRED'].includes(previousStatus)) {
+            if (!['STARTED', 'PROOF_UPLOADED', 'CHECKLIST_SUBMITTED', 'REWORK_REQUIRED'].includes(previousStatus)) {
                 throw { statusCode: 400, message: 'Please upload evidence proof before submitting the survey.' };
             }
             if (!survey.attendance_photo_url) {

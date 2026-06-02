@@ -130,8 +130,10 @@ const requireAllSurveys = async (jobId) => {
 
 /**
  * SURVEYOR action.
- * Allowed only when job is SURVEY_AUTHORIZED.
- * Survey must be NOT_STARTED.
+ * Allowed when job is SURVEY_AUTHORIZED (first run) or REWORK_REQUESTED (rework re-check-in).
+ * For first-time start: transitions NOT_STARTED → STARTED.
+ * For rework: transitions REWORK_REQUIRED → STARTED (only those certs).
+ *             Certs already past REWORK_REQUIRED (STARTED / CHECKLIST_SUBMITTED / etc.) are skipped.
  */
 export const startSurvey = async (data, userId) => {
     const { job_id, latitude, longitude } = data;
@@ -151,6 +153,7 @@ export const startSurvey = async (data, userId) => {
 
     const txn = await db.sequelize.transaction();
     let startedCount = 0;
+    let alreadyInProgressCount = 0;
     try {
         for (const cert of jobCerts) {
             const [survey, created] = await Survey.findOrCreate({
@@ -159,9 +162,10 @@ export const startSurvey = async (data, userId) => {
                 transaction: txn
             });
 
-            // Guard: cannot re-start an already-started survey
+            // During rework: only process REWORK_REQUIRED certs.
+            // Skip certs that are already actively progressing or finalized.
             if (!created && !['NOT_STARTED', 'REWORK_REQUIRED'].includes(survey.survey_status)) {
-                // If it's already started, just skip to next certificate
+                alreadyInProgressCount++;
                 continue;
             }
 
@@ -180,7 +184,12 @@ export const startSurvey = async (data, userId) => {
         }
 
         if (startedCount === 0 && jobCerts.length > 0) {
-            throw { statusCode: 400, message: 'All surveys for this job have already been started or processed.' };
+            // All rework certs are already STARTED or beyond — return 409 so the
+            // mobile client knows to navigate directly to the survey page.
+            throw {
+                statusCode: 409,
+                message: `Survey already started for this job. Please continue the survey in progress.`
+            };
         }
 
         await txn.commit();
@@ -381,7 +390,9 @@ export const submitSurveyReport = async (jobCertificateId, data, files, userId) 
         const declarationHash = crypto.createHash('sha256').update(hashPayload).digest('hex');
         await survey.update({ declaration_hash: declarationHash }, { transaction: txn });
 
-        // Job sync logic: Check if all surveys for survey-required certs are submitted/finalized
+        // ── Job sync: check whether ALL survey-required certs are done after this submission ──
+        // Uses checkStatus() trick identical to lifecycle's own auto-sync so the current
+        // survey's new 'SUBMITTED' state is guaranteed to be visible even within this txn.
         const jobCerts = await db.JobCertificate.findAll({ where: { job_request_id: job_id }, transaction: txn });
 
         // Only count certificates that require a survey
@@ -394,16 +405,28 @@ export const submitSurveyReport = async (jobCertificateId, data, files, userId) 
         }
 
         const activeSurveys = await Survey.findAll({ where: { job_certificate_id: surveyCertIds }, transaction: txn });
-        const allSubmitted = activeSurveys.length > 0 && activeSurveys.every(s => ['SUBMITTED', 'FINALIZED'].includes(s.survey_status));
+
+        // checkStatus: for the survey just updated in this txn, use 'SUBMITTED' explicitly.
+        const checkSurveyStatus = (s) => (s.id === survey.id ? 'SUBMITTED' : s.survey_status);
+
+        const allSubmitted = activeSurveys.length > 0 &&
+            activeSurveys.every(s => ['SUBMITTED', 'FINALIZED'].includes(checkSurveyStatus(s)));
 
         const jobReq = await db.JobRequest.findByPk(job_id, { transaction: txn });
 
         if (allSubmitted) {
-            // All surveys done — move to SURVEY_DONE regardless of current job status
+            // All surveys done — move to SURVEY_DONE.
+            // Works for first submission (IN_PROGRESS → SURVEY_DONE) AND
+            // rework re-submission (REWORK_REQUESTED → SURVEY_DONE).
             if (!['SURVEY_DONE', 'REVIEWED', 'FINALIZED', 'CERTIFIED'].includes(jobReq.job_status)) {
-                await lifecycleService.updateJobStatus(job_id, 'SURVEY_DONE', userId, 'All survey reports submitted', { transaction: txn, _skipSurveySync: true });
+                const syncReason = jobReq.job_status === 'REWORK_REQUESTED'
+                    ? 'All rework surveys re-submitted — returning to SURVEY_DONE'
+                    : 'All survey reports submitted';
+                await lifecycleService.updateJobStatus(job_id, 'SURVEY_DONE', userId, syncReason, { transaction: txn, _skipSurveySync: true });
             }
         }
+        // If NOT allSubmitted and job is REWORK_REQUESTED, it correctly stays REWORK_REQUESTED
+        // until the remaining rework certs are also re-submitted by the surveyor.
 
         // 5. Log final GPS (only when coords provided) - log once per certificate submission
         if (submit_latitude && submit_longitude) {
