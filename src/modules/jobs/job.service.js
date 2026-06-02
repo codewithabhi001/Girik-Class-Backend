@@ -1142,16 +1142,18 @@ export const assignSurveyorToCertificate = async (jobCertificateId, surveyorId, 
 
     await jc.update({ assigned_surveyor_id: surveyorId });
 
-    // Sync or create active survey
-    const [survey, created] = await db.Survey.findOrCreate({
-        where: { job_certificate_id: jobCertificateId },
-        defaults: {
-            surveyor_id: surveyorId,
-            survey_status: 'NOT_STARTED'
+    if (certType && certType.requires_survey !== false) {
+        // Sync or create active survey
+        const [survey, created] = await db.Survey.findOrCreate({
+            where: { job_certificate_id: jobCertificateId },
+            defaults: {
+                surveyor_id: surveyorId,
+                survey_status: 'NOT_STARTED'
+            }
+        });
+        if (!created && survey.surveyor_id !== surveyorId) {
+            await survey.update({ surveyor_id: surveyorId });
         }
-    });
-    if (!created && survey.surveyor_id !== surveyorId) {
-        await survey.update({ surveyor_id: surveyorId });
     }
 
     const surveyorName = surveyor ? surveyor.name : surveyorId;
@@ -1245,6 +1247,9 @@ export const reassignSurveyor = async (jobId, surveyorId, reason, user) => {
         // For reassignment: update or create all surveys for this job
         const jobCerts = await JobCertificate.findAll({ where: { job_request_id: jobId }, useMaster: true });
         for (const cert of jobCerts) {
+            const certType = await db.CertificateType.findByPk(cert.certificate_type_id);
+            if (certType && certType.requires_survey === false) continue;
+
             const [survey, created] = await db.Survey.findOrCreate({
                 where: { job_certificate_id: cert.id },
                 defaults: {
@@ -1365,15 +1370,18 @@ export const authorizeSurveyForCertificate = async (jobCertificateId, remarks, u
             remarks || `${user.role} authorized survey`, { transaction: txn }
         );
 
-        // Pre-create Survey record for this JobCertificate
-        await db.Survey.findOrCreate({
-            where: { job_certificate_id: jobCertificateId },
-            defaults: {
-                surveyor_id: jc.assigned_surveyor_id,
-                survey_status: 'NOT_STARTED'
-            },
-            transaction: txn
-        });
+        const certType = await db.CertificateType.findByPk(jc.certificate_type_id, { transaction: txn });
+        if (certType && certType.requires_survey !== false) {
+            // Pre-create Survey record for this JobCertificate
+            await db.Survey.findOrCreate({
+                where: { job_certificate_id: jobCertificateId },
+                defaults: {
+                    surveyor_id: jc.assigned_surveyor_id,
+                    survey_status: 'NOT_STARTED'
+                },
+                transaction: txn
+            });
+        }
 
         await txn.commit();
 
