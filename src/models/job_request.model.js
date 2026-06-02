@@ -83,9 +83,9 @@ export default (sequelize, DataTypes) => {
 
                 if (!isSurveyReq && status === 'APPROVED') {
                     return {
-                        role: 'GM',
-                        fallbackRoles: ['TM', 'ADMIN'],
-                        message: 'Waiting to Finalize Job'
+                        role: 'TM',
+                        fallbackRoles: ['ADMIN'],
+                        message: 'Waiting for TM to Finalize Job'
                     };
                 }
 
@@ -131,7 +131,7 @@ export default (sequelize, DataTypes) => {
                         return {
                             role: 'TM',
                             fallbackRoles: ['ADMIN'],
-                            message: 'Waiting for TM to Finalize Survey'
+                            message: 'Waiting for TM to Finalize Job'
                         };
                     }
                     return {
