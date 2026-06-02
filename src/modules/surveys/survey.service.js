@@ -388,6 +388,13 @@ export const submitSurveyReport = async (jobCertificateId, data, files, userId) 
 
         if (allSubmitted) {
             await lifecycleService.updateJobStatus(job_id, 'SURVEY_DONE', userId, 'All survey reports submitted', { transaction: txn, _skipSurveySync: true });
+        } else {
+            // Check if there are no REWORK_REQUIRED surveys left and job is currently REWORK_REQUESTED
+            const hasRework = activeSurveys.some(s => s.survey_status === 'REWORK_REQUIRED');
+            const jobReq = await db.JobRequest.findByPk(job_id, { transaction: txn });
+            if (!hasRework && jobReq && jobReq.job_status === 'REWORK_REQUESTED') {
+                await lifecycleService.updateJobStatus(job_id, 'IN_PROGRESS', userId, 'Rework completed on requested certificates. Returning to IN_PROGRESS.', { transaction: txn, _skipSurveySync: true });
+            }
         }
 
         // 5. Log final GPS (only when coords provided) - log once per certificate submission
