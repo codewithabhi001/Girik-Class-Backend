@@ -490,6 +490,64 @@ async function run() {
         });
     }
 
+    // ─── 17. Survey Filtering by Surveyor Role (Multi-Certificate Assignment) ──
+    console.log('\n── Section 17: Survey Filtering by Surveyor Role ───────────────────');
+    {
+        const jobId = uuidv7();
+        await db.JobRequest.create({
+            id: jobId, vessel_id: vesselId, requested_by_user_id: requesterId,
+            assigned_surveyor_id: surveyorId,
+            job_status: 'IN_PROGRESS', reason: 'Multi-Surveyor Test', target_port: 'Singapore', target_date: '2026-12-31'
+        });
+
+        // Cert 1: assigned to main surveyor
+        const jc1 = await db.JobCertificate.create({
+            job_request_id: jobId,
+            certificate_type_id: certTypeId,
+            status: 'SURVEY_AUTHORIZED',
+            assigned_surveyor_id: surveyorId
+        });
+
+        // Cert 2: assigned to a different surveyor
+        const surveyor2 = await db.User.create({
+            id: uuidv7(),
+            name: 'Surveyor 2',
+            email: `surveyor2-${Date.now()}@test.com`,
+            role: 'SURVEYOR',
+            password_hash: 'hash'
+        });
+
+        const certType2 = await db.CertificateType.findOne({
+            where: {
+                id: { [db.Sequelize.Op.ne]: certTypeId },
+                requires_survey: true
+            }
+        });
+        const jc2 = await db.JobCertificate.create({
+            job_request_id: jobId,
+            certificate_type_id: certType2.id,
+            status: 'SURVEY_AUTHORIZED',
+            assigned_surveyor_id: surveyor2.id
+        });
+
+        // Create survey records for both
+        const s1 = await db.Survey.create({ job_certificate_id: jc1.id, surveyor_id: surveyorId, survey_status: 'STARTED', submission_count: 0 });
+        const s2 = await db.Survey.create({ job_certificate_id: jc2.id, surveyor_id: surveyor2.id, survey_status: 'STARTED', submission_count: 0 });
+
+        await test('Surveyor 1 only sees their assigned survey', async () => {
+            const results = await surveyService.getSurveyDetails(jobId, { id: surveyorId, role: 'SURVEYOR' });
+            if (results.length !== 1) throw new Error(`Expected exactly 1 survey, got ${results.length}`);
+            if (results[0].id !== s1.id) throw new Error(`Expected survey id ${s1.id}, got ${results[0].id}`);
+        });
+
+        await test('TM sees all surveys for the job', async () => {
+            const results = await surveyService.getSurveyDetails(jobId, { id: tmId, role: 'TM' });
+            if (results.length !== 2) throw new Error(`Expected exactly 2 surveys, got ${results.length}`);
+            const ids = results.map(r => r.id);
+            if (!ids.includes(s1.id) || !ids.includes(s2.id)) throw new Error('Expected both surveys to be returned');
+        });
+    }
+
     // ─── Summary ──────────────────────────────────────────────────────────────
     console.log(`\n══ Results: ${pass} passed, ${fail} failed ══\n`);
     process.exit(fail > 0 ? 1 : 0);

@@ -741,7 +741,12 @@ const generateSurveyReportPdf = async (survey, user) => {
 
 export const draftSurveyStatement = async (jobId, data, user) => {
     const { job_certificate_id } = data || {};
-    await assertJobAccessible(jobId, user.id, { checkSurveyor: user.role === 'SURVEYOR', jobCertificateId: job_certificate_id });
+    const job = await assertJobAccessible(jobId, user.id, { checkSurveyor: user.role === 'SURVEYOR', jobCertificateId: job_certificate_id });
+
+    const allowedDraftStatuses = ['SURVEY_DONE', 'REVIEWED', 'FINALIZED', 'PAYMENT_DONE', 'CERTIFIED'];
+    if (!allowedDraftStatuses.includes(job.job_status)) {
+        throw { statusCode: 400, message: `Survey statement can only be drafted after the survey is done. Current job status: ${job.job_status}` };
+    }
     // Get first survey for this job (or the one matching the certificate if provided)
     const survey = await requireSurvey(jobId, job_certificate_id);
     assertSurveyNotFinalized(survey);
@@ -796,6 +801,11 @@ export const issueSurveyStatement = async (jobId, file, data, user) => {
     // (issuing the statement is a post-finalization action). We only check the job exists.
     const job = await JobRequest.findByPk(jobId, { useMaster: true });
     if (!job) throw { statusCode: 404, message: 'Job not found.' };
+
+    const allowedIssueStatuses = ['REVIEWED', 'FINALIZED', 'PAYMENT_DONE', 'CERTIFIED'];
+    if (!allowedIssueStatuses.includes(job.job_status)) {
+        throw { statusCode: 400, message: `Survey statement can only be issued after the job has been reviewed. Current job status: ${job.job_status}` };
+    }
 
     const { job_certificate_id, statementFileKey } = data || {};
     const survey = await requireSurvey(jobId, job_certificate_id);
@@ -972,7 +982,10 @@ export const getSurveyDetails = async (jobId, user) => {
         where: { job_request_id: jobId },
         include: [{ model: db.CertificateType, attributes: ['id', 'requires_survey'] }]
     });
-    const surveyCerts = jobCerts.filter(jc => jc.CertificateType?.requires_survey !== false);
+    let surveyCerts = jobCerts.filter(jc => jc.CertificateType?.requires_survey !== false);
+    if (user?.role === 'SURVEYOR') {
+        surveyCerts = surveyCerts.filter(jc => jc.assigned_surveyor_id === user.id);
+    }
     if (!surveyCerts.length) return [];
 
     const surveys = await Survey.findAll({
