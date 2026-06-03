@@ -763,8 +763,14 @@ export const getTimeline = async (id, user) => {
 
 
     // Get all surveys for this job via certificates
-    const jobCerts = await db.JobCertificate.findAll({ where: { job_request_id: id } });
-    const certIds = jobCerts.map(jc => jc.id);
+    const jobCerts = await db.JobCertificate.findAll({
+        where: { job_request_id: id },
+        include: [{ model: db.CertificateType, attributes: ['id', 'requires_survey'] }]
+    });
+
+    // Exclude certs that don't require a survey (e.g. AFS cert with requires_survey=false)
+    const surveyCerts = jobCerts.filter(jc => jc.CertificateType?.requires_survey !== false);
+    const certIds = surveyCerts.map(jc => jc.id);
 
     // GPS now tracked per certificate survey
     const gps = await GpsTracking.findAll({
@@ -774,6 +780,10 @@ export const getTimeline = async (id, user) => {
         attributes: ['id', 'job_id', 'job_certificate_id', 'surveyor_id', 'vessel_id', 'latitude', 'longitude', 'timestamp'],
         order: [['timestamp', 'ASC']]
     });
+
+    if (certIds.length === 0) {
+        return { job_id: id, gps_trace: gps, survey_details: [] };
+    }
 
     const surveys = await Survey.findAll({
         where: { job_certificate_id: certIds },
