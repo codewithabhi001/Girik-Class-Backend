@@ -128,6 +128,25 @@ export default (sequelize, DataTypes) => {
                 const hasSurveyDone = certs.some(c => c.status === 'SURVEY_DONE');
                 if (hasSurveyDone) {
                     if (status === 'REVIEWED') {
+                        let allIssued = true;
+                        let hasSurveys = false;
+                        for (const c of certs) {
+                            if (c.survey) {
+                                hasSurveys = true;
+                                if (c.survey.survey_statement_status !== 'ISSUED') {
+                                    allIssued = false;
+                                }
+                            }
+                        }
+
+                        if (hasSurveys && !allIssued) {
+                            return {
+                                role: 'TM',
+                                fallbackRoles: ['ADMIN'],
+                                message: 'Waiting for TM or Admin to Draft and Issue Survey Statement'
+                            };
+                        }
+
                         return {
                             role: 'TM',
                             fallbackRoles: ['ADMIN'],
@@ -135,9 +154,9 @@ export default (sequelize, DataTypes) => {
                         };
                     }
                     return {
-                        role: 'TM',
-                        fallbackRoles: ['ADMIN', 'TO'],
-                        message: 'Waiting for TM to Review Survey'
+                        role: 'TECH_TEAM',
+                        fallbackRoles: ['TM', 'TO', 'ADMIN'],
+                        message: 'Waiting for TM, TO or Admin to Review Survey'
                     };
                 }
 

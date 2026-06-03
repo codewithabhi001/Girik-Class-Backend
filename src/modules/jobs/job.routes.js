@@ -34,7 +34,7 @@ router.put('/certificates/:jobCertificateId/verify-documents', authorizeRoles('T
 router.put('/:id/approve-request', authorizeRoles('GM', 'ADMIN'), jobController.approveRequest);
 
 // APPROVED → FINALIZED (for non-survey jobs)
-router.put('/:id/finalize', authorizeRoles('TM'), validate(schemas.finalizeSurvey), jobController.finalizeJob);
+router.put('/:id/finalize', authorizeRoles('TM', 'ADMIN'), validate(schemas.finalizeSurvey), jobController.finalizeJob);
 
 // APPROVED → ASSIGNED  (ADMIN / GM — bulk assign surveyor to all certificates)
 router.put('/:id/assign', authorizeRoles(...RBAC.ASSIGN_JOB), validate(schemas.assignJob), jobController.assignSurveyor);
@@ -51,7 +51,7 @@ router.put('/:id/authorize-all-surveys', authorizeRoles(...RBAC.AUTHORIZE_SURVEY
 // IN_PROGRESS / REWORK_REQUESTED → automatically handled by survey lifecycle
 
 // SURVEY_DONE → REVIEWED (Bulk for all valid certificates in a Job)
-router.put('/:id/review-all', authorizeRoles('TO', 'ADMIN'), jobController.reviewAllJobCertificates);
+router.put('/:id/review-all', authorizeRoles('TO', 'TM', 'ADMIN'), jobController.reviewAllJobCertificates);
 
 // REVIEWED → REWORK_REQUESTED  (ADMIN / TM / TO — requests surveyor correction)
 // NOTE: preferred path is PUT /api/v1/surveys/:id/rework

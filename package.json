@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "test": "node --test --test-force-exit tests/certificate-rbac.test.js tests/client_search.test.js tests/create_user_profile.test.js tests/public_flags.test.js tests/rbac.config.test.js tests/user_detail.test.js tests/vessel_lowercase.test.js",
+    "test": "node --test --test-force-exit tests/certificate-rbac.test.js tests/client_search.test.js tests/create_user_profile.test.js tests/public_flags.test.js tests/rbac.config.test.js tests/user_detail.test.js tests/vessel_lowercase.test.js tests/delete_flag.test.js",
     "test:lifecycle": "node tests/lifecycle_hardened.test.js && node tests/lifecycle_final.test.js",
     "test:apis": "node scripts/test_all_apis.js",
     "test:cert-flow": "node test_certificate_centric_flow.js",

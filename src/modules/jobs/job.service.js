@@ -1480,8 +1480,8 @@ export const authorizeAllSurveysForJob = async (jobId, remarks, user) => {
  * Roles: TO
  */
 export const reviewJobCertificate = async (jobCertificateId, remarks, user) => {
-    if (!['TO', 'ADMIN'].includes(user.role)) {
-        throw { statusCode: 403, message: 'Only Technical Officers (TO) and Admins have permission to mark a job as reviewed.' };
+    if (!['TO', 'TM', 'ADMIN'].includes(user.role)) {
+        throw { statusCode: 403, message: 'Only Technical Managers (TM), Technical Officers (TO) and Admins have permission to mark a job as reviewed.' };
     }
     const jc = await JobCertificate.findByPk(jobCertificateId, { useMaster: true });
     if (!jc) throw { statusCode: 404, message: 'Job Certificate not found' };
@@ -1548,8 +1548,8 @@ export const reviewJobCertificate = async (jobCertificateId, remarks, user) => {
  * Roles: TO, ADMIN
  */
 export const reviewAllJobCertificates = async (jobId, remarks, user) => {
-    if (!['TO', 'ADMIN'].includes(user.role)) {
-        throw { statusCode: 403, message: 'Only Technical Officers (TO) and Admins have permission to mark surveys as reviewed.' };
+    if (!['TO', 'TM', 'ADMIN'].includes(user.role)) {
+        throw { statusCode: 403, message: 'Only Technical Managers (TM), Technical Officers (TO) and Admins have permission to mark surveys as reviewed.' };
     }
 
     const job = await requireJob(jobId, { includeVessel: true, useMaster: true });

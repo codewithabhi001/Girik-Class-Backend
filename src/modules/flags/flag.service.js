@@ -48,7 +48,7 @@ export const deleteFlag = async (id) => {
     if (!flag) throw { statusCode: 404, message: 'Flag not found' };
 
     // Check if this flag is associated with any vessel
-    const vesselCount = await db.Vessel.count({ where: { flag_id: id }, useMaster: true });
+    const vesselCount = await db.Vessel.count({ where: { flag_administration_id: id }, useMaster: true });
     if (vesselCount > 0) {
         throw {
             statusCode: 409,
