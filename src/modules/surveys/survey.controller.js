@@ -46,6 +46,14 @@ export const finalizeSurvey = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
+// PUT /surveys/certificates/:jobCertificateId/finalize
+export const finalizeSingleSurvey = async (req, res, next) => {
+    try {
+        const result = await surveyService.finalizeSingleSurvey(req.params.jobCertificateId, req.user);
+        res.status(200).json({ success: true, ...result });
+    } catch (error) { next(error); }
+};
+
 // PUT /surveys/jobs/:jobId/rework
 export const requestRework = async (req, res, next) => {
     try {

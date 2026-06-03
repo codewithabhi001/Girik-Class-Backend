@@ -428,10 +428,16 @@ export const updateSurveyStatus = async (surveyId, newStatus, userId, reason = n
                     await updateJobCertificateStatus(jcForLog.id, 'SURVEY_DONE', userId, `Survey transitioned to ${newStatus}`, { transaction: txn });
                 }
 
-                if (!_skipJobSync) {
+                 if (!_skipJobSync) {
                     const parentJobId = jcForLog.job_request_id;
-                    const jobCerts = await db.JobCertificate.findAll({ where: { job_request_id: parentJobId }, transaction: txn });
-                    const certIds = jobCerts.map(c => c.id);
+                    const jobCerts = await db.JobCertificate.findAll({
+                        where: { job_request_id: parentJobId },
+                        include: [{ model: db.CertificateType, attributes: ['id', 'requires_survey'] }],
+                        transaction: txn
+                    });
+                    
+                    const surveyRequiredCerts = jobCerts.filter(c => !c.CertificateType || c.CertificateType.requires_survey !== false);
+                    const certIds = surveyRequiredCerts.map(c => c.id);
                     const surveys = await Survey.findAll({ where: { job_certificate_id: certIds }, transaction: txn });
 
                     const checkStatus = (surveyRow) => {
@@ -439,13 +445,23 @@ export const updateSurveyStatus = async (surveyId, newStatus, userId, reason = n
                         return surveyRow.survey_status;
                     };
 
-                    const allFinalized = surveys.length > 0 && surveys.every(s => checkStatus(s) === 'FINALIZED');
+                    const allFinalized = surveyRequiredCerts.length > 0 && surveyRequiredCerts.every(c => {
+                        const s = surveys.find(sr => sr.job_certificate_id === c.id);
+                        return s && checkStatus(s) === 'FINALIZED';
+                    });
+
                     if (allFinalized) {
                         await updateJobStatus(parentJobId, 'FINALIZED', userId, 'All surveys finalized by TM', { transaction: txn, _internal: true });
                     } else {
-                        const allSubmitted = surveys.length > 0 && surveys.every(s => ['SUBMITTED', 'FINALIZED'].includes(checkStatus(s)));
+                        const allSubmitted = surveyRequiredCerts.length > 0 && surveyRequiredCerts.every(c => {
+                            const s = surveys.find(sr => sr.job_certificate_id === c.id);
+                            return s && ['SUBMITTED', 'FINALIZED'].includes(checkStatus(s));
+                        });
                         if (allSubmitted) {
-                            await updateJobStatus(parentJobId, 'SURVEY_DONE', userId, 'All survey reports submitted', { transaction: txn, _internal: true });
+                            const jobReq = await JobRequest.findByPk(parentJobId, { transaction: txn });
+                            if (jobReq && !['SURVEY_DONE', 'REVIEWED', 'FINALIZED', 'CERTIFIED'].includes(jobReq.job_status)) {
+                                await updateJobStatus(parentJobId, 'SURVEY_DONE', userId, 'All survey reports submitted', { transaction: txn, _internal: true });
+                            }
                         }
                     }
                 }

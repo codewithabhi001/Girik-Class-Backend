@@ -69,6 +69,13 @@ router.put(
     surveyController.finalizeSurvey
 );
 
+// Finalize single certificate survey — TM ONLY
+router.put(
+    '/certificates/:jobCertificateId/finalize',
+    authorizeRoles('TM', 'ADMIN'),
+    surveyController.finalizeSingleSurvey
+);
+
 // Request rework for job — ADMIN / GM / TM (survey must be SUBMITTED)
 router.put(
     '/jobs/:jobId/rework',

@@ -7,6 +7,7 @@ import db from '../src/models/index.js';
 import * as lifecycle from '../src/services/lifecycle.service.js';
 import * as jobService from '../src/modules/jobs/job.service.js';
 import * as certService from '../src/modules/certificates/certificate.service.js';
+import * as surveyService from '../src/modules/surveys/survey.service.js';
 import { v7 as uuidv7 } from 'uuid';
 
 // ─── Test Helpers ────────────────────────────────────────────────────────────
@@ -338,6 +339,154 @@ async function run() {
             if (last.new_status !== 'REWORK_REQUIRED') {
                 throw new Error(`Expected new_status REWORK_REQUIRED, got ${last.new_status}`);
             }
+        });
+    }
+
+    // ─── 14. Individual Survey Finalization (Multiple Certificates) ───────────
+    console.log('\n── Section 14: Individual Survey Finalization ───────────────────────');
+    {
+        // 1. Create a job with 2 certificates
+        const jobId = uuidv7();
+        await db.JobRequest.create({
+            id: jobId, vessel_id: vesselId, requested_by_user_id: requesterId,
+            assigned_surveyor_id: surveyorId,
+            job_status: 'REVIEWED', reason: 'Annual', target_port: 'Singapore', target_date: '2026-12-31'
+        });
+
+        // Create 2 certificates
+        const jc1 = await db.JobCertificate.create({
+            job_request_id: jobId,
+            certificate_type_id: certTypeId,
+            status: 'SURVEY_DONE'
+        });
+        const certType2 = await db.CertificateType.findOne({
+            where: {
+                id: { [db.Sequelize.Op.ne]: certTypeId },
+                requires_survey: true
+            }
+        });
+        const jc2 = await db.JobCertificate.create({
+            job_request_id: jobId,
+            certificate_type_id: certType2.id,
+            status: 'SURVEY_DONE'
+        });
+
+        // Create 2 surveys in SUBMITTED state with ISSUED statement status
+        const s1 = await db.Survey.create({
+            job_certificate_id: jc1.id,
+            surveyor_id: surveyorId,
+            survey_status: 'SUBMITTED',
+            survey_statement_status: 'ISSUED',
+            attendance_photo_url: 'https://test.com/photo.jpg',
+            submit_latitude: 1.0,
+            submit_longitude: 1.0,
+            submission_count: 1
+        });
+        const s2 = await db.Survey.create({
+            job_certificate_id: jc2.id,
+            surveyor_id: surveyorId,
+            survey_status: 'SUBMITTED',
+            survey_statement_status: 'ISSUED',
+            attendance_photo_url: 'https://test.com/photo.jpg',
+            submit_latitude: 1.0,
+            submit_longitude: 1.0,
+            submission_count: 1
+        });
+
+        await test('Finalizing first survey keeps job at REVIEWED status', async () => {
+            await surveyService.finalizeSingleSurvey(jc1.id, { id: tmId, role: 'TM' });
+            
+            const updatedJob = await db.JobRequest.findByPk(jobId);
+            const updatedS1 = await db.Survey.findByPk(s1.id);
+            if (updatedS1.survey_status !== 'FINALIZED') throw new Error('Expected survey 1 to be FINALIZED');
+            if (updatedJob.job_status !== 'REVIEWED') throw new Error(`Expected job status to remain REVIEWED, got ${updatedJob.job_status}`);
+        });
+
+        await test('Finalizing second survey transitions job to FINALIZED status', async () => {
+            await surveyService.finalizeSingleSurvey(jc2.id, { id: tmId, role: 'TM' });
+            
+            const updatedJob = await db.JobRequest.findByPk(jobId);
+            const updatedS2 = await db.Survey.findByPk(s2.id);
+            if (updatedS2.survey_status !== 'FINALIZED') throw new Error('Expected survey 2 to be FINALIZED');
+            if (updatedJob.job_status !== 'FINALIZED') throw new Error(`Expected job status to transition to FINALIZED, got ${updatedJob.job_status}`);
+        });
+    }
+
+    // ─── 15. Survey Start Guard (Survey Not Required) ──────────────────────────
+    console.log('\n── Section 15: Survey Start Guard ───────────────────────────────────');
+    {
+        const jobId = uuidv7();
+        await db.JobRequest.create({
+            id: jobId, vessel_id: vesselId, requested_by_user_id: requesterId,
+            assigned_surveyor_id: surveyorId,
+            job_status: 'SURVEY_AUTHORIZED', reason: 'Annual', target_port: 'Singapore', target_date: '2026-12-31',
+            is_survey_required: false
+        });
+
+        await db.JobCertificate.create({
+            job_request_id: jobId,
+            certificate_type_id: certTypeId,
+            status: 'SURVEY_AUTHORIZED'
+        });
+
+        await expectError('Survey start fails when survey is not required', 400, async () => {
+            await surveyService.startSurvey({ job_id: jobId, latitude: 1.0, longitude: 1.0 }, surveyorId);
+        });
+    }
+
+    // ─── 16. Mixed Survey Requirement Finalization ────────────────────────────
+    console.log('\n── Section 16: Mixed Survey Requirement Finalization ────────────────');
+    {
+        const jobId = uuidv7();
+        await db.JobRequest.create({
+            id: jobId, vessel_id: vesselId, requested_by_user_id: requesterId,
+            assigned_surveyor_id: surveyorId,
+            job_status: 'REVIEWED', reason: 'Mixed', target_port: 'Singapore', target_date: '2026-12-31'
+        });
+
+        // Cert A: requires survey
+        const jcA = await db.JobCertificate.create({
+            job_request_id: jobId,
+            certificate_type_id: certTypeId, // requires_survey = true
+            status: 'SURVEY_DONE'
+        });
+
+        // Cert B: does NOT require survey
+        let nonSurveyCertType = await db.CertificateType.findOne({ where: { requires_survey: false } });
+        if (!nonSurveyCertType) {
+            nonSurveyCertType = await db.CertificateType.create({
+                id: uuidv7(),
+                name: 'Non Survey Cert Type',
+                issuing_authority: 'CLASS',
+                validity_years: 5,
+                requires_survey: false
+            });
+        }
+        const jcB = await db.JobCertificate.create({
+            job_request_id: jobId,
+            certificate_type_id: nonSurveyCertType.id,
+            status: 'DOCUMENT_VERIFIED'
+        });
+
+        // Create survey for Cert A only
+        const sA = await db.Survey.create({
+            job_certificate_id: jcA.id,
+            surveyor_id: surveyorId,
+            survey_status: 'SUBMITTED',
+            survey_statement_status: 'ISSUED',
+            attendance_photo_url: 'https://test.com/photo.jpg',
+            submit_latitude: 1.0,
+            submit_longitude: 1.0,
+            submission_count: 1
+        });
+
+        await test('Finalizing the only survey required certificate transitions the job to FINALIZED', async () => {
+            await surveyService.finalizeSingleSurvey(jcA.id, { id: tmId, role: 'TM' });
+            
+            const updatedJob = await db.JobRequest.findByPk(jobId);
+            const updatedS1 = await db.Survey.findByPk(sA.id);
+            if (updatedS1.survey_status !== 'FINALIZED') throw new Error('Expected survey A to be FINALIZED');
+            if (updatedJob.job_status !== 'FINALIZED') throw new Error(`Expected job status to transition to FINALIZED, got ${updatedJob.job_status}`);
         });
     }
 

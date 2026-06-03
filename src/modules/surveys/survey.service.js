@@ -75,7 +75,7 @@ const assertJobAccessible = async (jobId, userId, { checkSurveyor = true, allowe
         }
     }
 
-    if (job.is_survey_required === false) {
+    if (job.is_survey_required === false || job.is_survey_required === 0 || !job.is_survey_required) {
         throw { statusCode: 400, message: "Survey not required for this job." };
     }
 
@@ -150,10 +150,15 @@ export const startSurvey = async (data, userId) => {
     if (!jobCerts.length) throw { statusCode: 404, message: 'No certificates found for this job.' };
 
     // Guard: job must be SURVEY_AUTHORIZED or REWORK_REQUESTED
-    await assertJobAccessible(job_id, userId, {
+    const job = await assertJobAccessible(job_id, userId, {
         checkSurveyor: true,
         allowedStatuses: ['SURVEY_AUTHORIZED', 'REWORK_REQUESTED']
     });
+
+    const hasSurveyRequiredCert = jobCerts.some(c => !c.CertificateType || c.CertificateType.requires_survey !== false);
+    if (!hasSurveyRequiredCert) {
+        throw { statusCode: 400, message: 'Survey not required for this job.' };
+    }
 
     const txn = await db.sequelize.transaction();
     let startedCount = 0;
@@ -477,7 +482,11 @@ export const finalizeSurvey = async (jobId, user) => {
     const userId = user.id;
     await assertJobAccessible(jobId, userId, { checkSurveyor: false });
 
-    const jobCerts = await db.JobCertificate.findAll({ where: { job_request_id: jobId }, useMaster: true });
+    const jobCerts = await db.JobCertificate.findAll({
+        where: { job_request_id: jobId },
+        include: [{ model: db.CertificateType, attributes: ['id', 'requires_survey'] }],
+        useMaster: true
+    });
     if (!jobCerts.length) throw { statusCode: 404, message: 'No certificates found for this job.' };
 
     const surveys = await Survey.findAll({ where: { job_certificate_id: jobCerts.map(c => c.id) }, useMaster: true });
@@ -486,6 +495,11 @@ export const finalizeSurvey = async (jobId, user) => {
     const submittedSurveys = surveys.filter(s => s.survey_status === 'SUBMITTED');
     if (submittedSurveys.length === 0) {
         throw { statusCode: 400, message: 'No submitted surveys found to finalize.' };
+    }
+
+    const pendingStatements = submittedSurveys.filter(s => s.survey_statement_status !== 'ISSUED');
+    if (pendingStatements.length > 0) {
+        throw { statusCode: 400, message: 'Cannot finalize: all submitted surveys must have issued statements first.' };
     }
 
     const txn = await db.sequelize.transaction();
@@ -511,12 +525,75 @@ export const finalizeSurvey = async (jobId, user) => {
 
     // Refresh surveys after update
     const allSurveys = await Survey.findAll({ where: { job_certificate_id: jobCerts.map(c => c.id) }, useMaster: true });
-    const allFinalized = allSurveys.every(s => s.survey_status === 'FINALIZED');
+    const surveyRequiredCerts = jobCerts.filter(c => !c.CertificateType || c.CertificateType.requires_survey !== false);
+    const allFinalized = surveyRequiredCerts.length > 0 && surveyRequiredCerts.every(c => {
+        const s = allSurveys.find(sr => sr.job_certificate_id === c.id);
+        return s && s.survey_status === 'FINALIZED';
+    });
 
     return {
         message: allFinalized
             ? 'All surveys finalized. Job is now FINALIZED.'
             : 'Surveys finalized successfully.'
+    };
+};
+
+export const finalizeSingleSurvey = async (jobCertificateId, user) => {
+    if (!['TM', 'ADMIN'].includes(user.role)) {
+        throw { statusCode: 403, message: 'Only Technical Managers (TM) or Admins have permission to finalize surveys.' };
+    }
+    const userId = user.id;
+
+    const jc = await db.JobCertificate.findByPk(jobCertificateId, { useMaster: true });
+    if (!jc) throw { statusCode: 404, message: 'Job Certificate not found' };
+
+    await assertJobAccessible(jc.job_request_id, userId, { checkSurveyor: false });
+
+    const survey = await requireSurvey(null, jobCertificateId);
+    assertSurveyNotFinalized(survey);
+
+    if (survey.survey_status !== 'SUBMITTED') {
+        throw { statusCode: 400, message: 'Only submitted surveys can be finalized.' };
+    }
+    if (survey.survey_statement_status !== 'ISSUED') {
+        throw { statusCode: 400, message: 'Survey statement must be ISSUED before finalization.' };
+    }
+
+    const txn = await db.sequelize.transaction();
+    try {
+        await lifecycleService.updateSurveyStatus(survey.id, 'FINALIZED', userId, `Final approval granted by ${user.role}`, { transaction: txn });
+        await txn.commit();
+    } catch (error) {
+        await txn.rollback();
+        throw error;
+    }
+
+    const job = await JobRequest.findByPk(jc.job_request_id, { include: ['Vessel'], useMaster: true });
+    if (job?.assigned_surveyor_id) {
+        notificationService.sendNotification(job.assigned_surveyor_id, 'JOB_FINALIZED', {
+            vesselName: job.Vessel?.vessel_name
+        }).catch(() => { });
+    }
+
+    // Check if all surveys for this job are finalized to notify/return status
+    const jobCerts = await db.JobCertificate.findAll({
+        where: { job_request_id: jc.job_request_id },
+        include: [{ model: db.CertificateType, attributes: ['id', 'requires_survey'] }],
+        useMaster: true
+    });
+    const allSurveys = await Survey.findAll({ where: { job_certificate_id: jobCerts.map(c => c.id) }, useMaster: true });
+    const surveyRequiredCerts = jobCerts.filter(c => !c.CertificateType || c.CertificateType.requires_survey !== false);
+    const allFinalized = surveyRequiredCerts.length > 0 && surveyRequiredCerts.every(c => {
+        const s = allSurveys.find(sr => sr.job_certificate_id === c.id);
+        return s && s.survey_status === 'FINALIZED';
+    });
+
+    return {
+        success: true,
+        message: allFinalized
+            ? 'All surveys finalized. Job is now FINALIZED.'
+            : 'Survey finalized successfully.',
+        job_status: allFinalized ? 'FINALIZED' : job?.job_status
     };
 };
 // ─────────────────────────────────────────────────────────────────────────────
