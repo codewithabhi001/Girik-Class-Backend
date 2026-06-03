@@ -142,7 +142,11 @@ export const startSurvey = async (data, userId) => {
         throw { statusCode: 400, message: 'job_id is required.' };
     }
 
-    const jobCerts = await db.JobCertificate.findAll({ where: { job_request_id: job_id }, useMaster: true });
+    const jobCerts = await db.JobCertificate.findAll({
+        where: { job_request_id: job_id },
+        include: [{ model: db.CertificateType, attributes: ['id', 'requires_survey'] }],
+        useMaster: true
+    });
     if (!jobCerts.length) throw { statusCode: 404, message: 'No certificates found for this job.' };
 
     // Guard: job must be SURVEY_AUTHORIZED or REWORK_REQUESTED
@@ -156,6 +160,10 @@ export const startSurvey = async (data, userId) => {
     let alreadyInProgressCount = 0;
     try {
         for (const cert of jobCerts) {
+            if (cert.CertificateType && cert.CertificateType.requires_survey === false) {
+                continue;
+            }
+
             const [survey, created] = await Survey.findOrCreate({
                 where: { job_certificate_id: cert.id },
                 defaults: { surveyor_id: userId, survey_status: 'NOT_STARTED' },
@@ -183,7 +191,8 @@ export const startSurvey = async (data, userId) => {
             startedCount++;
         }
 
-        if (startedCount === 0 && jobCerts.length > 0) {
+        const surveyRequiredCerts = jobCerts.filter(c => !c.CertificateType || c.CertificateType.requires_survey !== false);
+        if (startedCount === 0 && surveyRequiredCerts.length > 0) {
             // All rework certs are already STARTED or beyond — return 409 so the
             // mobile client knows to navigate directly to the survey page.
             throw {
@@ -882,9 +891,15 @@ export const getSurveyReports = async (query, user) => {
 
 export const getSurveyDetails = async (jobId, user) => {
     // Support fetching by job_certificate_id or job_id
-    const jobCerts = await db.JobCertificate.findAll({ where: { job_request_id: jobId } });
+    const jobCerts = await db.JobCertificate.findAll({
+        where: { job_request_id: jobId },
+        include: [{ model: db.CertificateType, attributes: ['id', 'requires_survey'] }]
+    });
+    const surveyCerts = jobCerts.filter(jc => jc.CertificateType?.requires_survey !== false);
+    if (!surveyCerts.length) return [];
+
     const surveys = await Survey.findAll({
-        where: { job_certificate_id: jobCerts.map(jc => jc.id) },
+        where: { job_certificate_id: surveyCerts.map(jc => jc.id) },
         include: [
             { model: db.JobCertificate, include: [{ model: db.CertificateType, attributes: ['name'] }] },
             { model: db.User, attributes: ['name', 'email'] },
