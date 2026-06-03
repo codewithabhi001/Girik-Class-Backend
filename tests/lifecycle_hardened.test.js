@@ -45,23 +45,26 @@ async function expectError(label, code, fn) {
 // ─── Setup Fixtures ───────────────────────────────────────────────────────────
 
 async function createFixtures() {
-    const surveyorId = uuidv7();
-    const tmId = uuidv7();
-    const requesterId = uuidv7();
-    const clientId = uuidv7();
-    const vesselId = uuidv7();
-    const certTypeId = uuidv7();
-    const flagId = uuidv7();
+    const surveyor = await db.User.findOne({ where: { role: 'SURVEYOR' } });
+    const tm = await db.User.findOne({ where: { role: 'TM' } });
+    const requester = await db.User.findOne({ where: { role: { [db.Sequelize.Op.in]: ['GM', 'ADMIN', 'TM'] } } });
+    const client = await db.Client.findOne();
+    const flag = await db.FlagAdministration.findOne();
+    const vessel = await db.Vessel.findOne();
+    const certType = await db.CertificateType.findOne({ where: { requires_survey: true } });
 
-    await db.User.create({ id: surveyorId, name: 'Test Surveyor', email: `s_${Date.now()}@test.com`, role: 'SURVEYOR', password_hash: 'x' });
-    await db.User.create({ id: tmId, name: 'Test TM', email: `t_${Date.now()}@test.com`, role: 'TM', password_hash: 'x' });
-    await db.User.create({ id: requesterId, name: 'Requester', email: `r_${Date.now()}@test.com`, role: 'GM', password_hash: 'x' });
-    await db.Client.create({ id: clientId, company_name: 'Test Corp', company_code: 'TC01', email: `c_${Date.now()}@test.com`, status: 'ACTIVE' });
-    await db.FlagAdministration.create({ id: flagId, flag_state_name: `Test-${Date.now()}-${Math.random()}`, country: 'Test', authority_name: 'Test', contact_email: 'test@flag.com', status: 'ACTIVE' });
-    await db.Vessel.create({ id: vesselId, vessel_name: 'MV Test', imo_number: `${Math.floor(1000000 + Math.random() * 8999999)}`, client_id: clientId, flag_administration_id: flagId });
-    await db.CertificateType.create({ id: certTypeId, name: 'Annual Survey', issuing_authority: 'CLASS', validity_years: 1 });
+    if (!surveyor || !tm || !requester || !client || !flag || !vessel || !certType) {
+        throw new Error('Database is missing required seed data for testing (User, Client, Flag, Vessel, or CertificateType)');
+    }
 
-    return { surveyorId, tmId, requesterId, clientId, vesselId, certTypeId };
+    return {
+        surveyorId: surveyor.id,
+        tmId: tm.id,
+        requesterId: requester.id,
+        clientId: client.id,
+        vesselId: vessel.id,
+        certTypeId: certType.id
+    };
 }
 
 async function makeJob(vesselId, requesterId, surveyorId, certTypeId, startStatus = 'CREATED') {

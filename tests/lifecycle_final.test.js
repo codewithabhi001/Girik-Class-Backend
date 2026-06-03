@@ -33,24 +33,21 @@ async function expectStatus(label, expectedCode, fn) {
 // ─── Fixture helpers ─────────────────────────────────────────────────────────
 
 async function seedUser(role) {
-    const id = uuidv7();
-    await db.User.create({ id, name: `${role}-${Date.now()}`, email: `${role}_${Date.now()}@t.com`, role, password_hash: 'x' });
-    return id;
+    const user = await db.User.findOne({ where: { role } });
+    if (!user) throw new Error(`Existing user for role ${role} not found`);
+    return user.id;
 }
 
 async function seedBase() {
-    const [surveyorId, tmId, requesterId, clientId] = await Promise.all([
-        seedUser('SURVEYOR'), seedUser('TM'), seedUser('GM'), (async () => {
-            const id = uuidv7();
-            await db.Client.create({ id, company_name: `Corp-${Date.now()}`, company_code: `C${Date.now().toString().slice(-4)}`, email: `c${Date.now()}@t.com`, status: 'ACTIVE' });
-            return id;
-        })()
+    const [surveyorId, tmId, requesterId] = await Promise.all([
+        seedUser('SURVEYOR'), seedUser('TM'), seedUser('GM')
     ]);
-    const vesselId = uuidv7(), certTypeId = uuidv7(), flagId = uuidv7();
-    await db.FlagAdministration.create({ id: flagId, flag_state_name: `Test-${Date.now()}-${Math.random()}`, country: 'Test', authority_name: 'Test', contact_email: 'test@flag.com', status: 'ACTIVE' });
-    await db.Vessel.create({ id: vesselId, vessel_name: 'MV Prod', imo_number: `${Math.floor(1000000 + Math.random() * 8999999)}`, client_id: clientId, flag_administration_id: flagId });
-    await db.CertificateType.create({ id: certTypeId, name: 'Annual Survey', issuing_authority: 'CLASS', validity_years: 1 });
-    return { surveyorId, tmId, requesterId, vesselId, certTypeId };
+    const vessel = await db.Vessel.findOne();
+    const certType = await db.CertificateType.findOne({ where: { requires_survey: true } });
+    if (!vessel || !certType) {
+        throw new Error('Database is missing required seed data for testing (Vessel or CertificateType)');
+    }
+    return { surveyorId, tmId, requesterId, vesselId: vessel.id, certTypeId: certType.id };
 }
 
 async function makeJob(fx, status) {
