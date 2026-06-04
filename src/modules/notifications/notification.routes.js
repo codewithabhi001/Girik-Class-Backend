@@ -5,6 +5,8 @@ import { authenticate } from '../../middlewares/auth.middleware.js';
 const router = express.Router();
 router.use(authenticate);
 
+router.get('/preferences', notificationController.getPreferences);
+router.put('/preferences', notificationController.updatePreferences);
 router.get('/', notificationController.getNotifications);
 router.put('/:id/read', notificationController.markRead);
 router.put('/read-all', notificationController.markAllRead);

@@ -6,13 +6,53 @@ const Notification = db.Notification;
 const NotificationPreference = db.NotificationPreference;
 const User = db.User;
 
+const DEFAULT_ALERT_TYPES = [
+    'JOB_CREATED',
+    'JOB_DOCUMENT_VERIFIED',
+    'JOB_APPROVED',
+    'JOB_ASSIGNED',
+    'JOB_RESCHEDULED',
+    'JOB_REVIEWED',
+    'JOB_SENT_BACK',
+    'JOB_FINALIZED',
+    'SURVEY_STARTED',
+    'SURVEY_SUBMITTED',
+    'SURVEY_PROOF_UPLOADED',
+    'SURVEY_REWORK_REQUESTED',
+    'INFO'
+];
+
+export const getPreferences = async (userId) => {
+    const [pref] = await NotificationPreference.findOrCreate({
+        where: { user_id: userId },
+        defaults: {
+            user_id: userId,
+            email_enabled: true,
+            app_enabled: true,
+            alert_types: DEFAULT_ALERT_TYPES
+        },
+        useMaster: true
+    });
+    return pref;
+};
+
+export const updatePreferences = async (userId, data) => {
+    const pref = await getPreferences(userId);
+    await pref.update({
+        email_enabled: data.email_enabled !== undefined ? data.email_enabled : pref.email_enabled,
+        app_enabled: data.app_enabled !== undefined ? data.app_enabled : pref.app_enabled,
+        alert_types: data.alert_types !== undefined ? data.alert_types : pref.alert_types
+    });
+    return pref;
+};
+
 export const sendNotification = async (userId, eventType, data) => {
     try {
         const user = await User.findByPk(userId, { useMaster: true });
         if (!user) return;
 
         const pref = await NotificationPreference.findOne({ where: { user_id: userId }, useMaster: true });
-        const matchesType = !pref || pref.alert_types.length === 0 || pref.alert_types.includes(eventType);
+        const matchesType = !pref || (Array.isArray(pref.alert_types) && pref.alert_types.includes(eventType));
 
         const emailAllowed = !pref || (pref.email_enabled && matchesType);
         const appAllowed = !pref || (pref.app_enabled && matchesType);
@@ -44,7 +84,8 @@ export const createNotification = async (userId, title, message, type = 'INFO') 
 export const notifyRoles = async (roles, title, message, type = 'INFO') => {
     try {
         const users = await User.findAll({
-            where: { role: roles }
+            where: { role: roles },
+            include: [{ model: NotificationPreference, as: 'NotificationPreference' }]
         });
 
         if (users.length === 0) return;
@@ -52,17 +93,22 @@ export const notifyRoles = async (roles, title, message, type = 'INFO') => {
         const notificationsToCreate = [];
         const emailPromises = [];
 
-        // Note: For consistency with the primary service, we could fetch preferences here too.
-        // For now, let's at least bulk create the database records.
         for (const user of users) {
-            notificationsToCreate.push({
-                user_id: user.id,
-                title: title,
-                message: message,
-                type: type
-            });
+            const pref = user.NotificationPreference;
+            const matchesType = !pref || (Array.isArray(pref.alert_types) && pref.alert_types.includes(type));
+            const emailAllowed = !pref || (pref.email_enabled && matchesType);
+            const appAllowed = !pref || (pref.app_enabled && matchesType);
 
-            if (user.email) {
+            if (appAllowed) {
+                notificationsToCreate.push({
+                    user_id: user.id,
+                    title: title,
+                    message: message,
+                    type: type
+                });
+            }
+
+            if (emailAllowed && user.email) {
                 emailPromises.push(
                     emailService.sendTemplateEmail(user.email, type, { title, message })
                         .catch(err => logger.error(`Email error for user ${user.id}:`, err))
@@ -72,7 +118,7 @@ export const notifyRoles = async (roles, title, message, type = 'INFO') => {
 
         // 1. Bulk Insert Database Notifications
         if (notificationsToCreate.length > 0) {
-            Notification.bulkCreate(notificationsToCreate).catch(err => logger.error('Bulk notification error:', err));
+            await Notification.bulkCreate(notificationsToCreate);
         }
 
         // 2. Trigger Emails concurrently in background

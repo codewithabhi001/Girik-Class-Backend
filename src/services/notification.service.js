@@ -22,7 +22,7 @@ export const sendNotification = async (userId, eventType, data = {}, userObj = n
         const pref = await NotificationPreference.findOne({ where: { user_id: user.id } });
 
         // Logic: Enabled if no preference set, or if explicitly enabled
-        const matchesType = !pref || pref.alert_types.length === 0 || pref.alert_types.includes(eventType);
+        const matchesType = !pref || (Array.isArray(pref.alert_types) && pref.alert_types.includes(eventType));
 
         const emailAllowed = !pref || (pref.email_enabled && matchesType);
         const appAllowed = !pref || (pref.app_enabled && matchesType);
@@ -104,7 +104,7 @@ export const sendNotification = async (userId, eventType, data = {}, userObj = n
  * Legacy/Simple wrapper for creating a single notification
  */
 export const createNotification = async (userId, title, message, type = 'INFO') => {
-    return console.log("Mock sending notification"); // await sendNotification(userId, type, { title, message });
+    return await sendNotification(userId, type, { title, message });
 };
 
 /**
@@ -140,7 +140,7 @@ export const notifyRoles = async (roles, eventOrTitle, dataOrMessage = {}, extra
 
         for (const user of users) {
             const pref = user.NotificationPreference;
-            const matchesType = !pref || pref.alert_types.length === 0 || pref.alert_types.includes(type);
+            const matchesType = !pref || (Array.isArray(pref.alert_types) && pref.alert_types.includes(type));
             const emailAllowed = !pref || (pref.email_enabled && matchesType);
             const appAllowed = !pref || (pref.app_enabled && matchesType);
 

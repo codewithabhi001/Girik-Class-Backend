@@ -1,5 +1,19 @@
 import * as notificationService from './notification.service.js';
 
+export const getPreferences = async (req, res, next) => {
+    try {
+        const preferences = await notificationService.getPreferences(req.user.id);
+        res.json({ success: true, data: preferences });
+    } catch (e) { next(e); }
+};
+
+export const updatePreferences = async (req, res, next) => {
+    try {
+        const preferences = await notificationService.updatePreferences(req.user.id, req.body);
+        res.json({ success: true, data: preferences });
+    } catch (e) { next(e); }
+};
+
 export const getNotifications = async (req, res, next) => {
     try {
         const notifications = await notificationService.getNotifications(req.user.id);
