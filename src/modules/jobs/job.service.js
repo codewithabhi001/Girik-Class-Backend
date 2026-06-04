@@ -433,6 +433,7 @@ export const getJobs = async (query, scopeFilters = {}, userRole = null, user = 
         where: whereClause, attributes: jobAttributes,
         limit: pageLimit, offset: (pageNum - 1) * pageLimit,
         order: [['updatedAt', 'DESC']], include,
+        distinct: true,
         useReplica: true
     });
 
