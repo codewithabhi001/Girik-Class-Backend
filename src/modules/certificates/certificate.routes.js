@@ -51,7 +51,7 @@ router.put('/:id', authorizeRoles('ADMIN', 'GM'), validate(schemas.updateCertifi
 router.post('/:id/issue', authorizeRoles('ADMIN', 'GM'), validate(schemas.updateCertificateDraft), certController.issueCertificate);
 
 // Override certificate (Manual upload)
-router.post('/:id/override', authorizeRoles('GM'), validate(schemas.overrideCertificate), certController.overrideCertificate);
+router.post('/:id/override', authorizeRoles('ADMIN', 'GM'), validate(schemas.overrideCertificate), certController.overrideCertificate);
 
 // Get specific certificate details
 router.get('/:id', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), certController.getCertificateById);
@@ -60,16 +60,16 @@ router.get('/:id', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), certCont
 router.get('/:id/download', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), certController.downloadCertificate);
 
 // Suspend/Revoke/Restore
-router.put('/:id/suspend', authorizeRoles('TM'), validate(schemas.certAction), certController.suspendCertificate);
-router.put('/:id/revoke', authorizeRoles('TM'), validate(schemas.certAction), certController.revokeCertificate);
-router.put('/:id/restore', authorizeRoles('TM'), validate(schemas.certAction), certController.restoreCertificate);
+router.put('/:id/suspend', authorizeRoles('ADMIN', 'TM'), validate(schemas.certAction), certController.suspendCertificate);
+router.put('/:id/revoke', authorizeRoles('ADMIN', 'TM'), validate(schemas.certAction), certController.revokeCertificate);
+router.put('/:id/restore', authorizeRoles('ADMIN', 'TM'), validate(schemas.certAction), certController.restoreCertificate);
 
 // Renew
-router.put('/:id/renew', authorizeRoles('TM'), validate(schemas.renewCert), certController.renewCertificate);
-router.post('/bulk-renew', authorizeRoles('TM'), certController.bulkRenew);
+router.put('/:id/renew', authorizeRoles('ADMIN', 'TM'), validate(schemas.renewCert), certController.renewCertificate);
+router.post('/bulk-renew', authorizeRoles('ADMIN', 'TM'), certController.bulkRenew);
 
 // Reissue (Version +1, Revoke Old)
-router.post('/:id/reissue', authorizeRoles('TM'), certController.reissueCertificate);
+router.post('/:id/reissue', authorizeRoles('ADMIN', 'TM'), certController.reissueCertificate);
 
 // Preview
 router.get('/:id/preview', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), certController.previewCertificate);
@@ -78,8 +78,8 @@ router.get('/:id/preview', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), 
 router.get('/:id/history', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), certController.getHistory);
 
 // Advanced Management
-router.post('/:id/transfer', authorizeRoles('GM'), validate(schemas.certAction), certController.transferCertificate);
-router.post('/:id/extend', authorizeRoles('GM'), validate(schemas.certAction), certController.extendCertificate);
-router.put('/:id/downgrade', authorizeRoles('GM'), validate(schemas.certAction), certController.downgradeCertificate);
+router.post('/:id/transfer', authorizeRoles('ADMIN', 'GM'), validate(schemas.certAction), certController.transferCertificate);
+router.post('/:id/extend', authorizeRoles('ADMIN', 'GM'), validate(schemas.certAction), certController.extendCertificate);
+router.put('/:id/downgrade', authorizeRoles('ADMIN', 'GM'), validate(schemas.certAction), certController.downgradeCertificate);
 
 export default router;
