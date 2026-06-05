@@ -832,12 +832,13 @@ export const verifyJobCertificateDocuments = async (jobCertificateId, body, user
         );
     }
 
-    const updatedJc = await lifecycleService.updateJobCertificateStatus(jobCertificateId, 'DOCUMENT_VERIFIED', userId, 'Technical Officer verified all documents');
+    const successRemarks = actualBody?.remarks || actualBody?.reason || 'Technical Officer verified all documents';
+    const updatedJc = await lifecycleService.updateJobCertificateStatus(jobCertificateId, 'DOCUMENT_VERIFIED', userId, successRemarks);
 
     const allCerts = await db.JobCertificate.findAll({ where: { job_request_id: jobId } });
     const allVerified = allCerts.every(c => c.status === 'DOCUMENT_VERIFIED' || ['ISSUED', 'REJECTED'].includes(c.status));
     if (allVerified) {
-        await lifecycleService.updateJobStatus(jobId, 'DOCUMENT_VERIFIED', userId, 'All certificate documents verified');
+        await lifecycleService.updateJobStatus(jobId, 'DOCUMENT_VERIFIED', userId, successRemarks || 'All certificate documents verified');
     }
 
     // Notify ADMIN/GM/TM
@@ -923,14 +924,16 @@ export const verifyAllJobDocuments = async (jobId, body, user) => {
         );
 
         // Update the certificate status
-        const updatedJc = await lifecycleService.updateJobCertificateStatus(jc.id, 'DOCUMENT_VERIFIED', user.id, `${user.role} bulk verified all documents`);
+        const successRemarks = actualBody?.remarks || actualBody?.reason || `${user.role} bulk verified all documents`;
+        const updatedJc = await lifecycleService.updateJobCertificateStatus(jc.id, 'DOCUMENT_VERIFIED', user.id, successRemarks);
         verifiedCerts.push(updatedJc);
     }
 
     const allCerts = await db.JobCertificate.findAll({ where: { job_request_id: jobId } });
     const allVerified = allCerts.every(c => c.status === 'DOCUMENT_VERIFIED' || ['ISSUED', 'REJECTED'].includes(c.status));
     if (allVerified) {
-        await lifecycleService.updateJobStatus(jobId, 'DOCUMENT_VERIFIED', user.id, 'All certificate documents verified');
+        const successRemarks = actualBody?.remarks || actualBody?.reason || 'All certificate documents verified';
+        await lifecycleService.updateJobStatus(jobId, 'DOCUMENT_VERIFIED', user.id, successRemarks);
     }
 
     // Notify ADMIN/GM/TM

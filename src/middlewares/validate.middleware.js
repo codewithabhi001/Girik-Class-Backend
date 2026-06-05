@@ -481,8 +481,10 @@ export const schemas = {
             'string.pattern.base': 'IMO number must be a 7-digit number'
         }),
         call_sign: Joi.string().optional().allow(''),
-        mmsi_number: Joi.string().pattern(/^[0-9]{9}$/).optional().allow('').messages({
-            'string.pattern.base': 'MMSI number must be a 9-digit number'
+        mmsi_number: Joi.string().pattern(/^[0-9]{9}$/).required().messages({
+            'string.pattern.base': 'MMSI number must be a 9-digit number',
+            'any.required': 'MMSI number is required',
+            'string.empty': 'MMSI number is required'
         }),
         flag_administration_id: Joi.string().guid().required(),
         port_of_registry: Joi.string().optional().allow(''),
