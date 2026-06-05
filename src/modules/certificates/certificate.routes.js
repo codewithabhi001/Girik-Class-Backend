@@ -42,13 +42,13 @@ router.get('/vessel/:vesselId', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'T
 router.get('/job/:jobId', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), certController.getCertificateByJobId);
 
 // Generate a new certificate (Draft)
-router.post('/', authorizeRoles('ADMIN', 'TM', 'GM'), certController.generateCertificate);
+router.post('/', authorizeRoles('ADMIN', 'GM'), certController.generateCertificate);
 
 // Update draft details
-router.put('/:id', authorizeRoles('TM', 'GM'), validate(schemas.updateCertificateDraft), certController.updateDraft);
+router.put('/:id', authorizeRoles('ADMIN', 'GM'), validate(schemas.updateCertificateDraft), certController.updateDraft);
 
 // Issue certificate (Status -> ISSUED, Generate PDF)
-router.post('/:id/issue', authorizeRoles('ADMIN', 'TM', 'GM'), validate(schemas.updateCertificateDraft), certController.issueCertificate);
+router.post('/:id/issue', authorizeRoles('ADMIN', 'GM'), validate(schemas.updateCertificateDraft), certController.issueCertificate);
 
 // Override certificate (Manual upload)
 router.post('/:id/override', authorizeRoles('GM'), validate(schemas.overrideCertificate), certController.overrideCertificate);

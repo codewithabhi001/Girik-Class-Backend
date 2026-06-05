@@ -7,11 +7,11 @@ async function repairSystem() {
 
         // 1. Ensure Flag Administrations exist
         const flags = [
-            { flag_state_name: 'Panama', country: 'Panama' },
-            { flag_state_name: 'Liberia', country: 'Liberia' },
-            { flag_state_name: 'India', country: 'India' },
-            { flag_state_name: 'Marshall Islands', country: 'Marshall Islands' },
-            { flag_state_name: 'Bahamas', country: 'Bahamas' }
+            { flag_state_name: 'Panama', country: 'Panama', authority_name: 'Panama Maritime Authority', contact_email: 'panama@grclass.com' },
+            { flag_state_name: 'Liberia', country: 'Liberia', authority_name: 'Liberian Ship Registry', contact_email: 'liberia@grclass.com' },
+            { flag_state_name: 'India', country: 'India', authority_name: 'DG Shipping India', contact_email: 'india@grclass.com' },
+            { flag_state_name: 'Marshall Islands', country: 'Marshall Islands', authority_name: 'Marshall Islands Administration', contact_email: 'marshallislands@grclass.com' },
+            { flag_state_name: 'Bahamas', country: 'Bahamas', authority_name: 'Bahamas Maritime Authority', contact_email: 'bahamas@grclass.com' }
         ];
 
         for (const flag of flags) {

@@ -26,7 +26,19 @@ export const RBAC = {
     REASSIGN_JOB: ['ADMIN', 'GM', 'TM'],
 
     /** Certificate generation — `certificate.service.generateCertificate` */
-    GENERATE_CERTIFICATE: ['ADMIN', 'GM', 'TM'],
+    GENERATE_CERTIFICATE: ['ADMIN', 'GM'],
+
+    /** PUT /jobs/:id/review-all */
+    REVIEW_ALL_JOBS: ['ADMIN', 'TM', 'TO'],
+
+    /** PUT /jobs/:id/reject */
+    REJECT_JOB: ['ADMIN', 'GM', 'TM'],
+
+    /** PUT /jobs/:id/cancel */
+    CANCEL_JOB: ['CLIENT', 'ADMIN', 'GM', 'TM'],
+
+    /** PUT /jobs/:id/priority */
+    UPDATE_PRIORITY: ['ADMIN', 'GM', 'TM'],
 };
 
 /**

@@ -25,16 +25,16 @@ router.post('/', authorizeRoles('CLIENT', 'ADMIN', 'GM'), validate(schemas.creat
 // ─── Explicit Semantic Workflow Transitions ───────────────
 
 // CREATED → DOCUMENT_VERIFIED (TO / GM / ADMIN) (Bulk verify all certificates for a job)
-router.put('/:id/verify-all-documents', authorizeRoles('TO', 'GM', 'ADMIN'), jobController.verifyAllJobDocuments);
+router.put('/:id/verify-all-documents', authorizeRoles(...RBAC.VERIFY_JOB_DOCUMENTS), jobController.verifyAllJobDocuments);
 
 // Verify specific certificate documents (TO / GM / ADMIN)
-router.put('/certificates/:jobCertificateId/verify-documents', authorizeRoles('TO', 'GM', 'ADMIN'), jobController.verifyJobDocuments);
+router.put('/certificates/:jobCertificateId/verify-documents', authorizeRoles(...RBAC.VERIFY_JOB_DOCUMENTS), jobController.verifyJobDocuments);
 
 // DOCUMENT_VERIFIED → APPROVED   (GM / ADMIN)
-router.put('/:id/approve-request', authorizeRoles('GM', 'ADMIN'), jobController.approveRequest);
+router.put('/:id/approve-request', authorizeRoles(...RBAC.APPROVE_JOB_REQUEST), jobController.approveRequest);
 
 // APPROVED → FINALIZED (for non-survey jobs)
-router.put('/:id/finalize', authorizeRoles('TM', 'ADMIN'), validate(schemas.finalizeSurvey), jobController.finalizeJob);
+router.put('/:id/finalize', authorizeRoles(...RBAC.FINALIZE_JOB), validate(schemas.finalizeSurvey), jobController.finalizeJob);
 
 // APPROVED → ASSIGNED  (ADMIN / GM — bulk assign surveyor to all certificates)
 router.put('/:id/assign', authorizeRoles(...RBAC.ASSIGN_JOB), validate(schemas.assignJob), jobController.assignSurveyor);
@@ -51,10 +51,12 @@ router.put('/:id/authorize-all-surveys', authorizeRoles(...RBAC.AUTHORIZE_SURVEY
 // IN_PROGRESS / REWORK_REQUESTED → automatically handled by survey lifecycle
 
 // SURVEY_DONE → REVIEWED (Bulk for all valid certificates in a Job)
-router.put('/:id/review-all', authorizeRoles('TO', 'TM', 'ADMIN'), jobController.reviewAllJobCertificates);
-
 // REVIEWED → REWORK_REQUESTED  (ADMIN / TM / TO — requests surveyor correction)
 // NOTE: preferred path is PUT /api/v1/surveys/:id/rework
+
+
+// SURVEY_DONE → REVIEWED (Bulk for all valid certificates in a Job)
+router.put('/:id/review-all', authorizeRoles(...RBAC.REVIEW_ALL_JOBS), jobController.reviewAllJobCertificates);
 
 
 // PAYMENT_DONE → CERTIFIED  (triggered internally by certificate.service.generateCertificate)
@@ -62,13 +64,13 @@ router.put('/:id/review-all', authorizeRoles('TO', 'TM', 'ADMIN'), jobController
 
 // ─── Rejection (terminal → REJECTED) ─────────────────────
 // ADMIN: any non-terminal | GM: CREATED only | TM: ASSIGNED, SURVEY_DONE, REVIEWED
-router.put('/:id/reject', authorizeRoles('ADMIN', 'GM', 'TM'), jobController.rejectJob);
+router.put('/:id/reject', authorizeRoles(...RBAC.REJECT_JOB), jobController.rejectJob);
 
 // ─── Cancellation ────────────────────────────────────────
-router.put('/:id/cancel', authorizeRoles('CLIENT', 'GM', 'TM', 'ADMIN'), jobController.cancelJob);
+router.put('/:id/cancel', authorizeRoles(...RBAC.CANCEL_JOB), jobController.cancelJob);
 
 // ─── Priority ────────────────────────────────────────────
-router.put('/:id/priority', authorizeRoles('ADMIN', 'GM', 'TM'), jobController.updatePriority);
+router.put('/:id/priority', authorizeRoles(...RBAC.UPDATE_PRIORITY), jobController.updatePriority);
 
 // ─── Job Documents ───────────────────────────────────────
 // List documents for a job (with verification status)

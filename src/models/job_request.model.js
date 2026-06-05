@@ -35,7 +35,7 @@ export default (sequelize, DataTypes) => {
                     return {
                         role: 'TO',
                         fallbackRoles: ['ADMIN', 'TM'],
-                        message: 'Waiting for Document Verification'
+                        message: 'Waiting for Technical Officer (TO), Technical Manager (TM) or Admin to verify documents'
                     };
                 }
 
@@ -47,7 +47,7 @@ export default (sequelize, DataTypes) => {
                     return {
                         role: 'TO',
                         fallbackRoles: ['ADMIN', 'TM'],
-                        message: 'Waiting for Document Verification'
+                        message: 'Waiting for Technical Officer (TO), Technical Manager (TM) or Admin to verify documents'
                     };
                 }
 
@@ -58,7 +58,7 @@ export default (sequelize, DataTypes) => {
                         return {
                             role: 'TM',
                             fallbackRoles: ['GM', 'ADMIN'],
-                            message: 'Waiting for TM to Generate Draft Certificate'
+                            message: 'Waiting for Technical Manager (TM), General Manager (GM) or Admin to Generate Draft Certificate'
                         };
                     }
                     const hasPendingIssue = certs.some(c => c.status !== 'ISSUED' && c.status !== 'REJECTED');
@@ -66,7 +66,7 @@ export default (sequelize, DataTypes) => {
                         return {
                             role: 'GM',
                             fallbackRoles: ['ADMIN'],
-                            message: 'Waiting for GM to Issue Certificate'
+                            message: 'Waiting for General Manager (GM) or Admin to Issue Certificate'
                         };
                     }
                     return null;
@@ -77,7 +77,7 @@ export default (sequelize, DataTypes) => {
                     return {
                         role: 'TO',
                         fallbackRoles: ['ADMIN', 'TM'],
-                        message: 'Waiting for Document Verification (Certificates pending)'
+                        message: 'Waiting for Technical Officer (TO), Technical Manager (TM) or Admin to verify documents (Certificates pending)'
                     };
                 }
 
@@ -85,7 +85,7 @@ export default (sequelize, DataTypes) => {
                     return {
                         role: 'TM',
                         fallbackRoles: ['ADMIN'],
-                        message: 'Waiting for TM to Finalize Job'
+                        message: 'Waiting for Technical Manager (TM) or Admin to Finalize Job'
                     };
                 }
 
@@ -94,7 +94,7 @@ export default (sequelize, DataTypes) => {
                     return {
                         role: 'GM',
                         fallbackRoles: ['ADMIN'],
-                        message: isSurveyReq ? 'Waiting for GM to Approve Job / Assign Surveyor' : 'Waiting for GM to Approve Job'
+                        message: isSurveyReq ? 'Waiting for General Manager (GM) or Admin to Approve Job / Assign Surveyor' : 'Waiting for General Manager (GM) or Admin to Approve Job'
                     };
                 }
 
@@ -103,7 +103,7 @@ export default (sequelize, DataTypes) => {
                     return {
                         role: 'TM',
                         fallbackRoles: ['ADMIN'],
-                        message: 'Waiting for TM to Authorize Survey'
+                        message: 'Waiting for Technical Manager (TM) or Admin to Authorize Survey'
                     };
                 }
 
@@ -143,20 +143,20 @@ export default (sequelize, DataTypes) => {
                             return {
                                 role: 'TM',
                                 fallbackRoles: ['ADMIN'],
-                                message: 'Waiting for TM or Admin to Draft and Issue Survey Statement'
+                                message: 'Waiting for Technical Manager (TM) or Admin to Draft and Issue Survey Statement'
                             };
                         }
 
                         return {
                             role: 'TM',
                             fallbackRoles: ['ADMIN'],
-                            message: 'Waiting for TM to Finalize Job'
+                            message: 'Waiting for Technical Manager (TM) or Admin to Finalize Job'
                         };
                     }
                     return {
                         role: 'TECH_TEAM',
                         fallbackRoles: ['TM', 'TO', 'ADMIN'],
-                        message: 'Waiting for TM, TO or Admin to Review Survey'
+                        message: 'Waiting for Technical Manager (TM), Technical Officer (TO) or Admin to Review Survey'
                     };
                 }
 
@@ -165,7 +165,7 @@ export default (sequelize, DataTypes) => {
                     return {
                         role: 'TM',
                         fallbackRoles: ['GM', 'ADMIN'],
-                        message: 'Waiting for TM to Generate Draft Certificate'
+                        message: 'Waiting for Technical Manager (TM), General Manager (GM) or Admin to Generate Draft Certificate'
                     };
                 }
 
@@ -174,7 +174,7 @@ export default (sequelize, DataTypes) => {
                     return {
                         role: 'GM',
                         fallbackRoles: ['ADMIN'],
-                        message: 'Waiting for GM to Issue Certificate'
+                        message: 'Waiting for General Manager (GM) or Admin to Issue Certificate'
                     };
                 }
 
