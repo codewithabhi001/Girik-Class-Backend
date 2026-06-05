@@ -73,7 +73,7 @@ export const flatIncidentListRow = (row) => {
         reported_by: i.reported_by,
         title: na(i.title),
         status: na(i.status),
-        created_at: na(i.created_at),
+        created_at: na(i.created_at ?? i.createdAt),
         vessel_name: na(i.Vessel?.vessel_name),
         imo_number: na(i.Vessel?.imo_number),
     };
@@ -110,7 +110,7 @@ export const flatPaymentListRow = (row) => {
         amount: na(p.amount),
         currency: na(p.currency),
         payment_status: na(p.payment_status),
-        created_at: na(p.created_at),
+        created_at: na(p.created_at ?? p.createdAt),
         paid_at: na(p.paid_at),
         amount_collected: na(p.amount_collected),
         amount_paid: na(p.amount_paid),
@@ -134,7 +134,7 @@ export const flatSupportTicketListRow = (row) => {
         status: na(t.status),
         category: na(t.category),
         user_id: t.user_id,
-        created_at: na(t.created_at),
+        created_at: na(t.created_at ?? t.createdAt),
         creator_name: na(t.Creator?.name),
         creator_email: na(t.Creator?.email),
     };
@@ -154,7 +154,7 @@ export const flatContactEnquiryListRow = (row) => {
         internal_note: na(e.internal_note),
         replied_by: na(e.replied_by),
         replied_at: na(e.replied_at),
-        created_at: na(e.created_at),
+        created_at: na(e.created_at ?? e.createdAt),
         responder_name: na(e.Responder?.name),
         responder_email: na(e.Responder?.email),
     };
@@ -195,7 +195,7 @@ export const flatActivityRequestListRow = (row) => {
         location_port: na(a.location_port),
         status: na(a.status),
         vessel_id: na(a.vessel_id),
-        created_at: na(a.created_at),
+        created_at: na(a.created_at ?? a.createdAt),
         vessel_name: na(a.Vessel?.vessel_name),
         imo_number: na(a.Vessel?.imo_number),
         linked_job_id: na(a.linked_job_id ?? a.LinkedJob?.id),
@@ -222,8 +222,8 @@ export const flatActivityRequestDetailRow = (row) => {
         linked_job_id: na(a.linked_job_id ?? a.LinkedJob?.id),
         rejection_reason: na(a.rejection_reason),
         attachments: a.attachments ?? [],
-        created_at: na(a.created_at),
-        updated_at: na(a.updated_at),
+        created_at: na(a.created_at ?? a.createdAt),
+        updated_at: na(a.updated_at ?? a.updatedAt),
         vessel_name: vessel.vessel_name,
         imo_number: vessel.imo_number,
         requester_name: na(a.Requester?.name),
@@ -316,7 +316,7 @@ export const flatAuditLogListRow = (row) => {
         action: na(l.action),
         entity_name: na(l.entity_name),
         entity_id: na(l.entity_id),
-        created_at: na(l.created_at),
+        created_at: na(l.created_at ?? l.createdAt),
         user_name: na(l.User?.name),
         user_email: na(l.User?.email),
         user_role: na(l.User?.role),
@@ -331,7 +331,7 @@ export const flatVesselListRow = (row) => {
         imo_number: na(v.imo_number),
         ship_type: na(v.ship_type),
         class_status: na(v.class_status),
-        created_at: na(v.created_at),
+        created_at: na(v.created_at ?? v.createdAt),
         flag_state: na(v.FlagAdministration?.flag_state_name),
         company_name: na(v.Client?.company_name),
         company_code: na(v.Client?.company_code),
@@ -346,7 +346,7 @@ export const flatClientListRow = (row) => {
         company_code: na(c.company_code),
         status: na(c.status),
         email: na(c.email),
-        created_at: na(c.created_at),
+        created_at: na(c.created_at ?? c.createdAt),
         has_user: !!(c.Users && c.Users.length > 0),
     };
 };
@@ -360,7 +360,7 @@ export const flatNcListRow = (row) => {
         vessel_name: na(n.JobRequest?.Vessel?.vessel_name),
         severity: na(n.severity),
         status: na(n.status),
-        created_at: na(n.created_at),
+        created_at: na(n.created_at ?? n.createdAt),
     };
 };
 

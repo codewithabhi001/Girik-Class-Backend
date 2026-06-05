@@ -72,7 +72,7 @@ export const login = async (email, password) => {
     }).catch(() => { });
 
     // Non-blocking — don't wait for this DB write
-    user.update({ last_login_at: new Date() }).catch(() => { });
+    user.update({ last_login_at: new Date() }, { user_id: user.id }).catch(() => { });
 
     // Resolve only profile_pic_url directly instead of full recursive resolveEntity
     let profilePicUrl = user.profile_pic_url || null;
