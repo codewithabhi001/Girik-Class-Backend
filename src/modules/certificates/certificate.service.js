@@ -335,19 +335,37 @@ const _generateCertificateFile = async (cert, user, transaction = null) => {
         // 3. (QR code skipped - already in template)
 
         // 4. Fetch Template
-        const template = await db.CertificateTemplate.findOne({
-            where: {
-                certificate_type_id: cert.certificate_type_id,
-                is_active: true,
-                ...(cert.certificate_term ? { certificate_term: cert.certificate_term } : {})
-            },
-            order: [['createdAt', 'DESC']],
-            transaction
-        }) || await db.CertificateTemplate.findOne({
-            where: { certificate_type_id: cert.certificate_type_id, is_active: true },
-            order: [['createdAt', 'DESC']],
-            transaction
-        });
+        let template = null;
+        if (cert.certificate_term) {
+            // Attempt to find a template matching the specified term
+            template = await db.CertificateTemplate.findOne({
+                where: {
+                    certificate_type_id: cert.certificate_type_id,
+                    is_active: true,
+                    certificate_term: cert.certificate_term,
+                },
+                order: [['createdAt', 'DESC']],
+                transaction,
+            });
+            if (!template) {
+                // No template found for the selected term; report error
+                throw { statusCode: 400, message: `No active certificate template found for term ${cert.certificate_term}` };
+            }
+        } else {
+            // No term specified; attempt to find a template without a term (any)
+            template = await db.CertificateTemplate.findOne({
+                where: {
+                    certificate_type_id: cert.certificate_type_id,
+                    is_active: true,
+                    certificate_term: null,
+                },
+                order: [['createdAt', 'DESC']],
+                transaction,
+            });
+            if (!template) {
+                throw { statusCode: 400, message: 'No active certificate template found for any term' };
+            }
+        }
 
         if (!template?.template_file_url) {
             logger.warn('No valid template found for certificate', { certId: cert.id });

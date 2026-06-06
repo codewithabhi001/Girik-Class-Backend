@@ -11,7 +11,8 @@ export default (sequelize, DataTypes) => {
         },
         certificate_term: {
             type: DataTypes.ENUM('FULL_TERM', 'SHORT_TERM'),
-            defaultValue: 'FULL_TERM'
+            allowNull: true,
+            defaultValue: null
         },
         flag_administration_id: DataTypes.UUID,
         version: {
