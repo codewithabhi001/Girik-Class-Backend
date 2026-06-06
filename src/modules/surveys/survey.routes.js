@@ -127,7 +127,7 @@ router.get(
 // Get survey details for a job
 router.get(
     '/jobs/:jobId',
-    authorizeRoles('ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR', 'CLIENT'),
+    authorizeRoles('ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'),
     surveyController.getSurveyDetails
 );
 

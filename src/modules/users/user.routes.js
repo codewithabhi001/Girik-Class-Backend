@@ -20,7 +20,7 @@ router.put('/profile-pic', upload.single('profile_pic'), userController.updatePr
 router.put('/fcm-token', validate(schemas.updateFcmToken), userController.updateFcmToken);
 
 // List all users
-router.get('/', authorizeRoles('ADMIN'), userController.getUsers);
+router.get('/', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), userController.getUsers);
 
 // Create a new user
 router.post('/', authorizeRoles('ADMIN'), validate(schemas.createUser), userController.createUser);

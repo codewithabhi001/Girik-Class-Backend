@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 const User = db.User;
 
 export const getUsers = async (query, excludeId) => {
-    const { role,status } = query;
+    const { role, status, client_id } = query;
     const where = {};
 
     if (excludeId) {
@@ -19,6 +19,9 @@ export const getUsers = async (query, excludeId) => {
     }
     if (status) {
         where.status = status;
+    }
+    if (client_id) {
+        where.client_id = client_id;
     }
 
     const users = await User.findAll({
