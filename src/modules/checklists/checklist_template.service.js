@@ -425,14 +425,45 @@ export const cloneChecklistTemplate = async (id, userId) => {
     }
 
     const metadata = { ...(originalTemplate.metadata || {}) };
-    metadata.version = metadata.version ? (parseFloat(metadata.version) + 1.0).toFixed(1) : "2.0";
 
-    const baseCode = originalTemplate.code.split('_V')[0]; // Strip old version suffix if present
-    const newVersionSuffix = `_V${metadata.version.replace('.', '_')}`;
+    // Strip existing _Vx_y suffix to get the clean base code
+    const baseCode = originalTemplate.code.replace(/_V\d+_\d+$/, '');
+
+    // Determine starting version number (current version + 1, or 2.0 if none)
+    const currentVersion = parseFloat(metadata.version) || 1.0;
+    let nextVersionNum = Math.floor(currentVersion) + 1; // Always bump the major version integer
+
+    // Find a unique code by incrementing until no existing template uses it
+    let newCode;
+    let attempts = 0;
+    while (true) {
+        const candidateVersion = `${nextVersionNum}.0`;
+        const candidateSuffix = `_V${candidateVersion.replace('.', '_')}`;
+        const candidateCode = `${baseCode}${candidateSuffix}`;
+
+        const existing = await ChecklistTemplate.findOne({
+            where: { code: candidateCode },
+            useMaster: true,
+        });
+
+        if (!existing) {
+            newCode = candidateCode;
+            metadata.version = candidateVersion;
+            break;
+        }
+
+        nextVersionNum++;
+        attempts++;
+
+        // Safety: never loop infinitely
+        if (attempts > 50) {
+            throw { statusCode: 409, message: 'Could not generate a unique template code after 50 attempts.' };
+        }
+    }
 
     const newTemplate = await ChecklistTemplate.create({
         name: originalTemplate.name,
-        code: `${baseCode}${newVersionSuffix}`,
+        code: newCode,
         description: originalTemplate.description,
         sections: originalTemplate.sections,
         template_files: Array.isArray(originalTemplate.template_files)
@@ -447,3 +478,4 @@ export const cloneChecklistTemplate = async (id, userId) => {
 
     return newTemplate;
 };
+

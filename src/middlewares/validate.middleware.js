@@ -500,7 +500,8 @@ export const schemas = {
         uploaded_documents: Joi.array().items(Joi.object({
             file_url: Joi.string().required(),
             document_type: Joi.string().required(),
-            description: Joi.string().optional().allow('')
+            description: Joi.string().optional().allow(''),
+            document_name: Joi.string().optional().allow('', null)
         })).optional()
     }),
     updateVessel: Joi.object({
@@ -527,7 +528,8 @@ export const schemas = {
         uploaded_documents: Joi.array().items(Joi.object({
             file_url: Joi.string().required(),
             document_type: Joi.string().required(),
-            description: Joi.string().optional().allow('')
+            description: Joi.string().optional().allow(''),
+            document_name: Joi.string().optional().allow('', null)
         })).optional()
     }),
     updateUser: Joi.object({
@@ -631,7 +633,15 @@ export const schemas = {
         remarks: Joi.string().optional().allow('', null),
     }),
     convertActivityRequestToJob: Joi.object({
-        certificate_type_id: Joi.string().guid().required(),
+        certificate_type_id: Joi.string().guid().optional(),
+        certificates: Joi.array().items(Joi.object({
+            certificate_type_id: Joi.string().guid().required(),
+            uploaded_documents: Joi.array().items(Joi.object({
+                required_document_id: Joi.string().guid().optional().allow(null, ''),
+                custom_document_name: Joi.string().optional().allow(null, ''),
+                file_url: Joi.string().required(),
+            })).optional().default([]),
+        })).min(1).optional(),
         vessel_id: Joi.string().guid().optional(),
         reason: Joi.string().optional().allow('', null),
         target_port: Joi.string().optional().allow('', null),
@@ -643,7 +653,7 @@ export const schemas = {
             custom_document_name: Joi.string().optional().allow(null, ''),
             file_url: Joi.string().required(),
         })).optional(),
-    }),
+    }).or('certificate_type_id', 'certificates'),
     createJobMessage: Joi.object({
         message: Joi.string().optional().allow('', null),
         message_text: Joi.string().optional().allow('', null),

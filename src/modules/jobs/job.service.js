@@ -874,7 +874,8 @@ export const verifyAllJobDocuments = async (jobId, body, user) => {
         where: { 
             job_request_id: jobId,
             status: { [Op.in]: ['PENDING', 'REWORK_REQUESTED'] }
-        }, 
+        },
+        include: [{ model: CertificateType, attributes: ['name'] }],
         useMaster: true 
     });
 
@@ -909,9 +910,10 @@ export const verifyAllJobDocuments = async (jobId, body, user) => {
                 }
             }
             if (missingDocs.length > 0) {
+                const certName = jc.CertificateType?.name || jc.id;
                 throw { 
                     statusCode: 400, 
-                    message: `Mandatory documents are missing or rejected and not resubmitted for certificate ${jc.id}. Cannot bulk approve.`,
+                    message: `Mandatory documents are missing or rejected and not resubmitted for certificate ${certName}. Cannot bulk approve.`,
                     missing_documents: missingDocs.map(m => ({ id: m.id, name: m.document_name }))
                 };
             }

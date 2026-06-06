@@ -192,10 +192,11 @@ export const convertActivityRequestToJob = async (id, body, userId, scopeFilters
             };
         }
 
-        certificateTypeId = body.certificate_type_id;
+        certificateTypeId = body.certificate_type_id || (body.certificates && body.certificates[0]?.certificate_type_id);
         const jobData = {
             vessel_id: vesselId,
-            certificate_type_id: certificateTypeId,
+            certificates: body.certificates,
+            certificate_type_id: body.certificate_type_id,
             source_activity_request_id: activity.id,
             reason: pickNonEmpty(body.reason, null) || buildDefaultJobReason(activity),
             target_port: targetPort,
@@ -210,7 +211,7 @@ export const convertActivityRequestToJob = async (id, body, userId, scopeFilters
             requestedByUserId: activity.requested_by,
             statusHistoryReason: `Converted from activity request ${activity.request_number}`,
             skipNotifications: true,
-            skipMandatoryDocumentCheck: true,
+            skipMandatoryDocumentCheck: false,
         });
 
         await activity.update({
