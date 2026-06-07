@@ -294,7 +294,7 @@ const generateUniqueCertificateNumber = async (typeCode = null) => {
     return certNumber;
 };
 
-const _generateCertificateFile = async (cert, user, transaction = null) => {
+export const _generateCertificateFile = async (cert, user, transaction = null) => {
     try {
         const jobId = cert.job_id;
         const certificateNumber = cert.certificate_number;
@@ -347,12 +347,12 @@ const _generateCertificateFile = async (cert, user, transaction = null) => {
                 order: [['createdAt', 'DESC']],
                 transaction,
             });
+            
             if (!template) {
-                // No template found for the selected term; report error
                 throw { statusCode: 400, message: `No active certificate template found for term ${cert.certificate_term}` };
             }
         } else {
-            // No term specified; attempt to find a template without a term (any)
+            // No term specified; attempt to find a template without a term (default template)
             template = await db.CertificateTemplate.findOne({
                 where: {
                     certificate_type_id: cert.certificate_type_id,
@@ -362,8 +362,9 @@ const _generateCertificateFile = async (cert, user, transaction = null) => {
                 order: [['createdAt', 'DESC']],
                 transaction,
             });
+            
             if (!template) {
-                throw { statusCode: 400, message: 'No active certificate template found for any term' };
+                throw { statusCode: 400, message: 'No active default certificate template found' };
             }
         }
 
@@ -387,8 +388,27 @@ const _generateCertificateFile = async (cert, user, transaction = null) => {
         return docxUrl;
     } catch (err) {
         logger.error('Error in _generateCertificateFile', { certId: cert.id, err: err.message });
-        return null;
+        throw err;
     }
+};
+
+export const verifyTemplateExists = async (certificateTypeId, term, transaction = null) => {
+    const template = await db.CertificateTemplate.findOne({
+        where: {
+            certificate_type_id: certificateTypeId,
+            is_active: true,
+            certificate_term: term || null,
+        },
+        transaction,
+        useMaster: true
+    });
+    if (!template) {
+        throw {
+            statusCode: 400,
+            message: `No active certificate template found for term ${term || 'default'}`
+        };
+    }
+    return template;
 };
 
 export const generateCertificate = async (data, user) => {
@@ -441,6 +461,12 @@ export const generateCertificate = async (data, user) => {
 
         const certType = await db.CertificateType.findByPk(certTypeId, { attributes: ['id', 'name', 'issuing_authority', 'short_code', 'requires_survey'], transaction });
         if (!certType) throw { statusCode: 404, message: 'Certificate type not found' };
+
+        if (!certificate_term || !['FULL_TERM', 'SHORT_TERM'].includes(certificate_term)) {
+            throw { statusCode: 400, message: 'Certificate term is required and must be either FULL_TERM or SHORT_TERM.' };
+        }
+
+        await verifyTemplateExists(certTypeId, certificate_term, transaction);
 
         // ── Guard 1: Status Check ──
         if (!skip_validation) {
@@ -540,7 +566,7 @@ export const generateCertificate = async (data, user) => {
             version: 1,
             issued_by_user_id: userId,
             flag_administration_id: flag_administration_id || null,
-            certificate_term: certificate_term || null,
+            certificate_term: certificate_term,
         }, { transaction });
 
         // Add history for initial draft
@@ -884,6 +910,10 @@ export const updateDraft = async (id, data, user) => {
 
     const { flag_administration_id, certificate_term, remarks, issue_date, expiry_date } = data;
     
+    if (certificate_term !== undefined) {
+        await verifyTemplateExists(cert.certificate_type_id, certificate_term);
+    }
+    
     await cert.update({
         flag_administration_id,
         certificate_term,
@@ -900,7 +930,31 @@ export const updateDraft = async (id, data, user) => {
         changed_at: new Date()
     });
 
-    return cert;
+    // Regenerate PDF file on draft update
+    const freshCert = await Certificate.findByPk(cert.id, {
+        useMaster: true,
+        include: [
+            { model: db.Vessel },
+            { model: db.CertificateType },
+            { model: db.FlagAdministration, as: 'FlagState' }
+        ]
+    });
+    await _generateCertificateFile(freshCert, user);
+
+    const finalCert = await Certificate.findByPk(cert.id, {
+        useMaster: true,
+        include: [
+            { model: db.Vessel, attributes: ['vessel_name', 'imo_number'] },
+            { model: db.CertificateType, attributes: ['name'] }
+        ]
+    });
+    if (finalCert && finalCert.pdf_file_url) {
+        const key = fileAccessService.getKeyFromUrl(finalCert.pdf_file_url);
+        const signedUrl = await fileAccessService.generateSignedUrl(key, 3600, user);
+        finalCert.setDataValue('pdf_url', signedUrl);
+    }
+
+    return finalCert;
 };
 
 export const issueCertificate = async (id, user) => {
@@ -918,6 +972,8 @@ export const issueCertificate = async (id, user) => {
 
         if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
         if (cert.status !== 'DRAFT') throw { statusCode: 400, message: 'Only draft certificates can be issued' };
+
+        await verifyTemplateExists(cert.certificate_type_id, cert.certificate_term, transaction);
 
         const issuedAt = new Date();
         await cert.update({

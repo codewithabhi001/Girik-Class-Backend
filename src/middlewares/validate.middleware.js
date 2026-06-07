@@ -113,7 +113,7 @@ export const schemas = {
         issue_date: Joi.date().iso().optional(),
         expiry_date: Joi.date().iso().optional(),
         flag_administration_id: Joi.string().guid().optional().allow(null),
-        certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM').optional(),
+        certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM').required(),
         skip_validation: Joi.boolean().optional().default(false), // ADMIN-only bypass for E2E
     }).or('job_id', 'job_certificate_id'),
     applySurveyor: Joi.object({
@@ -427,7 +427,9 @@ export const schemas = {
         template_name: Joi.string().required(),
         certificate_type_id: Joi.string().guid().required(),
         certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM').optional().allow(null),
-        template_file_url: Joi.string().required(),
+        template_file_url: Joi.string().pattern(/\.docx$/i).required().messages({
+            'string.pattern.base': 'Template file must be a valid Microsoft Word document (.docx)'
+        }),
         variables: Joi.array().items(Joi.string()).optional(),
         is_active: Joi.boolean().optional().default(true)
     }),
@@ -435,7 +437,9 @@ export const schemas = {
         template_name: Joi.string().optional(),
         certificate_type_id: Joi.string().guid().optional(),
         certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM').optional().allow(null),
-        template_file_url: Joi.string().optional(),
+        template_file_url: Joi.string().pattern(/\.docx$/i).optional().messages({
+            'string.pattern.base': 'Template file must be a valid Microsoft Word document (.docx)'
+        }),
         variables: Joi.array().items(Joi.string()).optional(),
         is_active: Joi.boolean().optional()
     }),

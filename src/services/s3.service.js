@@ -86,11 +86,22 @@ export const getUploadSignedUrl = async (key, contentType, expiresIn = 3600) => 
     return await getSignedUrl(s3Client, command, { expiresIn });
 };
 
-export const getFileContent = async (key) => {
+const cleanKey = (urlOrKey) => {
+    if (!urlOrKey) return null;
+    try {
+        const url = new URL(urlOrKey);
+        return decodeURIComponent(url.pathname.substring(1));
+    } catch (e) {
+        return decodeURIComponent(urlOrKey);
+    }
+};
+
+export const getFileContent = async (keyOrUrl) => {
     if (!env.aws.bucketName || !env.aws.accessKeyId) {
         if (env.nodeEnv === 'production') throw new Error('FATAL: AWS credentials not configured in production environment.');
         return Buffer.from("Mock Content for Integrity Check");
     }
+    const key = cleanKey(keyOrUrl);
     const command = new GetObjectCommand({
         Bucket: env.aws.bucketName,
         Key: key,

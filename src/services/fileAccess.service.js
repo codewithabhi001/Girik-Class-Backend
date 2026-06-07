@@ -28,11 +28,11 @@ export const getKeyFromUrl = (urlOrKey) => {
     if (!urlOrKey) return null;
     try {
         const url = new URL(urlOrKey);
-        // Remove leading slash
-        return url.pathname.substring(1);
+        // Remove leading slash and decode URI components (e.g. %20 -> space, %28 -> '(' )
+        return decodeURIComponent(url.pathname.substring(1));
     } catch (e) {
         // Not a URL, assume it's a key
-        return urlOrKey;
+        return decodeURIComponent(urlOrKey);
     }
 };
 
