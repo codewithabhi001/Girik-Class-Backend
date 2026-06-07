@@ -13,18 +13,44 @@ const Document = db.Document;
  * Create a new checklist template
  */
 export const createChecklistTemplate = async (data, userId) => {
-    return await ChecklistTemplate.create({
-        name: data.name,
-        code: data.code,
-        description: data.description,
-        sections: data.sections,
-        template_files: data.template_files,
-        certificate_type_id: data.certificate_type_id,
-        status: data.status || 'DRAFT',
-        metadata: data.metadata || {},
-        created_by: userId,
-        updated_by: userId
-    });
+    const txn = await db.sequelize.transaction();
+    try {
+        const template = await db.ChecklistTemplate.create({
+            name: data.name,
+            code: data.code,
+            description: data.description,
+            sections: data.sections,
+            template_files: data.template_files || [], // keep JSON for backward compat
+            certificate_type_id: data.certificate_type_id,
+            status: data.status || 'DRAFT',
+            metadata: data.metadata || {},
+            created_by: userId,
+            updated_by: userId
+        }, { transaction: txn });
+
+        // Also create ChecklistTemplateFile rows for each file key
+        const fileKeys = Array.isArray(data.template_files) ? data.template_files : [];
+        for (let i = 0; i < fileKeys.length; i++) {
+            const key = fileKeys[i];
+            const keyParts = key.split('/');
+            const rawName = keyParts[keyParts.length - 1] || 'Document';
+            const cleanName = rawName.replace(/^\d+_/, '');
+            await db.ChecklistTemplateFile.create({
+                checklist_template_id: template.id,
+                name: cleanName,
+                file_key: key,
+                display_order: i,
+                is_mandatory: true,
+                created_by: userId
+            }, { transaction: txn });
+        }
+
+        await txn.commit();
+        return template;
+    } catch (err) {
+        await txn.rollback();
+        throw err;
+    }
 };
 
 /**
@@ -50,6 +76,12 @@ export const getChecklistTemplates = async (filters = {}) => {
                 model: db.User,
                 as: 'Creator',
                 attributes: ['id', 'name', 'email']
+            },
+            {
+                model: db.ChecklistTemplateFile,
+                as: 'TemplateFiles',
+                attributes: ['id', 'name', 'description', 'file_key', 'display_order', 'is_mandatory'],
+                order: [['display_order', 'ASC']]
             }
         ],
         order: [['created_at', 'DESC']]
@@ -78,6 +110,13 @@ export const getChecklistTemplateById = async (id) => {
                 model: db.User,
                 as: 'Updater',
                 attributes: ['id', 'name', 'email']
+            },
+            {
+                model: db.ChecklistTemplateFile,
+                as: 'TemplateFiles',
+                attributes: ['id', 'name', 'description', 'file_key', 'display_order', 'is_mandatory'],
+                separate: true,
+                order: [['display_order', 'ASC']]
             }
         ]
     });
@@ -131,6 +170,13 @@ export const getChecklistTemplateForJob = async (jobId, jobCertificateId = null)
                 model: CertificateType,
                 as: 'CertificateType',
                 attributes: ['id', 'name', 'issuing_authority']
+            },
+            {
+                model: db.ChecklistTemplateFile,
+                as: 'TemplateFiles',
+                attributes: ['id', 'name', 'description', 'file_key', 'display_order', 'is_mandatory'],
+                separate: true,
+                order: [['display_order', 'ASC']]
             }
         ]
     });

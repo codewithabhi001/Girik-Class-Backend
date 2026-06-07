@@ -39,6 +39,10 @@ export default (sequelize, DataTypes) => {
         ChecklistTemplate.belongsTo(models.User, { as: 'Creator', foreignKey: 'created_by' });
         ChecklistTemplate.belongsTo(models.User, { as: 'Updater', foreignKey: 'updated_by' });
         ChecklistTemplate.belongsTo(models.CertificateType, { foreignKey: 'certificate_type_id' });
+        ChecklistTemplate.hasMany(models.ChecklistTemplateFile, {
+            foreignKey: 'checklist_template_id',
+            as: 'TemplateFiles'
+        });
     };
 
     return ChecklistTemplate;

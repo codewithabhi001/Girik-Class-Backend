@@ -112,35 +112,69 @@ const getSingleChecklist = async (jobId, job_certificate_id, filters, user) => {
 
     const signedFiles = await resolveKeyArray(survey?.signed_checklist_files, user);
 
+    // ── Fetch signed documents from new table (with template file info) ──
+    let surveySignedDocuments = [];
+    if (survey?.id) {
+        const docs = await db.SurveySignedDocument.findAll({
+            where: { survey_id: survey.id },
+            include: [
+                {
+                    model: db.ChecklistTemplateFile,
+                    as: 'TemplateFile',
+                    attributes: ['id', 'name', 'description', 'display_order']
+                },
+                {
+                    model: db.User,
+                    as: 'Reviewer',
+                    attributes: ['id', 'name', 'email']
+                }
+            ],
+            order: [['created_at', 'ASC']]
+        });
+        surveySignedDocuments = await fileAccessService.resolveEntity(docs, user);
+    }
+
     let templateMeta = null;
     let templateFiles = [];
     let templateSections = [];
+    let checklistTemplateFiles = [];
     try {
         const certTypeId = jobCert?.certificate_type_id;
         if (certTypeId) {
             const template = await ChecklistTemplate.findOne({
                 where: { certificate_type_id: certTypeId, status: 'ACTIVE' },
                 attributes: ['id', 'name', 'code', 'template_files', 'sections'],
+                include: [{
+                    model: db.ChecklistTemplateFile,
+                    as: 'TemplateFiles',
+                    attributes: ['id', 'name', 'description', 'file_key', 'display_order', 'is_mandatory'],
+                    separate: true,
+                    order: [['display_order', 'ASC']]
+                }]
             });
             if (template) {
                 templateMeta = { id: template.id, name: template.name, code: template.code };
                 templateSections = template.sections || [];
                 const resolvedTemplate = await fileAccessService.resolveEntity(template, user);
                 templateFiles = Array.isArray(resolvedTemplate?.template_files) ? resolvedTemplate.template_files : [];
+                checklistTemplateFiles = resolvedTemplate?.TemplateFiles || [];
             }
         }
     } catch (err) {
         templateMeta = null;
         templateFiles = [];
         templateSections = [];
+        checklistTemplateFiles = [];
     }
 
     return {
         job_certificate_id: certId,
         certificate_type_id: jobCert?.certificate_type_id,
         items: resolvedItems,
-        signed_checklist_files: signedFiles,
+        signed_checklist_files: signedFiles,      // legacy JSON column
+        survey_signed_documents: surveySignedDocuments, // new table \u2014 richer data
         template_files: templateFiles,
+        checklist_template_files: checklistTemplateFiles, // new table with ids + names
         template: templateMeta,
         sections: templateSections
     };
@@ -226,7 +260,7 @@ export const submitChecklist = async (jobId, items, user, signedChecklistFiles =
             results.push(record);
         }
 
-        // Update signed checklist files on the survey for this certificate
+        // Update signed checklist files — dual write: JSON (backward compat) + new table
         if (Array.isArray(signedChecklistFiles)) {
             const existingFiles = survey.signed_checklist_files || [];
             const existingUrlMap = new Map();
@@ -237,11 +271,41 @@ export const submitChecklist = async (jobId, items, user, signedChecklistFiles =
 
             const updatedFiles = [];
             for (const file of signedChecklistFiles) {
-                const url = typeof file === 'string' ? file : file.url;
-                if (existingUrlMap.has(url)) {
-                    updatedFiles.push(existingUrlMap.get(url));
+                // file may be a plain key string or an object {url, template_file_id, file_name}
+                const fileKey = typeof file === 'string' ? file : (file.url || file.file_key || file.key);
+                const templateFileId = typeof file === 'object' ? file.template_file_id : null;
+                const fileName = typeof file === 'object' ? file.file_name : null;
+
+                if (existingUrlMap.has(fileKey)) {
+                    updatedFiles.push(existingUrlMap.get(fileKey));
                 } else {
-                    updatedFiles.push({ url, status: 'PENDING', rejection_reason: null });
+                    updatedFiles.push({ url: fileKey, status: 'PENDING', rejection_reason: null });
+
+                    // ── NEW TABLE: insert into survey_signed_documents ──
+                    const existingRow = await db.SurveySignedDocument.findOne({
+                        where: { survey_id: survey.id, file_key: fileKey },
+                        transaction: txn
+                    });
+                    if (!existingRow) {
+                        // Resolve template file name if template_file_id provided
+                        let templateFileName = null;
+                        if (templateFileId) {
+                            const tf = await db.ChecklistTemplateFile.findByPk(templateFileId, { transaction: txn });
+                            templateFileName = tf?.name || null;
+                        }
+                        const cleanFileName = fileName || (fileKey.split('/').pop() || '').replace(/^\d+_/, '');
+                        await db.SurveySignedDocument.create({
+                            survey_id: survey.id,
+                            job_certificate_id: certId,
+                            template_file_id: templateFileId || null,
+                            template_file_name: templateFileName,
+                            file_key: fileKey,
+                            file_name: cleanFileName,
+                            status: 'PENDING',
+                            rejection_reason: null,
+                            submitted_by: userId
+                        }, { transaction: txn });
+                    }
                 }
             }
             survey.set('signed_checklist_files', updatedFiles);
@@ -317,11 +381,38 @@ export const updateSignedChecklistFiles = async (jobId, signedChecklistFiles, us
 
     const updatedFiles = [];
     for (const file of signedChecklistFiles) {
-        const url = typeof file === 'string' ? file : file.url;
-        if (existingUrlMap.has(url)) {
-            updatedFiles.push(existingUrlMap.get(url));
+        const fileKey = typeof file === 'string' ? file : (file.url || file.file_key || file.key);
+        const templateFileId = typeof file === 'object' ? file.template_file_id : null;
+        const fileName = typeof file === 'object' ? file.file_name : null;
+
+        if (existingUrlMap.has(fileKey)) {
+            updatedFiles.push(existingUrlMap.get(fileKey));
         } else {
-            updatedFiles.push({ url, status: 'PENDING', rejection_reason: null });
+            updatedFiles.push({ url: fileKey, status: 'PENDING', rejection_reason: null });
+
+            // ── NEW TABLE: upsert into survey_signed_documents ──
+            const existingRow = await db.SurveySignedDocument.findOne({
+                where: { survey_id: survey.id, file_key: fileKey }
+            });
+            if (!existingRow) {
+                let templateFileName = null;
+                if (templateFileId) {
+                    const tf = await db.ChecklistTemplateFile.findByPk(templateFileId);
+                    templateFileName = tf?.name || null;
+                }
+                const cleanFileName = fileName || (fileKey.split('/').pop() || '').replace(/^\d+_/, '');
+                await db.SurveySignedDocument.create({
+                    survey_id: survey.id,
+                    job_certificate_id: certId,
+                    template_file_id: templateFileId || null,
+                    template_file_name: templateFileName,
+                    file_key: fileKey,
+                    file_name: cleanFileName,
+                    status: 'PENDING',
+                    rejection_reason: null,
+                    submitted_by: userId
+                });
+            }
         }
     }
 
@@ -411,21 +502,79 @@ export const reviewChecklistItem = async (jobId, itemId, { status, rejection_rea
 };
 
 /**
- * TO action to approve/reject a signed checklist document (by index on the certificate's survey).
+ * TO action to approve/reject a signed checklist document.
+ * Accepts either:
+ *   - documentId (UUID from survey_signed_documents table) — preferred
+ *   - fileIndex  (legacy integer index fallback)
  */
-export const reviewSignedDocument = async (jobId, fileIndex, { status, rejection_reason }, user, jobCertificateId = null) => {
+export const reviewSignedDocument = async (jobId, documentIdOrIndex, { status, rejection_reason }, user, jobCertificateId = null) => {
     if (!['TO', 'ADMIN'].includes(user.role)) {
         throw { statusCode: 403, message: 'Only Technical Officers (TO) and Admins have permission to review documents.' };
     }
 
-    // Find the survey — try per-certificate first
+    const isUuid = typeof documentIdOrIndex === 'string' && documentIdOrIndex.includes('-');
+
+    // ── New path: review by document UUID ──
+    if (isUuid) {
+        const doc = await db.SurveySignedDocument.findByPk(documentIdOrIndex, {
+            include: [{ model: db.Survey, as: 'Survey' }],
+            useMaster: true
+        });
+        if (!doc) throw { statusCode: 404, message: 'Signed document not found.' };
+
+        // Verify it belongs to this job
+        const jc = await JobCertificate.findByPk(doc.job_certificate_id, { useMaster: true });
+        if (!jc || jc.job_request_id !== jobId) {
+            throw { statusCode: 403, message: 'This document does not belong to the specified job.' };
+        }
+
+        await doc.update({
+            status,
+            rejection_reason: status === 'REJECTED' ? rejection_reason : null,
+            reviewed_by: user.id,
+            reviewed_at: new Date()
+        });
+
+        // Sync back to JSON column for backward compat
+        const survey = doc.Survey;
+        if (survey) {
+            const files = survey.signed_checklist_files || [];
+            const updatedFiles = files.map(f => {
+                const fKey = typeof f === 'string' ? f : (f.url || f.file_key);
+                if (fKey === doc.file_key) {
+                    return {
+                        ...(typeof f === 'object' ? f : { url: f }),
+                        status,
+                        rejection_reason: status === 'REJECTED' ? rejection_reason : null
+                    };
+                }
+                return f;
+            });
+            survey.set('signed_checklist_files', updatedFiles);
+            survey.changed('signed_checklist_files', true);
+            await survey.save();
+        }
+
+        return {
+            id: doc.id,
+            template_file_id: doc.template_file_id,
+            template_file_name: doc.template_file_name,
+            file_key: doc.file_key,
+            file_name: doc.file_name,
+            status: doc.status,
+            rejection_reason: doc.rejection_reason,
+            reviewed_by: user.id,
+            reviewed_at: doc.reviewed_at
+        };
+    }
+
+    // ── Legacy path: review by integer index ──
+    const fileIndex = parseInt(documentIdOrIndex, 10);
     const jobCerts = await JobCertificate.findAll({ where: { job_request_id: jobId }, useMaster: true });
     let survey = null;
     if (jobCertificateId) {
-        // BUG FIX: scope to the specific certificate when provided
         survey = await Survey.findOne({ where: { job_certificate_id: jobCertificateId }, useMaster: true });
     } else if (jobCerts.length > 0) {
-        // BUG FIX: must use Op.in for array of IDs
         survey = await Survey.findOne({
             where: { job_certificate_id: { [db.Sequelize.Op.in]: jobCerts.map(jc => jc.id) } },
             useMaster: true
@@ -446,6 +595,16 @@ export const reviewSignedDocument = async (jobId, fileIndex, { status, rejection
     survey.set('signed_checklist_files', updatedFiles);
     survey.changed('signed_checklist_files', true);
     await survey.save();
+
+    // Sync to new table too (by file_key)
+    const fileEntry = updatedFiles[fileIndex];
+    const fileKey = typeof fileEntry === 'string' ? fileEntry : (fileEntry.url || fileEntry.file_key);
+    if (fileKey) {
+        await db.SurveySignedDocument.update(
+            { status, rejection_reason: status === 'REJECTED' ? rejection_reason : null, reviewed_by: user.id, reviewed_at: new Date() },
+            { where: { survey_id: survey.id, file_key: fileKey } }
+        );
+    }
 
     return {
         index: fileIndex,

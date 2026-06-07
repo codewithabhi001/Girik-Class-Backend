@@ -136,35 +136,60 @@ const requireAllSurveys = async (jobId) => {
  *             Certs already past REWORK_REQUIRED (STARTED / CHECKLIST_SUBMITTED / etc.) are skipped.
  */
 export const startSurvey = async (data, userId) => {
-    const { job_id, latitude, longitude } = data;
+    const { job_id, job_certificate_id, latitude, longitude } = data;
 
-    if (!job_id) {
-        throw { statusCode: 400, message: 'job_id is required.' };
+    if (!job_id && !job_certificate_id) {
+        throw { statusCode: 400, message: 'Either job_id or job_certificate_id is required.' };
     }
 
-    const jobCerts = await db.JobCertificate.findAll({
-        where: { job_request_id: job_id },
-        include: [{ model: db.CertificateType, attributes: ['id', 'requires_survey'] }],
-        useMaster: true
-    });
-    if (!jobCerts.length) throw { statusCode: 404, message: 'No certificates found for this job.' };
+    // ── Resolve job_id from job_certificate_id if only cert provided ──
+    let resolvedJobId = job_id;
+    if (!resolvedJobId && job_certificate_id) {
+        const jc = await db.JobCertificate.findByPk(job_certificate_id, { useMaster: true });
+        if (!jc) throw { statusCode: 404, message: 'Job certificate not found.' };
+        resolvedJobId = jc.job_request_id;
+    }
+
+    // ── Fetch certificates to start ──
+    // If job_certificate_id is provided → start ONLY that one certificate's survey
+    // If only job_id is provided → start ALL eligible certificates (legacy behavior)
+    let certsToStart;
+    if (job_certificate_id) {
+        const jc = await db.JobCertificate.findOne({
+            where: { id: job_certificate_id, job_request_id: resolvedJobId },
+            include: [{ model: db.CertificateType, attributes: ['id', 'requires_survey'] }],
+            useMaster: true
+        });
+        if (!jc) throw { statusCode: 404, message: 'Job certificate not found for this job.' };
+        if (jc.CertificateType && jc.CertificateType.requires_survey === false) {
+            throw { statusCode: 400, message: 'Survey is not required for this certificate type.' };
+        }
+        certsToStart = [jc];
+    } else {
+        certsToStart = await db.JobCertificate.findAll({
+            where: { job_request_id: resolvedJobId },
+            include: [{ model: db.CertificateType, attributes: ['id', 'requires_survey'] }],
+            useMaster: true
+        });
+        if (!certsToStart.length) throw { statusCode: 404, message: 'No certificates found for this job.' };
+    }
 
     // Guard: job must be SURVEY_AUTHORIZED or REWORK_REQUESTED
-    const job = await assertJobAccessible(job_id, userId, {
+    const job = await assertJobAccessible(resolvedJobId, userId, {
         checkSurveyor: true,
         allowedStatuses: ['SURVEY_AUTHORIZED', 'REWORK_REQUESTED']
     });
 
-    const hasSurveyRequiredCert = jobCerts.some(c => !c.CertificateType || c.CertificateType.requires_survey !== false);
+    const hasSurveyRequiredCert = certsToStart.some(c => !c.CertificateType || c.CertificateType.requires_survey !== false);
     if (!hasSurveyRequiredCert) {
-        throw { statusCode: 400, message: 'Survey not required for this job.' };
+        throw { statusCode: 400, message: 'Survey not required for the specified certificate(s).' };
     }
 
     const txn = await db.sequelize.transaction();
     let startedCount = 0;
     let alreadyInProgressCount = 0;
     try {
-        for (const cert of jobCerts) {
+        for (const cert of certsToStart) {
             if (cert.CertificateType && cert.CertificateType.requires_survey === false) {
                 continue;
             }
@@ -183,7 +208,9 @@ export const startSurvey = async (data, userId) => {
             }
 
             if (survey.survey_status !== 'STARTED') {
-                await lifecycleService.updateSurveyStatus(survey.id, 'STARTED', userId, 'Surveyor checked in', { transaction: txn, _skipSurveyLog: true });
+                // NOTE: _skipSurveyLog removed intentionally — we want "Surveyor checked in"
+                // to appear in survey history for full audit trail.
+                await lifecycleService.updateSurveyStatus(survey.id, 'STARTED', userId, 'Surveyor checked in', { transaction: txn });
             }
 
             await survey.update({
@@ -192,17 +219,17 @@ export const startSurvey = async (data, userId) => {
                 start_longitude: longitude
             }, { transaction: txn });
 
-            await GpsTracking.create({ surveyor_id: userId, job_id, job_certificate_id: cert.id, latitude, longitude }, { transaction: txn });
+            await GpsTracking.create({ surveyor_id: userId, job_id: resolvedJobId, job_certificate_id: cert.id, latitude, longitude }, { transaction: txn });
             startedCount++;
         }
 
-        const surveyRequiredCerts = jobCerts.filter(c => !c.CertificateType || c.CertificateType.requires_survey !== false);
+        const surveyRequiredCerts = certsToStart.filter(c => !c.CertificateType || c.CertificateType.requires_survey !== false);
         if (startedCount === 0 && surveyRequiredCerts.length > 0) {
-            // All rework certs are already STARTED or beyond — return 409 so the
+            // All certs are already STARTED or beyond — return 409 so the
             // mobile client knows to navigate directly to the survey page.
             throw {
                 statusCode: 409,
-                message: `Survey already started for this job. Please continue the survey in progress.`
+                message: `Survey already started for this certificate. Please continue the survey in progress.`
             };
         }
 
@@ -213,18 +240,23 @@ export const startSurvey = async (data, userId) => {
     }
 
     // ── Post-commit notifications (non-transactional, fire-and-forget) ──
-    logger.info({ entity: 'SURVEY', event: 'CHECKIN', jobId: job_id, triggeredBy: userId });
+    logger.info({ entity: 'SURVEY', event: 'CHECKIN', jobId: resolvedJobId, jobCertificateId: job_certificate_id, triggeredBy: userId });
     try {
-        const jobWithVessel = await JobRequest.findByPk(job_id, { include: ['Vessel'], useMaster: true });
+        const jobWithVessel = await JobRequest.findByPk(resolvedJobId, { include: ['Vessel'], useMaster: true });
         const actor = await User.findByPk(userId, { useMaster: true });
         notificationService.notifyRoles(['ADMIN', 'TM', 'TO'], 'SURVEY_STARTED', {
-            jobId: job_id, vesselName: jobWithVessel?.Vessel?.vessel_name, surveyorName: actor?.name
+            jobId: resolvedJobId, vesselName: jobWithVessel?.Vessel?.vessel_name, surveyorName: actor?.name
         }).catch(() => { });
     } catch (notifErr) {
         logger.error('Non-critical: notification error in startSurvey', notifErr);
     }
 
-    return { message: `Started ${startedCount} surveys for the job.`, job_id };
+    return {
+        message: `Started ${startedCount} survey(s) successfully.`,
+        job_id: resolvedJobId,
+        job_certificate_id: job_certificate_id || null,
+        started_count: startedCount
+    };
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

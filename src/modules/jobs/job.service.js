@@ -772,12 +772,10 @@ export const verifyJobCertificateDocuments = async (jobCertificateId, body, user
             );
         }
 
-        // Mark remaining (non-rejected) docs as APPROVED
-        const rejectedIds = rejectedDocs.map(rd => rd.document_id).filter(Boolean);
-        await JobDocument.update(
-            { verification_status: 'APPROVED', verified_by: userId },
-            { where: { job_certificate_id: jobCertificateId, id: { [Op.notIn]: rejectedIds }, verification_status: 'PENDING' } }
-        );
+        // NOTE: We intentionally do NOT auto-approve remaining docs here.
+        // Remaining PENDING docs stay PENDING — the TO must explicitly verify them
+        // after the client re-uploads the rejected ones. This prevents partially
+        // reviewed documents from being silently approved.
 
         // Audit trail
         const certType = await CertificateType.findByPk(jc.certificate_type_id);
@@ -1387,6 +1385,25 @@ export const authorizeSurveyForCertificate = async (jobCertificateId, remarks, u
                 },
                 transaction: txn
             });
+        }
+
+        // ── BUG FIX: also update parent job status to SURVEY_AUTHORIZED ──
+        // authorizeSurveyForCertificate was only updating the cert, leaving the
+        // job in APPROVED state — causing startSurvey to fail with a misleading error.
+        const allCerts = await db.JobCertificate.findAll({
+            where: { job_request_id: jc.job_request_id },
+            transaction: txn
+        });
+        const allAuthorized = allCerts.every(c =>
+            c.id === jobCertificateId
+                ? true  // this cert just got authorized
+                : ['SURVEY_AUTHORIZED', 'ISSUED', 'REJECTED', 'DOCUMENT_VERIFIED'].includes(c.status)
+        );
+        if (allAuthorized) {
+            await lifecycleService.updateJobStatus(
+                jc.job_request_id, 'SURVEY_AUTHORIZED', user.id,
+                remarks || `Survey authorized by ${user.role}`, { transaction: txn }
+            );
         }
 
         await txn.commit();

@@ -217,13 +217,30 @@ export const schemas = {
             remarks: Joi.string().allow('').optional(),
             file_url: Joi.string().allow('', null).optional()
         })).required(),
-        // Optional: S3 keys (returned earlier from /checklists/jobs/:jobId/signed-checklist-upload-url)
-        // for the full scanned + signed checklist document(s).
-        signed_checklist_files: Joi.array().items(Joi.string()).optional(),
+        // Optional: S3 keys or objects (url, template_file_id, file_name)
+        signed_checklist_files: Joi.array().items(
+            Joi.alternatives().try(
+                Joi.string(),
+                Joi.object({
+                    url: Joi.string().required(),
+                    template_file_id: Joi.string().guid().allow(null).optional(),
+                    file_name: Joi.string().allow('', null).optional()
+                })
+            )
+        ).optional(),
         job_certificate_id: Joi.string().guid().allow('', null).optional()
     }),
     updateSignedChecklistFiles: Joi.object({
-        signed_checklist_files: Joi.array().items(Joi.string()).required(),
+        signed_checklist_files: Joi.array().items(
+            Joi.alternatives().try(
+                Joi.string(),
+                Joi.object({
+                    url: Joi.string().required(),
+                    template_file_id: Joi.string().guid().allow(null).optional(),
+                    file_name: Joi.string().allow('', null).optional()
+                })
+            )
+        ).required(),
         job_certificate_id: Joi.string().guid().allow('', null).optional()
     }),
     createToca: Joi.object({

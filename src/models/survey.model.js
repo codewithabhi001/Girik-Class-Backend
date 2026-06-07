@@ -113,6 +113,7 @@ export default (sequelize, DataTypes) => {
         Survey.belongsTo(models.User, { foreignKey: 'surveyor_id' });
         Survey.belongsTo(models.User, { foreignKey: 'declared_by', as: 'Declarer' });
         Survey.hasMany(models.SurveyStatusHistory, { foreignKey: 'survey_id' });
+        Survey.hasMany(models.SurveySignedDocument, { foreignKey: 'survey_id', as: 'SignedDocuments' });
     };
 
     return Survey;
