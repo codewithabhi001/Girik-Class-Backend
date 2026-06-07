@@ -680,7 +680,11 @@ export const requestRework = async (jobId, data, userId) => {
             where: { job_certificate_id: jc.id, status: 'REJECTED' },
             useMaster: true
         });
-        const rejectedFiles = (survey.signed_checklist_files || []).filter(f => f.status === 'REJECTED').length;
+        const surveySignedDocsRejected = await db.SurveySignedDocument.count({
+            where: { survey_id: survey.id, status: 'REJECTED' },
+            useMaster: true
+        });
+        const rejectedFiles = surveySignedDocsRejected + (survey.signed_checklist_files || []).filter(f => f.status === 'REJECTED').length;
 
         if (rejectedItems > 0 || rejectedFiles > 0) {
             finalReason = `Granular Rejection: ${rejectedItems} items and ${rejectedFiles} documents rejected. ${finalReason}`.trim();
