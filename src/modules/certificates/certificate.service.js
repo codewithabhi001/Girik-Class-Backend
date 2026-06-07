@@ -388,6 +388,12 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
         return docxUrl;
     } catch (err) {
         logger.error('Error in _generateCertificateFile', { certId: cert.id, err: err.message });
+        if (err.message && (err.message.includes("Can't find end of central directory") || err.message.includes("zip"))) {
+            throw {
+                statusCode: 400,
+                message: `The template file '${template?.template_name || 'unknown'}' is not a valid Word document (.docx). Please upload a valid .docx file for this template.`
+            };
+        }
         throw err;
     }
 };
