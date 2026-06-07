@@ -174,10 +174,10 @@ export const startSurvey = async (data, userId) => {
         if (!certsToStart.length) throw { statusCode: 404, message: 'No certificates found for this job.' };
     }
 
-    // Guard: job must be SURVEY_AUTHORIZED or REWORK_REQUESTED
+    // Guard: job must be SURVEY_AUTHORIZED, REWORK_REQUESTED, or IN_PROGRESS
     const job = await assertJobAccessible(resolvedJobId, userId, {
         checkSurveyor: true,
-        allowedStatuses: ['SURVEY_AUTHORIZED', 'REWORK_REQUESTED']
+        allowedStatuses: ['SURVEY_AUTHORIZED', 'REWORK_REQUESTED', 'IN_PROGRESS']
     });
 
     const hasSurveyRequiredCert = certsToStart.some(c => !c.CertificateType || c.CertificateType.requires_survey !== false);
