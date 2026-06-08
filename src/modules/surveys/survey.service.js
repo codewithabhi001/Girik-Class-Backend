@@ -405,13 +405,16 @@ export const submitSurveyReport = async (jobCertificateId, data, files, userId) 
     const txn = await db.sequelize.transaction();
     try {
         // 1. Initial update of report fields
-        await survey.update({
+        const updateData = {
             submit_latitude,
             submit_longitude,
             attendance_photo_url: photoUrl,
             signature_url: signatureUrl,
-            survey_statement
-        }, { transaction: txn });
+        };
+        if (survey_statement !== undefined && survey_statement !== null && survey_statement !== '') {
+            updateData.survey_statement = survey_statement;
+        }
+        await survey.update(updateData, { transaction: txn });
 
         // 2. Advance status (updates submission_count, declared_by, declared_at)
         await lifecycleService.updateSurveyStatus(survey.id, 'SUBMITTED', userId, 'Survey report submitted', { transaction: txn, _skipJobSync: true });
@@ -424,7 +427,8 @@ export const submitSurveyReport = async (jobCertificateId, data, files, userId) 
         });
 
         const hashPayload = JSON.stringify({
-            survey_statement: survey.survey_statement,
+            // Include survey_statement only if it exists
+            ...(survey.survey_statement ? { survey_statement: survey.survey_statement } : {}),
             checklist_data: checklistData,
             evidence_proof_url: survey.evidence_proof_url,
             submit_latitude: survey.submit_latitude,
