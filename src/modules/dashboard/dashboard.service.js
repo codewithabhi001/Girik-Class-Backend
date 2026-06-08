@@ -250,6 +250,7 @@ const getOperationalStats = async () => {
         actionable_items: {
             drafting_needed: draftingNeededJobs.map(j => ({
                 id: j.id,
+                job_request_number: j.job_request_number,
                 vessel: j.Vessel?.vessel_name,
                 type: (j.certificates || []).map(c => c.CertificateType?.name).filter(Boolean).join(', ') || 'N/A',
                 finalized_at: j.updatedAt
@@ -258,6 +259,7 @@ const getOperationalStats = async () => {
         recent_activities: {
             jobs: recentJobs.map(j => ({
                 id: j.id,
+                job_request_number: j.job_request_number,
                 vessel: j.Vessel?.vessel_name,
                 type: (j.certificates || []).map(c => c.CertificateType?.name).filter(Boolean).join(', ') || 'N/A',
                 status: j.job_status,
@@ -341,6 +343,7 @@ export const getGMDashboard = async () => {
             pending_issuance: pendingIssuanceJobs.flatMap(j => 
                 (j.certificates || []).map(c => ({
                     id: j.id,
+                    job_request_number: j.job_request_number,
                     certificate_id: c.generated_certificate_id,
                     vessel: j.Vessel?.vessel_name,
                     type: c.CertificateType?.name || 'N/A',
@@ -403,6 +406,7 @@ export const getTMDashboard = async (user) => {
 
     const formatJob = (j) => ({
         id: j.id,
+        job_request_number: j.job_request_number,
         job_status: j.job_status,
         vessel: j.Vessel ? { vessel_name: j.Vessel.vessel_name, imo_number: j.Vessel.imo_number } : null,
         certificate_type: (j.certificates || []).map(c => c.CertificateType?.name).filter(Boolean).join(', ') || 'N/A',
@@ -489,6 +493,7 @@ export const getTODashboard = async (user) => {
 
     const formatJob = (j) => ({
         id: j.id,
+        job_request_number: j.job_request_number,
         job_status: j.job_status,
         vessel: j.Vessel ? { vessel_name: j.Vessel.vessel_name, imo_number: j.Vessel.imo_number } : null,
         certificate_type: (j.certificates || []).map(c => c.CertificateType?.name).filter(Boolean).join(', ') || 'N/A',
@@ -536,12 +541,24 @@ export const getSurveyorDashboard = async (user) => {
         }
     ];
 
-    const surveyorFilter = { assigned_surveyor_id: user.id };
+    const certRows = await JobCertificate.findAll({
+        where: { assigned_surveyor_id: user.id },
+        attributes: ['job_request_id'],
+        raw: true,
+        useReplica: true
+    });
+    const certJobIds = [...new Set(certRows.map((r) => r.job_request_id).filter(Boolean))];
+    const surveyorFilter = {
+        [Op.or]: [
+            { assigned_surveyor_id: user.id },
+            ...(certJobIds.length ? [{ id: { [Op.in]: certJobIds } }] : []),
+        ]
+    };
 
     const [assignedJobs, authorizedJobs, inProgressJobs, reworkJobs, completedJobs, allJobsRaw, allSurveysRaw, openNCsCount, profile] = await Promise.all([
         // Assigned — waiting for authorization, surveyor cannot start yet
         JobRequest.findAll({
-            where: { ...surveyorFilter, job_status: 'ASSIGNED' },
+            where: { [Op.and]: [surveyorFilter, { job_status: 'ASSIGNED' }] },
             include: jobIncludes,
             order: [['target_date', 'ASC']],
             limit: 5,
@@ -549,7 +566,7 @@ export const getSurveyorDashboard = async (user) => {
         }),
         // Authorized — surveyor can start these
         JobRequest.findAll({
-            where: { ...surveyorFilter, job_status: 'SURVEY_AUTHORIZED' },
+            where: { [Op.and]: [surveyorFilter, { job_status: 'SURVEY_AUTHORIZED' }] },
             include: jobIncludes,
             order: [['target_date', 'ASC']],
             limit: 5,
@@ -557,7 +574,7 @@ export const getSurveyorDashboard = async (user) => {
         }),
         // In Progress — actively being surveyed
         JobRequest.findAll({
-            where: { ...surveyorFilter, job_status: 'IN_PROGRESS' },
+            where: { [Op.and]: [surveyorFilter, { job_status: 'IN_PROGRESS' }] },
             include: jobIncludes,
             order: [['target_date', 'ASC']],
             limit: 5,
@@ -565,7 +582,7 @@ export const getSurveyorDashboard = async (user) => {
         }),
         // Action Required — rework requested, needs surveyor's attention
         JobRequest.findAll({
-            where: { ...surveyorFilter, job_status: 'REWORK_REQUESTED' },
+            where: { [Op.and]: [surveyorFilter, { job_status: 'REWORK_REQUESTED' }] },
             include: jobIncludes,
             order: [['updatedAt', 'DESC']],
             limit: 5,
@@ -573,7 +590,7 @@ export const getSurveyorDashboard = async (user) => {
         }),
         // Recently Completed — finished jobs
         JobRequest.findAll({
-            where: { ...surveyorFilter, job_status: { [Op.in]: ['SURVEY_DONE', 'REVIEWED', 'FINALIZED', 'PAYMENT_DONE', 'CERTIFIED'] } },
+            where: { [Op.and]: [surveyorFilter, { job_status: { [Op.in]: ['SURVEY_DONE', 'REVIEWED', 'FINALIZED', 'PAYMENT_DONE', 'CERTIFIED'] } }] },
             include: jobIncludes,
             order: [['updatedAt', 'DESC']],
             limit: 5,
@@ -640,6 +657,7 @@ export const getSurveyorDashboard = async (user) => {
 
         return {
             id: j.id,
+            job_request_number: j.job_request_number,
             job_status: j.job_status,
             survey_status: overallSurveyStatus,
             target_date: j.target_date,
@@ -779,6 +797,7 @@ export const getClientDashboard = async (clientId) => {
         stats,
         recent_jobs: jobs.slice(0, 5).map(j => ({
             id: j.id,
+            job_request_number: j.job_request_number,
             vessel_name: j.Vessel?.vessel_name,
             type: (j.certificates || []).map(c => c.CertificateType?.name).filter(Boolean).join(', ') || 'N/A',
             status: j.job_status,

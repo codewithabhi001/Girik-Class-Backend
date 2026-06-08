@@ -49,12 +49,13 @@ async function createFixtures() {
     const surveyor = await db.User.findOne({ where: { role: 'SURVEYOR' } });
     const tm = await db.User.findOne({ where: { role: 'TM' } });
     const requester = await db.User.findOne({ where: { role: { [db.Sequelize.Op.in]: ['GM', 'ADMIN', 'TM'] } } });
+    const certGen = await db.User.findOne({ where: { role: { [db.Sequelize.Op.in]: ['GM', 'ADMIN'] } } });
     const client = await db.Client.findOne();
     const flag = await db.FlagAdministration.findOne();
     const vessel = await db.Vessel.findOne();
     const certType = await db.CertificateType.findOne({ where: { requires_survey: true } });
 
-    if (!surveyor || !tm || !requester || !client || !flag || !vessel || !certType) {
+    if (!surveyor || !tm || !requester || !certGen || !client || !flag || !vessel || !certType) {
         throw new Error('Database is missing required seed data for testing (User, Client, Flag, Vessel, or CertificateType)');
     }
 
@@ -62,6 +63,8 @@ async function createFixtures() {
         surveyorId: surveyor.id,
         tmId: tm.id,
         requesterId: requester.id,
+        certGenId: certGen.id,
+        certGenRole: certGen.role,
         clientId: client.id,
         vesselId: vessel.id,
         certTypeId: certType.id
@@ -113,8 +116,8 @@ async function run() {
     console.log('\n══ GR-Class Lifecycle Hardened Integration Tests ══\n');
 
     const fx = await createFixtures();
-    const { surveyorId, tmId, requesterId, vesselId, certTypeId } = fx;
-    const tmUser = { id: tmId, role: 'TM' };
+    const { surveyorId, tmId, requesterId, certGenId, certGenRole, vesselId, certTypeId } = fx;
+    const certGenUser = { id: certGenId, role: certGenRole };
 
     // ─── 1. Happy Path: full flow to FINALIZED ────────────────────────────────
     console.log('\n── Section 1: Happy Path ────────────────────────────────────────────');
@@ -222,7 +225,7 @@ async function run() {
         await makeSurvey(jobId, surveyorId, 'FINALIZED');
 
         await expectError('Certificate blocked: survey statement not issued', 400, async () => {
-            await certService.generateCertificate({ job_id: jobId }, tmUser);
+            await certService.generateCertificate({ job_id: jobId, certificate_term: 'FULL_TERM' }, certGenUser);
         });
     }
 
@@ -232,7 +235,7 @@ async function run() {
         await makeSurvey(jobId, surveyorId, 'SUBMITTED'); // Not finalized
 
         await expectError('Certificate blocked: survey not FINALIZED', 400, async () => {
-            await certService.generateCertificate({ job_id: jobId }, tmUser);
+            await certService.generateCertificate({ job_id: jobId, certificate_term: 'FULL_TERM' }, certGenUser);
         });
     }
 
@@ -261,7 +264,7 @@ async function run() {
         await db.JobCertificate.update({ generated_certificate_id: fakeCert.id }, { where: { job_request_id: jobId2 } });
 
         await expectError('Duplicate certificate blocked (409)', 409, async () => {
-            await certService.generateCertificate({ job_id: jobId2 }, tmUser);
+            await certService.generateCertificate({ job_id: jobId2, certificate_term: 'FULL_TERM' }, certGenUser);
         });
     }
 

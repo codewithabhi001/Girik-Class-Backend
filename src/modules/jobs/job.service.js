@@ -1109,73 +1109,95 @@ export const assignSurveyorToCertificate = async (jobCertificateId, surveyorId, 
         throw { statusCode: 403, message: 'You do not have permission to assign surveyors.' };
     }
     const userId = user.id;
-    const jc = await db.JobCertificate.findByPk(jobCertificateId, { useMaster: true });
-    if (!jc) throw { statusCode: 404, message: 'Job Certificate not found' };
+    const txn = await db.sequelize.transaction();
+    try {
+        const jc = await db.JobCertificate.findByPk(jobCertificateId, { transaction: txn, lock: txn.LOCK.UPDATE });
+        if (!jc) throw { statusCode: 404, message: 'Job Certificate not found' };
 
-    const job = await requireJob(jc.job_request_id, { includeVessel: true, useMaster: true });
-    const surveyor = await User.findByPk(surveyorId, { useMaster: true });
-    if (!surveyor || surveyor.role !== 'SURVEYOR') {
-        throw { statusCode: 400, message: 'Invalid surveyor selection. Please select a user with the Surveyor role.' };
-    }
+        const job = await JobRequest.findByPk(jc.job_request_id, { include: ['Vessel'], transaction: txn, lock: txn.LOCK.UPDATE });
+        if (!job) throw { statusCode: 404, message: 'The requested job could not be found.' };
 
-    // Validate surveyor authority for this specific certificate type
-    const certType = await db.CertificateType.findByPk(jc.certificate_type_id);
-    const profile = await db.SurveyorProfile.findOne({ where: { user_id: surveyorId, status: 'ACTIVE' } });
-    if (!profile) {
-        throw { statusCode: 400, message: 'Surveyor profile not found or inactive.' };
-    }
-    let authorizedCerts = profile.authorized_certificates;
-    if (typeof authorizedCerts === 'string') {
-        try { authorizedCerts = JSON.parse(authorizedCerts); } catch (e) { authorizedCerts = []; }
-    }
-    if (!Array.isArray(authorizedCerts)) authorizedCerts = [];
-    if (certType && !authorizedCerts.includes(certType.name)) {
-        throw { statusCode: 400, message: `Surveyor is not authorized to inspect ${certType.name}` };
-    }
-
-    if (jc.assigned_surveyor_id) {
-        if (jc.assigned_surveyor_id === surveyorId) {
-            throw { statusCode: 400, message: 'This surveyor is already assigned to this certificate.' };
+        const surveyor = await User.findByPk(surveyorId, { transaction: txn, useMaster: true });
+        if (!surveyor || surveyor.role !== 'SURVEYOR') {
+            throw { statusCode: 400, message: 'Invalid surveyor selection. Please select a user with the Surveyor role.' };
         }
-        throw { statusCode: 400, message: 'A surveyor is already assigned to this certificate. Please use the Reassign feature.' };
-    }
 
-    if (['PENDING', 'REWORK_REQUESTED'].includes(jc.status)) {
-        throw { statusCode: 400, message: 'Cannot assign surveyor. Documents for this certificate are not yet verified.' };
-    }
+        // Validate surveyor authority for this specific certificate type
+        const certType = await db.CertificateType.findByPk(jc.certificate_type_id, { transaction: txn });
+        const profile = await db.SurveyorProfile.findOne({ where: { user_id: surveyorId, status: 'ACTIVE' }, transaction: txn });
+        if (!profile) {
+            throw { statusCode: 400, message: 'Surveyor profile not found or inactive.' };
+        }
+        let authorizedCerts = profile.authorized_certificates;
+        if (typeof authorizedCerts === 'string') {
+            try { authorizedCerts = JSON.parse(authorizedCerts); } catch (e) { authorizedCerts = []; }
+        }
+        if (!Array.isArray(authorizedCerts)) authorizedCerts = [];
+        if (certType && !authorizedCerts.includes(certType.name)) {
+            throw { statusCode: 400, message: `Surveyor is not authorized to inspect ${certType.name}` };
+        }
 
-    await jc.update({ assigned_surveyor_id: surveyorId });
-
-    if (certType && certType.requires_survey !== false) {
-        // Sync or create active survey
-        const [survey, created] = await db.Survey.findOrCreate({
-            where: { job_certificate_id: jobCertificateId },
-            defaults: {
-                surveyor_id: surveyorId,
-                survey_status: 'NOT_STARTED'
+        if (jc.assigned_surveyor_id) {
+            if (jc.assigned_surveyor_id === surveyorId) {
+                throw { statusCode: 400, message: 'This surveyor is already assigned to this certificate.' };
             }
-        });
-        if (!created && survey.surveyor_id !== surveyorId) {
-            await survey.update({ surveyor_id: surveyorId });
+            throw { statusCode: 400, message: 'A surveyor is already assigned to this certificate. Please use the Reassign feature.' };
         }
+
+        if (['PENDING', 'REWORK_REQUESTED'].includes(jc.status)) {
+            throw { statusCode: 400, message: 'Cannot assign surveyor. Documents for this certificate are not yet verified.' };
+        }
+
+        await jc.update({ assigned_surveyor_id: surveyorId }, { transaction: txn });
+
+        if (certType && certType.requires_survey !== false) {
+            // Sync or create active survey
+            const [survey, created] = await db.Survey.findOrCreate({
+                where: { job_certificate_id: jobCertificateId },
+                defaults: {
+                    surveyor_id: surveyorId,
+                    survey_status: 'NOT_STARTED'
+                },
+                transaction: txn
+            });
+            if (!created && survey.surveyor_id !== surveyorId) {
+                await survey.update({ surveyor_id: surveyorId }, { transaction: txn });
+            }
+        }
+
+        const surveyorName = surveyor ? surveyor.name : surveyorId;
+        const certName = certType ? certType.name : 'Unknown Certificate';
+
+        await db.JobStatusHistory.create({
+            job_id: job.id,
+            previous_status: job.job_status,
+            new_status: job.job_status,
+            changed_by: userId,
+            reason: `Assigned Surveyor ${surveyorName} to certificate (${certName})`
+        }, { transaction: txn });
+
+        // If parent job is APPROVED, transition to ASSIGNED
+        if (job.job_status === 'APPROVED') {
+            await lifecycleService.updateJobStatus(
+                job.id,
+                'ASSIGNED',
+                userId,
+                `Assigned Surveyor ${surveyorName} to certificate (${certName})`,
+                { transaction: txn }
+            );
+        }
+
+        await txn.commit();
+
+        notificationService.sendNotification(surveyorId, 'JOB_ASSIGNED', {
+            jobId: job.id, vesselName: job.Vessel?.vessel_name, port: job.target_port
+        });
+
+        return jc;
+    } catch (error) {
+        await txn.rollback();
+        throw error;
     }
-
-    const surveyorName = surveyor ? surveyor.name : surveyorId;
-    const certName = certType ? certType.name : 'Unknown Certificate';
-
-    await db.JobStatusHistory.create({
-        job_id: job.id,
-        previous_status: job.job_status,
-        new_status: job.job_status,
-        changed_by: userId,
-        reason: `Assigned Surveyor ${surveyorName} to certificate (${certName})`
-    });
-
-    notificationService.sendNotification(surveyorId, 'JOB_ASSIGNED', {
-        jobId: job.id, vesselName: job.Vessel.vessel_name, port: job.target_port
-    });
-
-    return jc;
 };
 
 /**
