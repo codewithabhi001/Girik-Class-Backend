@@ -203,6 +203,8 @@ export const schemas = {
     }),
     createNC: Joi.object({
         job_id: Joi.string().guid().required(),
+        vessel_id: Joi.string().guid().optional().allow(null, ''),
+        job_certificate_id: Joi.string().guid().optional().allow(null, ''),
         description: Joi.string().required(),
         severity: Joi.string().valid('MINOR', 'MAJOR', 'CRITICAL').required(),
     }),
