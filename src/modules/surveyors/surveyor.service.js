@@ -313,10 +313,25 @@ export const reportLocation = async (userId, locationData) => {
     return { success: true };
 };
 
-export const getGPSHistory = async (userId) => {
+export const getGPSHistory = async (idParam) => {
+    // GPS records are stored with User.id as surveyor_id.
+    // The caller may pass either a User ID or a SurveyorProfile ID.
+    // Resolve Profile ID → User ID if needed.
+    let userId = idParam;
+
+    const profile = await SurveyorProfile.findOne({
+        where: { [db.Sequelize.Op.or]: [{ id: idParam }, { user_id: idParam }] },
+        attributes: ['user_id'],
+        useReplica: true
+    });
+
+    if (profile) {
+        userId = profile.user_id;
+    }
+
     return await db.GpsTracking.findAll({
         where: { surveyor_id: userId },
-        attributes: ['id', 'job_id', 'surveyor_id', 'vessel_id', 'latitude', 'longitude', 'timestamp'],
+        attributes: ['id', 'job_id', 'job_certificate_id', 'surveyor_id', 'vessel_id', 'latitude', 'longitude', 'timestamp'],
         order: [['timestamp', 'DESC']],
         limit: 100,
         useReplica: true

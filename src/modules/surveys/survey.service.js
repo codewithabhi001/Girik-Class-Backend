@@ -405,16 +405,13 @@ export const submitSurveyReport = async (jobCertificateId, data, files, userId) 
     const txn = await db.sequelize.transaction();
     try {
         // 1. Initial update of report fields
-        const updateData = {
+        await survey.update({
             submit_latitude,
             submit_longitude,
             attendance_photo_url: photoUrl,
             signature_url: signatureUrl,
-        };
-        if (survey_statement !== undefined && survey_statement !== null && survey_statement !== '') {
-            updateData.survey_statement = survey_statement;
-        }
-        await survey.update(updateData, { transaction: txn });
+            survey_statement
+        }, { transaction: txn });
 
         // 2. Advance status (updates submission_count, declared_by, declared_at)
         await lifecycleService.updateSurveyStatus(survey.id, 'SUBMITTED', userId, 'Survey report submitted', { transaction: txn, _skipJobSync: true });
@@ -427,8 +424,7 @@ export const submitSurveyReport = async (jobCertificateId, data, files, userId) 
         });
 
         const hashPayload = JSON.stringify({
-            // Include survey_statement only if it exists
-            ...(survey.survey_statement ? { survey_statement: survey.survey_statement } : {}),
+            survey_statement: survey.survey_statement,
             checklist_data: checklistData,
             evidence_proof_url: survey.evidence_proof_url,
             submit_latitude: survey.submit_latitude,
@@ -1042,7 +1038,15 @@ export const getSurveyDetails = async (jobId, user) => {
     // Return empty array if no surveys yet (job may be newly ASSIGNED/AUTHORIZED)
     if (!surveys.length) return [];
 
-    return await fileAccessService.resolveEntity(surveys, { id: user?.id });
+    const resolved = await fileAccessService.resolveEntity(surveys, { id: user?.id });
+    // Strip the SHA-256 integrity hash — kept in DB for audit but never exposed via API
+    return resolved.map(s => {
+        if (s && typeof s === 'object') {
+            const { declaration_hash, ...rest } = s.get ? s.get({ plain: true }) : s;
+            return rest;
+        }
+        return s;
+    });
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

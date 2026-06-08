@@ -2116,14 +2116,14 @@ export const updatePriority = async (jobId, priority, reason, userId) => {
     });
     return job;
 };
-
 export const getJobHistory = async (id, scopeFilters = {}) => {
-    // Check if job exists and is accessible by the user (scope filtering)
+    // Verify job existence with scope filtering
     const job = await JobRequest.findOne({ where: { id, ...scopeFilters } });
     if (!job) {
         throw { statusCode: 404, message: 'The requested job could not be found or you do not have permission to view its history.' };
     }
 
+    // Fetch and format job status history
     const jobHistory = await JobStatusHistory.findAll({
         where: { job_id: id },
         order: [['created_at', 'ASC']],
@@ -2131,19 +2131,6 @@ export const getJobHistory = async (id, scopeFilters = {}) => {
         include: [{ model: User, attributes: ['name', 'email', 'role'] }],
         useReplica: true
     });
-
-    const jobCerts = await db.JobCertificate.findAll({ where: { job_request_id: id } });
-    const certIds = jobCerts.map(jc => jc.id);
-    const surveys = certIds.length > 0 ? await Survey.findAll({ where: { job_certificate_id: certIds }, useReplica: true }) : [];
-    const surveyIds = surveys.map(s => s.id);
-    const surveyHistory = surveyIds.length > 0 ? await db.SurveyStatusHistory.findAll({
-        where: { survey_id: surveyIds },
-        order: [['created_at', 'ASC']],
-        attributes: ['id', 'survey_id', 'previous_status', 'new_status', 'changed_by', 'reason', 'submission_iteration', 'createdAt'],
-        include: [{ model: User, as: 'User', attributes: ['name', 'email', 'role'] }],
-        useReplica: true
-    }) : [];
-
     const formattedJobHistory = jobHistory.map(h => {
         const plain = h.get({ plain: true });
         return {
@@ -2153,20 +2140,74 @@ export const getJobHistory = async (id, scopeFilters = {}) => {
         };
     });
 
-    const formattedSurveyHistory = surveyHistory.map(h => {
+    // Retrieve job certificates with their certificate type
+    const jobCerts = await db.JobCertificate.findAll({
+        where: { job_request_id: id },
+        include: [{ model: CertificateType, attributes: ['id', 'name'] }]
+    });
+
+    // Initialize map for certificates
+    const certMap = {};
+    jobCerts.forEach(jc => {
+        const ct = jc.CertificateType;
+        certMap[jc.id] = {
+            certificate_type: ct ? { id: ct.id, name: ct.name } : null,
+            surveys: []
+        };
+    });
+
+    // Load all surveys for these certificates
+    const certIds = jobCerts.map(jc => jc.id);
+    const surveys = certIds.length ? await Survey.findAll({
+        where: { job_certificate_id: certIds },
+        useReplica: true
+    }) : [];
+
+    // Map surveys to certificates and create lookup
+    const surveyLookup = {};
+    surveys.forEach(s => {
+        const certId = s.job_certificate_id;
+        if (certMap[certId]) {
+            const { declaration_hash, ...surveyPlain } = s.get({ plain: true });
+            const surveyObj = { ...surveyPlain, survey_history: [] };
+            certMap[certId].surveys.push(surveyObj);
+            surveyLookup[s.id] = surveyObj;
+        }
+    });
+
+    // Fetch survey status history for all surveys
+    const surveyIds = surveys.map(s => s.id);
+    const surveyHistory = surveyIds.length ? await db.SurveyStatusHistory.findAll({
+        where: { survey_id: surveyIds },
+        order: [['created_at', 'ASC']],
+        attributes: ['id', 'survey_id', 'previous_status', 'new_status', 'changed_by', 'reason', 'submission_iteration', 'createdAt'],
+        include: [{ model: User, as: 'User', attributes: ['name', 'email', 'role'] }],
+        useReplica: true
+    }) : [];
+
+    // Attach history entries to corresponding surveys
+    surveyHistory.forEach(h => {
         const plain = h.get({ plain: true });
-        return {
+        const entry = {
             ...plain,
             changed_by_name: plain.User?.name || 'System/Admin',
             changed_by_role: plain.User?.role || 'SYSTEM'
         };
+        const surveyObj = surveyLookup[plain.survey_id];
+        if (surveyObj) {
+            surveyObj.survey_history.push(entry);
+        }
     });
+
+    // Convert certMap to array
+    const certificate_surveys = Object.values(certMap);
 
     return {
         job_history: formattedJobHistory,
-        survey_history: formattedSurveyHistory
+        certificate_surveys
     };
 };
+
 
 export const addInternalNote = async (jobId, noteText, userId) => {
     const note = await db.JobNote.create({ job_id: jobId, user_id: userId, note_text: noteText, is_internal: true });
