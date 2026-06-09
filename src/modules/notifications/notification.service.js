@@ -1,6 +1,7 @@
 import db from '../../models/index.js';
 import * as emailService from '../../services/email.service.js';
 import logger from '../../utils/logger.js';
+import * as websocketService from '../../services/websocket.service.js';
 
 const Notification = db.Notification;
 const NotificationPreference = db.NotificationPreference;
@@ -58,12 +59,25 @@ export const sendNotification = async (userId, eventType, data) => {
         const appAllowed = !pref || (pref.app_enabled && matchesType);
 
         if (appAllowed) {
-            await Notification.create({
+            const notif = await Notification.create({
                 user_id: userId,
                 title: data.title || eventType,
                 message: data.message || 'New notification',
                 type: eventType
             });
+
+            // Emit live WebSocket notification
+            try {
+                websocketService.emitToUser(userId, 'notification:received', {
+                    id: notif.id,
+                    title: notif.title,
+                    message: notif.message,
+                    type: notif.type,
+                    created_at: notif.created_at || notif.createdAt
+                });
+            } catch (wsErr) {
+                logger.error('[WebSocket] Live notification emit failed:', wsErr);
+            }
         }
 
         if (emailAllowed && user.email) {
@@ -119,6 +133,20 @@ export const notifyRoles = async (roles, title, message, type = 'INFO') => {
         // 1. Bulk Insert Database Notifications
         if (notificationsToCreate.length > 0) {
             await Notification.bulkCreate(notificationsToCreate);
+
+            // Emit live WebSocket notifications to roles
+            try {
+                roles.forEach(role => {
+                    websocketService.emitToRole(role, 'notification:received', {
+                        title,
+                        message,
+                        type,
+                        created_at: new Date()
+                    });
+                });
+            } catch (wsErr) {
+                logger.error('[WebSocket] Live notification emit to roles failed:', wsErr);
+            }
         }
 
         // 2. Trigger Emails concurrently in background

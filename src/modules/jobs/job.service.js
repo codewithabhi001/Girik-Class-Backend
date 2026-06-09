@@ -2211,13 +2211,25 @@ export const getJobHistory = async (id, scopeFilters = {}) => {
 
 export const addInternalNote = async (jobId, noteText, userId) => {
     const note = await db.JobNote.create({ job_id: jobId, user_id: userId, note_text: noteText, is_internal: true });
-    await db.Message.create({
+    const message = await db.Message.create({
         job_id: jobId,
         sender_id: userId,
         message_text: noteText,
         is_internal: true,
         attachment_url: null
     });
+
+    try {
+        const fullMessage = await db.Message.findByPk(message.id, {
+            include: [{ model: db.User, as: 'Sender', attributes: ['name', 'role'] }]
+        });
+        const resolved = await fileAccessService.resolveEntity(fullMessage, { id: userId });
+        const websocketService = await import('../../services/websocket.service.js');
+        websocketService.emitToRoom(`job:${jobId}:internal`, 'message:received', resolved);
+    } catch (wsErr) {
+        console.error('[WebSocket] Broadcast internal note failed:', wsErr);
+    }
+
     return note;
 };
 

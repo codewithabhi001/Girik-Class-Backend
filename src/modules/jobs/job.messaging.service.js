@@ -1,6 +1,7 @@
 import db from '../../models/index.js';
 import * as s3Service from '../../services/s3.service.js';
 import * as fileAccessService from '../../services/fileAccess.service.js';
+import * as websocketService from '../../services/websocket.service.js';
 
 const Message = db.Message;
 const User = db.User;
@@ -57,7 +58,22 @@ export const sendMessage = async (jobId, senderId, data = {}) => {
         attachment_url: attachmentUrl
     });
 
-    return await fileAccessService.resolveEntity(message, { id: senderId });
+    const fullMessage = await Message.findByPk(message.id, {
+        include: [{ model: User, as: 'Sender', attributes: ['id', 'name', 'role'] }]
+    });
+
+    const resolved = await fileAccessService.resolveEntity(fullMessage, { id: senderId });
+
+    // Broadcast message to the correct job room (internal/external segregation)
+    try {
+        const roomName = resolved.is_internal ? `job:${jobId}:internal` : `job:${jobId}:external`;
+        websocketService.emitToRoom(roomName, 'message:received', resolved);
+    } catch (wsErr) {
+        // Non-blocking fallback
+        console.error('[WebSocket] Broadcast message failed:', wsErr);
+    }
+
+    return resolved;
 };
 
 export const getUnreadCount = async (userId) => {

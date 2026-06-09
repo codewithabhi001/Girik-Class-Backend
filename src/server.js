@@ -1,3 +1,4 @@
+import http from 'http';
 import app from './app.js';
 import env from './config/env.js';
 import logger from './utils/logger.js';
@@ -5,6 +6,7 @@ import db from './models/index.js';
 import chalk from 'chalk';
 
 import { startMonitoring } from './services/cron.service.js';
+import * as websocketService from './services/websocket.service.js';
 
 
 const PORT = env.port;
@@ -30,7 +32,10 @@ const startServer = async () => {
         const host = env.serverHost || (isProduction || process.env.USE_SERVER_IP === 'true' ? '[IP_ADDRESS]' : 'localhost');
         const baseUrl = `http://${host}:${PORT}`;
 
-        app.listen(PORT, () => {
+        const server = http.createServer(app);
+        await websocketService.init(server);
+
+        server.listen(PORT, () => {
             console.log('\n' + chalk.bgBlue.white.bold(' SYSTEM ') + chalk.dim(' ='.repeat(25)));
             logger.info(`Server is running on port ${PORT}`);
             console.log(`${chalk.green('🚀')} ${chalk.bold('Environment:')} ${chalk.cyan(env.nodeEnv)}`);
