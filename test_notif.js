@@ -15,7 +15,7 @@ async function testVariousNotifications() {
     const testEvents = [
         { type: 'JOB_ASSIGNMENT', data: { vesselName: 'Ocean Explorer', port: 'Singapore' } },
         { type: 'JOB_SENT_BACK', data: { vesselName: 'Ocean Explorer', remarks: 'Checklist incomplete' } },
-        { type: 'INFO', data: { title: 'System Maintenance 🔧', message: 'Server will be down for 10 mins.' } }
+        { type: 'INFO', data: { title: 'System Maintenance', message: 'Server will be down for 10 mins.' } }
     ];
 
     // Note: JOB_ASSIGNMENT might not be in my mapping, let's check JOB_ASSIGNED

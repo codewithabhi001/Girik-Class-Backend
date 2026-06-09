@@ -15,7 +15,7 @@ async function testImageNotification() {
     const event = {
         type: 'INFO',
         data: {
-            title: 'Visual Update! 🎨',
+            title: 'Visual Update!',
             message: 'Ye image ke saath notification ka demo hai. Aap ab in-push notifications mein badi photos bhi bhej sakte hain.',
             imageUrl: 'https://via.placeholder.com/1200x600/2c3e50/ffffff?text=Notification+With+Image+Demo'
         }

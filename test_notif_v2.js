@@ -15,7 +15,7 @@ async function testImageNotificationV2() {
     const event = {
         type: 'INFO',
         data: {
-            title: 'Image Test V2 📸',
+            title: 'Image Test V2',
             message: 'Ye ek doosri photo ke saath test hai. Dekhiye image aayi ki nahi.',
             // Using a real image URL from Unsplash Source
             imageUrl: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=800&auto=format&fit=crop'
