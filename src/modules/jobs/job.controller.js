@@ -115,7 +115,6 @@ export const approveRequest = async (req, res, next) => {
 export const finalizeJob = async (req, res, next) => {
     try {
         const job = await jobService.finalizeJob(req.params.id, req.body?.remarks, req.user, {
-            skip_validation: req.body?.skip_validation === true,
             job_certificate_id: req.body?.job_certificate_id
         });
         res.json({ success: true, message: 'Job finalized.', data: job });

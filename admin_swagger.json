@@ -22518,15 +22518,15 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "skip_validation": {
-                    "type": "boolean",
-                    "description": "ADMIN only — Force status directly to FINALIZED, skipping guard checks (E2E testing)",
-                    "default": false
+                  "job_certificate_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Optional Job Certificate ID to finalize a specific survey"
                   }
                 }
               },
               "example": {
-                "skip_validation": false
+                "job_certificate_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
               }
             }
           }

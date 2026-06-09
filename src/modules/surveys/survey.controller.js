@@ -39,9 +39,7 @@ export const submitSurveyReport = async (req, res, next) => {
 // PUT /surveys/jobs/:jobId/finalize
 export const finalizeSurvey = async (req, res, next) => {
     try {
-        const result = await surveyService.finalizeSurvey(req.params.jobId, req.user, {
-            skip_validation: req.body?.skip_validation === true
-        });
+        const result = await surveyService.finalizeSurvey(req.params.jobId, req.user);
         res.status(200).json({ success: true, ...result });
     } catch (error) { next(error); }
 };

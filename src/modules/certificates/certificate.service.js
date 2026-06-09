@@ -422,7 +422,7 @@ export const generateCertificate = async (data, user) => {
         throw { statusCode: 403, message: 'Only Admins, General Managers, or Technical Managers have permission to generate certificates.' };
     }
     const userId = user.id;
-    const { job_id, job_certificate_id, validity_years, issue_date, expiry_date, flag_administration_id, certificate_term, skip_validation } = data;
+    const { job_id, job_certificate_id, validity_years, issue_date, expiry_date, flag_administration_id, certificate_term } = data;
 
     // Support both job_certificate_id (new) and job_id (legacy)
     let resolvedJobId = job_id;
@@ -475,32 +475,30 @@ export const generateCertificate = async (data, user) => {
         await verifyTemplateExists(certTypeId, certificate_term, transaction);
 
         // ── Guard 1: Status Check ──
-        if (!skip_validation) {
-            const targetStatus = jobCert ? jobCert.status : job.job_status;
-            let allowedStatuses = jobCert
-                ? ['SURVEY_DONE', 'REWORK_REQUESTED']
-                : ['FINALIZED', 'PAYMENT_DONE', 'REWORK_REQUESTED', 'SURVEY_DONE', 'REVIEWED'];
+        const targetStatus = jobCert ? jobCert.status : job.job_status;
+        let allowedStatuses = jobCert
+            ? ['SURVEY_DONE', 'REWORK_REQUESTED']
+            : ['FINALIZED', 'PAYMENT_DONE', 'REWORK_REQUESTED', 'SURVEY_DONE', 'REVIEWED'];
 
-            if (jobCert && certType.requires_survey === false) {
-                if (!job.approved_by_user_id) {
-                    throw {
-                        statusCode: 400,
-                        message: `Certificate can only be generated after the job request has been approved by a General Manager.`
-                    };
-                }
-                allowedStatuses = ['DOCUMENT_VERIFIED', 'SURVEY_DONE', 'REWORK_REQUESTED'];
-            }
-
-            if (!allowedStatuses.includes(targetStatus)) {
+        if (jobCert && certType.requires_survey === false) {
+            if (!job.approved_by_user_id) {
                 throw {
                     statusCode: 400,
-                    message: `Certificate can only be generated when status is ${allowedStatuses.join(', ')}. Current: ${targetStatus}`,
+                    message: `Certificate can only be generated after the job request has been approved by a General Manager.`
                 };
             }
+            allowedStatuses = ['DOCUMENT_VERIFIED', 'SURVEY_DONE', 'REWORK_REQUESTED'];
         }
 
-        // ── Guard 2: Survey Compliance (if required, skippable) ──
-        if (!skip_validation && certType.requires_survey) {
+        if (!allowedStatuses.includes(targetStatus)) {
+            throw {
+                statusCode: 400,
+                message: `Certificate can only be generated when status is ${allowedStatuses.join(', ')}. Current: ${targetStatus}`,
+            };
+        }
+
+        // ── Guard 2: Survey Compliance (if required) ──
+        if (certType.requires_survey) {
             let surveyQuery;
             if (jobCert) {
                 surveyQuery = { job_certificate_id: jobCert.id };

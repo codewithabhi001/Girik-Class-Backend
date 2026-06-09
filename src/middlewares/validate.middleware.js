@@ -103,8 +103,7 @@ export const schemas = {
         job_certificate_id: Joi.string().guid().allow('', null).optional()
     }),
     finalizeSurvey: Joi.object({
-        job_certificate_id: Joi.string().guid().allow('', null).optional(),
-        skip_validation: Joi.boolean().optional()
+        job_certificate_id: Joi.string().guid().allow('', null).optional()
     }),
     generateCertificate: Joi.object({
         job_id: Joi.string().guid().optional(),
@@ -114,7 +113,6 @@ export const schemas = {
         expiry_date: Joi.date().iso().optional(),
         flag_administration_id: Joi.string().guid().optional().allow(null),
         certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM').required(),
-        skip_validation: Joi.boolean().optional().default(false), // ADMIN-only bypass for E2E
     }).or('job_id', 'job_certificate_id'),
     applySurveyor: Joi.object({
         full_name: Joi.string().required(),
