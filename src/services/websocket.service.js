@@ -120,7 +120,7 @@ const registerSocketEvents = (socket) => {
 export const init = async (server) => {
     io = new Server(server, {
         cors: {
-            origin: '*',
+            origin: env.frontendUrl || '*',
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
             credentials: true
         }
