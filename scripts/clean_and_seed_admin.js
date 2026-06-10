@@ -2,13 +2,44 @@ import 'dotenv/config';
 import bcrypt from 'bcrypt';
 import db from '../src/models/index.js';
 
-const ADMIN_EMAIL = 'admin@grclass.com';
-const ADMIN_PASSWORD = 'Password@123';
-const ADMIN_NAME = 'System Admin';
+const DEFAULT_PASSWORD = 'Password@123';
+
+const USERS_TO_SEED = [
+    {
+        name: 'System Admin',
+        email: 'info@grclass.com',
+        role: 'ADMIN',
+        status: 'ACTIVE'
+    },
+    {
+        name: 'Technical Manager',
+        email: 'tm@grclass.com',
+        role: 'TM',
+        status: 'ACTIVE'
+    },
+    {
+        name: 'General Manager',
+        email: 'gm@grclass.com',
+        role: 'GM',
+        status: 'ACTIVE'
+    },
+    {
+        name: 'Technical Officer',
+        email: 'to@grclass.com',
+        role: 'TO',
+        status: 'ACTIVE'
+    },
+    {
+        name: 'Abhinav Surveyor',
+        email: 'abhivishwkarmaa52@gmail.com',
+        role: 'SURVEYOR',
+        status: 'ACTIVE'
+    }
+];
 
 async function main() {
     try {
-        console.log('--- Starting Database Cleanup & Fresh Seeding ---');
+        console.log('--- Starting Database Wiping & Specified Users Seeding ---');
 
         const sequelize = db.sequelize;
         const dialect = sequelize.getDialect();
@@ -43,17 +74,33 @@ async function main() {
             console.log('No tables to truncate.');
         }
 
-        // 2. Create the single Admin user
-        console.log('\n👤 Creating Admin User...');
-        const password_hash = await bcrypt.hash(ADMIN_PASSWORD, 10);
-        const admin = await db.User.create({
-            name: ADMIN_NAME,
-            email: ADMIN_EMAIL,
-            password_hash,
-            role: 'ADMIN',
-            status: 'ACTIVE',
-        });
-        console.log(`✅ Admin user created: ${admin.email} / ${ADMIN_PASSWORD}`);
+        // 2. Create the specified users
+        console.log('\n👤 Creating Specified Users...');
+        const passwordHash = await bcrypt.hash(DEFAULT_PASSWORD, 10);
+
+        for (const u of USERS_TO_SEED) {
+            const user = await db.User.create({
+                name: u.name,
+                email: u.email,
+                password_hash: passwordHash,
+                role: u.role,
+                status: u.status,
+            });
+            console.log(`✅ Created user: ${user.email} [Role: ${user.role}]`);
+
+            // If the role is SURVEYOR, create a SurveyorProfile
+            if (u.role === 'SURVEYOR') {
+                await db.SurveyorProfile.create({
+                    user_id: user.id,
+                    license_number: 'SURV-52',
+                    status: 'ACTIVE',
+                    is_available: true,
+                    authorized_ship_types: JSON.stringify(['TANKER', 'CARGO', 'PASSENGER']),
+                    authorized_certificates: JSON.stringify(['CERT_TYPE_A', 'CERT_TYPE_B'])
+                });
+                console.log(`   └─ Created SurveyorProfile for ${user.email}`);
+            }
+        }
 
         // 3. Seed site static content
         console.log('\n📄 Seeding Site Static Content...');

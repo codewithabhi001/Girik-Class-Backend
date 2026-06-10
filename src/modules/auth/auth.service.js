@@ -241,6 +241,7 @@ export const resetPassword = async (token, newPassword) => {
     const salt = await bcrypt.genSalt(env.bcrypt.saltRounds || 10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
     await user.update({ password_hash: hashedPassword, force_password_reset: false });
+    return user.id;
 };
 
 export const changePassword = async (userId, oldPassword, newPassword) => {

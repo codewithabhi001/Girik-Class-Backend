@@ -1,42 +1,45 @@
 import db from '../../models/index.js';
 import { Op } from 'sequelize';
+import * as cache from '../../services/cache.service.js';
 
 const { User, Client, Vessel, JobRequest, SurveyorProfile, Certificate, FlagAdministration, Survey, CertificateType, Payment, NonConformity, SurveyorApplication, WebsiteContact, JobCertificate } = db;
 
 const vesselAttrs = ['id', 'vessel_name', 'imo_number', 'flag_administration_id', 'class_status'];
 
 export const getAdminDashboard = async () => {
-    const stats = await getOperationalStats();
-    const roleCountsRaw = await User.findAll({
-        attributes: ['role', [db.sequelize.fn('COUNT', 'role'), 'count']],
-        group: ['role'],
-        raw: true,
-        useReplica: true
-    });
+    return cache.getOrSet('dashboard:admin', async () => {
+        const stats = await getOperationalStats();
+        const roleCountsRaw = await User.findAll({
+            attributes: ['role', [db.sequelize.fn('COUNT', 'role'), 'count']],
+            group: ['role'],
+            raw: true,
+            useReplica: true
+        });
 
-    const roleCounts = roleCountsRaw.reduce((acc, r) => {
-        acc[r.role] = parseInt(r.count, 10);
-        return acc;
-    }, {});
+        const roleCounts = roleCountsRaw.reduce((acc, r) => {
+            acc[r.role] = parseInt(r.count, 10);
+            return acc;
+        }, {});
 
-    return {
-        role: 'ADMIN',
-        summary: {
-            ...stats.summary,
-            users: {
-                total: roleCountsRaw.reduce((sum, r) => sum + parseInt(r.count, 10), 0),
-                by_role: roleCounts,
-                admin: roleCounts.ADMIN || 0,
-                gm: roleCounts.GM || 0,
-                tm: roleCounts.TM || 0,
-                to: roleCounts.TO || 0,
-                surveyors: stats.surveyorCount,
-                clients: roleCounts.CLIENT || 0,
+        return {
+            role: 'ADMIN',
+            summary: {
+                ...stats.summary,
+                users: {
+                    total: roleCountsRaw.reduce((sum, r) => sum + parseInt(r.count, 10), 0),
+                    by_role: roleCounts,
+                    admin: roleCounts.ADMIN || 0,
+                    gm: roleCounts.GM || 0,
+                    tm: roleCounts.TM || 0,
+                    to: roleCounts.TO || 0,
+                    surveyors: stats.surveyorCount,
+                    clients: roleCounts.CLIENT || 0,
+                },
             },
-        },
-        client_with_vessels: stats.client_with_vessels,
-        recent_activities: stats.recent_activities
-    };
+            client_with_vessels: stats.client_with_vessels,
+            recent_activities: stats.recent_activities
+        };
+    }, cache.TTL.DASHBOARD);
 }
 
 const getOperationalStats = async () => {
@@ -306,57 +309,53 @@ const getOperationalStats = async () => {
 }
 
 export const getGMDashboard = async () => {
-    const stats = await getOperationalStats();
-    
-    // ACTIONABLE: Jobs that are FINALIZED and have a DRAFT certificate ready for GM issuance
-    const pendingIssuanceJobs = await JobRequest.findAll({
-        where: { 
-            job_status: 'FINALIZED'
-        },
-        include: [
-            { model: Vessel, attributes: ['vessel_name', 'imo_number'] },
-            {
-                model: JobCertificate,
-                as: 'certificates',
-                required: true,
-                include: [
-                    { model: CertificateType, attributes: ['name'] },
-                    {
-                        model: db.Certificate,
-                        as: 'Certificate',
-                        required: true,
-                        where: { status: 'DRAFT' }
-                    }
-                ]
-            }
-        ],
-        order: [['updatedAt', 'DESC']],
-        limit: 10,
-        subQuery: false,
-        useReplica: true
-    });
+    return cache.getOrSet('dashboard:gm', async () => {
+        const stats = await getOperationalStats();
 
-    return {
-        role: 'GM',
-        summary: stats.summary,
-        actionable_items: {
-            pending_issuance: pendingIssuanceJobs.flatMap(j => 
-                (j.certificates || []).map(c => ({
-                    id: j.id,
-                    job_request_number: j.job_request_number,
-                    certificate_id: c.generated_certificate_id,
-                    vessel: j.Vessel?.vessel_name,
-                    type: c.CertificateType?.name || 'N/A',
-                    finalized_at: j.updatedAt
-                }))
-            )
-        },
-        client_with_vessels: stats.client_with_vessels,
-        recent_activities: stats.recent_activities
-    };
+        // ACTIONABLE: Jobs that are FINALIZED and have a DRAFT certificate ready for GM issuance
+        const pendingIssuanceJobs = await JobRequest.findAll({
+            where: { job_status: 'FINALIZED' },
+            include: [
+                { model: Vessel, attributes: ['vessel_name', 'imo_number'] },
+                {
+                    model: JobCertificate,
+                    as: 'certificates',
+                    required: true,
+                    include: [
+                        { model: CertificateType, attributes: ['name'] },
+                        { model: db.Certificate, as: 'Certificate', required: true, where: { status: 'DRAFT' } }
+                    ]
+                }
+            ],
+            order: [['updatedAt', 'DESC']],
+            limit: 10,
+            subQuery: false,
+            useReplica: true
+        });
+
+        return {
+            role: 'GM',
+            summary: stats.summary,
+            actionable_items: {
+                pending_issuance: pendingIssuanceJobs.flatMap(j =>
+                    (j.certificates || []).map(c => ({
+                        id: j.id,
+                        job_request_number: j.job_request_number,
+                        certificate_id: c.generated_certificate_id,
+                        vessel: j.Vessel?.vessel_name,
+                        type: c.CertificateType?.name || 'N/A',
+                        finalized_at: j.updatedAt
+                    }))
+                )
+            },
+            client_with_vessels: stats.client_with_vessels,
+            recent_activities: stats.recent_activities
+        };
+    }, cache.TTL.DASHBOARD);
 }
 
 export const getTMDashboard = async (user) => {
+    return cache.getOrSet('dashboard:tm', async () => { // TM view is role-wide, not per-user
     const jobIncludes = [
         { model: Vessel, attributes: ['vessel_name', 'imo_number'] },
         { model: JobCertificate, as: 'certificates', include: [{ model: CertificateType, attributes: ['name'] }] },
@@ -415,22 +414,24 @@ export const getTMDashboard = async (user) => {
         requester: j.requester?.name
     });
 
-    return {
-        role: 'TM',
-        summary: {
-            assignment_needed: jobsByStatus['DOCUMENT_VERIFIED'] || 0,
-            authorization_needed: jobsByStatus['ASSIGNED'] || 0,
-            finalization_needed: (jobsByStatus['REVIEWED'] || 0) + (jobsByStatus['PAYMENT_DONE'] || 0)
-        },
-        actionable_items: {
-            pending_assignments: pendingAssignmentJobs.map(formatJob),
-            pending_authorizations: pendingAuthorizationJobs.map(formatJob),
-            pending_finalizations: pendingFinalizationJobs.map(formatJob)
-        }
-    };
+        return {
+            role: 'TM',
+            summary: {
+                assignment_needed: jobsByStatus['DOCUMENT_VERIFIED'] || 0,
+                authorization_needed: jobsByStatus['ASSIGNED'] || 0,
+                finalization_needed: (jobsByStatus['REVIEWED'] || 0) + (jobsByStatus['PAYMENT_DONE'] || 0)
+            },
+            actionable_items: {
+                pending_assignments: pendingAssignmentJobs.map(formatJob),
+                pending_authorizations: pendingAuthorizationJobs.map(formatJob),
+                pending_finalizations: pendingFinalizationJobs.map(formatJob)
+            }
+        };
+    }, cache.TTL.DASHBOARD);
 }
 
 export const getTODashboard = async (user) => {
+    return cache.getOrSet('dashboard:to', async () => { // TO view is role-wide
     const jobIncludes = [
         { model: Vessel, attributes: ['vessel_name', 'imo_number'] },
         { model: JobCertificate, as: 'certificates', include: [{ model: CertificateType, attributes: ['name'] }] },
@@ -502,33 +503,35 @@ export const getTODashboard = async (user) => {
         requester: j.requester?.name
     });
 
-    return {
-        role: 'TO',
-        summary: {
-            verification_needed: jobsByStatus['CREATED'] || 0,
-            review_needed: jobsByStatus['SURVEY_DONE'] || 0,
-            rework_requested: jobsByStatus['REWORK_REQUESTED'] || 0,
-            open_non_conformities: ncCountsRaw
-        },
-        actionable_items: {
-            pending_verifications: pendingVerificationJobs.map(formatJob),
-            pending_reviews: pendingReviewJobs.map(formatJob),
-            rework_items: reworkJobs.map(formatJob),
-            open_non_conformities: openNCs.map(n => ({
-                id: n.id,
-                job_id: n.job_id,
-                job_request_number: n.JobRequest?.job_request_number,
-                vessel_name: n.JobRequest?.Vessel?.vessel_name,
-                vessel: n.JobRequest?.Vessel?.vessel_name,
-                description: n.description,
-                severity: n.severity,
-                created_at: n.createdAt
-            }))
-        }
-    };
+        return {
+            role: 'TO',
+            summary: {
+                verification_needed: jobsByStatus['CREATED'] || 0,
+                review_needed: jobsByStatus['SURVEY_DONE'] || 0,
+                rework_requested: jobsByStatus['REWORK_REQUESTED'] || 0,
+                open_non_conformities: ncCountsRaw
+            },
+            actionable_items: {
+                pending_verifications: pendingVerificationJobs.map(formatJob),
+                pending_reviews: pendingReviewJobs.map(formatJob),
+                rework_items: reworkJobs.map(formatJob),
+                open_non_conformities: openNCs.map(n => ({
+                    id: n.id,
+                    job_id: n.job_id,
+                    job_request_number: n.JobRequest?.job_request_number,
+                    vessel_name: n.JobRequest?.Vessel?.vessel_name,
+                    vessel: n.JobRequest?.Vessel?.vessel_name,
+                    description: n.description,
+                    severity: n.severity,
+                    created_at: n.createdAt
+                }))
+            }
+        };
+    }, cache.TTL.DASHBOARD);
 }
 
 export const getSurveyorDashboard = async (user) => {
+    return cache.getOrSet(`dashboard:surveyor:${user.id}`, async () => {
     const jobIncludes = [
         'Vessel',
         {
@@ -666,31 +669,33 @@ export const getSurveyorDashboard = async (user) => {
         };
     };
 
-    return {
-        role: 'SURVEYOR',
-        user: { id: user.id, name: user.name, email: user.email },
-        profile: profile || null,
-        summary: {
-            assigned_jobs_total: allJobsRaw.length,
-            jobs_by_status: jobsByStatus,
-            surveys_by_status: surveysByStatus,
-            completed_surveys: surveysByStatus['FINALIZED'] || 0,
-            open_non_conformities: openNCsCount,
-            rework_requested: jobsByStatus['REWORK_REQUESTED'] || 0,
-            pending_proofs: surveysByStatus['CHECKLIST_SUBMITTED'] || 0
-        },
-        jobs: {
-            assigned: assignedJobs.map(formatJob),
-            authorized: authorizedJobs.map(formatJob),
-            in_progress: inProgressJobs.map(formatJob),
-            action_required: reworkJobs.map(formatJob),
-            recently_completed: completedJobs.map(formatJob)
-        }
-    };
+        return {
+            role: 'SURVEYOR',
+            user: { id: user.id, name: user.name, email: user.email },
+            profile: profile || null,
+            summary: {
+                assigned_jobs_total: allJobsRaw.length,
+                jobs_by_status: jobsByStatus,
+                surveys_by_status: surveysByStatus,
+                completed_surveys: surveysByStatus['FINALIZED'] || 0,
+                open_non_conformities: openNCsCount,
+                rework_requested: jobsByStatus['REWORK_REQUESTED'] || 0,
+                pending_proofs: surveysByStatus['CHECKLIST_SUBMITTED'] || 0
+            },
+            jobs: {
+                assigned: assignedJobs.map(formatJob),
+                authorized: authorizedJobs.map(formatJob),
+                in_progress: inProgressJobs.map(formatJob),
+                action_required: reworkJobs.map(formatJob),
+                recently_completed: completedJobs.map(formatJob)
+            }
+        };
+    }, cache.TTL.DASHBOARD);
 }
 
 export const getClientDashboard = async (clientId) => {
     if (!clientId) throw { statusCode: 403, message: 'User is not associated with a client' };
+    return cache.getOrSet(`dashboard:client:${clientId}`, async () => {
 
     // 1. Get vessels (sorted by recent)
     const vessels = await Vessel.findAll({ 
@@ -862,12 +867,29 @@ export const getClientDashboard = async (clientId) => {
             })
             .slice(0, 5)
             .map(c => ({
-                id: c.id,
-                name: c.certificate_name,
-                vessel: c.Vessel?.vessel_name,
-                expiry_date: c.expiry_date
-            }))
-    };
+        return {
+            role: 'CLIENT',
+            stats,
+            recent_jobs: jobs.slice(0, 5).map(j => ({ ...j.toJSON ? j.toJSON() : j })),
+            expiring_certificates: certificates
+                .filter(c => {
+                    const expiry = new Date(c.expiry_date);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    expiry.setHours(0, 0, 0, 0);
+                    const diffTime = expiry - today;
+                    const daysToExpiry = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    return daysToExpiry <= 30 && daysToExpiry >= 0;
+                })
+                .slice(0, 5)
+                .map(c => ({
+                    id: c.id,
+                    name: c.certificate_name,
+                    vessel: c.Vessel?.vessel_name,
+                    expiry_date: c.expiry_date
+                }))
+        };
+    }, cache.TTL.DASHBOARD);
 };
 
 export const getDefaultDashboard = async (user) => {

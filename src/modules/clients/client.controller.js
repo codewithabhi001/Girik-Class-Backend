@@ -1,4 +1,5 @@
 import * as clientService from './client.service.js';
+import * as cache from '../../services/cache.service.js';
 
 export const createClient = async (req, res, next) => {
     try {
@@ -24,7 +25,8 @@ export const getClients = async (req, res, next) => {
 
 export const getClientById = async (req, res, next) => {
     try {
-        const client = await clientService.getClientById(req.params.id);
+        const cacheKey = `client:detail:${req.params.id}`;
+        const client = await cache.getOrSet(cacheKey, () => clientService.getClientById(req.params.id), cache.TTL.REFERENCE);
         res.json({
             success: true,
             message: 'Client details fetched successfully',
@@ -36,6 +38,7 @@ export const getClientById = async (req, res, next) => {
 export const updateClient = async (req, res, next) => {
     try {
         const client = await clientService.updateClient(req.params.id, req.body);
+        await cache.del(`client:detail:${req.params.id}`);
         res.json({
             success: true,
             message: 'Client updated successfully',
@@ -47,6 +50,7 @@ export const updateClient = async (req, res, next) => {
 export const deleteClient = async (req, res, next) => {
     try {
         await clientService.deleteClient(req.params.id);
+        await cache.del(`client:detail:${req.params.id}`);
         res.status(200).json({
             success: true,
             message: 'Client deleted/deactivated successfully'

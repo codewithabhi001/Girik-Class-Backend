@@ -1,5 +1,6 @@
 import db from '../models/index.js';
 import logger from '../utils/logger.js';
+import { invalidateDashboards } from './cache.service.js';
 
 const { JobRequest, JobStatusHistory, Survey, SurveyStatusHistory, User } = db;
 
@@ -276,6 +277,10 @@ export const updateJobStatus = async (jobId, newStatus, userId, reason = null, o
         }
 
         if (!externalTxn) await txn.commit();
+
+        // Bust dashboard caches after job status change (fire-and-forget — never blocks the response)
+        if (!externalTxn) invalidateDashboards().catch(() => {});
+
         return job;
     } catch (error) {
         if (!externalTxn) await txn.rollback();
@@ -473,6 +478,10 @@ export const updateSurveyStatus = async (surveyId, newStatus, userId, reason = n
         }
 
         if (!externalTxn) await txn.commit();
+
+        // Bust dashboard caches after survey status change (fire-and-forget)
+        if (!externalTxn) invalidateDashboards().catch(() => {});
+
         return survey;
     } catch (error) {
         if (!externalTxn) await txn.rollback();

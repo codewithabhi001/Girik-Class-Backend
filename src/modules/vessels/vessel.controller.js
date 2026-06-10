@@ -1,9 +1,11 @@
 import * as vesselService from './vessel.service.js';
+import * as cache from '../../services/cache.service.js';
 
 export const getVesselTypes = async (req, res, next) => {
     try {
         const { search } = req.query;
-        const types = await vesselService.getVesselTypes(search || null);
+        const cacheKey = `vessel:types:${search || 'all'}`;
+        const types = await cache.getOrSet(cacheKey, () => vesselService.getVesselTypes(search || null), cache.TTL.REFERENCE);
         res.json({
             success: true,
             message: 'Vessel types fetched successfully',
@@ -23,6 +25,10 @@ const getScopeFilters = (user) => {
 export const createVessel = async (req, res, next) => {
     try {
         const vessel = await vesselService.createVessel(req.body, req.user.id);
+        if (vessel && vessel.client_id) {
+            await cache.del(`vessel:client:${vessel.client_id}`);
+        }
+        await cache.invalidatePattern('vessel:types:*');
         res.status(201).json({
             success: true,
             message: 'Vessel added successfully',
@@ -57,7 +63,8 @@ export const getVesselById = async (req, res, next) => {
 
 export const getVesselsByClientId = async (req, res, next) => {
     try {
-        const result = await vesselService.getVesselsByClientId(req.params.clientId);
+        const cacheKey = `vessel:client:${req.params.clientId}`;
+        const result = await cache.getOrSet(cacheKey, () => vesselService.getVesselsByClientId(req.params.clientId), cache.TTL.VESSELS);
         res.json({
             success: true,
             message: 'Client vessels fetched successfully',
@@ -70,6 +77,10 @@ export const updateVessel = async (req, res, next) => {
     try {
         const scopeFilters = getScopeFilters(req.user);
         const vessel = await vesselService.updateVessel(req.params.id, req.body, scopeFilters, req.user.id);
+        if (vessel && vessel.client_id) {
+            await cache.del(`vessel:client:${vessel.client_id}`);
+        }
+        await cache.invalidatePattern('vessel:types:*');
         res.json({
             success: true,
             message: 'Vessel updated successfully',
