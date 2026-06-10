@@ -867,28 +867,12 @@ export const getClientDashboard = async (clientId) => {
             })
             .slice(0, 5)
             .map(c => ({
-        return {
-            role: 'CLIENT',
-            stats,
-            recent_jobs: jobs.slice(0, 5).map(j => ({ ...j.toJSON ? j.toJSON() : j })),
-            expiring_certificates: certificates
-                .filter(c => {
-                    const expiry = new Date(c.expiry_date);
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    expiry.setHours(0, 0, 0, 0);
-                    const diffTime = expiry - today;
-                    const daysToExpiry = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    return daysToExpiry <= 30 && daysToExpiry >= 0;
-                })
-                .slice(0, 5)
-                .map(c => ({
-                    id: c.id,
-                    name: c.certificate_name,
-                    vessel: c.Vessel?.vessel_name,
-                    expiry_date: c.expiry_date
-                }))
-        };
+                id: c.id,
+                name: c.certificate_name,
+                vessel: c.Vessel?.vessel_name,
+                expiry_date: c.expiry_date
+            }))
+    };
     }, cache.TTL.DASHBOARD);
 };
 
