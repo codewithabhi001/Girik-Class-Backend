@@ -17,6 +17,48 @@ import {
     flatCertificateTypeListRow,
     shapeCertificateTypeDetail,
 } from '../../utils/listRowFlatten.util.js';
+import JSZip from 'jszip';
+import { DOMParser } from '@xmldom/xmldom';
+import xpath from 'xpath';
+
+const WORD_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+const selectWithNs = xpath.useNamespaces({ w: WORD_NS });
+
+const scanTagsFromBuffer = async (buffer) => {
+    const tags = new Set();
+    try {
+        const zip = await JSZip.loadAsync(buffer);
+        const entry = zip.file('word/document.xml');
+        if (!entry) return [];
+
+        const xml = await entry.async('text');
+        const doc = new DOMParser().parseFromString(xml, 'text/xml');
+        const tagNodes = selectWithNs('//w:sdt/w:sdtPr/w:tag', doc);
+        tagNodes.forEach(node => {
+            const val = node.getAttribute('w:val');
+            if (val) tags.add(val);
+        });
+
+        // Also search for text placeholders like {vessel_name} or {{vessel_name}} in xml text
+        const regexes = [
+            /\{([a-zA-Z0-9_\- ]+)\}/g,
+            /\{\{([a-zA-Z0-9_\- ]+)\}\}/g
+        ];
+        for (const regex of regexes) {
+            let match;
+            while ((match = regex.exec(xml)) !== null) {
+                const tag = match[1].trim();
+                if (tag.length < 50 && !tag.includes('<') && !tag.includes('>')) {
+                    tags.add(tag);
+                }
+            }
+        }
+    } catch (err) {
+        logger.error('Failed to scan docx tags from buffer:', err);
+    }
+    return Array.from(tags);
+};
+
 
 const Certificate = db.Certificate;
 const CertificateType = db.CertificateType;
@@ -36,24 +78,64 @@ export const getCertificateScopeFilter = async (user) => {
 export const getCertificateTypes = async (options = {}) => {
     let includeInactive = false;
     let search = null;
+    let page = null;
+    let limit = null;
+    let status = null;
     if (typeof options === 'object' && options !== null) {
         includeInactive = options.includeInactive ?? false;
         search = options.search;
+        page = options.page;
+        limit = options.limit;
+        status = options.status;
     } else {
         includeInactive = !!options;
     }
 
-    const where = includeInactive ? {} : { status: 'ACTIVE' };
+    const where = {};
+    if (status) {
+        where.status = status;
+    } else if (!includeInactive) {
+        where.status = 'ACTIVE';
+    }
+
     if (search) {
         where.name = { [Op.like]: `%${search}%` };
     }
 
-    const types = await CertificateType.findAll({
+    const queryOptions = {
         where,
         attributes: ['id', 'name', 'issuing_authority', 'validity_years', 'status', 'requires_survey'],
         order: [['name', 'ASC']],
         useReplica: true
-    });
+    };
+
+    if (page !== undefined && page !== null && limit !== undefined && limit !== null) {
+        const pageNum = Math.max(1, parseInt(page, 10) || 1);
+        const limitNum = Math.min(Math.max(1, parseInt(limit, 10) || 10), 100);
+        queryOptions.limit = limitNum;
+        queryOptions.offset = (pageNum - 1) * limitNum;
+
+        const { count, rows } = await CertificateType.findAndCountAll(queryOptions);
+
+        const activeCount = await CertificateType.count({
+            where: { ...where, status: 'ACTIVE' },
+            useReplica: true
+        });
+
+        const surveyLinkedCount = await CertificateType.count({
+            where: { ...where, requires_survey: { [Op.ne]: false } },
+            useReplica: true
+        });
+
+        return {
+            total: count,
+            activeCount,
+            surveyLinkedCount,
+            rows: rows.map(flatCertificateTypeListRow)
+        };
+    }
+
+    const types = await CertificateType.findAll(queryOptions);
     return types.map(flatCertificateTypeListRow);
 };
 
@@ -295,6 +377,7 @@ const generateUniqueCertificateNumber = async (typeCode = null) => {
 };
 
 export const _generateCertificateFile = async (cert, user, transaction = null) => {
+    let template = null;
     try {
         const jobId = cert.job_id;
         const certificateNumber = cert.certificate_number;
@@ -308,20 +391,39 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
                 flagLogo = await fileAccessService.resolveUrl(flag.logo_url, user, true);
             }
         }
-        
         const issuingAuthority = cert.CertificateType?.issuing_authority === 'FLAG' ? (cert.FlagState?.flag_state_name || 'Flag Administration') : 'GR CLASS';
         
         // 2. Build dynamic tags
         const dynamicTags = jobId ? await buildTagValuesForJob(jobId) : {};
-        
-        const variables = {
+
+        const formatDate = (v) => {
+            if (!v) return '';
+            try {
+                const d = (v instanceof Date) ? v : new Date(v);
+                if (Number.isNaN(d.getTime())) return String(v);
+                return d.toISOString().slice(0, 10);
+            } catch {
+                return String(v);
+            }
+        };
+
+        const allDataSources = {
             ...dynamicTags,
             vessel_name: cert.Vessel?.vessel_name || '',
             imo_number: cert.Vessel?.imo_number || '',
+            call_sign: cert.Vessel?.call_sign || '',
+            mmsi_number: cert.Vessel?.mmsi_number || '',
+            port_of_registry: cert.Vessel?.port_of_registry || '',
+            year_built: cert.Vessel?.year_built || '',
+            ship_type: cert.Vessel?.ship_type || '',
+            gross_tonnage: cert.Vessel?.gross_tonnage || '',
+            net_tonnage: cert.Vessel?.net_tonnage || '',
+            deadweight: cert.Vessel?.deadweight || '',
             certificate_number: certificateNumber,
             certificate_type: cert.CertificateType?.name || '',
-            issue_date: cert.issue_date,
-            expiry_date: cert.expiry_date,
+            issue_date: formatDate(cert.issue_date),
+            expiry_date: formatDate(cert.expiry_date),
+            survey_completion_date: dynamicTags.survey_completed_date || formatDate(cert.issue_date),
             certificate_term: cert.certificate_term || '',
             issuing_authority: issuingAuthority,
             flag_state: cert.FlagState?.flag_state_name || '',
@@ -332,10 +434,7 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
             flag_logo: flagLogo
         };
 
-        // 3. (QR code skipped - already in template)
-
-        // 4. Fetch Template
-        let template = null;
+        // 3. Fetch Template
         if (cert.certificate_term) {
             // Attempt to find a template matching the specified term
             template = await db.CertificateTemplate.findOne({
@@ -373,8 +472,127 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
             return null;
         }
 
-        // 5. Fill DOCX and Upload
+        // 4. Fill DOCX and Upload
         const masterBuffer = await s3Service.getFileContent(template.template_file_url);
+
+        // Dynamically scan all tags in the template DOCX
+        const scannedTags = await scanTagsFromBuffer(masterBuffer);
+
+        // Normalize keys for case-insensitive matching
+        const normalizeKey = (k) => String(k || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        const normalizedSource = {};
+        for (const [key, val] of Object.entries(allDataSources)) {
+            normalizedSource[normalizeKey(key)] = val;
+        }
+
+        // Define synonym mappings (normalized tag -> standard key name)
+        const synonymMap = {
+            vesselname: 'vessel_name',
+            nameofship: 'vessel_name',
+            shipname: 'vessel_name',
+            nombredelanave: 'vessel_name',
+            vessel: 'vessel_name',
+            
+            imonumber: 'imo_number',
+            imo: 'imo_number',
+            imono: 'imo_number',
+            
+            callsign: 'call_sign',
+            distinctivenumberorletters: 'call_sign',
+            distinctivenumber: 'call_sign',
+            sign: 'call_sign',
+            
+            portofregistry: 'port_of_registry',
+            registryport: 'port_of_registry',
+            puertoderegistro: 'port_of_registry',
+            
+            yearbuilt: 'year_built',
+            built: 'year_built',
+            dateofconstruction: 'year_built',
+            dateofbuilt: 'year_built',
+            dateofbuild: 'year_built',
+            keellaid: 'year_built',
+            construitopor: 'year_built',
+            
+            shiptype: 'ship_type',
+            vesseltype: 'ship_type',
+            typeofship: 'ship_type',
+            
+            grosstonnage: 'gross_tonnage',
+            gt: 'gross_tonnage',
+            
+            nettonnage: 'net_tonnage',
+            nt: 'net_tonnage',
+            
+            deadweight: 'deadweight',
+            dwt: 'deadweight',
+            
+            certificatenumber: 'certificate_number',
+            certnumber: 'certificate_number',
+            certno: 'certificate_number',
+            
+            certificatetype: 'certificate_type',
+            certtype: 'certificate_type',
+            certname: 'certificate_type',
+            
+            certificateterm: 'certificate_term',
+            term: 'certificate_term',
+            
+            issuedate: 'issue_date',
+            dateofissue: 'issue_date',
+            
+            expirydate: 'expiry_date',
+            validuntil: 'expiry_date',
+            validity: 'expiry_date',
+            
+            surveycompletiondate: 'survey_completion_date',
+            surveycompleteddate: 'survey_completion_date',
+            surveydate: 'survey_completion_date',
+            
+            port: 'port',
+            place: 'place',
+            placeofsurvey: 'port',
+            portofsurvey: 'port',
+            location: 'port',
+            
+            surveyorname: 'surveyor_name',
+            surveyor: 'surveyor_name',
+            
+            flag: 'flag_state',
+            flagstate: 'flag_state',
+            
+            owner: 'owner_operators',
+            operator: 'owner_operators',
+            owneroperator: 'owner_operators',
+            company: 'owner_operators',
+            client: 'owner_operators'
+        };
+
+        // Map scanned tags to their values
+        const variables = {};
+        for (const rawTag of scannedTags) {
+            const norm = normalizeKey(rawTag);
+            if (allDataSources[rawTag] !== undefined) {
+                variables[rawTag] = allDataSources[rawTag];
+            } else if (normalizedSource[norm] !== undefined) {
+                variables[rawTag] = normalizedSource[norm];
+            } else if (synonymMap[norm] && allDataSources[synonymMap[norm]] !== undefined) {
+                variables[rawTag] = allDataSources[synonymMap[norm]];
+            } else if (dynamicTags[rawTag] !== undefined) {
+                variables[rawTag] = dynamicTags[rawTag];
+            } else {
+                variables[rawTag] = '';
+            }
+        }
+
+        // For backward compatibility / safety, keep standard tags
+        for (const [k, v] of Object.entries(allDataSources)) {
+            if (variables[k] === undefined) {
+                variables[k] = v;
+            }
+        }
+
         const filledDocxBuffer = await fillDocxContentControls(masterBuffer, variables);
         
         const docxUrl = await s3Service.uploadFile(
@@ -703,6 +921,15 @@ export const getCertificates = async (query, user) => {
         }
     });
 
+    if (query.search && String(query.search).trim().length >= 3) {
+        const term = String(query.search).trim();
+        where[Op.or] = [
+            { certificate_number: { [Op.like]: `%${term}%` } },
+            { '$Vessel.vessel_name$': { [Op.like]: `%${term}%` } },
+            { '$CertificateType.name$': { [Op.like]: `%${term}%` } }
+        ];
+    }
+
     if (rest.expiring_within_days != null && rest.expiring_within_days !== '') {
         const days = Math.max(1, parseInt(rest.expiring_within_days, 10) || 30);
         const today = new Date();
@@ -753,6 +980,22 @@ export const getCertificates = async (query, user) => {
 
     const resolvedRows = await fileAccessService.resolveEntity(rows, user);
 
+    const todayVal = new Date();
+    todayVal.setHours(0, 0, 0, 0);
+    const targetVal = new Date(todayVal);
+    targetVal.setDate(todayVal.getDate() + 30);
+    targetVal.setHours(23, 59, 59, 999);
+    
+    const expiringCount = await Certificate.count({
+        where: {
+            ...statusWhere,
+            status: 'VALID',
+            expiry_date: { [Op.between]: [todayVal, targetVal] }
+        },
+        include: [vesselInclude],
+        useReplica: true
+    });
+
     const pageLimit = parseInt(limit, 10) || 10;
     return {
         total: count,
@@ -760,6 +1003,7 @@ export const getCertificates = async (query, user) => {
         limit: pageLimit,
         totalPages: Math.ceil(count / pageLimit),
         status_counts: buildFullStatusCounts(statusCounts, CERTIFICATE_STATUSES),
+        expiring_count: expiringCount,
         rows: resolvedRows.map(flatCertificateListRow),
     };
 };

@@ -420,7 +420,11 @@ export const getJobs = async (query, scopeFilters = {}, userRole = null, user = 
     const jobAttributes = ['id', 'job_request_number', 'vessel_id', 'target_port', 'target_date', 'job_status', 'priority', 'is_survey_required', 'createdAt', 'updatedAt'];
 
     const include = [
-        { model: Vessel, attributes: ['id', 'vessel_name', 'imo_number'] },
+        {
+            model: Vessel,
+            attributes: ['id', 'vessel_name', 'imo_number'],
+            include: [{ model: db.Client, as: 'Client', attributes: ['id', 'company_name'] }]
+        },
         {
             model: JobCertificate,
             as: 'certificates',
@@ -463,6 +467,7 @@ export const getJobs = async (query, scopeFilters = {}, userRole = null, user = 
     const jobs = (await fileAccessService.resolveEntity(rows)).map(j => {
         const vessel_name = j.Vessel?.vessel_name || 'N/A';
         const imo_number = j.Vessel?.imo_number || 'N/A';
+        const company_name = j.Vessel?.Client?.company_name || 'N/A';
         // Summarise all certificate names for list view
         const certificate_names = (j.certificates || []).map(c => c.CertificateType?.name).filter(Boolean).join(', ') || 'N/A';
 
@@ -477,6 +482,8 @@ export const getJobs = async (query, scopeFilters = {}, userRole = null, user = 
             updatedAt: j.updatedAt || 'N/A',
             vessel_name,
             imo_number,
+            company_name,
+            Client: j.Vessel?.Client ? { company_name } : null,
             certificate_names,
             certificate_count: (j.certificates || []).length
         };
@@ -2116,7 +2123,7 @@ export const updatePriority = async (jobId, priority, reason, userId) => {
     });
     return job;
 };
-export const getJobHistory = async (id, scopeFilters = {}) => {
+export const getJobHistory = async (id, scopeFilters = {}, user = null) => {
     // Verify job existence with scope filtering
     const job = await JobRequest.findOne({ where: { id, ...scopeFilters } });
     if (!job) {
@@ -2158,17 +2165,20 @@ export const getJobHistory = async (id, scopeFilters = {}) => {
 
     // Load all surveys for these certificates
     const certIds = jobCerts.map(jc => jc.id);
-    const surveys = certIds.length ? await Survey.findAll({
+    const rawSurveys = certIds.length ? await Survey.findAll({
         where: { job_certificate_id: certIds },
         useReplica: true
     }) : [];
+
+    // Resolve S3 URLs for surveys
+    const surveys = await fileAccessService.resolveEntity(rawSurveys, user);
 
     // Map surveys to certificates and create lookup
     const surveyLookup = {};
     surveys.forEach(s => {
         const certId = s.job_certificate_id;
         if (certMap[certId]) {
-            const { declaration_hash, ...surveyPlain } = s.get({ plain: true });
+            const { declaration_hash, ...surveyPlain } = s;
             const surveyObj = { ...surveyPlain, survey_history: [] };
             certMap[certId].surveys.push(surveyObj);
             surveyLookup[s.id] = surveyObj;

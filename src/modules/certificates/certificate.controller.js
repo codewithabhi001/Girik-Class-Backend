@@ -185,8 +185,18 @@ export const downgradeCertificate = async (req, res, next) => {
 export const getCertificateTypes = async (req, res, next) => {
     try {
         const includeInactive = req.query.include_inactive === 'true' && ['ADMIN', 'GM'].includes(req.user?.role);
-        const cacheKey = `cert:types:${includeInactive}:${req.query.search || 'all'}`;
-        const types = await cache.getOrSet(cacheKey, () => certService.getCertificateTypes({ includeInactive, search: req.query.search }), cache.TTL.REFERENCE);
+        const search = req.query.search;
+        const page = req.query.page;
+        const limit = req.query.limit;
+        const status = req.query.status;
+        const cacheKey = `cert:types:${includeInactive}:${status || 'all'}:${search || 'all'}:${page || 'all'}:${limit || 'all'}`;
+        const types = await cache.getOrSet(cacheKey, () => certService.getCertificateTypes({ 
+            includeInactive, 
+            search,
+            page,
+            limit,
+            status
+        }), cache.TTL.REFERENCE);
         res.json({ success: true, data: types });
     } catch (e) { next(e); }
 };

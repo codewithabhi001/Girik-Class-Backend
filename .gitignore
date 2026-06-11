@@ -9,3 +9,7 @@ combined.log
 
 # Firebase secrets
 src/config/*.json
+
+# Scratch files
+scratch/
+

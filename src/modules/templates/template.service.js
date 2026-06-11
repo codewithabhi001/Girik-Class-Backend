@@ -1,8 +1,36 @@
+import JSZip from 'jszip';
+import { DOMParser } from '@xmldom/xmldom';
+import xpath from 'xpath';
 import db from '../../models/index.js';
 import * as s3Service from '../../services/s3.service.js';
 import * as fileAccessService from '../../services/fileAccess.service.js';
 
 const { CertificateTemplate } = db;
+const WORD_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+const selectWithNs = xpath.useNamespaces({ w: WORD_NS });
+
+const scanDocxTags = async (templateFileUrl) => {
+    if (!templateFileUrl) return [];
+    try {
+        const buffer = await s3Service.getFileContent(templateFileUrl);
+        const zip = await JSZip.loadAsync(buffer);
+        const entry = zip.file('word/document.xml');
+        if (!entry) return [];
+
+        const xml = await entry.async('text');
+        const doc = new DOMParser().parseFromString(xml, 'text/xml');
+        const tagNodes = selectWithNs('//w:sdt/w:sdtPr/w:tag', doc);
+        const tags = new Set();
+        tagNodes.forEach(node => {
+            const val = node.getAttribute('w:val');
+            if (val) tags.add(val);
+        });
+        return Array.from(tags);
+    } catch (err) {
+        console.error('Failed to scan docx tags:', err);
+        return [];
+    }
+};
 
 export const createTemplate = async (data) => {
     const activeStatus = data.is_active !== false;
@@ -20,6 +48,11 @@ export const createTemplate = async (data) => {
                 message: `An active template already exists for certificate type and term ${data.certificate_term || 'default'}.`
             };
         }
+    }
+
+    if (data.template_file_url) {
+        const scannedTags = await scanDocxTags(data.template_file_url);
+        data.variables = Array.from(new Set([...(data.variables || []), ...scannedTags]));
     }
 
     const template = await CertificateTemplate.create({
@@ -91,6 +124,11 @@ export const updateTemplate = async (id, data) => {
                 message: `An active template already exists for certificate type and term ${term || 'default'}.`
             };
         }
+    }
+
+    if (data.template_file_url) {
+        const scannedTags = await scanDocxTags(data.template_file_url);
+        data.variables = Array.from(new Set([...(data.variables || template.variables || []), ...scannedTags]));
     }
 
     const updated = await template.update(data);

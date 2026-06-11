@@ -237,7 +237,7 @@ export const updatePriority = async (req, res, next) => {
 export const getHistory = async (req, res, next) => {
     try {
         const scopeFilters = await getScopeFilters(req.user);
-        const history = await jobService.getJobHistory(req.params.id, scopeFilters);
+        const history = await jobService.getJobHistory(req.params.id, scopeFilters, req.user);
         res.json({ success: true, data: history });
     } catch (error) { next(error); }
 };
