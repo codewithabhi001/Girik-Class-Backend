@@ -2,7 +2,7 @@ import db from './src/models/index.js';
 import { sendNotification } from './src/services/notification.service.js';
 
 async function testVariousNotifications() {
-    const userId = '019c79a4-4930-71fd-aa73-887301791935';
+    const userId = '019e82f9-af44-73aa-bc64-4b2b5fb19667';
     const user = await db.User.findByPk(userId);
 
     if (!user) {

@@ -33,7 +33,7 @@ export const JOB_POST_FINALIZATION_STATES = ['FINALIZED', 'CERTIFIED'];
  * The extra guard inside updateJobStatus enforces this invariant at runtime.
  */
 export const JOB_TRANSITIONS = {
-    CREATED: ['DOCUMENT_VERIFIED', 'REJECTED'],
+    CREATED: ['DOCUMENT_VERIFIED', 'APPROVED', 'REJECTED'],
     DOCUMENT_VERIFIED: ['APPROVED', 'REJECTED'],
     APPROVED: ['ASSIGNED', 'SURVEY_AUTHORIZED', 'REJECTED', 'FINALIZED'],
     ASSIGNED: ['SURVEY_AUTHORIZED', 'REJECTED'],
@@ -62,7 +62,7 @@ export const SURVEY_TRANSITIONS = {
 };
 
 export const JOB_CERTIFICATE_TRANSITIONS = {
-    PENDING: ['DOCUMENT_VERIFIED', 'REJECTED'],
+    PENDING: ['DOCUMENT_VERIFIED', 'SURVEY_AUTHORIZED', 'ISSUED', 'REJECTED'],
     DOCUMENT_VERIFIED: ['SURVEY_AUTHORIZED', 'ISSUED', 'REJECTED'],
     SURVEY_AUTHORIZED: ['SURVEY_DONE', 'REWORK_REQUESTED', 'REJECTED'],
     REWORK_REQUESTED: ['SURVEY_AUTHORIZED', 'SURVEY_DONE', 'REJECTED'],
@@ -249,7 +249,7 @@ export const updateJobStatus = async (jobId, newStatus, userId, reason = null, o
                         await existingSurvey.update({ surveyor_id: job.assigned_surveyor_id }, { transaction: txn });
                     }
                     // Also update JobCertificate status to SURVEY_AUTHORIZED if applicable
-                    if (newStatus === 'SURVEY_AUTHORIZED' && jc.status === 'DOCUMENT_VERIFIED') {
+                    if (newStatus === 'SURVEY_AUTHORIZED' && (jc.status === 'DOCUMENT_VERIFIED' || jc.status === 'PENDING')) {
                         await jc.update({ status: 'SURVEY_AUTHORIZED' }, { transaction: txn });
                     }
                 }

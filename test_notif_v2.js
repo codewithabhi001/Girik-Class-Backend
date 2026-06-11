@@ -2,8 +2,8 @@ import db from './src/models/index.js';
 import { sendNotification } from './src/services/notification.service.js';
 
 async function testImageNotificationV2() {
-    const userId = '019c79a4-4930-71fd-aa73-887301791935';
-    const user = await db.User.findByPk(userId);
+    const email = 'info@grclass.com';
+    const user = await db.User.findOne({ where: { email } });
 
     if (!user) {
         console.log('User not found');
@@ -23,7 +23,7 @@ async function testImageNotificationV2() {
     };
 
     console.log(`Sending updated notification payload...`);
-    await sendNotification(userId, event.type, event.data);
+    await sendNotification(user.id, event.type, event.data);
 
     console.log('Done.');
     process.exit(0);

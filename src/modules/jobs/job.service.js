@@ -540,6 +540,33 @@ export const getJobById = async (id, scopeFilters = {}, user = null) => {
 
     const jobPlain = job.get({ plain: true });
 
+    // Override pending_action for CREATED status if all certs have 0 required docs
+    if (jobPlain.job_status === 'CREATED') {
+        let hasRequiredDocs = false;
+        for (const c of jobPlain.certificates || []) {
+            const count = await CertificateRequiredDocument.count({
+                where: { certificate_type_id: c.certificate_type_id }
+            });
+            if (count > 0) {
+                hasRequiredDocs = true;
+                break;
+            }
+        }
+        if (!hasRequiredDocs) {
+            jobPlain.pending_action = {
+                role: 'GM',
+                fallbackRoles: ['ADMIN'],
+                message: jobPlain.is_survey_required !== false 
+                    ? 'Waiting for General Manager (GM) or Admin to Approve Job / Assign Surveyor' 
+                    : 'Waiting for General Manager (GM) or Admin to Approve Job'
+            };
+        } else {
+            jobPlain.pending_action = job.pending_action;
+        }
+    } else {
+        jobPlain.pending_action = job.pending_action;
+    }
+
     // ── Vessel Details (flat, N/A for nulls) ──
     const v = jobPlain.Vessel || {};
     jobPlain.vessel_details = {
@@ -964,9 +991,25 @@ export const approveRequest = async (id, remarks, user) => {
     }
     const job = await requireJob(id, { includeVessel: true, useMaster: true });
     const jobCerts = await JobCertificate.findAll({ where: { job_request_id: id }, useMaster: true });
-    const allCertsVerified =
-        jobCerts.length > 0 && jobCerts.every((c) => c.status === 'DOCUMENT_VERIFIED');
-    const legacyVerified = job.job_status === 'DOCUMENT_VERIFIED';
+    
+    let allCertsVerified = true;
+    for (const c of jobCerts) {
+        const requiredDocsCount = await db.CertificateRequiredDocument.count({
+            where: { certificate_type_id: c.certificate_type_id },
+            useMaster: true
+        });
+        const needsVerification = requiredDocsCount > 0;
+        if (needsVerification && c.status !== 'DOCUMENT_VERIFIED') {
+            allCertsVerified = false;
+            break;
+        }
+        if (!needsVerification && c.status !== 'PENDING' && c.status !== 'DOCUMENT_VERIFIED') {
+            allCertsVerified = false;
+            break;
+        }
+    }
+
+    const legacyVerified = job.job_status === 'DOCUMENT_VERIFIED' || (job.job_status === 'CREATED' && allCertsVerified);
     const inProgressAllVerified = job.job_status === 'IN_PROGRESS' && allCertsVerified;
 
     if (!legacyVerified && !inProgressAllVerified) {
@@ -1053,7 +1096,17 @@ export const assignSurveyor = async (jobId, surveyorId, user) => {
     }
 
     const activeCerts = await db.JobCertificate.findAll({ where: { job_request_id: jobId } });
-    const hasUnverifiedCerts = activeCerts.some(cert => ['PENDING', 'REWORK_REQUESTED'].includes(cert.status));
+    let hasUnverifiedCerts = false;
+    for (const cert of activeCerts) {
+        const requiredDocsCount = await db.CertificateRequiredDocument.count({
+            where: { certificate_type_id: cert.certificate_type_id }
+        });
+        const needsVerification = requiredDocsCount > 0;
+        if (needsVerification && ['PENDING', 'REWORK_REQUESTED'].includes(cert.status)) {
+            hasUnverifiedCerts = true;
+            break;
+        }
+    }
     if (hasUnverifiedCerts) {
         throw { statusCode: 400, message: 'Cannot bulk assign surveyor. Some certificates do not have verified documents yet.' };
     }
@@ -1151,7 +1204,12 @@ export const assignSurveyorToCertificate = async (jobCertificateId, surveyorId, 
             throw { statusCode: 400, message: 'A surveyor is already assigned to this certificate. Please use the Reassign feature.' };
         }
 
-        if (['PENDING', 'REWORK_REQUESTED'].includes(jc.status)) {
+        const requiredDocsCount = await db.CertificateRequiredDocument.count({
+            where: { certificate_type_id: jc.certificate_type_id },
+            transaction: txn
+        });
+        const needsVerification = requiredDocsCount > 0;
+        if (needsVerification && ['PENDING', 'REWORK_REQUESTED'].includes(jc.status)) {
             throw { statusCode: 400, message: 'Cannot assign surveyor. Documents for this certificate are not yet verified.' };
         }
 
@@ -1390,8 +1448,15 @@ export const authorizeSurveyForCertificate = async (jobCertificateId, remarks, u
         throw { statusCode: 400, message: 'Cannot authorize survey: please assign a surveyor first.' };
     }
 
-    if (!['DOCUMENT_VERIFIED'].includes(jc.status)) {
+    const requiredDocsCount = await db.CertificateRequiredDocument.count({
+        where: { certificate_type_id: jc.certificate_type_id }
+    });
+    const needsVerification = requiredDocsCount > 0;
+    if (needsVerification && !['DOCUMENT_VERIFIED'].includes(jc.status)) {
         throw { statusCode: 400, message: `Cannot authorize survey. The certificate must be verified first. Current status: ${jc.status}` };
+    }
+    if (!needsVerification && !['DOCUMENT_VERIFIED', 'PENDING'].includes(jc.status)) {
+        throw { statusCode: 400, message: `Cannot authorize survey. Current status: ${jc.status}` };
     }
 
     const job = await requireJob(jc.job_request_id, { includeVessel: true, useMaster: true });
@@ -1460,14 +1525,26 @@ export const authorizeAllSurveysForJob = async (jobId, remarks, user) => {
     
     const job = await requireJob(jobId, { includeVessel: true, useMaster: true });
     
-    // Find all certificates that are ready to be authorized (verified and assigned)
-    const pendingCerts = await JobCertificate.findAll({ 
+    // Find all certificates that are ready to be authorized (verified or bypassed and assigned)
+    const allCerts = await JobCertificate.findAll({ 
         where: { 
             job_request_id: jobId,
-            status: { [Op.in]: ['DOCUMENT_VERIFIED'] }
+            status: { [Op.in]: ['DOCUMENT_VERIFIED', 'PENDING'] }
         }, 
         useMaster: true 
     });
+
+    const pendingCerts = [];
+    for (const cert of allCerts) {
+        const requiredDocsCount = await db.CertificateRequiredDocument.count({
+            where: { certificate_type_id: cert.certificate_type_id },
+            useMaster: true
+        });
+        const needsVerification = requiredDocsCount > 0;
+        if (cert.status === 'DOCUMENT_VERIFIED' || (!needsVerification && cert.status === 'PENDING')) {
+            pendingCerts.push(cert);
+        }
+    }
 
     if (pendingCerts.length === 0) {
         throw { statusCode: 400, message: 'No certificates found ready for authorization. Ensure they are verified and not already authorized.' };
