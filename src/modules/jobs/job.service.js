@@ -1642,12 +1642,31 @@ export const reviewJobCertificate = async (jobCertificateId, remarks, user) => {
         if (Array.isArray(signedFiles) && signedFiles.length > 0) {
             const updatedFiles = signedFiles.map(file => {
                 if (typeof file === 'object' && file !== null) {
-                    return { ...file, status: 'APPROVED' };
+                    if (file.status === 'PENDING') {
+                        return { ...file, status: 'APPROVED' };
+                    }
                 }
                 return file;
             });
             await survey.update({ signed_checklist_files: updatedFiles }, { transaction: txn });
         }
+
+        // Auto-approve pending signed documents for this survey/certificate in new table
+        await db.SurveySignedDocument.update(
+            {
+                status: 'APPROVED',
+                reviewed_by: user.id,
+                reviewed_at: new Date()
+            },
+            {
+                where: {
+                    survey_id: survey.id,
+                    job_certificate_id: jobCertificateId,
+                    status: 'PENDING'
+                },
+                transaction: txn
+            }
+        );
 
         // Audit log TO review approval
         await db.JobStatusHistory.create({
@@ -1726,12 +1745,31 @@ export const reviewAllJobCertificates = async (jobId, remarks, user) => {
                 if (Array.isArray(signedFiles) && signedFiles.length > 0) {
                     const updatedFiles = signedFiles.map(file => {
                         if (typeof file === 'object' && file !== null) {
-                            return { ...file, status: 'APPROVED' };
+                            if (file.status === 'PENDING') {
+                                return { ...file, status: 'APPROVED' };
+                            }
                         }
                         return file;
                     });
                     await survey.update({ signed_checklist_files: updatedFiles }, { transaction: txn });
                 }
+
+                // Auto-approve pending signed documents for this survey/certificate in new table
+                await db.SurveySignedDocument.update(
+                    {
+                        status: 'APPROVED',
+                        reviewed_by: user.id,
+                        reviewed_at: new Date()
+                    },
+                    {
+                        where: {
+                            survey_id: survey.id,
+                            job_certificate_id: jc.id,
+                            status: 'PENDING'
+                        },
+                        transaction: txn
+                    }
+                );
             }
 
             // Audit log TO review approval

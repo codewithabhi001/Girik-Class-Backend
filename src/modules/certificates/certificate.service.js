@@ -155,9 +155,18 @@ export const getCertificateTypeById = async (id) => {
     return shapeCertificateTypeDetail(plain);
 };
 
+const normalizeCertificateName = (name) => {
+    return String(name || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '')
+        .trim();
+};
+
 /** Create a new certificate type (ADMIN). */
 export const createCertificateType = async (data) => {
-    const existing = await CertificateType.findOne({ where: { name: data.name } });
+    const allTypes = await CertificateType.findAll();
+    const normalizedTargetName = normalizeCertificateName(data.name);
+    const existing = allTypes.find(t => normalizeCertificateName(t.name) === normalizedTargetName);
     if (existing) throw { statusCode: 409, message: 'A certificate type with this name already exists' };
 
     const { required_documents, ...certData } = data;
@@ -195,7 +204,9 @@ export const updateCertificateType = async (id, data) => {
     if (!type) throw { statusCode: 404, message: 'Certificate type not found' };
 
     if (data.name && data.name !== type.name) {
-        const existing = await CertificateType.findOne({ where: { name: data.name } });
+        const allTypes = await CertificateType.findAll();
+        const normalizedTargetName = normalizeCertificateName(data.name);
+        const existing = allTypes.find(t => t.id !== id && normalizeCertificateName(t.name) === normalizedTargetName);
         if (existing) throw { statusCode: 409, message: 'A certificate type with this name already exists' };
     }
 

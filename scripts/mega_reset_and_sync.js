@@ -161,7 +161,7 @@ async function syncRequiredDocumentsFixed() {
     const typeMap = new Map();
     const codeMap = new Map();
     certificateTypes.forEach(t => {
-        if (t.name) typeMap.set(t.name.toUpperCase(), t);
+        if (t.name) typeMap.set(normalize(t.name), t);
         if (t.short_code) codeMap.set(t.short_code.toUpperCase(), t);
     });
 
@@ -175,12 +175,12 @@ async function syncRequiredDocumentsFixed() {
         const docName = String(v[4] || '').trim();
         if (!docName) continue;
 
-        let certType = codeMap.get(shortCode.toUpperCase()) || typeMap.get(certName.toUpperCase());
+        let certType = codeMap.get(shortCode.toUpperCase()) || typeMap.get(normalize(certName));
         if (!certType) {
             certType = await db.CertificateType.create({
                 name: certName, short_code: shortCode, issuing_authority: 'CLASS', status: 'ACTIVE', requires_survey: true
             });
-            typeMap.set(certName.toUpperCase(), certType);
+            typeMap.set(normalize(certName), certType);
             codeMap.set(shortCode.toUpperCase(), certType);
         }
         
