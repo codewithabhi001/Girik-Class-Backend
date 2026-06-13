@@ -2510,6 +2510,70 @@ components:
         created_at:
           type: string
           format: date-time
+    NotificationPreference:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        user_id:
+          $ref: '#/components/schemas/UUID'
+        email_enabled:
+          type: boolean
+          example: true
+        app_enabled:
+          type: boolean
+          example: true
+        alert_types:
+          type: array
+          items:
+            type: string
+          example:
+            - JOB_CREATED
+            - JOB_DOCUMENT_VERIFIED
+            - JOB_APPROVED
+            - JOB_ASSIGNED
+            - JOB_RESCHEDULED
+            - JOB_REVIEWED
+            - JOB_SENT_BACK
+            - JOB_FINALIZED
+            - SURVEY_STARTED
+            - SURVEY_SUBMITTED
+            - SURVEY_PROOF_UPLOADED
+            - SURVEY_REWORK_REQUESTED
+            - INFO
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    NotificationPreferenceRequest:
+      type: object
+      properties:
+        email_enabled:
+          type: boolean
+          example: true
+        app_enabled:
+          type: boolean
+          example: true
+        alert_types:
+          type: array
+          items:
+            type: string
+          example:
+            - JOB_CREATED
+            - JOB_DOCUMENT_VERIFIED
+            - JOB_APPROVED
+            - JOB_ASSIGNED
+            - JOB_RESCHEDULED
+            - JOB_REVIEWED
+            - JOB_SENT_BACK
+            - JOB_FINALIZED
+            - SURVEY_STARTED
+            - SURVEY_SUBMITTED
+            - SURVEY_PROOF_UPLOADED
+            - SURVEY_REWORK_REQUESTED
+            - INFO
     NonConformityResponse:
       type: object
       properties:

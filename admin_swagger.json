@@ -1109,17 +1109,6 @@
           "is_mandatory": false
         }
       },
-      "CertActionRequest": {
-        "type": "object",
-        "required": [
-          "reason"
-        ],
-        "properties": {
-          "reason": {
-            "type": "string"
-          }
-        }
-      },
       "CertificateHistoryResponse": {
         "type": "object",
         "properties": {
@@ -2413,6 +2402,26 @@
           }
         }
       },
+      "RescheduleJobRequest": {
+        "type": "object",
+        "required": [
+          "new_target_date",
+          "new_target_port",
+          "reason"
+        ],
+        "properties": {
+          "new_target_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "new_target_port": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
       "JobHistoryResponse": {
         "type": "object",
         "properties": {
@@ -2599,6 +2608,88 @@
           "updated_at": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "NotificationPreference": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "user_id": {
+            "$ref": "#/components/schemas/UUID"
+          },
+          "email_enabled": {
+            "type": "boolean",
+            "example": true
+          },
+          "app_enabled": {
+            "type": "boolean",
+            "example": true
+          },
+          "alert_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "JOB_CREATED",
+              "JOB_DOCUMENT_VERIFIED",
+              "JOB_APPROVED",
+              "JOB_ASSIGNED",
+              "JOB_RESCHEDULED",
+              "JOB_REVIEWED",
+              "JOB_SENT_BACK",
+              "JOB_FINALIZED",
+              "SURVEY_STARTED",
+              "SURVEY_SUBMITTED",
+              "SURVEY_PROOF_UPLOADED",
+              "SURVEY_REWORK_REQUESTED",
+              "INFO"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "NotificationPreferenceRequest": {
+        "type": "object",
+        "properties": {
+          "email_enabled": {
+            "type": "boolean",
+            "example": true
+          },
+          "app_enabled": {
+            "type": "boolean",
+            "example": true
+          },
+          "alert_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "JOB_CREATED",
+              "JOB_DOCUMENT_VERIFIED",
+              "JOB_APPROVED",
+              "JOB_ASSIGNED",
+              "JOB_RESCHEDULED",
+              "JOB_REVIEWED",
+              "JOB_SENT_BACK",
+              "JOB_FINALIZED",
+              "SURVEY_STARTED",
+              "SURVEY_SUBMITTED",
+              "SURVEY_PROOF_UPLOADED",
+              "SURVEY_REWORK_REQUESTED",
+              "INFO"
+            ]
           }
         }
       },
@@ -3228,7 +3319,12 @@
             "$ref": "#/components/schemas/UUID"
           },
           "job_id": {
-            "$ref": "#/components/schemas/UUID"
+            "$ref": "#/components/schemas/UUID",
+            "nullable": true
+          },
+          "job_certificate_id": {
+            "$ref": "#/components/schemas/UUID",
+            "nullable": true
           },
           "latitude": {
             "type": "number"
@@ -7467,7 +7563,7 @@
           "Certificates"
         ],
         "summary": "List required documents for a certificate type",
-        "description": "Returns the list of required documents configured for a certificate type.\n**Roles:** ADMIN, TM\n",
+        "description": "Returns the list of required documents configured for a certificate type.\n\n**Roles:** CLIENT, ADMIN, GM, TM, TO, SURVEYOR\n",
         "security": [
           {
             "bearerAuth": []
@@ -7475,8 +7571,12 @@
         ],
         "operationId": "getCertificateTypeRequiredDocuments",
         "x-roles": [
+          "CLIENT",
           "ADMIN",
-          "TM"
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR"
         ],
         "parameters": [
           {
@@ -8105,99 +8205,6 @@
         }
       }
     },
-    "/api/v1/certificates/bulk-renew": {
-      "post": {
-        "tags": [
-          "Certificates"
-        ],
-        "summary": "Bulk renew certificates",
-        "description": "Renew multiple certificates in one operation. ADMIN, TM only.",
-        "operationId": "bulkRenewCertificates",
-        "x-roles": [
-          "ADMIN",
-          "TM"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "certificate_ids"
-                ],
-                "properties": {
-                  "certificate_ids": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "uuid"
-                    }
-                  },
-                  "validity_years": {
-                    "type": "integer",
-                    "default": 1
-                  },
-                  "reason": {
-                    "type": "string"
-                  }
-                }
-              },
-              "example": {
-                "certificate_ids": [
-                  "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Bulk renewal completed",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "message": "Request successful"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "success": false,
-                  "error_code": "VALIDATION_ERROR",
-                  "message": "Validation failed. Please correct the highlighted fields.",
-                  "errors": {
-                    "vessel_id": "vessel_id is required"
-                  },
-                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/certificates/job/{jobId}": {
       "get": {
         "tags": [
@@ -8607,353 +8614,6 @@
                 "example": {
                   "success": false,
                   "message": "Certificate PDF is not available for download yet."
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/certificates/{id}/reissue": {
-      "post": {
-        "tags": [
-          "Certificates"
-        ],
-        "summary": "Reissue certificate",
-        "description": "Reissue a certificate (e.g. after loss). ADMIN, TM only.",
-        "operationId": "reissueCertificate",
-        "x-roles": [
-          "ADMIN",
-          "TM"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CertActionRequest"
-              },
-              "example": {
-                "reason": "Original lost"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Certificate reissued",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/CertificateResponse"
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "message": "string",
-                  "data": {
-                    "id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
-                    "vessel_id": "string",
-                    "certificate_type_id": "string",
-                    "certificate_number": "string",
-                    "issue_date": "2026-03-15",
-                    "expiry_date": "2026-03-15",
-                    "status": "DRAFT",
-                    "qr_code_url": "https://example.com/resource",
-                    "pdf_file_url": "https://example.com/resource",
-                    "uploaded_file_url": "string",
-                    "generated_pdf_url": "string",
-                    "issued_at": "2026-03-15T10:00:00.000Z",
-                    "issued_by_user_id": "string",
-                    "created_at": "2026-03-15T10:00:00.000Z",
-                    "updated_at": "2026-03-15T10:00:00.000Z",
-                    "CertificateType": {
-                      "name": "string"
-                    },
-                    "Vessel": {
-                      "vessel_name": "string",
-                      "imo_number": "string"
-                    },
-                    "FlagState": {
-                      "flag_state_name": "string"
-                    },
-                    "source_type": "INTERNAL",
-                    "version": 1,
-                    "certificate_term": "FULL_TERM",
-                    "manual_text": {},
-                    "remarks": "string"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/certificates/{id}/transfer": {
-      "post": {
-        "tags": [
-          "Certificates"
-        ],
-        "summary": "Transfer certificate",
-        "description": "Transfer certificate ownership/association. ADMIN, GM only.",
-        "operationId": "transferCertificate",
-        "x-roles": [
-          "ADMIN",
-          "GM"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CertActionRequest"
-              },
-              "example": {
-                "reason": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Certificate transferred",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "message": "Request successful"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "success": false,
-                  "error_code": "VALIDATION_ERROR",
-                  "message": "Validation failed. Please correct the highlighted fields.",
-                  "errors": {
-                    "vessel_id": "vessel_id is required"
-                  },
-                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/certificates/{id}/extend": {
-      "post": {
-        "tags": [
-          "Certificates"
-        ],
-        "summary": "Extend certificate",
-        "description": "Extend certificate validity. ADMIN, GM only.",
-        "operationId": "extendCertificate",
-        "x-roles": [
-          "ADMIN",
-          "GM"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CertActionRequest"
-              },
-              "example": {
-                "reason": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Certificate extended",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "message": "Request successful"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "success": false,
-                  "error_code": "VALIDATION_ERROR",
-                  "message": "Validation failed. Please correct the highlighted fields.",
-                  "errors": {
-                    "vessel_id": "vessel_id is required"
-                  },
-                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/certificates/{id}/downgrade": {
-      "put": {
-        "tags": [
-          "Certificates"
-        ],
-        "summary": "Downgrade certificate",
-        "description": "Downgrade certificate classification/type. ADMIN, GM only.",
-        "operationId": "downgradeCertificate",
-        "x-roles": [
-          "ADMIN",
-          "GM"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CertActionRequest"
-              },
-              "example": {
-                "reason": "string"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Certificate downgraded",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "message": "Request successful"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "success": false,
-                  "error_code": "VALIDATION_ERROR",
-                  "message": "Validation failed. Please correct the highlighted fields.",
-                  "errors": {
-                    "vessel_id": "vessel_id is required"
-                  },
-                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
                 }
               }
             }
@@ -10744,13 +10404,13 @@
         }
       }
     },
-    "/api/v1/checklists/jobs/{jobId}": {
+    "/api/v1/checklists/job-certificates/{jobCertificateId}": {
       "get": {
         "tags": [
           "Checklists"
         ],
-        "summary": "Get checklist for a job",
-        "description": "Returns the checklist items for a job **plus** the resolved (signed)\nHTTPS URLs of any full signed-checklist scan documents that were\nattached to the underlying survey.\n\nAll `file_url` fields and `signed_checklist_files` entries are guaranteed\nto be either fully-qualified HTTPS URLs or `null` — raw S3 keys are never\nreturned to the client.\n",
+        "summary": "Get checklist for a job certificate",
+        "description": "Returns checklist items, signed-checklist scan URLs, and survey details\nfor a **specific JobCertificate**. Each certificate in a multi-cert job\nhas its own independent checklist.\n\nAll `file_url` fields and `signed_checklist_files` entries are guaranteed\nto be either fully-qualified HTTPS URLs or `null` — raw S3 keys are never\nreturned to the client.\n",
         "operationId": "getChecklist",
         "security": [
           {
@@ -10767,23 +10427,13 @@
         "parameters": [
           {
             "in": "path",
-            "name": "jobId",
+            "name": "jobCertificateId",
             "schema": {
               "type": "string",
               "format": "uuid"
             },
             "required": true,
-            "description": "Unique identifier of the job"
-          },
-          {
-            "in": "query",
-            "name": "job_certificate_id",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "required": false,
-            "description": "Target a specific certificate (recommended for multi-cert jobs)"
+            "description": "Unique identifier of the JobCertificate"
           },
           {
             "in": "query",
@@ -10894,7 +10544,294 @@
             }
           },
           "404": {
-            "description": "Job not found",
+            "description": "JobCertificate not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/checklists/jobs/{jobId}/items/{itemId}/review": {
+      "put": {
+        "tags": [
+          "Checklists"
+        ],
+        "summary": "Review a specific checklist question answer (TO/ADMIN)",
+        "description": "Allows a Technical Officer (TO) or ADMIN to approve or reject a specific\nchecklist question answer for a job.\n**Roles:** TO, ADMIN\n",
+        "operationId": "reviewChecklistItem",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "TO",
+          "ADMIN"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "jobId",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "description": "Unique identifier of the job"
+          },
+          {
+            "in": "path",
+            "name": "itemId",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "description": "Unique identifier of the checklist item/answer"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "status"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "APPROVED",
+                      "REJECTED"
+                    ],
+                    "description": "Status of the checklist item review"
+                  },
+                  "rejection_reason": {
+                    "type": "string",
+                    "description": "Reason for rejection (required if status is REJECTED)"
+                  },
+                  "job_certificate_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Optional job certificate ID to scope the review"
+                  }
+                },
+                "example": {
+                  "status": "REJECTED",
+                  "rejection_reason": "Evidence photo is blurry"
+                }
+              },
+              "example": {
+                "status": "REJECTED",
+                "rejection_reason": "Evidence photo is blurry"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Checklist item reviewed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Item rejected successfully"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Item rejected successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request (validation error)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/checklists/jobs/{jobId}/signed-files/{fileIndex}/review": {
+      "put": {
+        "tags": [
+          "Checklists"
+        ],
+        "summary": "Review a signed document scan (TO/ADMIN)",
+        "description": "Allows a Technical Officer (TO) or ADMIN to approve or reject a specific\nuploaded signed checklist document scan (by its index in the array).\n**Roles:** TO, ADMIN\n",
+        "operationId": "reviewSignedDocument",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "TO",
+          "ADMIN"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "jobId",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "description": "Unique identifier of the job"
+          },
+          {
+            "in": "path",
+            "name": "fileIndex",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "description": "The 0-based index of the signed file to review in the files array"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "status"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "APPROVED",
+                      "REJECTED"
+                    ],
+                    "description": "Status of the signed document review"
+                  },
+                  "rejection_reason": {
+                    "type": "string",
+                    "description": "Reason for rejection (required if status is REJECTED)"
+                  },
+                  "job_certificate_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Optional job certificate ID"
+                  }
+                },
+                "example": {
+                  "status": "APPROVED"
+                }
+              },
+              "example": {
+                "status": "APPROVED"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed document reviewed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Signed document approved successfully"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Signed document approved successfully"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request (validation error)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
             "content": {
               "application/json": {
                 "schema": {
@@ -14975,8 +14912,9 @@
         "tags": [
           "Jobs"
         ],
-        "summary": "ADMIN/GM/TO: Verify or reject documents",
-        "description": "**Transition:** `CREATED → DOCUMENT_VERIFIED` (when all docs approved)\n\nTechnical Officer (or Admin/GM) reviews uploaded documents for validity and completeness.\n\n**Two flows:**\n1. **Approve all** (`approved: true` or empty body) — Marks all documents as\n   APPROVED and transitions the job to `DOCUMENT_VERIFIED`.\n2. **Reject specific docs** (`approved: false`) — Marks listed documents as\n   REJECTED with reasons. Job stays in `CREATED`. Client is notified to\n   re-upload the rejected documents.\n\nIf mandatory documents are missing (not uploaded at all), returns `400`\nregardless of the `approved` flag.\n\n**Roles:** ADMIN, GM, TO\n",
+        "deprecated": true,
+        "summary": "ADMIN/GM/TO: Verify or reject documents (deprecated)",
+        "description": "> **Deprecated** – Use `PUT /api/v1/jobs/certificates/{jobCertificateId}/verify-documents` instead.\n\n**Transition:** `CREATED → DOCUMENT_VERIFIED` (when all docs approved)\n\nTechnical Officer (or Admin/GM) reviews uploaded documents for validity and completeness.\n\n**Two flows:**\n1. **Approve all** (`approved: true` or empty body) — Marks all documents as\n   APPROVED and transitions the job to `DOCUMENT_VERIFIED`.\n2. **Reject specific docs** (`approved: false`) — Marks listed documents as\n   REJECTED with reasons. Job stays in `CREATED`. Client is notified to\n   re-upload the rejected documents.\n\nIf mandatory documents are missing (not uploaded at all), returns `400`\nregardless of the `approved` flag.\n\n**Roles:** ADMIN, GM, TO\n",
         "operationId": "verifyJobDocuments",
         "x-roles": [
           "ADMIN",
@@ -15254,13 +15192,336 @@
         }
       }
     },
+    "/api/v1/jobs/certificates/{jobCertificateId}/verify-documents": {
+      "put": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "ADMIN/GM/TO: Verify or reject documents for a single certificate",
+        "description": "Technical Officer (or Admin/GM) reviews uploaded documents for validity and completeness for a specific certificate.\n\n**Two flows:**\n1. **Approve all** (`approved: true` or empty body) — Marks all pending documents for this certificate as APPROVED and transitions the certificate status to `DOCUMENT_VERIFIED`.\n   If this was the last pending certificate for the job, transitions the parent job status to `DOCUMENT_VERIFIED` as well.\n2. **Reject specific docs** (`approved: false`) — Marks listed documents as REJECTED with reasons. Certificate stays in `PENDING` (or returns to it if relevant). Client is notified to re-upload the rejected documents.\n\nIf mandatory documents are missing (not uploaded at all), returns `400` regardless of the `approved` flag.\n\n**Roles:** ADMIN, GM, TO\n",
+        "operationId": "verifyJobCertificateDocuments",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TO"
+        ],
+        "parameters": [
+          {
+            "name": "jobCertificateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Job Certificate ID"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "approved": {
+                    "type": "boolean",
+                    "description": "true = all docs valid, false = some docs invalid",
+                    "default": true
+                  },
+                  "rejected_documents": {
+                    "type": "array",
+                    "description": "Required when approved=false. List of invalid documents with reasons.",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "document_id"
+                      ],
+                      "properties": {
+                        "document_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "ID of the JobDocument to reject"
+                        },
+                        "reason": {
+                          "type": "string",
+                          "description": "Why this document is invalid"
+                        }
+                      }
+                    }
+                  },
+                  "remarks": {
+                    "type": "string",
+                    "description": "Optional remarks or reason for approval"
+                  }
+                },
+                "example": {
+                  "approved": false,
+                  "rejected_documents": [
+                    {
+                      "document_id": "019d3ac5-0001-0001-0001-000000000001",
+                      "reason": "Certificate expired, please upload a valid one."
+                    }
+                  ]
+                }
+              },
+              "examples": {
+                "approve_all": {
+                  "summary": "Approve all documents",
+                  "value": {
+                    "approved": true,
+                    "remarks": "Verified all documents."
+                  }
+                },
+                "reject_specific": {
+                  "summary": "Reject invalid documents",
+                  "value": {
+                    "approved": false,
+                    "rejected_documents": [
+                      {
+                        "document_id": "019d3ac5-0001-0001-0001-000000000001",
+                        "reason": "Certificate expired on 2025-01-01"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Documents processed successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "All documents verified successfully for this certificate."
+                    },
+                    "data": {
+                      "type": "object"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "All documents verified successfully for this certificate.",
+                  "data": {}
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Job certificate not in verify-ready state, mandatory documents missing, or invalid parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job Certificate not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{id}/verify-all-documents": {
+      "put": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "TO/GM/ADMIN: Verify all documents for all pending certificates of a Job",
+        "description": "Technical Officer (or Admin/GM) reviews and bulk-approves all uploaded documents for all pending certificates of a job.\nMoves all pending/rework-requested certificates to `DOCUMENT_VERIFIED`.\nTransitions the parent job status to `IN_PROGRESS` if it was not already.\n\n**Roles:** TO, GM, ADMIN\n",
+        "operationId": "verifyAllJobDocuments",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "TO",
+          "GM",
+          "ADMIN"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "remarks": {
+                    "type": "string",
+                    "description": "Verification remarks",
+                    "example": "All documents verified successfully."
+                  }
+                }
+              },
+              "example": {
+                "remarks": "All documents verified successfully."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Documents verified successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "All documents verified successfully for this certificate."
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "All documents verified successfully for this certificate."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No pending certificates found or mandatory documents missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/jobs/{id}/approve-request": {
       "put": {
         "tags": [
           "Jobs"
         ],
-        "summary": "GM/ADMIN: Approve request → APPROVED",
-        "description": "**Transition:** `DOCUMENT_VERIFIED → APPROVED`\n\nGeneral Manager or Admin formally approves the job request after document\nverification. Records `approved_by_user_id` on the job.\n\n**Roles:** ADMIN, GM\n",
+        "summary": "GM/ADMIN: Approve job request (all certificates verified)",
+        "description": "General Manager or Admin approves the job after documents are verified.\n\n**Single-certificate / legacy:** `DOCUMENT_VERIFIED → APPROVED`.\n\n**Multi-certificate:** When parent job is already `IN_PROGRESS` and every\n`JobCertificate` is `DOCUMENT_VERIFIED`, approval records `approved_by_user_id`\nwithout forcing an invalid status transition (job stays `IN_PROGRESS`).\n\n**Roles:** ADMIN, GM\n",
         "operationId": "approveRequest",
         "x-roles": [
           "ADMIN",
@@ -15417,209 +15678,6 @@
           },
           "403": {
             "description": "Forbidden – only ADMIN or GM",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "success": false,
-                  "error_code": "VALIDATION_ERROR",
-                  "message": "Validation failed. Please correct the highlighted fields.",
-                  "errors": {
-                    "vessel_id": "vessel_id is required"
-                  },
-                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Job not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "success": false,
-                  "error_code": "VALIDATION_ERROR",
-                  "message": "Validation failed. Please correct the highlighted fields.",
-                  "errors": {
-                    "vessel_id": "vessel_id is required"
-                  },
-                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/jobs/{id}/finalize": {
-      "put": {
-        "tags": [
-          "Jobs"
-        ],
-        "summary": "ADMIN/GM/TM: Finalize non-survey job → FINALIZED",
-        "description": "**Transition:** `APPROVED → FINALIZED`\n\nOnly applicable to jobs where `is_survey_required = false`. For jobs that\nrequire a survey, finalization happens automatically when the survey is\ncompleted and the TM finalizes the survey report.\n\n**Roles:** ADMIN, GM, TM\n",
-        "operationId": "finalizeJob",
-        "x-roles": [
-          "ADMIN",
-          "GM",
-          "TM"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "remarks": {
-                    "type": "string",
-                    "example": "No survey required. Finalizing."
-                  }
-                }
-              },
-              "example": {
-                "remarks": "No survey required. Finalizing."
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Job finalized. Status → FINALIZED.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Job finalized."
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/JobResponse"
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "message": "Job finalized.",
-                  "data": {
-                    "id": "019d3ac5-3464-74f9-891e-f6eda7ee366c",
-                    "job_status": "ASSIGNED",
-                    "vessel_id": "019cbf1d-d9c1-732d-8d10-f866bb6e9dec",
-                    "certificate_type_id": "019cbf1d-bdc2-75e8-9fc8-3d161ae90ede",
-                    "requested_by_user_id": "019c79a4-3eee-731a-9eff-b0eed303e215",
-                    "assigned_surveyor_id": "019c79a4-4930-71fd-aa73-887301791935",
-                    "target_port": "Mumbai",
-                    "target_date": "2026-12-31",
-                    "priority": "NORMAL",
-                    "createdAt": "2026-03-29T18:04:55.000Z",
-                    "updatedAt": "2026-04-11T11:42:13.000Z",
-                    "is_survey_required": true,
-                    "reschedule_count": 0,
-                    "Vessel": {
-                      "id": "019cbf1d-d9c1-732d-8d10-f866bb6e9dec",
-                      "vessel_name": "MV Pacific Guardian",
-                      "imo_number": "9876501",
-                      "client_id": "019c79a4-3ab9-7055-a1a7-9d7332fb025e"
-                    },
-                    "certificates": [
-                      {
-                        "id": "019d3ac5-3464-74f9-891e-f6eda7ee366c",
-                        "status": "PENDING",
-                        "CertificateType": {
-                          "id": "019cbf1d-bdc2-75e8-9fc8-3d161ae90ede",
-                          "name": "Safety Equipment Certificate",
-                          "issuing_authority": "CLASS"
-                        },
-                        "survey": {
-                          "id": "019d7c59-7f7e-768d-a9a5-00cb91079432",
-                          "survey_status": "NOT_STARTED",
-                          "survey_statement_status": "NOT_PREPARED"
-                        }
-                      }
-                    ],
-                    "requester": {
-                      "id": "019c79a4-3eee-731a-9eff-b0eed303e215",
-                      "name": "System Admin",
-                      "email": "admin@grclass.com",
-                      "role": "ADMIN"
-                    },
-                    "surveyor": {
-                      "id": "019c79a4-4930-71fd-aa73-887301791935",
-                      "name": "Abhishek Singh",
-                      "email": "abhisheksingh@gmail.com"
-                    },
-                    "approver": {
-                      "id": "019c79a4-42ee-772c-be48-490a7c1f4444",
-                      "name": "General Manager",
-                      "role": "GM"
-                    },
-                    "payment_status": "N/A"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Job requires a survey (is_survey_required=true), or not in APPROVED state",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "success": false,
-                  "error_code": "VALIDATION_ERROR",
-                  "message": "Validation failed. Please correct the highlighted fields.",
-                  "errors": {
-                    "vessel_id": "vessel_id is required"
-                  },
-                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "success": false,
-                  "error_code": "VALIDATION_ERROR",
-                  "message": "Validation failed. Please correct the highlighted fields.",
-                  "errors": {
-                    "vessel_id": "vessel_id is required"
-                  },
-                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
             "content": {
               "application/json": {
                 "schema": {
@@ -16060,8 +16118,9 @@
         "tags": [
           "Jobs"
         ],
-        "summary": "ADMIN/TM: Authorize survey → SURVEY_AUTHORIZED",
-        "description": "**Transition:** `ASSIGNED → SURVEY_AUTHORIZED`\n\nAdmin or Technical Manager formally authorizes the survey to proceed.\nRequires a surveyor to already be assigned. Notifies the surveyor and the\nclient. The surveyor can now call `POST /api/v1/surveys/start` to begin.\n\n**Roles:** ADMIN, TM\n",
+        "deprecated": true,
+        "summary": "ADMIN/TM: Authorize survey → SURVEY_AUTHORIZED (deprecated)",
+        "description": "> **Deprecated** – Use `PUT /api/v1/jobs/certificates/{jobCertificateId}/authorize-survey` instead.\n\n**Transition:** `ASSIGNED → SURVEY_AUTHORIZED`\n\nAdmin or Technical Manager formally authorizes the survey to proceed.\nRequires a surveyor to already be assigned. Notifies the surveyor and the\nclient. The surveyor can now call `POST /api/v1/surveys/start` to begin.\n\n**Roles:** ADMIN, TM\n",
         "operationId": "authorizeSurvey",
         "x-roles": [
           "ADMIN",
@@ -16257,17 +16316,17 @@
         }
       }
     },
-    "/api/v1/jobs/{id}/review": {
+    "/api/v1/jobs/{id}/authorize-all-surveys": {
       "put": {
         "tags": [
           "Jobs"
         ],
-        "summary": "ADMIN/TO: Technical review → REVIEWED",
-        "description": "**Transition:** `SURVEY_DONE → REVIEWED`\n\nTechnical Officer (or Admin) performs a technical review of the submitted survey findings.\n\n**Roles:** ADMIN, TO\n",
-        "operationId": "reviewJob",
+        "summary": "ADMIN/TM: Bulk authorize all valid assigned surveys for a Job",
+        "description": "**Bulk Transition:** `DOCUMENT_VERIFIED → SURVEY_AUTHORIZED`\n\nAdmin or Technical Manager authorizes all surveys for a job at once.\nIt filters out any certificates that do not have a surveyor assigned yet,\nand successfully authorizes the rest. Sends push notifications to all assigned surveyors.\n\n**Roles:** ADMIN, TM\n",
+        "operationId": "authorizeAllSurveys",
         "x-roles": [
           "ADMIN",
-          "TO"
+          "TM"
         ],
         "parameters": [
           {
@@ -16288,19 +16347,19 @@
                 "properties": {
                   "remarks": {
                     "type": "string",
-                    "example": "Findings are correct. Technical review passed."
+                    "example": "Bulk authorization granted for all assigned certificates."
                   }
                 }
               },
               "example": {
-                "remarks": "Findings are correct. Technical review passed."
+                "remarks": "Bulk authorization granted for all assigned certificates."
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Job reviewed. Status → REVIEWED.",
+            "description": "Surveys authorized.",
             "content": {
               "application/json": {
                 "schema": {
@@ -16312,7 +16371,290 @@
                     },
                     "message": {
                       "type": "string",
-                      "example": "Job marked as reviewed."
+                      "example": "Successfully authorized surveys for 3 certificate(s)."
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Successfully authorized surveys for 3 certificate(s).",
+                  "data": [
+                    {}
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No certificates found with an assigned surveyor to authorize.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden – only ADMIN or TM",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{id}/review-all": {
+      "put": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "TO/ADMIN: Review all completed surveys for a Job",
+        "description": "Technical Officer (or Admin) bulk-reviews all completed surveys under the job (which are in `SURVEY_DONE` status).\nApproves all checklist items and signed files for those surveys.\nIf parent Job status is `SURVEY_DONE`, transitions it to `REVIEWED`.\n\n**Roles:** TO, ADMIN\n",
+        "operationId": "reviewAllJobCertificates",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "TO",
+          "ADMIN"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "remarks": {
+                    "type": "string",
+                    "description": "Review remarks/feedback",
+                    "example": "Checklist and signed scans are approved."
+                  }
+                }
+              },
+              "example": {
+                "remarks": "Checklist and signed scans are approved."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Review recorded successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "All completed surveys marked as reviewed."
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "All completed surveys marked as reviewed."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No certificates in SURVEY_DONE status found to review.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{id}/reschedule": {
+      "put": {
+        "tags": [
+          "Jobs"
+        ],
+        "summary": "ADMIN/GM: Reschedule job date/port",
+        "description": "Updates `target_date` and/or `target_port` for an existing job.\nAllowed when the job is in any of: `CREATED`, `DOCUMENT_VERIFIED`,\n`APPROVED`, `ASSIGNED`, `SURVEY_AUTHORIZED`.  \nNot allowed after survey starts or in terminal states.\n\nLogs the old and new values in `job_reschedules` and notifies the\nassigned surveyor (if any).\n\n**Roles:** GM, ADMIN\n",
+        "operationId": "rescheduleJob",
+        "x-roles": [
+          "GM",
+          "ADMIN"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RescheduleJobRequest"
+              },
+              "example": {
+                "new_target_date": "2026-05-01",
+                "new_target_port": "Rotterdam",
+                "reason": "Port congestion at Singapore. Rerouted to Rotterdam."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Job rescheduled successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Job rescheduled successfully."
                     },
                     "data": {
                       "$ref": "#/components/schemas/JobResponse"
@@ -16321,7 +16663,7 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "Job marked as reviewed.",
+                  "message": "Job rescheduled successfully.",
                   "data": {
                     "id": "019d3ac5-3464-74f9-891e-f6eda7ee366c",
                     "job_status": "ASSIGNED",
@@ -16381,7 +16723,7 @@
             }
           },
           "400": {
-            "description": "Job not in SURVEY_DONE state",
+            "description": "Rescheduling not allowed in current state (e.g. IN_PROGRESS or terminal),\nor `reason` is missing.\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -16419,7 +16761,7 @@
             }
           },
           "403": {
-            "description": "Forbidden – only ADMIN or TO",
+            "description": "Forbidden – only ADMIN or GM",
             "content": {
               "application/json": {
                 "schema": {
@@ -17090,6 +17432,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "job_certificate_id",
+            "in": "query",
+            "description": "Optional. When set, eligibility is evaluated only for that certificate's\ntype (split assignment / per-row assign in UI).\n",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -17525,13 +17876,14 @@
           "Jobs"
         ],
         "summary": "Upload or replace job documents",
-        "description": "Client or staff uploads additional documents or replaces existing ones.\nOnly allowed while job is in `CREATED` status.\n\nThis endpoint handles both initial uploads and replacement of rejected \ndocuments. If a `required_document_id` is provided for a document that\nalready exists, its `file_url` will be updated and its `verification_status`\nwill be reset to `PENDING`.\n\nNotifies TO team that new or updated documents are available for review.\n\n**Roles:** CLIENT, ADMIN, GM, TM\n",
+        "description": "Client or staff uploads additional documents or replaces existing ones.\nOnly allowed while job is in `CREATED` status.\n\nThis endpoint handles both initial uploads and replacement of rejected \ndocuments. If a `required_document_id` is provided for a document that\nalready exists, its `file_url` will be updated and its `verification_status`\nwill be reset to `PENDING`.\n\nNotifies TO team that new or updated documents are available for review.\n\n**Roles:** CLIENT, ADMIN, GM, TM, TO\n",
         "operationId": "uploadJobDocuments",
         "x-roles": [
           "CLIENT",
           "ADMIN",
           "GM",
-          "TM"
+          "TM",
+          "TO"
         ],
         "parameters": [
           {
@@ -17695,13 +18047,14 @@
           "Jobs"
         ],
         "summary": "Re-upload a rejected document",
-        "description": "Client or staff replaces a previously rejected document with a new version.\nOnly documents with `verification_status = REJECTED` can be re-uploaded.\nThe new version is created as a separate record (PENDING) to maintain\naudit trail of the rejected original.\n\nOnly allowed while the job is in `CREATED` status.\n\n**Roles:** CLIENT, ADMIN, GM, TM\n",
+        "description": "Client or staff replaces a previously rejected document with a new version.\nOnly documents with `verification_status = REJECTED` can be re-uploaded.\nThe new version is created as a separate record (PENDING) to maintain\naudit trail of the rejected original.\n\nOnly allowed while the job is in `CREATED` status.\n\n**Roles:** CLIENT, ADMIN, GM, TM, TO\n",
         "operationId": "reuploadJobDocument",
         "x-roles": [
           "CLIENT",
           "ADMIN",
           "GM",
-          "TM"
+          "TM",
+          "TO"
         ],
         "parameters": [
           {
@@ -18656,6 +19009,14 @@
             }
           },
           {
+            "name": "job_certificate_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
             "name": "status",
             "in": "query",
             "schema": {
@@ -18887,6 +19248,15 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "job_certificate_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Optional filter — return NCs scoped to one job certificate only"
           }
         ],
         "responses": {
@@ -19113,6 +19483,171 @@
         }
       }
     },
+    "/api/v1/notifications/preferences": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Get notification preferences",
+        "operationId": "getNotificationPreferences",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
+        "responses": {
+          "200": {
+            "description": "Notification preferences retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationPreference"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
+                    "user_id": "string",
+                    "email_enabled": true,
+                    "app_enabled": true,
+                    "alert_types": [
+                      "JOB_CREATED",
+                      "JOB_DOCUMENT_VERIFIED",
+                      "JOB_APPROVED",
+                      "JOB_ASSIGNED",
+                      "JOB_RESCHEDULED",
+                      "JOB_REVIEWED",
+                      "JOB_SENT_BACK",
+                      "JOB_FINALIZED",
+                      "SURVEY_STARTED",
+                      "SURVEY_SUBMITTED",
+                      "SURVEY_PROOF_UPLOADED",
+                      "SURVEY_REWORK_REQUESTED",
+                      "INFO"
+                    ],
+                    "createdAt": "2026-03-15T10:00:00.000Z",
+                    "updatedAt": "2026-03-15T10:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Update notification preferences",
+        "operationId": "updateNotificationPreferences",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "ADMIN",
+          "GM",
+          "TM",
+          "TO",
+          "SURVEYOR",
+          "CLIENT"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationPreferenceRequest"
+              },
+              "example": {
+                "email_enabled": true,
+                "app_enabled": true,
+                "alert_types": [
+                  "JOB_CREATED",
+                  "JOB_DOCUMENT_VERIFIED",
+                  "JOB_APPROVED",
+                  "JOB_ASSIGNED",
+                  "JOB_RESCHEDULED",
+                  "JOB_REVIEWED",
+                  "JOB_SENT_BACK",
+                  "JOB_FINALIZED",
+                  "SURVEY_STARTED",
+                  "SURVEY_SUBMITTED",
+                  "SURVEY_PROOF_UPLOADED",
+                  "SURVEY_REWORK_REQUESTED",
+                  "INFO"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Notification preferences updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/NotificationPreference"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
+                    "user_id": "string",
+                    "email_enabled": true,
+                    "app_enabled": true,
+                    "alert_types": [
+                      "JOB_CREATED",
+                      "JOB_DOCUMENT_VERIFIED",
+                      "JOB_APPROVED",
+                      "JOB_ASSIGNED",
+                      "JOB_RESCHEDULED",
+                      "JOB_REVIEWED",
+                      "JOB_SENT_BACK",
+                      "JOB_FINALIZED",
+                      "SURVEY_STARTED",
+                      "SURVEY_SUBMITTED",
+                      "SURVEY_PROOF_UPLOADED",
+                      "SURVEY_REWORK_REQUESTED",
+                      "INFO"
+                    ],
+                    "createdAt": "2026-03-15T10:00:00.000Z",
+                    "updatedAt": "2026-03-15T10:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/payments": {
       "get": {
         "tags": [
@@ -19208,12 +19743,14 @@
           "Payments"
         ],
         "summary": "Financial summary",
-        "description": "Get financial summary. CLIENT, ADMIN, GM only.",
+        "description": "Get financial summary. CLIENT, ADMIN, GM, TM, TO.",
         "operationId": "getFinancialSummary",
         "x-roles": [
           "CLIENT",
           "ADMIN",
-          "GM"
+          "GM",
+          "TM",
+          "TO"
         ],
         "responses": {
           "200": {
@@ -22215,6 +22752,7 @@
                       "surveyor_id": "string",
                       "vessel_id": "string",
                       "job_id": "string",
+                      "job_certificate_id": "string",
                       "latitude": 1.5,
                       "longitude": 1.5,
                       "timestamp": "2026-03-15T10:00:00.000Z"
@@ -22253,6 +22791,11 @@
         ],
         "summary": "List survey reports",
         "operationId": "getSurveyReports",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "x-roles": [
           "ADMIN",
           "GM",
@@ -22391,15 +22934,21 @@
         "tags": [
           "Surveys"
         ],
-        "summary": "Get all surveys for a job",
-        "description": "Returns all surveys for a job — one per `JobCertificate`. Each survey\ncontains its own checklist items, GPS trace, and status.\n",
+        "summary": "Get survey details for a job (all certificates)",
+        "description": "Returns an **array** of survey objects — one per `JobCertificate` — for\nthe given job. Use this to see status, checklist progress, and statement\ndetails across all certificates.\n",
         "operationId": "getSurveyDetails",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "x-roles": [
           "ADMIN",
           "GM",
           "TM",
           "TO",
-          "SURVEYOR"
+          "SURVEYOR",
+          "CLIENT"
         ],
         "parameters": [
           {
@@ -22410,22 +22959,12 @@
               "type": "string",
               "format": "uuid"
             },
-            "description": "Job Request ID"
-          },
-          {
-            "name": "job_certificate_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "description": "Filter to a specific certificate's survey"
+            "description": "Job ID"
           }
         ],
         "responses": {
           "200": {
-            "description": "Survey details (array for multi-cert jobs)",
+            "description": "Survey details array (one per certificate)",
             "content": {
               "application/json": {
                 "schema": {
@@ -22436,32 +22975,37 @@
                       "example": true
                     },
                     "data": {
-                      "$ref": "#/components/schemas/SurveyReportResponse"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SurveyReportResponse"
+                      }
                     }
                   }
                 },
                 "example": {
                   "success": true,
-                  "data": {
-                    "id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
-                    "job_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
-                    "survey_status": "SUBMITTED",
-                    "submission_count": 1,
-                    "submit_latitude": 1.3521,
-                    "submit_longitude": 103.8198,
-                    "survey_statement": "Survey completed successfully.",
-                    "declared_by": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
-                    "declared_at": "2026-02-25T12:00:00Z",
-                    "declaration_hash": "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
-                    "started_at": "2026-02-25T10:00:00Z",
-                    "submitted_at": "2026-02-25T12:00:00Z"
-                  }
+                  "data": [
+                    {
+                      "id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
+                      "job_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
+                      "survey_status": "SUBMITTED",
+                      "submission_count": 1,
+                      "submit_latitude": 1.3521,
+                      "submit_longitude": 103.8198,
+                      "survey_statement": "Survey completed successfully.",
+                      "declared_by": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f",
+                      "declared_at": "2026-02-25T12:00:00Z",
+                      "declaration_hash": "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
+                      "started_at": "2026-02-25T10:00:00Z",
+                      "submitted_at": "2026-02-25T12:00:00Z"
+                    }
+                  ]
                 }
               }
             }
           },
           "404": {
-            "description": "Survey not found",
+            "description": "Job not found",
             "content": {
               "application/json": {
                 "schema": {
@@ -22487,8 +23031,8 @@
         "tags": [
           "Surveys"
         ],
-        "summary": "Finalize submitted surveys for a job (TM/ADMIN)",
-        "description": "Allows a Technical Manager (TM) or Admin to grant final approval to all submitted surveys under a job.\n\n**Workflow Logic:**\n- Non-submitted surveys (e.g. `STARTED` or `REWORK_REQUIRED`) are skipped, enabling other completed surveys on the same job to finalize independently.\n- Transition: `SUBMITTED → FINALIZED`.\n- Unlocks certificate drafting and generation for those finalized surveys.\n- Automatically sets the parent Job status to `FINALIZED` if all of its surveys are finalized.\n\n**Roles:** TM, ADMIN\n",
+        "summary": "Finalize all submitted surveys for a job (TM)",
+        "description": "Allows a Technical Manager (TM) to grant final approval to **all** submitted\nsurveys for this job in one call.\n\n**Workflow Logic:**\n- Transitions all `SUBMITTED` certificate surveys to `FINALIZED`.\n- `JobCertificate` status remains at `SURVEY_DONE` after finalization.\n  The GM must then explicitly generate + issue physical certificates\n  (`POST /certificates` + `POST /certificates/{id}/issue`) to advance to `ISSUED`.\n- Parent Job advances to `FINALIZED` when all certs are done.\n\n**Roles:** TM, ADMIN\n",
         "operationId": "finalizeSurvey",
         "security": [
           {
@@ -22508,7 +23052,7 @@
               "type": "string",
               "format": "uuid"
             },
-            "description": "Job Request ID"
+            "description": "Job ID"
           }
         ],
         "requestBody": {
@@ -22518,15 +23062,14 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "job_certificate_id": {
+                  "remarks": {
                     "type": "string",
-                    "format": "uuid",
-                    "description": "Optional Job Certificate ID to finalize a specific survey"
+                    "description": "Optional finalization remarks"
                   }
                 }
               },
               "example": {
-                "job_certificate_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                "remarks": "string"
               }
             }
           }
@@ -22545,13 +23088,13 @@
                     },
                     "message": {
                       "type": "string",
-                      "example": "All surveys finalized. Job is now FINALIZED."
+                      "example": "All surveys finalized."
                     }
                   }
                 },
                 "example": {
                   "success": true,
-                  "message": "All surveys finalized. Job is now FINALIZED."
+                  "message": "All surveys finalized."
                 }
               }
             }
@@ -22597,13 +23140,132 @@
         }
       }
     },
+    "/api/v1/surveys/certificates/{jobCertificateId}/finalize": {
+      "put": {
+        "tags": [
+          "Surveys"
+        ],
+        "summary": "Finalize a single certificate survey (TM)",
+        "description": "Allows a Technical Manager (TM) to grant final approval to a specific certificate's survey.\n\n**Workflow Logic:**\n- Transitions the target `SUBMITTED` certificate survey to `FINALIZED`.\n- If this was the last survey to be finalized for the parent job, the parent Job status automatically moves to `FINALIZED`.\n- Otherwise, parent Job remains `IN_PROGRESS`.\n\n**Roles:** TM, ADMIN\n",
+        "operationId": "finalizeSingleSurvey",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "TM",
+          "ADMIN"
+        ],
+        "parameters": [
+          {
+            "name": "jobCertificateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Job Certificate ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Survey finalized successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Survey finalized successfully."
+                    },
+                    "job_status": {
+                      "type": "string",
+                      "example": "IN_PROGRESS"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Survey finalized successfully.",
+                  "job_status": "IN_PROGRESS"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Survey is not in SUBMITTED state or statement is not ISSUED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — not a TM or ADMIN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job Certificate or Survey not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/surveys/jobs/{jobId}/rework": {
       "put": {
         "tags": [
           "Surveys"
         ],
-        "summary": "Request rework on a survey (GM/TM/TO/ADMIN)",
-        "description": "Allows a General Manager, Technical Manager, Technical Officer, or Admin to request corrections on a submitted survey.\n\n**Workflow Logic (Per-Certificate Rework):**\n- If `job_certificate_id` is supplied in query or body, only that specific survey status is set to `REWORK_REQUIRED` (using `_skipSurveySync` internally to isolate it).\n- The parent Job status remains as `REVIEWED`, allowing other surveys in the job to progress to finalization.\n- If no `job_certificate_id` is provided, it defaults to the first survey.\n- Job status must be `REVIEWED` (technical document review must have finished) before rework can be requested.\n\n**Roles:** GM, TM, TO, ADMIN\n",
+        "summary": "Request rework on submitted survey (ADMIN/GM/TM)",
+        "description": "Allows ADMIN, GM, or TM to request corrections on a submitted survey.\n\n- Sets the target certificate's survey status to `REWORK_REQUIRED`.\n- The surveyor must re-complete checklist, re-upload proof, and re-submit.\n\n**Roles:** ADMIN, GM, TM\n",
         "operationId": "requestRework",
         "security": [
           {
@@ -22611,10 +23273,9 @@
           }
         ],
         "x-roles": [
+          "ADMIN",
           "GM",
-          "TM",
-          "TO",
-          "ADMIN"
+          "TM"
         ],
         "parameters": [
           {
@@ -22625,17 +23286,7 @@
               "type": "string",
               "format": "uuid"
             },
-            "description": "Job Request ID"
-          },
-          {
-            "name": "job_certificate_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "description": "Target specific certificate's survey (optional)"
+            "description": "Job ID"
           }
         ],
         "requestBody": {
@@ -22656,7 +23307,7 @@
                   "job_certificate_id": {
                     "type": "string",
                     "format": "uuid",
-                    "description": "Optional alternative target certificate ID"
+                    "description": "Target a specific certificate (if job has multiple)"
                   }
                 }
               },
@@ -22692,7 +23343,7 @@
             }
           },
           "400": {
-            "description": "Job is not in REVIEWED state, or job is already finalized",
+            "description": "Job is not in a reworkable state",
             "content": {
               "application/json": {
                 "schema": {
@@ -22711,7 +23362,328 @@
             }
           },
           "403": {
-            "description": "Forbidden — caller does not have GM/TM/TO/ADMIN privileges",
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/surveys/jobs/{jobId}/violation": {
+      "post": {
+        "tags": [
+          "Surveys"
+        ],
+        "summary": "Flag a survey violation",
+        "operationId": "flagViolation",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "SURVEYOR",
+          "TM",
+          "ADMIN"
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "violation_type",
+                  "description"
+                ],
+                "properties": {
+                  "violation_type": {
+                    "type": "string",
+                    "example": "SAFETY_BREACH"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Fire suppression system not operational."
+                  }
+                }
+              },
+              "example": {
+                "violation_type": "SAFETY_BREACH",
+                "description": "Fire suppression system not operational."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Violation flagged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Request successful"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/surveys/jobs/{jobId}/statement/draft": {
+      "post": {
+        "tags": [
+          "Surveys"
+        ],
+        "summary": "Draft survey statement / Generate preview",
+        "description": "Saves the survey statement text and/or triggers report generation.\n- **SURVEYOR**: Must provide `survey_statement` text and `job_certificate_id`.\n- **TM/ADMIN**: Can omit text to trigger/refresh the branded \"DRAFT\" PDF.\n",
+        "operationId": "draftSurveyStatement",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "SURVEYOR",
+          "TM",
+          "ADMIN"
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "survey_statement": {
+                    "type": "string"
+                  },
+                  "job_certificate_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Target a specific certificate (required for SURVEYOR)"
+                  }
+                }
+              },
+              "example": {
+                "survey_statement": "string",
+                "job_certificate_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Statement drafted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "DRAFTED"
+                        },
+                        "pdf_url": {
+                          "type": "string",
+                          "format": "uri",
+                          "description": "Branded draft PDF URL (TM/ADMIN only)"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "message": "string",
+                    "status": "DRAFTED",
+                    "pdf_url": "https://example.com/resource"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/surveys/jobs/{jobId}/statement/issue": {
+      "post": {
+        "tags": [
+          "Surveys"
+        ],
+        "summary": "Issue signed survey statement (PDF)",
+        "description": "Finalizes the survey statement as official for a specific certificate.\nRemoves the \"DRAFT\" watermark and marks the statement as issued.\n\nAccepts either:\n- `multipart/form-data` with a `statement` binary PDF file\n- `application/json` with a `statementFileKey` (S3 key, pre-uploaded)\n\n**Note:** Can be called after job is `CERTIFIED` or `FINALIZED` since\nstatement issuance is a post-finalization action.\n",
+        "operationId": "issueSurveyStatement",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-roles": [
+          "TM",
+          "ADMIN"
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "statement": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "job_certificate_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              },
+              "example": {
+                "statement": "file.bin",
+                "job_certificate_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "statementFileKey": {
+                    "type": "string",
+                    "description": "S3 key for pre-uploaded signed PDF",
+                    "example": "surveys/statements/019e640c.pdf"
+                  },
+                  "job_certificate_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The certificate to issue the statement for"
+                  }
+                }
+              },
+              "example": {
+                "statementFileKey": "surveys/statements/019e640c.pdf",
+                "job_certificate_id": "019e640c-0000-0000-0000-000000000001"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Statement issued successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Statement issued"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Statement issued"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No statement file provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error_code": "VALIDATION_ERROR",
+                  "message": "Validation failed. Please correct the highlighted fields.",
+                  "errors": {
+                    "vessel_id": "vessel_id is required"
+                  },
+                  "trace_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
             "content": {
               "application/json": {
                 "schema": {
@@ -22738,8 +23710,13 @@
           "Surveys"
         ],
         "summary": "Get survey execution timeline (all certificates)",
-        "description": "Returns GPS trace and status history for all certificate surveys of this job.\nGPS points are now scoped per `JobCertificate`.\n",
+        "description": "Returns GPS trace and status history for all certificate surveys of this job.\nGPS points are scoped per `JobCertificate`.\n",
         "operationId": "getSurveyTimeline",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "x-roles": [
           "ADMIN",
           "GM",
@@ -22800,99 +23777,6 @@
                       "started_at": "2026-02-25T10:00:00Z",
                       "submitted_at": "2026-02-25T12:00:00Z"
                     }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/surveys/jobs/{jobId}/statement/draft": {
-      "post": {
-        "tags": [
-          "Surveys"
-        ],
-        "summary": "Draft survey statement / Generate preview",
-        "description": "Saves the survey statement text and/or triggers report generation.\n- **SURVEYOR**: Must provide `survey_statement` text.\n- **TM/ADMIN**: Can leave empty to trigger/refresh the branded \"DRAFT\" PDF.\n",
-        "operationId": "draftSurveyStatement",
-        "x-roles": [
-          "SURVEYOR",
-          "TM",
-          "ADMIN"
-        ],
-        "parameters": [
-          {
-            "name": "jobId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "survey_statement": {
-                    "type": "string"
-                  },
-                  "job_certificate_id": {
-                    "type": "string",
-                    "format": "uuid",
-                    "description": "Target specific cert"
-                  }
-                }
-              },
-              "example": {
-                "survey_statement": "string",
-                "job_certificate_id": "01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Statement drafted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        },
-                        "status": {
-                          "type": "string",
-                          "example": "DRAFTED"
-                        },
-                        "pdf_url": {
-                          "type": "string",
-                          "format": "uri",
-                          "description": "Only for TM/ADMIN"
-                        }
-                      }
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "data": {
-                    "message": "string",
-                    "status": "DRAFTED",
-                    "pdf_url": "https://example.com/resource"
                   }
                 }
               }

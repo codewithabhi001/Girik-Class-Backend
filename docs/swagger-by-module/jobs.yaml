@@ -2513,6 +2513,70 @@ components:
         created_at:
           type: string
           format: date-time
+    NotificationPreference:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        user_id:
+          $ref: '#/components/schemas/UUID'
+        email_enabled:
+          type: boolean
+          example: true
+        app_enabled:
+          type: boolean
+          example: true
+        alert_types:
+          type: array
+          items:
+            type: string
+          example:
+            - JOB_CREATED
+            - JOB_DOCUMENT_VERIFIED
+            - JOB_APPROVED
+            - JOB_ASSIGNED
+            - JOB_RESCHEDULED
+            - JOB_REVIEWED
+            - JOB_SENT_BACK
+            - JOB_FINALIZED
+            - SURVEY_STARTED
+            - SURVEY_SUBMITTED
+            - SURVEY_PROOF_UPLOADED
+            - SURVEY_REWORK_REQUESTED
+            - INFO
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    NotificationPreferenceRequest:
+      type: object
+      properties:
+        email_enabled:
+          type: boolean
+          example: true
+        app_enabled:
+          type: boolean
+          example: true
+        alert_types:
+          type: array
+          items:
+            type: string
+          example:
+            - JOB_CREATED
+            - JOB_DOCUMENT_VERIFIED
+            - JOB_APPROVED
+            - JOB_ASSIGNED
+            - JOB_RESCHEDULED
+            - JOB_REVIEWED
+            - JOB_SENT_BACK
+            - JOB_FINALIZED
+            - SURVEY_STARTED
+            - SURVEY_SUBMITTED
+            - SURVEY_PROOF_UPLOADED
+            - SURVEY_REWORK_REQUESTED
+            - INFO
     NonConformityResponse:
       type: object
       properties:
@@ -4651,6 +4715,115 @@ paths:
                 trace_id: 01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f
         '404':
           description: 'Job not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error_code: VALIDATION_ERROR
+                message: 'Validation failed. Please correct the highlighted fields.'
+                errors:
+                  vessel_id: 'vessel_id is required'
+                trace_id: 01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f
+  '/api/v1/jobs/certificates/{jobCertificateId}/verify-documents':
+    put:
+      tags:
+        - Jobs
+      summary: 'ADMIN/GM/TO: Verify or reject documents for a single certificate'
+      description: "Technical Officer (or Admin/GM) reviews uploaded documents for validity and completeness for a specific certificate.\n\n**Two flows:**\n1. **Approve all** (`approved: true` or empty body) — Marks all pending documents for this certificate as APPROVED and transitions the certificate status to `DOCUMENT_VERIFIED`.\n   If this was the last pending certificate for the job, transitions the parent job status to `DOCUMENT_VERIFIED` as well.\n2. **Reject specific docs** (`approved: false`) — Marks listed documents as REJECTED with reasons. Certificate stays in `PENDING` (or returns to it if relevant). Client is notified to re-upload the rejected documents.\n\nIf mandatory documents are missing (not uploaded at all), returns `400` regardless of the `approved` flag.\n\n**Roles:** ADMIN, GM, TO\n"
+      operationId: verifyJobCertificateDocuments
+      security:
+        -
+          bearerAuth: []
+      x-roles:
+        - ADMIN
+        - GM
+        - TO
+      parameters:
+        -
+          name: jobCertificateId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 'Job Certificate ID'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approved:
+                  type: boolean
+                  description: 'true = all docs valid, false = some docs invalid'
+                  default: true
+                rejected_documents:
+                  type: array
+                  description: 'Required when approved=false. List of invalid documents with reasons.'
+                  items: {type: object, required: [document_id], properties: {document_id: {type: string, format: uuid, description: 'ID of the JobDocument to reject'}, reason: {type: string, description: 'Why this document is invalid'}}}
+                remarks:
+                  type: string
+                  description: 'Optional remarks or reason for approval'
+              example:
+                approved: false
+                rejected_documents:
+                  - {document_id: 019d3ac5-0001-0001-0001-000000000001, reason: 'Certificate expired, please upload a valid one.'}
+            examples:
+              approve_all:
+                summary: 'Approve all documents'
+                value:
+                  approved: true
+                  remarks: 'Verified all documents.'
+              reject_specific:
+                summary: 'Reject invalid documents'
+                value:
+                  approved: false
+                  rejected_documents: [{document_id: 019d3ac5-0001-0001-0001-000000000001, reason: 'Certificate expired on 2025-01-01'}]
+      responses:
+        '200':
+          description: 'Documents processed successfully.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: {type: boolean, example: true}
+                  message: {type: string, example: 'All documents verified successfully for this certificate.'}
+                  data: {type: object}
+              example:
+                success: true
+                message: 'All documents verified successfully for this certificate.'
+                data: {}
+        '400':
+          description: 'Job certificate not in verify-ready state, mandatory documents missing, or invalid parameters.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error_code: VALIDATION_ERROR
+                message: 'Validation failed. Please correct the highlighted fields.'
+                errors:
+                  vessel_id: 'vessel_id is required'
+                trace_id: 01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error_code: VALIDATION_ERROR
+                message: 'Validation failed. Please correct the highlighted fields.'
+                errors:
+                  vessel_id: 'vessel_id is required'
+                trace_id: 01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f
+        '404':
+          description: 'Job Certificate not found'
           content:
             application/json:
               schema:

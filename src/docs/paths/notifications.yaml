@@ -43,3 +43,48 @@
     x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
     responses:
       "200": { description: All marked as read }
+
+/api/v1/notifications/preferences:
+  get:
+    tags: [Notifications]
+    summary: Get notification preferences
+    operationId: getNotificationPreferences
+    security:
+      - bearerAuth: []
+    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    responses:
+      "200":
+        description: Notification preferences retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  $ref: '#/components/schemas/NotificationPreference'
+
+  put:
+    tags: [Notifications]
+    summary: Update notification preferences
+    operationId: updateNotificationPreferences
+    security:
+      - bearerAuth: []
+    x-roles: [ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NotificationPreferenceRequest'
+    responses:
+      "200":
+        description: Notification preferences updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success: { type: boolean, example: true }
+                data:
+                  $ref: '#/components/schemas/NotificationPreference'

@@ -2513,6 +2513,70 @@ components:
         created_at:
           type: string
           format: date-time
+    NotificationPreference:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        user_id:
+          $ref: '#/components/schemas/UUID'
+        email_enabled:
+          type: boolean
+          example: true
+        app_enabled:
+          type: boolean
+          example: true
+        alert_types:
+          type: array
+          items:
+            type: string
+          example:
+            - JOB_CREATED
+            - JOB_DOCUMENT_VERIFIED
+            - JOB_APPROVED
+            - JOB_ASSIGNED
+            - JOB_RESCHEDULED
+            - JOB_REVIEWED
+            - JOB_SENT_BACK
+            - JOB_FINALIZED
+            - SURVEY_STARTED
+            - SURVEY_SUBMITTED
+            - SURVEY_PROOF_UPLOADED
+            - SURVEY_REWORK_REQUESTED
+            - INFO
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    NotificationPreferenceRequest:
+      type: object
+      properties:
+        email_enabled:
+          type: boolean
+          example: true
+        app_enabled:
+          type: boolean
+          example: true
+        alert_types:
+          type: array
+          items:
+            type: string
+          example:
+            - JOB_CREATED
+            - JOB_DOCUMENT_VERIFIED
+            - JOB_APPROVED
+            - JOB_ASSIGNED
+            - JOB_RESCHEDULED
+            - JOB_REVIEWED
+            - JOB_SENT_BACK
+            - JOB_FINALIZED
+            - SURVEY_STARTED
+            - SURVEY_SUBMITTED
+            - SURVEY_PROOF_UPLOADED
+            - SURVEY_REWORK_REQUESTED
+            - INFO
     NonConformityResponse:
       type: object
       properties:
@@ -4252,3 +4316,97 @@ paths:
               example:
                 success: true
                 message: 'Request successful'
+  /api/v1/notifications/preferences:
+    get:
+      tags:
+        - Notifications
+      summary: 'Get notification preferences'
+      operationId: getNotificationPreferences
+      security:
+        -
+          bearerAuth: []
+      x-roles:
+        - ADMIN
+        - GM
+        - TM
+        - TO
+        - SURVEYOR
+        - CLIENT
+      responses:
+        '200':
+          description: 'Notification preferences retrieved successfully'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: {type: boolean, example: true}
+                  data: {$ref: '#/components/schemas/NotificationPreference'}
+              example:
+                success: true
+                data:
+                  id: 01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f
+                  user_id: string
+                  email_enabled: true
+                  app_enabled: true
+                  alert_types: [JOB_CREATED, JOB_DOCUMENT_VERIFIED, JOB_APPROVED, JOB_ASSIGNED, JOB_RESCHEDULED, JOB_REVIEWED, JOB_SENT_BACK, JOB_FINALIZED, SURVEY_STARTED, SURVEY_SUBMITTED, SURVEY_PROOF_UPLOADED, SURVEY_REWORK_REQUESTED, INFO]
+                  createdAt: '2026-03-15T10:00:00.000Z'
+                  updatedAt: '2026-03-15T10:00:00.000Z'
+    put:
+      tags:
+        - Notifications
+      summary: 'Update notification preferences'
+      operationId: updateNotificationPreferences
+      security:
+        -
+          bearerAuth: []
+      x-roles:
+        - ADMIN
+        - GM
+        - TM
+        - TO
+        - SURVEYOR
+        - CLIENT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationPreferenceRequest'
+            example:
+              email_enabled: true
+              app_enabled: true
+              alert_types:
+                - JOB_CREATED
+                - JOB_DOCUMENT_VERIFIED
+                - JOB_APPROVED
+                - JOB_ASSIGNED
+                - JOB_RESCHEDULED
+                - JOB_REVIEWED
+                - JOB_SENT_BACK
+                - JOB_FINALIZED
+                - SURVEY_STARTED
+                - SURVEY_SUBMITTED
+                - SURVEY_PROOF_UPLOADED
+                - SURVEY_REWORK_REQUESTED
+                - INFO
+      responses:
+        '200':
+          description: 'Notification preferences updated successfully'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: {type: boolean, example: true}
+                  data: {$ref: '#/components/schemas/NotificationPreference'}
+              example:
+                success: true
+                data:
+                  id: 01933c5e-7f2a-7a00-8000-1a2b3c4d5e6f
+                  user_id: string
+                  email_enabled: true
+                  app_enabled: true
+                  alert_types: [JOB_CREATED, JOB_DOCUMENT_VERIFIED, JOB_APPROVED, JOB_ASSIGNED, JOB_RESCHEDULED, JOB_REVIEWED, JOB_SENT_BACK, JOB_FINALIZED, SURVEY_STARTED, SURVEY_SUBMITTED, SURVEY_PROOF_UPLOADED, SURVEY_REWORK_REQUESTED, INFO]
+                  createdAt: '2026-03-15T10:00:00.000Z'
+                  updatedAt: '2026-03-15T10:00:00.000Z'
