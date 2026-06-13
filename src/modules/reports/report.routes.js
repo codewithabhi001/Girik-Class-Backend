@@ -5,11 +5,12 @@ import * as reportController from './report.controller.js';
 
 const router = express.Router();
 router.use(authenticate);
-router.use(authorizeRoles('ADMIN', 'GM', 'TM'));
+// Shared Reports accessible by TM
+router.get('/certificates', authorizeRoles('ADMIN', 'GM', 'TM'), reportController.getCertificateReport);
+router.get('/surveyors', authorizeRoles('ADMIN', 'GM', 'TM'), reportController.getSurveyorReport);
+router.get('/non-conformities', authorizeRoles('ADMIN', 'GM', 'TM'), reportController.getNonConformityReport);
 
-router.get('/certificates', reportController.getCertificateReport);
-router.get('/surveyors', reportController.getSurveyorReport);
-router.get('/non-conformities', reportController.getNonConformityReport);
-router.get('/financials', reportController.getFinancialReport);
+// Restricted Financial Reports
+router.get('/financials', authorizeRoles('ADMIN', 'GM'), reportController.getFinancialReport);
 
 export default router;

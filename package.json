@@ -15,6 +15,7 @@
     "swagger:audit-rbac": "node scripts/audit-swagger-rbac.js",
     "postman:build": "node scripts/build-postman-collection.js",
     "seed:initial": "node scripts/seed_initial_data.js",
+    "seed:clean-reset-all": "node scripts/clean_and_sync_all_v2.js",
     "seed:certificate-types": "node scripts/sync_certificate_types_from_xlsx.js",
     "seed:certificate-types:folders": "node scripts/sync_certificate_types_from_folders.js",
     "seed:vessel": "node scripts/seed_one_vessel.js",

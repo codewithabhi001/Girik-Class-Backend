@@ -11,17 +11,13 @@ module.exports = {
         // ─────────────────────────────────────────────────────────────────────
         await queryInterface.createTable('checklist_template_files', {
             id: {
-                type: Sequelize.CHAR(36),
+                type: Sequelize.CHAR(36).BINARY,
                 primaryKey: true,
                 allowNull: false,
-                charset: 'utf8mb4',
-                collate: 'utf8mb4_bin',
             },
             checklist_template_id: {
-                type: Sequelize.CHAR(36),
+                type: Sequelize.CHAR(36).BINARY,
                 allowNull: false,
-                charset: 'utf8mb4',
-                collate: 'utf8mb4_bin',
                 references: { model: 'checklist_templates', key: 'id' },
                 onDelete: 'CASCADE',
                 onUpdate: 'CASCADE',
@@ -54,10 +50,8 @@ module.exports = {
                 comment: 'Surveyor must upload a signed version before submitting',
             },
             created_by: {
-                type: Sequelize.CHAR(36),
+                type: Sequelize.CHAR(36).BINARY,
                 allowNull: true,
-                charset: 'utf8mb4',
-                collate: 'utf8mb4_bin',
                 references: { model: 'users', key: 'id' },
                 onDelete: 'SET NULL',
                 onUpdate: 'CASCADE',

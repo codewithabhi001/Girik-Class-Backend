@@ -335,6 +335,7 @@ export const flatVesselListRow = (row) => {
         flag_state: na(v.FlagAdministration?.flag_state_name),
         company_name: na(v.Client?.company_name),
         company_code: na(v.Client?.company_code),
+        gross_tonnage: na(v.gross_tonnage),
     };
 };
 

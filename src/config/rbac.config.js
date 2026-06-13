@@ -20,7 +20,7 @@ export const RBAC = {
     REVIEW_JOB: ['ADMIN', 'TO'],
 
     /** PUT /jobs/:id/assign */
-    ASSIGN_JOB: ['ADMIN', 'GM'],
+    ASSIGN_JOB: ['ADMIN', 'GM', 'TM'],
 
     /** PUT /jobs/:id/reassign */
     REASSIGN_JOB: ['ADMIN', 'GM', 'TM'],

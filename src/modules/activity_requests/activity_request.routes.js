@@ -7,18 +7,18 @@ import { validate, schemas } from '../../middlewares/validate.middleware.js';
 const router = express.Router();
 router.use(authenticate);
 
-router.post('/', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM'), validate(schemas.createActivityRequest), activityController.createRequest);
-router.get('/', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), activityController.getRequests);
+router.post('/', authorizeRoles('CLIENT', 'ADMIN', 'GM'), validate(schemas.createActivityRequest), activityController.createRequest);
+router.get('/', authorizeRoles('CLIENT', 'ADMIN', 'GM'), activityController.getRequests);
 router.post(
     '/:id/convert-to-job',
-    authorizeRoles('ADMIN', 'GM', 'TM'),
+    authorizeRoles('ADMIN', 'GM'),
     validate(schemas.convertActivityRequestToJob),
     activityController.convertToJob,
 );
-router.get('/:id', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), activityController.getRequestById);
+router.get('/:id', authorizeRoles('CLIENT', 'ADMIN', 'GM'), activityController.getRequestById);
 router.put(
     '/:id/status',
-    authorizeRoles('ADMIN', 'GM', 'TM'),
+    authorizeRoles('ADMIN', 'GM'),
     validate(schemas.updateActivityRequestStatus),
     activityController.updateStatus,
 );

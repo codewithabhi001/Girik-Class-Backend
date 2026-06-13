@@ -7,7 +7,7 @@ import { validate, schemas } from '../../middlewares/validate.middleware.js';
 const router = express.Router();
 router.use(authenticate);
 
-router.post('/', authorizeRoles('SURVEYOR', 'TO'), validate(schemas.createNC), ncController.createNC);
+router.post('/', authorizeRoles('SURVEYOR', 'TO', 'TM'), validate(schemas.createNC), ncController.createNC);
 router.get('/', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), ncController.getNCs);
 router.get('/:id', authorizeRoles('ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), ncController.getNCById);
 router.put('/:id/close', authorizeRoles('TO', 'TM'), validate(schemas.closeNC), ncController.closeNC);

@@ -13,8 +13,16 @@ async function runTest() {
 
         // 1. Resolve seed data
         const vessel = await db.Vessel.findOne({ where: { class_status: 'ACTIVE' } });
-        // Find two distinct certificate types that require survey
-        const certTypes = await db.CertificateType.findAll({ where: { status: 'ACTIVE', requires_survey: true }, limit: 2 });
+        // Find two distinct certificate types that require survey and have checklists
+        const certTypes = await db.CertificateType.findAll({
+            where: {
+                status: 'ACTIVE',
+                name: {
+                    [Op.in]: ['ANTI FOULING SYSTEM CERTIFICATE', 'BOTTOM INSPECTION']
+                }
+            },
+            limit: 2
+        });
         if (certTypes.length < 2) {
             throw new Error('Not enough active certificate types in seed data for multi-certificate testing. Need at least 2.');
         }

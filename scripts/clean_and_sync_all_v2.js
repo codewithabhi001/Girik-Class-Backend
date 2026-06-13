@@ -5,6 +5,7 @@ import JSZip from 'jszip';
 import { DOMParser, XMLSerializer } from '@xmldom/xmldom';
 import xpath from 'xpath';
 import { execSync } from 'child_process';
+import ExcelJS from 'exceljs';
 import db from '../src/models/index.js';
 import * as s3Service from '../src/services/s3.service.js';
 
@@ -17,8 +18,9 @@ const CHECKLISTS_DIR = path.join(PROJECT_ROOT, 'CHECKLISTS');
 
 const TABLES_TO_TRUNCATE = [
     'jobs', 'job_status_histories', 'job_reschedules', 'job_notes', 'job_documents', 'job_requests', 'job_certificates',
-    'survey_status_histories', 'surveys',
-    'certificate_history', 'certificates', 'certificate_templates', 'checklist_templates',
+    'survey_status_histories', 'surveys', 'survey_signed_documents',
+    'certificate_history', 'certificates', 'certificate_templates',
+    'checklist_template_files', 'checklist_templates',
     'documents', 'certificate_required_documents', 'certificate_types',
     'payments', 'approvals', 'financial_ledgers',
     'activity_requests', 'activity_plannings', 'gps_tracking', 'non_conformities', 'incidents', 'change_requests',
@@ -79,6 +81,16 @@ const CERTIFICATE_TYPE_ALIASES = {
     SPS: 'SPS',
     'SEA WORTHINESS CERTIFICATE': 'SEA WORTHINESS CERTIFICATE',
     SEAWORTHINESSCERTIFICATE: 'SEA WORTHINESS CERTIFICATE',
+    'International Pollution Prevention Certificate for the Carriage of Noxious Liquid Substances in Bulk': 'NLS',
+    'National Tonnage Certificate (vessel under 24 m in length )': 'TON',
+    'Certificate of Fitness for Carriage of Liquefied Gases in Bulk': 'IGC',
+    'Certificate of Fitness for Carriage of Dangerous Chemicals in Bulk': 'IBC',
+    'Certificate of Compliance with the International Maritime Solid Bulk Cargoes (IMSBC) CODE': 'IMBSC',
+    'Document of Compliance with the Special Requirements for Ships Carrying Dangerous Goods': 'CDG',
+    'Document of Authorization for the Carriage of Grain': 'GRALO',
+    'Statement of Compliance of the International Certificate on Inventory of Hazardous Materials': 'IHMFT',
+    'International Certificate of Fitness for Carriage of Dangerous Chemicals in Bulk': 'BCH',
+    'Pleasure Craft Safety Certificate': 'PLE'
 };
 
 function normalize(value) {
@@ -98,9 +110,9 @@ function deriveShortCode(folderName) {
     if (CERTIFICATE_TYPE_ALIASES[normalized]) return CERTIFICATE_TYPE_ALIASES[normalized];
     if (/^[A-Z0-9]{2,10}$/.test(normalized)) return normalized.slice(0, 10);
 
-    const words = normalized.split(' ').filter(Boolean);
-    const initials = words.map((w) => w[0]).join('');
-    if (initials.length >= 2) return initials.slice(0, 10);
+    const words = raw.split(/\s+/).filter(Boolean);
+    const initials = words.map((w) => w[0]).join('').replace(/[^A-Za-z0-9]/g, '');
+    if (initials.length >= 2) return initials.slice(0, 10).toUpperCase();
 
     return normalized.slice(0, 10) || 'CERT';
 }
@@ -133,7 +145,6 @@ function createSdtNode(doc, tagName, placeholderText) {
     const sdtContent = doc.createElementNS(WORD_NS, 'w:sdtContent');
     const p = doc.createElementNS(WORD_NS, 'w:p');
     
-    // Add center alignment
     const pPr = doc.createElementNS(WORD_NS, 'w:pPr');
     const jc = doc.createElementNS(WORD_NS, 'w:jc');
     jc.setAttributeNS(WORD_NS, 'w:val', 'center');
@@ -328,7 +339,6 @@ async function tagSingleDocx(filePath) {
     return false;
 }
 
-// Helper to list folders in a directory
 function getFolders(dir) {
     if (!fs.existsSync(dir)) return [];
     return fs.readdirSync(dir, { withFileTypes: true })
@@ -336,7 +346,6 @@ function getFolders(dir) {
         .map(e => e.name);
 }
 
-// Recursive file collector
 function findFilesRecursively(dir, filterFn) {
     const results = [];
     function walk(current) {
@@ -366,6 +375,80 @@ async function uploadWithRetry(fileBuffer, fileName, mimeType, folder = '', retr
     }
 }
 
+async function syncRequiredDocuments(typeMap) {
+    const filePath = path.join(PROJECT_ROOT, 'DOCUMENTS REQUIRED.xlsx');
+    console.log(`📄 Loading required documents from: ${filePath}`);
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile(filePath);
+    const worksheet = workbook.getWorksheet(1);
+    
+    const rows = [];
+    worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return; // skip header
+        const values = row.values;
+        const certName = String(values[2] || '').trim();
+        const shortCode = String(values[3] || '').trim();
+        const docName = String(values[4] || '').trim();
+        
+        if (docName && certName) {
+            rows.push({ certName, shortCode, docName });
+        }
+    });
+
+    console.log(`✅ Found ${rows.length} valid required document rows in Excel.`);
+
+    // Fetch all existing types in database to align maps
+    const existingTypes = await db.CertificateType.findAll();
+    const dbTypeMap = new Map();
+    const dbCodeMap = new Map();
+
+    existingTypes.forEach(t => {
+        if (t.name) dbTypeMap.set(normalize(t.name), t);
+        if (t.short_code) dbCodeMap.set(normalize(t.short_code), t);
+    });
+
+    let certCreated = 0;
+    let docCreated = 0;
+
+    for (const row of rows) {
+        const normalizedCert = normalize(row.certName);
+        const normalizedCode = normalize(row.shortCode);
+        
+        let certType = dbCodeMap.get(normalizedCode) || dbTypeMap.get(normalizedCert);
+
+        if (!certType) {
+            console.log(`   - [SKIP] Excel Row: Certificate Type not found for "${row.certName}" (${row.shortCode})`);
+            continue;
+        }
+
+        // Determine if mandatory
+        const isOtherDoc = row.docName.toUpperCase().includes('OTHER DOCUMENT');
+        const is_mandatory = !isOtherDoc;
+
+        // Check if document already exists for this type to avoid duplicates
+        const existingDoc = await db.CertificateRequiredDocument.findOne({
+            where: {
+                certificate_type_id: certType.id,
+                document_name: row.docName
+            }
+        });
+
+        if (!existingDoc) {
+            await db.CertificateRequiredDocument.create({
+                certificate_type_id: certType.id,
+                document_name: row.docName,
+                is_mandatory
+            });
+            docCreated++;
+        }
+    }
+
+    console.log(`\n📊 Required Documents Sync Summary:`);
+    console.log(`   Certificate Types Created: ${certCreated}`);
+    console.log(`   Required Documents Created: ${docCreated}`);
+}
+
 const main = async () => {
     console.log('🧹 1. Cleaning Database (Truncating tables)...');
     await db.sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
@@ -383,26 +466,17 @@ const main = async () => {
     const certFolders = getFolders(ONLY_CERTS_DIR);
     const checklistFolders = getFolders(CHECKLISTS_DIR);
 
-    // Group folders by their normalized name to prevent duplicate CertificateTypes
     const uniqueNormalizedFolders = new Map();
-    // Prefer folder names from certFolders (ONLY CERTIFICATES)
     for (const folder of certFolders) {
         const norm = normalize(folder);
         if (!uniqueNormalizedFolders.has(norm)) {
             uniqueNormalizedFolders.set(norm, folder);
         }
     }
-    // Fallback to checklistFolders names for any types that only have checklists
-    for (const folder of checklistFolders) {
-        const norm = normalize(folder);
-        if (!uniqueNormalizedFolders.has(norm)) {
-            uniqueNormalizedFolders.set(norm, folder);
-        }
-    }
 
-    console.log(`   - Found ${uniqueNormalizedFolders.size} unique normalized Certificate Types.`);
+    console.log(`   - Found ${uniqueNormalizedFolders.size} unique normalized Certificate Types from ONLY CERTIFICATES.`);
 
-    const typeMap = new Map(); // normalizedName -> CertificateType database row
+    const typeMap = new Map();
 
     console.log('\n🏗️ 3. Seeding Certificate Types...');
     const usedShortCodes = new Set();
@@ -421,7 +495,7 @@ const main = async () => {
             name: folder,
             short_code,
             issuing_authority: 'CLASS',
-            validity_years: null,
+            validity_years: 5,
             status: 'ACTIVE',
             description: `Auto-created from folder: ${folder}`,
             requires_survey: true
@@ -456,7 +530,6 @@ const main = async () => {
             const term = isST ? 'SHORT_TERM' : 'FULL_TERM';
             const template_name = `${matchedType.name} ${term === 'SHORT_TERM' ? 'ST' : 'FT'}`;
 
-            // Extract tags from the docx file for database seeding
             const zip = await JSZip.loadAsync(buffer);
             const docEntry = zip.file('word/document.xml');
             const scannedTags = new Set();
@@ -486,7 +559,6 @@ const main = async () => {
     console.log('\n🗒️ 5. Converting, Tagging, Uploading and Syncing Checklists...');
     let checklistCount = 0;
     
-    // Check if soffice is available
     let hasSoffice = false;
     try {
         execSync('/opt/homebrew/bin/soffice --version');
@@ -501,7 +573,6 @@ const main = async () => {
 
         const folderPath = path.join(CHECKLISTS_DIR, checklistFolder);
 
-        // A. Convert .doc to .docx
         if (hasSoffice) {
             const docFiles = findFilesRecursively(folderPath, f => f.endsWith('.doc') && !f.startsWith('~$'));
             for (const docFile of docFiles) {
@@ -509,14 +580,13 @@ const main = async () => {
                 const outDir = path.dirname(docFile);
                 try {
                     execSync(`/opt/homebrew/bin/soffice --headless --convert-to docx --outdir "${outDir}" "${docFile}"`);
-                    fs.unlinkSync(docFile); // Delete old .doc file
+                    fs.unlinkSync(docFile);
                 } catch (err) {
                     console.error(`   - Failed to convert ${docFile}:`, err.message);
                 }
             }
         }
 
-        // B. Find all .docx files
         const docxFiles = findFilesRecursively(folderPath, f => f.endsWith('.docx') && !f.startsWith('~$'));
         const s3Keys = [];
 
@@ -536,7 +606,7 @@ const main = async () => {
 
         if (s3Keys.length > 0) {
             const code = `AUTO-${matchedType.short_code || matchedType.id}`;
-            await db.ChecklistTemplate.create({
+            const template = await db.ChecklistTemplate.create({
                 name: `${matchedType.name} Checklist`,
                 code,
                 description: `Imported checklist template for ${matchedType.name}`,
@@ -553,11 +623,30 @@ const main = async () => {
                 template_files: s3Keys,
                 metadata: { version: "1.0", source: "filesystem-import" }
             });
+
+            for (let i = 0; i < s3Keys.length; i++) {
+                const key = s3Keys[i];
+                const keyParts = key.split('/');
+                const rawName = keyParts[keyParts.length - 1] || 'Document';
+                const cleanName = rawName.replace(/^\d+_/, '');
+                await db.ChecklistTemplateFile.create({
+                    checklist_template_id: template.id,
+                    name: cleanName,
+                    file_key: key,
+                    display_order: i,
+                    is_mandatory: true
+                });
+            }
+
             checklistCount++;
         }
     }
     console.log(`   - Successfully synchronized ${checklistCount} Checklist templates.`);
-    console.log('\n🚀 ALL MIGRATIONS COMPLETED SUCCESSFULLY!');
+
+    console.log('\n🗒️ 6. Syncing Required Documents from Excel...');
+    await syncRequiredDocuments(typeMap);
+
+    console.log('\n🚀 ALL RESET AND SYNC COMPLETED COMPLETED SUCCESSFULLY!');
 };
 
 main()

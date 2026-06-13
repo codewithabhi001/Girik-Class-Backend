@@ -20,6 +20,9 @@ import {
 import JSZip from 'jszip';
 import { DOMParser } from '@xmldom/xmldom';
 import xpath from 'xpath';
+import fs from 'fs';
+import path from 'path';
+import QRCode from 'qrcode';
 
 const WORD_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 const selectWithNs = xpath.useNamespaces({ w: WORD_NS });
@@ -605,9 +608,44 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
         }
 
         const filledDocxBuffer = await fillDocxContentControls(masterBuffer, variables);
-        
+
+        // Dynamically replace the QR placeholder image inside filledDocxBuffer
+        let finalDocxBuffer = filledDocxBuffer;
+        try {
+            const verificationUrl = `${env.publicApiBaseUrl}/api/v1/public/certificate/verify/${certificateNumber}`;
+            const qrCodeBuffer = await QRCode.toBuffer(verificationUrl, { width: 120, margin: 1 });
+            
+            const zip = await JSZip.loadAsync(filledDocxBuffer);
+            const qrPlaceholderPath = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../../scratch/qr_placeholder.png');
+            
+            if (fs.existsSync(qrPlaceholderPath)) {
+                const qrPlaceholderBuffer = fs.readFileSync(qrPlaceholderPath);
+                let qrZipPath = null;
+                for (const [name, file] of Object.entries(zip.files)) {
+                    if (name.startsWith('word/media/')) {
+                        const content = await file.async('nodebuffer');
+                        if (content.length === qrPlaceholderBuffer.length && content.equals(qrPlaceholderBuffer)) {
+                            qrZipPath = name;
+                            break;
+                        }
+                    }
+                }
+                if (qrZipPath) {
+                    zip.file(qrZipPath, qrCodeBuffer);
+                    logger.info(`Successfully replaced QR code placeholder at ${qrZipPath} for certificate ${certificateNumber}`);
+                } else {
+                    logger.warn(`Could not find QR placeholder image inside docx template for certificate ${certificateNumber}`);
+                }
+            } else {
+                logger.warn(`qr_placeholder.png not found at ${qrPlaceholderPath}, skipped replacing QR code in docx`);
+            }
+            finalDocxBuffer = await zip.generateAsync({ type: 'nodebuffer' });
+        } catch (qrErr) {
+            logger.error('Failed to embed dynamic QR code inside certificate docx:', qrErr);
+        }
+
         const docxUrl = await s3Service.uploadFile(
-            filledDocxBuffer,
+            finalDocxBuffer,
             `${certificateNumber}.docx`,
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             s3Service.UPLOAD_FOLDERS.CERTIFICATES

@@ -73,6 +73,25 @@ function createSdtNode(doc, tagName, placeholderText) {
     return sdt;
 }
 
+function createInlineSdtNode(doc, tagName, placeholderText) {
+    const sdt = doc.createElementNS(WORD_NS, 'w:sdt');
+    const sdtPr = doc.createElementNS(WORD_NS, 'w:sdtPr');
+    const tag = doc.createElementNS(WORD_NS, 'w:tag');
+    tag.setAttributeNS(WORD_NS, 'w:val', tagName);
+    sdtPr.appendChild(tag);
+    sdt.appendChild(sdtPr);
+
+    const sdtContent = doc.createElementNS(WORD_NS, 'w:sdtContent');
+    const r = doc.createElementNS(WORD_NS, 'w:r');
+    const t = doc.createElementNS(WORD_NS, 'w:t');
+    t.appendChild(doc.createTextNode(placeholderText));
+    r.appendChild(t);
+    sdtContent.appendChild(r);
+    sdt.appendChild(sdtContent);
+
+    return sdt;
+}
+
 async function tagSingleDocx(filePath) {
     const buffer = fs.readFileSync(filePath);
     const zip = await JSZip.loadAsync(buffer);
@@ -147,13 +166,25 @@ async function tagSingleDocx(filePath) {
                 const nextP = paragraphs[idx + offset];
                 if (nextP) {
                     const nextText = selectWithNs('.//w:t', nextP).map(n => n.textContent).join('').trim();
-                    if (nextText.includes('DD-MM-YYYY') || nextText === '') {
-                        while (nextP.firstChild) {
-                            nextP.removeChild(nextP.firstChild);
+                    if (nextText.includes('DD-MM-YYYY') || nextText === '' || nextText.includes('{expiry_date}') || nextText.includes('{survey_completion_date}')) {
+                        const existingSdt = selectWithNs(`.//w:sdt[w:sdtPr/w:tag[@w:val="${dateTag}"]]`, p, true);
+                        if (!existingSdt) {
+                            const sdtNode = createInlineSdtNode(doc, dateTag, `{${dateTag}}`);
+                            const runs = selectWithNs('w:r', p);
+                            if (runs.length > 0) {
+                                const lastRun = runs[runs.length - 1];
+                                const lastT = selectWithNs('w:t', lastRun, true);
+                                if (lastT && !lastT.textContent.endsWith(' ')) {
+                                    lastT.setAttribute('xml:space', 'preserve');
+                                    lastT.textContent += ' ';
+                                }
+                            }
+                            p.appendChild(sdtNode);
+                            pTaggedCount++;
                         }
-                        const sdtNode = createSdtNode(doc, dateTag, `{${dateTag}}`);
-                        nextP.appendChild(sdtNode);
-                        pTaggedCount++;
+                        if (nextP.parentNode) {
+                            nextP.parentNode.removeChild(nextP);
+                        }
                         break;
                     }
                 }
@@ -161,8 +192,55 @@ async function tagSingleDocx(filePath) {
         }
     });
 
+    // 3. Process paragraph for signature block (surveyor_name)
+    const paragraphs2 = selectWithNs('//w:p', doc);
+    paragraphs2.forEach((p) => {
+        const text = selectWithNs('.//w:t', p).map(n => n.textContent).join('');
+        if (text.includes('GR CLASS REPRESENTATIVE') || text.includes('GR Class Representative')) {
+            const existingSdt = selectWithNs('.//w:sdt[w:sdtPr/w:tag[@w:val="surveyor_name"]]', p, true);
+            if (!existingSdt) {
+                while (p.firstChild) {
+                    p.removeChild(p.firstChild);
+                }
+                const pPr = doc.createElementNS(WORD_NS, 'w:pPr');
+                const jc = doc.createElementNS(WORD_NS, 'w:jc');
+                jc.setAttributeNS(WORD_NS, 'w:val', 'right');
+                pPr.appendChild(jc);
+                const spacing = doc.createElementNS(WORD_NS, 'w:spacing');
+                spacing.setAttributeNS(WORD_NS, 'w:after', '200');
+                pPr.appendChild(spacing);
+                p.appendChild(pPr);
+
+                const sdtNode = createInlineSdtNode(doc, 'surveyor_name', '{surveyor_name}');
+                p.appendChild(sdtNode);
+
+                const r = doc.createElementNS(WORD_NS, 'w:r');
+                const rPr = doc.createElementNS(WORD_NS, 'w:rPr');
+                const rFonts = doc.createElementNS(WORD_NS, 'w:rFonts');
+                rFonts.setAttributeNS(WORD_NS, 'w:ascii', 'Arial');
+                rFonts.setAttributeNS(WORD_NS, 'w:hAnsi', 'Arial');
+                rPr.appendChild(rFonts);
+                const bold = doc.createElementNS(WORD_NS, 'w:bold');
+                rPr.appendChild(bold);
+                const sz = doc.createElementNS(WORD_NS, 'w:sz');
+                sz.setAttributeNS(WORD_NS, 'w:val', '18');
+                rPr.appendChild(sz);
+                r.appendChild(rPr);
+
+                const br = doc.createElementNS(WORD_NS, 'w:br');
+                r.appendChild(br);
+
+                const t = doc.createElementNS(WORD_NS, 'w:t');
+                t.appendChild(doc.createTextNode('GR CLASS REPRESENTATIVE'));
+                r.appendChild(t);
+                p.appendChild(r);
+                pTaggedCount++;
+            }
+        }
+    });
+
     if (tableTaggedCount > 0 || pTaggedCount > 0) {
-        console.log(`  [OK] Tagged ${tableTaggedCount} cells and ${pTaggedCount} paragraphs in ${path.basename(filePath)}`);
+        console.log(`  [OK] Tagged ${tableTaggedCount} cells and ${pTaggedCount} elements in ${path.basename(filePath)}`);
         const newXml = new XMLSerializer().serializeToString(doc);
         zip.file('word/document.xml', newXml);
         const newBuffer = await zip.generateAsync({ type: 'nodebuffer' });

@@ -9,21 +9,21 @@ const router = express.Router();
 router.use(authenticate);
 
 // List all vessels (scoped by client_id for CLIENT)
-router.get('/', authorizeRoles('ADMIN', 'GM', 'TM', 'TO', 'CLIENT'), vesselController.getVessels);
+router.get('/', authorizeRoles('ADMIN', 'GM', 'CLIENT'), vesselController.getVessels);
 
 // Get distinct vessel types (ship_type) — for dropdowns/filters
-router.get('/types', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR'), vesselController.getVesselTypes);
+router.get('/types', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'SURVEYOR'), vesselController.getVesselTypes);
 
 // Get all vessels of a specific client (for management)
-router.get('/client/:clientId', authorizeRoles('ADMIN', 'GM', 'TM'), vesselController.getVesselsByClientId);
+router.get('/client/:clientId', authorizeRoles('ADMIN', 'GM'), vesselController.getVesselsByClientId);
 
 // Create a new vessel
-router.post('/', authorizeRoles('ADMIN', 'GM', 'TM'), validate(schemas.createVessel), vesselController.createVessel);
+router.post('/', authorizeRoles('ADMIN', 'GM'), validate(schemas.createVessel), vesselController.createVessel);
 
 // Get specific vessel details
-router.get('/:id', authorizeRoles('ADMIN', 'GM', 'TM', 'TO', 'SURVEYOR', 'CLIENT'), vesselController.getVesselById);
+router.get('/:id', authorizeRoles('ADMIN', 'GM', 'SURVEYOR', 'CLIENT'), vesselController.getVesselById);
 
 // Update vessel details
-router.put('/:id', authorizeRoles('ADMIN', 'GM', 'TM'), validate(schemas.updateVessel), vesselController.updateVessel);
+router.put('/:id', authorizeRoles('ADMIN', 'GM'), validate(schemas.updateVessel), vesselController.updateVessel);
 
 export default router;
