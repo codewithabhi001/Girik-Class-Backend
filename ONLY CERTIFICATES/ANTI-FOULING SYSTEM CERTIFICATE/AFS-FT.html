@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GR Class – AFS Certificate | {{vessel_name}}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --navy:    #0B2443;
+  --blue:    #005BAA;
+  --gold:    #B5891F;
+  --gold-lt: #D4A93A;
+  --cream:   #F9F6F0;
+  --light:   #EEF3F9;
+  --border:  #C8D8E8;
+  --rule:    #C4A84A;
+  --text:    #18181B;
+  --muted:   #52525B;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { background: #8A8A8A; }
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 10pt;
+  color: var(--text);
+  background: #8A8A8A;
+  padding: 16px 0 40px;
+}
+
+/* ── PRINT BUTTON ── */
+.no-print {
+  width: 210mm;
+  margin: 0 auto 10px;
+  display: flex;
+  gap: 8px;
+}
+.btn-print {
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  font-size: 9pt;
+  font-weight: 600;
+  letter-spacing: .4px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.btn-print:hover { background: var(--blue); }
+
+/* ── CERTIFICATE PAGE ── */
+.cert {
+  width: 210mm;
+  min-height: 297mm;
+  background: #fff;
+  margin: 0 auto;
+  box-shadow: 0 8px 48px rgba(0,0,0,.35);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* outer decorative frame */
+.cert::before {
+  content: '';
+  position: absolute;
+  inset: 5mm;
+  border: 1px solid var(--rule);
+  pointer-events: none;
+  z-index: 5;
+}
+.cert::after {
+  content: '';
+  position: absolute;
+  inset: 7mm;
+  border: .4px solid rgba(196,168,74,.4);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ══════════════ HEADER ══════════════ */
+.hdr {
+  background: var(--navy);
+  padding: 0;
+  position: relative;
+  flex-shrink: 0;
+}
+.hdr-gold-top {
+  height: 4px;
+  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
+}
+.hdr-inner {
+  padding: 8mm 12mm 7mm;
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  gap: 15px;
+  align-items: center;
+}
+.hdr-gold-bottom {
+  height: 2.5px;
+  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
+}
+
+/* logo */
+.logo {
+  width: 60px; height: 60px;
+  background: #fff;
+  border-radius: 2px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(196,168,74,.6);
+}
+.logo-gr {
+  font-family: 'EB Garamond', serif;
+  font-weight: 700;
+  font-size: 18pt;
+  color: var(--navy);
+  line-height: 1;
+  letter-spacing: 1px;
+}
+.logo-word {
+  font-size: 5.5pt;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* centre title */
+.hdr-title {}
+.hdr-eyebrow {
+  font-size: 7pt;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold-lt);
+  margin-bottom: 4px;
+}
+.hdr-certname {
+  font-family: 'EB Garamond', serif;
+  font-size: 17pt;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.15;
+  margin-bottom: 5px;
+}
+.hdr-convention {
+  font-size: 7.5pt;
+  color: rgba(255,255,255,.55);
+  line-height: 1.5;
+  max-width: 340px;
+}
+
+/* right meta */
+.hdr-meta { text-align: right; white-space: nowrap; }
+.hdr-meta-label {
+  font-size: 6pt;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--gold-lt);
+  display: block;
+}
+.hdr-meta-no {
+  font-family: 'EB Garamond', serif;
+  font-size: 11pt;
+  font-weight: 700;
+  color: #fff;
+  display: block;
+  line-height: 1.15;
+  letter-spacing: .5px;
+}
+.hdr-meta-form {
+  font-size: 6.5pt;
+  color: rgba(255,255,255,.35);
+  margin-top: 4px;
+}
+
+/* ══════════════ AUTHORITY BAND ══════════════ */
+.authority {
+  background: var(--light);
+  border-bottom: 1px solid var(--border);
+  padding: 3.5mm 12mm;
+  text-align: center;
+  font-size: 8.5pt;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.authority strong { color: var(--navy); font-weight: 700; }
+
+/* ══════════════ BODY ══════════════ */
+.body { padding: 5mm 12mm 4mm; flex: 1; }
+
+/* section label */
+.sec-label {
+  font-size: 6.5pt;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--blue);
+  padding-bottom: 2.5px;
+  border-bottom: 1.5px solid var(--rule);
+  margin: 5mm 0 3mm;
+}
+
+/* ── VESSEL TABLE ── */
+.vtable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9pt;
+  margin-bottom: 1mm;
+}
+.vtable th {
+  background: var(--navy);
+  color: var(--gold-lt);
+  font-size: 6.5pt;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  padding: 5px 9px;
+  border: 1px solid var(--navy);
+  text-align: left;
+}
+.vtable td {
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  background: #fff;
+  vertical-align: middle;
+}
+.vtable .val {
+  font-family: 'EB Garamond', serif;
+  font-size: 12pt;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.2;
+}
+.vtable .sub {
+  font-size: 7pt;
+  color: var(--muted);
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 400;
+  display: block;
+  margin-top: 1px;
+}
+.vtable tr:nth-child(even) td { background: #FAFCFF; }
+
+/* ── AFS STATUS ── */
+.afs-list { display: flex; flex-direction: column; gap: 2.5px; margin-bottom: 2mm; }
+.afs-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 5.5px 9px;
+  border: 1px solid var(--border);
+  border-radius: 1px;
+  font-size: 9pt;
+  line-height: 1.5;
+  background: #fff;
+  color: var(--muted);
+}
+.afs-item.checked {
+  border-color: var(--blue);
+  background: var(--light);
+  color: var(--text);
+}
+.afs-item.checked .afs-text { color: var(--text); }
+.checkbox {
+  width: 13px; height: 13px;
+  border: 1.5px solid #aaa;
+  border-radius: 1px;
+  flex-shrink: 0;
+  margin-top: 1.5px;
+  background: #fff;
+  position: relative;
+}
+.afs-item.checked .checkbox {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.afs-item.checked .checkbox::after {
+  content: '';
+  position: absolute;
+  left: 2.5px; top: .5px;
+  width: 5px; height: 9px;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(38deg);
+}
+.afs-text b { color: var(--navy); }
+.inline-val {
+  display: inline-block;
+  font-family: 'EB Garamond', serif;
+  font-size: 10.5pt;
+  font-weight: 600;
+  color: var(--navy);
+  border-bottom: 1px solid var(--navy);
+  padding: 0 4px;
+  min-width: 80px;
+  line-height: 1.2;
+  vertical-align: bottom;
+}
+
+/* ── CERTIFY BOX ── */
+.certify {
+  border-left: 3.5px solid var(--gold);
+  background: var(--light);
+  padding: 5px 11px 6px;
+  margin: 1mm 0 4mm;
+  font-size: 9pt;
+  line-height: 1.6;
+}
+.certify-title {
+  font-weight: 700;
+  color: var(--navy);
+  font-size: 9pt;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.certify ul { margin-left: 16px; color: var(--muted); }
+.certify ul li { margin-bottom: 1px; }
+
+/* ── VALIDITY GRID ── */
+.vgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2.5mm;
+  margin-bottom: 2.5mm;
+}
+.vgrid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5mm;
+  margin-bottom: 3mm;
+}
+.vcell {
+  border: 1px solid var(--border);
+  padding: 5.5px 9px;
+  background: #fff;
+}
+.vcell.hi {
+  border-color: var(--blue);
+  background: var(--light);
+}
+.vc-label {
+  font-size: 6pt;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 3px;
+}
+.vc-val {
+  font-family: 'EB Garamond', serif;
+  font-size: 12.5pt;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.2;
+}
+.vcell.hi .vc-val { color: var(--blue); }
+
+/* ── FOOTNOTES ── */
+.footnotes {
+  border-top: 1px solid var(--border);
+  padding: 3mm 0 2mm;
+  font-size: 7pt;
+  color: var(--muted);
+  line-height: 1.65;
+}
+.footnotes p { margin-bottom: 1.5px; }
+sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
+
+/* ══════════════ FOOTER ══════════════ */
+.ftr {
+  background: var(--navy);
+  flex-shrink: 0;
+  position: relative;
+}
+.ftr-gold-top {
+  height: 2.5px;
+  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
+}
+.ftr-inner {
+  padding: 5.5mm 12mm 6mm;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12mm;
+  align-items: end;
+}
+.sig-area { color: #fff; }
+.sig-line {
+  border-bottom: 1px solid rgba(255,255,255,.3);
+  height: 24px;
+  margin-bottom: 5px;
+  width: 160px;
+}
+.sig-label {
+  font-size: 6pt;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+  margin-bottom: 2px;
+}
+.sig-name {
+  font-family: 'EB Garamond', serif;
+  font-size: 12pt;
+  color: rgba(255,255,255,.9);
+  font-style: italic;
+  line-height: 1.2;
+}
+.sig-desig {
+  font-size: 7.5pt;
+  font-weight: 600;
+  color: var(--gold-lt);
+  letter-spacing: .3px;
+  margin-top: 1px;
+}
+.ftr-contact {
+  text-align: right;
+  font-size: 7pt;
+  color: rgba(255,255,255,.45);
+  line-height: 1.8;
+}
+.ftr-contact strong {
+  display: block;
+  color: var(--gold-lt);
+  font-size: 8.5pt;
+  font-weight: 700;
+  letter-spacing: .5px;
+  margin-bottom: 2px;
+}
+.ftr-contact a { color: rgba(255,255,255,.55); text-decoration: none; }
+
+/* ══════════════ PRINT ══════════════ */
+@media print {
+  html, body { background: none; padding: 0; }
+  .no-print { display: none !important; }
+  .cert {
+    margin: 0;
+    box-shadow: none;
+    width: 210mm;
+    min-height: 297mm;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="no-print">
+  <button class="btn-print" onclick="window.print()">🖨&nbsp; Print / Save as PDF</button>
+</div>
+
+<div class="cert">
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="hdr">
+    <div class="hdr-gold-top"></div>
+    <div class="hdr-inner">
+
+      <div class="logo">
+        <span class="logo-gr">GR</span>
+        <span class="logo-word">Class</span>
+      </div>
+
+      <div class="hdr-title">
+        <div class="hdr-eyebrow">Full Term</div>
+        <div class="hdr-certname">International Anti-Fouling System Certificate</div>
+        <div class="hdr-convention">
+          Issued under the International Convention on the Control of Harmful Anti-Fouling Systems on Ships (AFS Convention, 2001)
+        </div>
+      </div>
+
+      <div class="hdr-meta">
+        <span class="hdr-meta-label">AFS No.</span>
+        <span class="hdr-meta-no">{{certificate_number}}</span>
+        <div class="hdr-meta-form">Form AFS-FT · Approved by: GM</div>
+      </div>
+
+    </div>
+    <div class="hdr-gold-bottom"></div>
+  </div>
+
+  <!-- ═══ AUTHORITY BAND ═══ -->
+  <div class="authority">
+    Issued under the authority of the Government of <strong>{{flag_state}}</strong><br>
+    By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO) operating under IMO Framework
+  </div>
+
+  <!-- ═══ BODY ═══ -->
+  <div class="body">
+
+    <!-- VESSEL PARTICULARS -->
+    <div class="sec-label">Vessel Particulars</div>
+    <table class="vtable">
+      <tr>
+        <th style="width:30%">Name of Ship</th>
+        <th style="width:22%">Distinctive No. / Letters</th>
+        <th style="width:26%">Port of Registry</th>
+        <th style="width:22%">Gross Tonnage</th>
+      </tr>
+      <tr>
+        <td><span class="val">{{vessel_name}}</span></td>
+        <td><span class="val">{{call_sign}}</span></td>
+        <td><span class="val">{{port_of_registry}}</span></td>
+        <td><span class="val">{{gross_tonnage}}</span></td>
+      </tr>
+      <tr>
+        <th style="width:30%">IMO Number <sup>1</sup></th>
+        <th style="width:22%">Ship Type</th>
+        <th style="width:26%">Net Tonnage</th>
+        <th style="width:22%">Deadweight</th>
+      </tr>
+      <tr>
+        <td><span class="val">{{imo_number}}</span></td>
+        <td><span class="val">{{ship_type}}</span></td>
+        <td><span class="val">{{net_tonnage}}</span></td>
+        <td><span class="val">{{deadweight}}</span></td>
+      </tr>
+    </table>
+
+    <!-- AFS STATUS -->
+    <div class="sec-label">Anti-Fouling System Status</div>
+    <div class="afs-list">
+
+      <div class="afs-item {{afs_option_not_applied_checked}}">
+        <div class="checkbox"></div>
+        <div class="afs-text">An anti-fouling system controlled under Annex 1 has <b>not been applied</b> during or after construction of this ship.</div>
+      </div>
+
+      <div class="afs-item {{afs_option_applied_previously_removed_checked}}">
+        <div class="checkbox"></div>
+        <div class="afs-text">
+          An anti-fouling system controlled under Annex 1 has been applied on this ship previously, but has been
+          <b>removed</b> by <span class="inline-val">{{facility_name}}</span> on <span class="inline-val">{{facility_date}}</span>
+        </div>
+      </div>
+
+      <div class="afs-item {{afs_option_applied_previously_covered_checked}}">
+        <div class="checkbox"></div>
+        <div class="afs-text">
+          An anti-fouling system controlled under Annex 1 has been applied on this ship previously, but has been
+          <b>covered with a sealer coat</b> applied by <span class="inline-val">{{facility_name}}</span> on <span class="inline-val">{{facility_date}}</span>
+        </div>
+      </div>
+
+      <div class="afs-item {{afs_option_applied_prior_checked}}">
+        <div class="checkbox"></div>
+        <div class="afs-text">
+          An anti-fouling system controlled under Annex 1 was applied on this ship prior to
+          <span class="inline-val">{{facility_date}}</span>
+          but must be removed or covered with a sealer coat prior to
+          <span class="inline-val">{{compliance_deadline}}</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FACILITY DETAILS -->
+    <div class="sec-label">Facility Details</div>
+    <table class="vtable">
+      <tr>
+        <th style="width:40%">Name of the Facility</th>
+        <th style="width:30%">Date of Application</th>
+        <th style="width:30%">Compliance Deadline</th>
+      </tr>
+      <tr>
+        <td><span class="val">{{facility_name}}</span></td>
+        <td><span class="val">{{facility_date}}</span></td>
+        <td><span class="val">{{compliance_deadline}}</span></td>
+      </tr>
+    </table>
+
+    <!-- CERTIFICATION -->
+    <div class="sec-label">Certification</div>
+    <div class="certify">
+      <div class="certify-title">This is to certify that:</div>
+      <ul>
+        <li>The ship has been surveyed in accordance with Regulation 1 of Annex 4 of the AFS Convention; and</li>
+        <li>The survey shows that the anti-fouling system on the ship complies with the applicable requirements of Annex 1 to the Convention.</li>
+      </ul>
+    </div>
+
+    <!-- VALIDITY -->
+    <div class="sec-label">Dates &amp; Validity</div>
+    <div class="vgrid">
+      <div class="vcell">
+        <span class="vc-label">Survey Completion Date</span>
+        <div class="vc-val">{{survey_completion_date}}</div>
+      </div>
+      <div class="vcell">
+        <span class="vc-label">Date of Issue</span>
+        <div class="vc-val">{{issue_date}}</div>
+      </div>
+      <div class="vcell hi">
+        <span class="vc-label">Valid Until</span>
+        <div class="vc-val">{{expiry_date}}</div>
+      </div>
+    </div>
+    <div class="vgrid-2">
+      <div class="vcell">
+        <span class="vc-label">Place of Issue</span>
+        <div class="vc-val">{{place_of_survey}}</div>
+      </div>
+      <div class="vcell">
+        <span class="vc-label">Page</span>
+        <div class="vc-val">1 of 1</div>
+      </div>
+    </div>
+
+    <!-- FOOTNOTES -->
+    <div class="footnotes">
+      <p><sup>1</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600(15).</p>
+      <p><sup>2</sup> Insert name of the facility.</p>
+      <p><sup>3</sup> Insert date.</p>
+      <p><sup>4</sup> Insert date of expiration of any implementation period specified in article 4(2) of Annex 1.</p>
+    </div>
+
+  </div><!-- /body -->
+
+  <!-- ═══ FOOTER / SIGNATURE ═══ -->
+  <div class="ftr">
+    <div class="ftr-gold-top"></div>
+    <div class="ftr-inner">
+
+      <div class="sig-area">
+        <div class="sig-line"></div>
+        <div class="sig-label">Authorized Signature &amp; Stamp</div>
+        <div class="sig-name">{{surveyor_name}}</div>
+        <div class="sig-desig">GR Class Representative · Senior Surveyor</div>
+      </div>
+
+      <div class="ftr-contact">
+        <strong>GR CLASS</strong>
+        <a href="mailto:info@grclass.com">info@grclass.com</a><br>
+        <a href="https://www.grclass.com">www.grclass.com</a><br>
+        Classified for Standard (GR CLASS)<br>
+        Recognized Organization · 50+ Countries
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /cert -->
+
+</body>
+</html>

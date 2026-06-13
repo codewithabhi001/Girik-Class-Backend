@@ -1,0 +1,11 @@
+# Enforce binary treatment for documents to prevent line ending corruption
+*.docx binary
+*.doc binary
+*.xlsx binary
+*.xls binary
+*.pdf binary
+*.zip binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary

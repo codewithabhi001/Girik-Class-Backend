@@ -14,12 +14,20 @@ async function runTest() {
         // 1. Resolve seed data
         const vessel = await db.Vessel.findOne({ where: { class_status: 'ACTIVE' } });
         // Find two distinct certificate types that require survey
-        const certTypes = await db.CertificateType.findAll({ where: { status: 'ACTIVE', requires_survey: true }, limit: 2 });
-        if (certTypes.length < 2) {
-            throw new Error('Not enough active certificate types in seed data for multi-certificate testing. Need at least 2.');
+        const allTypes = await db.CertificateType.findAll({ where: { status: 'ACTIVE', requires_survey: true } });
+        const activeTypes = [];
+        for (const t of allTypes) {
+            const hasTemplate = await db.CertificateTemplate.findOne({ where: { certificate_type_id: t.id, is_active: true } });
+            const hasChecklist = await db.ChecklistTemplate.findOne({ where: { certificate_type_id: t.id, status: 'ACTIVE' } });
+            if (hasTemplate && hasChecklist) {
+                activeTypes.push(t);
+            }
         }
-        const certTypeA = certTypes[0];
-        const certTypeB = certTypes[1];
+        if (activeTypes.length < 2) {
+            throw new Error('Not enough active certificate types with both templates and checklists. Need at least 2.');
+        }
+        const certTypeA = activeTypes[0];
+        const certTypeB = activeTypes[1];
 
         // Find two distinct surveyors
         const surveyors = await db.User.findAll({ where: { role: 'SURVEYOR', status: 'ACTIVE' }, limit: 2 });

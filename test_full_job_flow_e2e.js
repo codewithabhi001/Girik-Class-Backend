@@ -125,10 +125,17 @@ async function resolveSeedData() {
     const { Op } = db.Sequelize;
 
     const vessel = await db.Vessel.findOne({ where: { class_status: 'ACTIVE' } });
-    const certTypes = await db.CertificateType.findAll({
-        where: { status: 'ACTIVE', requires_survey: true },
-        limit: 2,
+    const allTypes = await db.CertificateType.findAll({
+        where: { status: 'ACTIVE', requires_survey: true }
     });
+    const certTypes = [];
+    for (const t of allTypes) {
+        const hasTemplate = await db.CertificateTemplate.findOne({ where: { certificate_type_id: t.id, is_active: true } });
+        const hasChecklist = await db.ChecklistTemplate.findOne({ where: { certificate_type_id: t.id, status: 'ACTIVE' } });
+        if (hasTemplate && hasChecklist) {
+            certTypes.push(t);
+        }
+    }
     const surveyors = await db.User.findAll({
         where: { role: 'SURVEYOR', status: 'ACTIVE' },
         limit: 2,

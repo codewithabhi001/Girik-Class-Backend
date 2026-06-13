@@ -151,6 +151,33 @@ function createSdtNode(doc, tagName, placeholderText) {
     return sdt;
 }
 
+function createInlineSdtNode(doc, tagName, placeholderText, formatPrNode) {
+    const sdt = doc.createElementNS(WORD_NS, 'w:sdt');
+    const sdtPr = doc.createElementNS(WORD_NS, 'w:sdtPr');
+    
+    const tag = doc.createElementNS(WORD_NS, 'w:tag');
+    tag.setAttributeNS(WORD_NS, 'w:val', tagName);
+    sdtPr.appendChild(tag);
+    
+    if (formatPrNode) {
+        sdtPr.appendChild(formatPrNode.cloneNode(true));
+    }
+    sdt.appendChild(sdtPr);
+
+    const sdtContent = doc.createElementNS(WORD_NS, 'w:sdtContent');
+    const r = doc.createElementNS(WORD_NS, 'w:r');
+    if (formatPrNode) {
+        r.appendChild(formatPrNode.cloneNode(true));
+    }
+    const t = doc.createElementNS(WORD_NS, 'w:t');
+    t.appendChild(doc.createTextNode(placeholderText));
+    r.appendChild(t);
+    sdtContent.appendChild(r);
+    sdt.appendChild(sdtContent);
+
+    return sdt;
+}
+
 async function tagSingleDocx(filePath) {
     const buffer = fs.readFileSync(filePath);
     let zip;
@@ -209,29 +236,57 @@ async function tagSingleDocx(filePath) {
     // 2. Process paragraphs for inline/block dates
     let pTaggedCount = 0;
     const paragraphs = selectWithNs('//w:p', doc);
+    const paragraphsToRemove = new Set();
+
     paragraphs.forEach((p, idx) => {
         const text = selectWithNs('.//w:t', p).map(n => n.textContent).join('');
         const normalized = normalizeText(text);
 
         let dateTag = null;
         if (normalized.includes('valid until') || normalized.includes('valido hasta') || normalized.includes('válido hasta')) {
-            dateTag = 'expiry_date';
-        } else if (normalized.includes('completion date of the survey') || normalized.includes('fecha de terminación de la inspección') || normalized.includes('fecha de terminacion')) {
-            dateTag = 'survey_completion_date';
+            if (!text.includes('{expiry_date}')) {
+                dateTag = 'expiry_date';
+            }
+        } else if (normalized.includes('completion date of the survey') || normalized.includes('fecha de terminación de la inspección') || normalized.includes('fecha de terminacion') || normalized.includes('completion date of this survey') || normalized.includes('completion date of survey')) {
+            if (!text.includes('{survey_completion_date}')) {
+                dateTag = 'survey_completion_date';
+            }
         }
 
         if (dateTag) {
-            for (let offset = 1; offset <= 2; offset++) {
+            // Get format from the last run in the paragraph
+            const runs = selectWithNs('w:r', p);
+            let formatPr = null;
+            if (runs.length > 0) {
+                const lastRun = runs[runs.length - 1];
+                formatPr = selectWithNs('w:rPr', lastRun)[0] || null;
+            }
+            
+            // Append inline tag to the paragraph
+            const inlineSdt = createInlineSdtNode(doc, dateTag, `{${dateTag}}`, formatPr);
+            p.appendChild(inlineSdt);
+            pTaggedCount++;
+
+            // Scan next 3 paragraphs and mark them for deletion if they are empty, placeholder, or contain the tag
+            for (let offset = 1; offset <= 3; offset++) {
                 const nextP = paragraphs[idx + offset];
                 if (nextP) {
                     const nextText = selectWithNs('.//w:t', nextP).map(n => n.textContent).join('').trim();
-                    if (nextText.includes('DD-MM-YYYY') || nextText === '') {
-                        while (nextP.firstChild) {
-                            nextP.removeChild(nextP.firstChild);
-                        }
-                        const sdtNode = createSdtNode(doc, dateTag, `{${dateTag}}`);
-                        nextP.appendChild(sdtNode);
-                        pTaggedCount++;
+                    const hasSdtTag = selectWithNs('.//w:sdt/w:sdtPr/w:tag', nextP).some(node => {
+                        const val = node.getAttribute('w:val');
+                        return val === 'expiry_date' || val === 'survey_completion_date';
+                    });
+
+                    const isPlaceholder = nextText === '' || 
+                                          nextText === '-' || 
+                                          nextText.includes('DD-MM-YYYY') || 
+                                          nextText.includes('{expiry_date}') || 
+                                          nextText.includes('{survey_completion_date}') ||
+                                          hasSdtTag;
+
+                    if (isPlaceholder) {
+                        paragraphsToRemove.add(nextP);
+                    } else {
                         break;
                     }
                 }
@@ -239,7 +294,14 @@ async function tagSingleDocx(filePath) {
         }
     });
 
-    if (tableTaggedCount > 0 || pTaggedCount > 0) {
+    // Remove marked paragraphs
+    paragraphsToRemove.forEach((p) => {
+        if (p.parentNode) {
+            p.parentNode.removeChild(p);
+        }
+    });
+
+    if (tableTaggedCount > 0 || pTaggedCount > 0 || paragraphsToRemove.size > 0) {
         const newXml = new XMLSerializer().serializeToString(doc);
         zip.file('word/document.xml', newXml);
         const newBuffer = await zip.generateAsync({ type: 'nodebuffer' });
