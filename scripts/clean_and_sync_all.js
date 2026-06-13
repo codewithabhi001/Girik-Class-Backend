@@ -39,7 +39,10 @@ const HEADER_TAG_RULES = [
     { keys: ['net tonnage', 'arqueo neto'], tag: 'net_tonnage' },
     { keys: ['ship type', 'tipo de buque', 'type of ship'], tag: 'ship_type' },
     { keys: ['certificate number', 'no de certificado', 'certificate no', 'certificado no.', 'certificate no.'], tag: 'certificate_number' },
-    { keys: ['surveyor name', 'nombre del inspector', 'auditor name'], tag: 'surveyor_name' }
+    { keys: ['surveyor name', 'nombre del inspector', 'auditor name'], tag: 'surveyor_name' },
+    { keys: ['facility name', 'name of the facility', 'facility name / name of the facility', 'facility'], tag: 'facility_name' },
+    { keys: ['facility date', 'date of facility', 'date of application', 'date of removal', 'date of sealer coat'], tag: 'facility_date' },
+    { keys: ['compliance deadline', 'deadline of compliance', 'compliance deadline date'], tag: 'compliance_deadline' }
 ];
 
 const CERTIFICATE_TYPE_ALIASES = {
@@ -129,6 +132,14 @@ function createSdtNode(doc, tagName, placeholderText) {
 
     const sdtContent = doc.createElementNS(WORD_NS, 'w:sdtContent');
     const p = doc.createElementNS(WORD_NS, 'w:p');
+    
+    // Add center alignment
+    const pPr = doc.createElementNS(WORD_NS, 'w:pPr');
+    const jc = doc.createElementNS(WORD_NS, 'w:jc');
+    jc.setAttributeNS(WORD_NS, 'w:val', 'center');
+    pPr.appendChild(jc);
+    p.appendChild(pPr);
+
     const r = doc.createElementNS(WORD_NS, 'w:r');
     const t = doc.createElementNS(WORD_NS, 'w:t');
     t.appendChild(doc.createTextNode(placeholderText));
@@ -346,7 +357,8 @@ const main = async () => {
                 'templates/certificates'
             );
 
-            const term = file.includes('-ST') ? 'SHORT_TERM' : (file.includes('-FT') ? 'FULL_TERM' : null);
+            const isST = file.includes('-ST') || file.includes(' - ST') || file.includes('_ST') || file.includes('ST.docx') || file.includes('ST ');
+            const term = isST ? 'SHORT_TERM' : 'FULL_TERM';
             const template_name = `${matchedType.name} ${term === 'SHORT_TERM' ? 'ST' : 'FT'}`;
 
             // Extract tags from the docx file for database seeding

@@ -213,7 +213,7 @@ export const schemas = {
         items: Joi.array().items(Joi.object({
             question_code: Joi.string().required(),
             question_text: Joi.string().required(),
-            answer: Joi.string().valid('YES', 'NO', 'NA').required(),
+            answer: Joi.string().required(),
             remarks: Joi.string().allow('').optional(),
             file_url: Joi.string().allow('', null).optional()
         })).required(),
@@ -453,7 +453,7 @@ export const schemas = {
             items: Joi.array().items(Joi.object({
                 code: Joi.string().required(),
                 text: Joi.string().required(),
-                type: Joi.string().valid('YES_NO_NA', 'TEXT', 'NUMBER', 'PASS_FAIL', 'YES_NO', 'PASS_FAIL_NA').default('YES_NO_NA')
+                type: Joi.string().uppercase().valid('YES_NO_NA', 'TEXT', 'NUMBER', 'PASS_FAIL', 'YES_NO', 'PASS_FAIL_NA').default('YES_NO_NA')
             })).required()
         })).required(),
         // Optional. S3 keys obtained from
@@ -472,7 +472,7 @@ export const schemas = {
             items: Joi.array().items(Joi.object({
                 code: Joi.string().required(),
                 text: Joi.string().required(),
-                type: Joi.string().valid('YES_NO_NA', 'TEXT', 'NUMBER', 'PASS_FAIL', 'YES_NO', 'PASS_FAIL_NA').default('YES_NO_NA')
+                type: Joi.string().uppercase().valid('YES_NO_NA', 'TEXT', 'NUMBER', 'PASS_FAIL', 'YES_NO', 'PASS_FAIL_NA').default('YES_NO_NA')
             })).required()
         })).optional(),
         status: Joi.string().valid('ACTIVE', 'INACTIVE', 'DRAFT').optional(),

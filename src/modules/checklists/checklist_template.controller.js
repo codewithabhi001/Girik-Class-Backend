@@ -116,21 +116,6 @@ export const updateChecklistTemplate = async (req, res, next) => {
 };
 
 /**
- * Delete a checklist template
- */
-export const deleteChecklistTemplate = async (req, res, next) => {
-    try {
-        const result = await checklistTemplateService.deleteChecklistTemplate(req.params.id);
-        res.json({
-            success: true,
-            ...result
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-/**
  * Activate a checklist template
  */
 export const activateChecklistTemplate = async (req, res, next) => {
@@ -149,21 +134,3 @@ export const activateChecklistTemplate = async (req, res, next) => {
     }
 };
 
-/**
- * Clone a checklist template
- */
-export const cloneChecklistTemplate = async (req, res, next) => {
-    try {
-        const template = await checklistTemplateService.cloneChecklistTemplate(
-            req.params.id,
-            req.user.id
-        );
-        res.json({
-            success: true,
-            message: 'Checklist template cloned successfully',
-            data: template
-        });
-    } catch (error) {
-        next(error);
-    }
-};

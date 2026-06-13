@@ -73,9 +73,10 @@ const main = async () => {
 
         for (const file of files) {
             const filePath = path.join(folderPath, file);
-            const term = file.includes('-ST') ? 'SHORT_TERM' : (file.includes('-FT') ? 'FULL_TERM' : null);
+            const isST = file.includes('-ST') || file.includes(' - ST') || file.includes('_ST') || file.includes('ST.docx') || file.includes('ST ');
+            const term = isST ? 'SHORT_TERM' : 'FULL_TERM';
             
-            console.log(`  Uploading ${file} (Term: ${term || 'N/A'})...`);
+            console.log(`  Uploading ${file} (Term: ${term})...`);
             
             try {
                 const buffer = fs.readFileSync(filePath);

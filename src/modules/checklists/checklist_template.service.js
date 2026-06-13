@@ -343,12 +343,7 @@ export const updateChecklistTemplate = async (id, data, userId) => {
     const incomingKeys = Object.keys(data);
     const hasStructuralEdit = incomingKeys.some(k => !fileOnlyKeys.has(k));
 
-    if (hasStructuralEdit && template.status !== 'DRAFT') {
-        throw {
-            statusCode: 400,
-            message: 'Cannot modify a finalized Checklist Template. Please clone and version-increment instead. (Tip: attach/detach document files via template_files / add_template_files / remove_template_files — that is allowed at any status.)'
-        };
-    }
+    // Structural modifications are allowed in any status as requested by the user.
 
     // ── Compute the next template_files array ──────────────────────────────
     let nextTemplateFiles;
@@ -375,22 +370,6 @@ export const updateChecklistTemplate = async (id, data, userId) => {
     if (nextTemplateFiles !== undefined) updatePayload.template_files = nextTemplateFiles;
 
     return await fileAccessService.resolveEntity(await template.update(updatePayload));
-};
-
-/**
- * Delete a checklist template (soft delete by setting status to INACTIVE)
- */
-export const deleteChecklistTemplate = async (id) => {
-    const template = await ChecklistTemplate.findByPk(id, { useMaster: true });
-
-    if (!template) {
-        throw { statusCode: 404, message: 'Checklist template not found' };
-    }
-
-    // Soft delete by setting status to INACTIVE
-    await template.update({ status: 'INACTIVE' });
-
-    return { message: 'Checklist template deleted successfully' };
 };
 
 /**
@@ -449,79 +428,5 @@ export const activateChecklistTemplate = async (id, userId) => {
             updated_by: userId
         }, { transaction: t });
     });
-};
-
-/**
- * Clone a checklist template.
- *
- * The clone:
- *   • keeps the same `name` (visually identifies it as the next version)
- *   • bumps `metadata.version` and appends `_Vx_y` to `code` for uniqueness
- *   • carries over `sections`, `certificate_type_id` and `template_files`
- *     so the cloned template starts off with the same questions AND the
- *     same attached reference DOCXs (admin can then swap docs / edit
- *     questions while still in DRAFT)
- *   • starts in DRAFT — admin must explicitly `PUT /:id/activate` it
- */
-export const cloneChecklistTemplate = async (id, userId) => {
-    const originalTemplate = await ChecklistTemplate.findByPk(id, { useMaster: true });
-
-    if (!originalTemplate) {
-        throw { statusCode: 404, message: 'Checklist template not found' };
-    }
-
-    const metadata = { ...(originalTemplate.metadata || {}) };
-
-    // Strip existing _Vx_y suffix to get the clean base code
-    const baseCode = originalTemplate.code.replace(/_V\d+_\d+$/, '');
-
-    // Determine starting version number (current version + 1, or 2.0 if none)
-    const currentVersion = parseFloat(metadata.version) || 1.0;
-    let nextVersionNum = Math.floor(currentVersion) + 1; // Always bump the major version integer
-
-    // Find a unique code by incrementing until no existing template uses it
-    let newCode;
-    let attempts = 0;
-    while (true) {
-        const candidateVersion = `${nextVersionNum}.0`;
-        const candidateSuffix = `_V${candidateVersion.replace('.', '_')}`;
-        const candidateCode = `${baseCode}${candidateSuffix}`;
-
-        const existing = await ChecklistTemplate.findOne({
-            where: { code: candidateCode },
-            useMaster: true,
-        });
-
-        if (!existing) {
-            newCode = candidateCode;
-            metadata.version = candidateVersion;
-            break;
-        }
-
-        nextVersionNum++;
-        attempts++;
-
-        // Safety: never loop infinitely
-        if (attempts > 50) {
-            throw { statusCode: 409, message: 'Could not generate a unique template code after 50 attempts.' };
-        }
-    }
-
-    const newTemplate = await ChecklistTemplate.create({
-        name: originalTemplate.name,
-        code: newCode,
-        description: originalTemplate.description,
-        sections: originalTemplate.sections,
-        template_files: Array.isArray(originalTemplate.template_files)
-            ? [...originalTemplate.template_files]
-            : [],
-        certificate_type_id: originalTemplate.certificate_type_id,
-        status: 'DRAFT',
-        metadata: metadata,
-        created_by: userId,
-        updated_by: userId
-    });
-
-    return newTemplate;
 };
 

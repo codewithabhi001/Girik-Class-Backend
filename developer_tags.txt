@@ -1,0 +1,78 @@
+GR Class Certificate Developer Tags Reference
+=============================================
+
+Below is the list of all dynamic placeholder tags (developer tags) currently supported when generating certificates in the GR Class backend system.
+
+1. STANDARD VESSEL & CERTIFICATE PARTICULARS:
+* certificate_number: Unique identifier for the certificate
+  Matches/Synonyms: "certificate number", "no de certificado", "certificate no", "certificado no.", "certificatenumber", "certnumber", "certno"
+  
+* vessel_name: Name of the vessel / ship
+  Matches/Synonyms: "name of ship", "name of vessel", "vesselname", "nameofship", "shipname", "nombredelanave", "vessel"
+  
+* imo_number: IMO Ship Identification Number
+  Matches/Synonyms: "imo number", "imo number1", "imo no.", "imo no", "imonumber", "imo", "imono"
+  
+* call_sign: Distinctive call letters or signal
+  Matches/Synonyms: "distinctive number or letters", "call sign", "señal distintiva", "callsign", "distinctivenumber", "sign"
+  
+* port_of_registry: Home port of registry
+  Matches/Synonyms: "port of registry", "puerto de registro", "portofregistry", "registryport", "puertoderegistro"
+  
+* gross_tonnage: Gross Tonnage (GT)
+  Matches/Synonyms: "gross tonnage", "arqueo bruto", "grosstonnage", "gt"
+  
+* net_tonnage: Net Tonnage (NT)
+  Matches/Synonyms: "net tonnage", "arqueo neto", "nettonnage", "nt"
+  
+* deadweight: Deadweight Tonnage (DWT)
+  Matches/Synonyms: "deadweight", "peso muerto", "dwt"
+  
+* year_built: Date keel was laid / year built
+  Matches/Synonyms: "date of construction", "date of built", "date of build", "keel laid", "año de construcción", "fechadeconstruccion", "yearbuilt", "built"
+  
+* ship_type: Type of vessel classification
+  Matches/Synonyms: "ship type", "tipo de buque", "type of ship", "shiptype", "vesseltype"
+
+
+2. DATES & LOCATIONS:
+* issue_date: Date the certificate is officially issued
+  Matches/Synonyms: "date of issue", "fecha de emision", "fecha de emisión", "issuedate"
+  
+* expiry_date: Date of certificate expiration
+  Matches/Synonyms: "valid until", "valido hasta", "expirydate", "validity", "validuntil"
+  
+* survey_completion_date: Date the survey was completed
+  Matches/Synonyms: "completion date of the survey", "fecha de terminación", "surveycompletiondate", "surveydate"
+  
+* place_of_survey: Place/Port where certificate is issued / survey completed
+  Matches/Synonyms: "issued at", "expedido en", "lugar de emision", "port", "place", "location", "placeofsurvey"
+  
+* surveyor_name: Full name of the inspector / auditor
+  Matches/Synonyms: "surveyor name", "nombre del inspector", "auditor name", "surveyorname", "surveyor"
+  
+* flag_state: Flag administration governing the ship
+  Matches/Synonyms: "flag state", "flag", "flagstate"
+
+
+3. ADDITIONAL FIELDS:
+* owner_operators: Client / Owner / Operator company name
+  Matches/Synonyms: "owner", "operator", "company", "client", "owneroperator"
+  
+* mmsi_number: Maritime Mobile Service Identity number
+  Matches/Synonyms: "mmsi_number"
+  
+* ballast_water_capacity: Ballast Water Capacity in cubic meters
+  Matches/Synonyms: "ballast water capacity", "capacidad de agua de lastre"
+  
+* certificate_type: Certificate Type Name
+  Matches/Synonyms: "certificate_type", "certtype", "certname"
+  
+* certificate_term: Term of certificate (FULL_TERM / SHORT_TERM)
+  Matches/Synonyms: "certificate_term", "term"
+  
+* gr_class_logo: URL/Base64 of GR Class Logo
+  Matches/Synonyms: "gr_class_logo"
+  
+* flag_logo: URL/Base64 of Flag State logo
+  Matches/Synonyms: "flag_logo"

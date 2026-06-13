@@ -102,26 +102,6 @@ router.put(
     checklistTemplateController.activateChecklistTemplate
 );
 
-/**
- * @route   POST /api/v1/checklist-templates/:id/clone
- * @desc    Clone a checklist template
- * @access  ADMIN only
- */
-router.post(
-    '/:id/clone',
-    authorizeRoles('ADMIN'),
-    checklistTemplateController.cloneChecklistTemplate
-);
-
-/**
- * @route   DELETE /api/v1/checklist-templates/:id
- * @desc    Delete a checklist template (soft delete)
- * @access  ADMIN only
- */
-router.delete(
-    '/:id',
-    authorizeRoles('ADMIN'),
-    checklistTemplateController.deleteChecklistTemplate
-);
+// Clone and Delete endpoints have been removed per user requirements.
 
 export default router;

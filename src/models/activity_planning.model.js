@@ -5,7 +5,7 @@ export default (sequelize, DataTypes) => {
         job_certificate_id: { type: DataTypes.UUID, allowNull: true }, // per-certificate checklist
         question_code: DataTypes.STRING,
         question_text: DataTypes.STRING,
-        answer: DataTypes.ENUM('YES', 'NO', 'NA'),
+        answer: DataTypes.STRING,
         remarks: DataTypes.TEXT,
         file_url: DataTypes.STRING,
         status: {
