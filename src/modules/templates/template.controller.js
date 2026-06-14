@@ -35,18 +35,4 @@ export const deleteTemplate = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
-// GET /certificate-templates/get-upload-url
-// Pre-signed S3 PUT URL for uploading the DOCX template file.
-export const getUploadUrl = async (req, res, next) => {
-    try {
-        const { fileName, contentType } = req.query;
-        if (!fileName || !contentType) {
-            return res.status(400).json({
-                success: false,
-                message: 'fileName and contentType are required query parameters.'
-            });
-        }
-        const data = await templateService.getUploadUrl(fileName, contentType);
-        res.json({ success: true, data });
-    } catch (error) { next(error); }
-};
+

@@ -8,8 +8,8 @@ import env from '../../config/env.js';
 import { RBAC, isRoleAllowed } from '../../config/rbac.config.js';
 import * as emailService from '../../services/email.service.js';
 import * as s3Service from '../../services/s3.service.js';
+import * as certificatePdfService from '../../services/certificate-pdf.service.js';
 import { buildTagValuesForJob } from '../../utils/tagBuilder.util.js';
-import { fillDocxContentControls } from '../../utils/docxFill.util.js';
 import { CERTIFICATE_STATUSES } from '../../constants/statuses.js';
 import { buildFullStatusCounts } from '../../utils/statusCount.util.js';
 import {
@@ -17,50 +17,7 @@ import {
     flatCertificateTypeListRow,
     shapeCertificateTypeDetail,
 } from '../../utils/listRowFlatten.util.js';
-import JSZip from 'jszip';
-import { DOMParser } from '@xmldom/xmldom';
-import xpath from 'xpath';
-import fs from 'fs';
-import path from 'path';
 import QRCode from 'qrcode';
-
-const WORD_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
-const selectWithNs = xpath.useNamespaces({ w: WORD_NS });
-
-const scanTagsFromBuffer = async (buffer) => {
-    const tags = new Set();
-    try {
-        const zip = await JSZip.loadAsync(buffer);
-        const entry = zip.file('word/document.xml');
-        if (!entry) return [];
-
-        const xml = await entry.async('text');
-        const doc = new DOMParser().parseFromString(xml, 'text/xml');
-        const tagNodes = selectWithNs('//w:sdt/w:sdtPr/w:tag', doc);
-        tagNodes.forEach(node => {
-            const val = node.getAttribute('w:val');
-            if (val) tags.add(val);
-        });
-
-        // Also search for text placeholders like {vessel_name} or {{vessel_name}} in xml text
-        const regexes = [
-            /\{([a-zA-Z0-9_\- ]+)\}/g,
-            /\{\{([a-zA-Z0-9_\- ]+)\}\}/g
-        ];
-        for (const regex of regexes) {
-            let match;
-            while ((match = regex.exec(xml)) !== null) {
-                const tag = match[1].trim();
-                if (tag.length < 50 && !tag.includes('<') && !tag.includes('>')) {
-                    tags.add(tag);
-                }
-            }
-        }
-    } catch (err) {
-        logger.error('Failed to scan docx tags from buffer:', err);
-    }
-    return Array.from(tags);
-};
 
 
 const Certificate = db.Certificate;
@@ -481,186 +438,33 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
             }
         }
 
-        if (!template?.template_file_url) {
-            logger.warn('No valid template found for certificate', { certId: cert.id });
-            return null;
+        if (!template?.template_content) {
+            logger.warn('No valid template content found for certificate', { certId: cert.id });
+            throw { statusCode: 400, message: 'No valid template content found for this certificate.' };
         }
 
-        // 4. Fill DOCX and Upload
-        const masterBuffer = await s3Service.getFileContent(template.template_file_url);
+        const verificationUrl = `${env.publicApiBaseUrl}/api/v1/public/certificate/verify/${certificateNumber}`;
+        const qrDataUrl = await QRCode.toDataURL(verificationUrl, { width: 120, margin: 1 });
+        
+        allDataSources.qr_code = `<img src="${qrDataUrl}" style="width:120px;height:120px;" alt="QR Code"/>`;
+        allDataSources.qr_data_url = qrDataUrl;
+        allDataSources.qr_code_url = qrDataUrl;
 
-        // Dynamically scan all tags in the template DOCX
-        const scannedTags = await scanTagsFromBuffer(masterBuffer);
+        const filledHtml = certificatePdfService.fillTemplate(template.template_content, allDataSources);
+        const finalHtml = filledHtml.includes('<html') ? filledHtml : certificatePdfService.wrapHtmlForPdf(filledHtml);
 
-        // Normalize keys for case-insensitive matching
-        const normalizeKey = (k) => String(k || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-
-        const normalizedSource = {};
-        for (const [key, val] of Object.entries(allDataSources)) {
-            normalizedSource[normalizeKey(key)] = val;
-        }
-
-        // Define synonym mappings (normalized tag -> standard key name)
-        const synonymMap = {
-            vesselname: 'vessel_name',
-            nameofship: 'vessel_name',
-            shipname: 'vessel_name',
-            nombredelanave: 'vessel_name',
-            vessel: 'vessel_name',
-            
-            imonumber: 'imo_number',
-            imo: 'imo_number',
-            imono: 'imo_number',
-            
-            callsign: 'call_sign',
-            distinctivenumberorletters: 'call_sign',
-            distinctivenumber: 'call_sign',
-            sign: 'call_sign',
-            
-            portofregistry: 'port_of_registry',
-            registryport: 'port_of_registry',
-            puertoderegistro: 'port_of_registry',
-            
-            yearbuilt: 'year_built',
-            built: 'year_built',
-            dateofconstruction: 'year_built',
-            dateofbuilt: 'year_built',
-            dateofbuild: 'year_built',
-            keellaid: 'year_built',
-            construitopor: 'year_built',
-            
-            shiptype: 'ship_type',
-            vesseltype: 'ship_type',
-            typeofship: 'ship_type',
-            
-            grosstonnage: 'gross_tonnage',
-            gt: 'gross_tonnage',
-            
-            nettonnage: 'net_tonnage',
-            nt: 'net_tonnage',
-            
-            deadweight: 'deadweight',
-            dwt: 'deadweight',
-            
-            certificatenumber: 'certificate_number',
-            certnumber: 'certificate_number',
-            certno: 'certificate_number',
-            
-            certificatetype: 'certificate_type',
-            certtype: 'certificate_type',
-            certname: 'certificate_type',
-            
-            certificateterm: 'certificate_term',
-            term: 'certificate_term',
-            
-            issuedate: 'issue_date',
-            dateofissue: 'issue_date',
-            
-            expirydate: 'expiry_date',
-            validuntil: 'expiry_date',
-            validity: 'expiry_date',
-            
-            surveycompletiondate: 'survey_completion_date',
-            surveycompleteddate: 'survey_completion_date',
-            surveydate: 'survey_completion_date',
-            
-            port: 'port',
-            place: 'place',
-            placeofsurvey: 'port',
-            portofsurvey: 'port',
-            location: 'port',
-            
-            surveyorname: 'surveyor_name',
-            surveyor: 'surveyor_name',
-            
-            flag: 'flag_state',
-            flagstate: 'flag_state',
-            
-            owner: 'owner_operators',
-            operator: 'owner_operators',
-            owneroperator: 'owner_operators',
-            company: 'owner_operators',
-            client: 'owner_operators'
-        };
-
-        // Map scanned tags to their values
-        const variables = {};
-        for (const rawTag of scannedTags) {
-            const norm = normalizeKey(rawTag);
-            if (allDataSources[rawTag] !== undefined) {
-                variables[rawTag] = allDataSources[rawTag];
-            } else if (normalizedSource[norm] !== undefined) {
-                variables[rawTag] = normalizedSource[norm];
-            } else if (synonymMap[norm] && allDataSources[synonymMap[norm]] !== undefined) {
-                variables[rawTag] = allDataSources[synonymMap[norm]];
-            } else if (dynamicTags[rawTag] !== undefined) {
-                variables[rawTag] = dynamicTags[rawTag];
-            } else {
-                variables[rawTag] = '';
-            }
-        }
-
-        // For backward compatibility / safety, keep standard tags
-        for (const [k, v] of Object.entries(allDataSources)) {
-            if (variables[k] === undefined) {
-                variables[k] = v;
-            }
-        }
-
-        const filledDocxBuffer = await fillDocxContentControls(masterBuffer, variables);
-
-        // Dynamically replace the QR placeholder image inside filledDocxBuffer
-        let finalDocxBuffer = filledDocxBuffer;
-        try {
-            const verificationUrl = `${env.publicApiBaseUrl}/api/v1/public/certificate/verify/${certificateNumber}`;
-            const qrCodeBuffer = await QRCode.toBuffer(verificationUrl, { width: 120, margin: 1 });
-            
-            const zip = await JSZip.loadAsync(filledDocxBuffer);
-            const qrPlaceholderPath = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../../scratch/qr_placeholder.png');
-            
-            if (fs.existsSync(qrPlaceholderPath)) {
-                const qrPlaceholderBuffer = fs.readFileSync(qrPlaceholderPath);
-                let qrZipPath = null;
-                for (const [name, file] of Object.entries(zip.files)) {
-                    if (name.startsWith('word/media/')) {
-                        const content = await file.async('nodebuffer');
-                        if (content.length === qrPlaceholderBuffer.length && content.equals(qrPlaceholderBuffer)) {
-                            qrZipPath = name;
-                            break;
-                        }
-                    }
-                }
-                if (qrZipPath) {
-                    zip.file(qrZipPath, qrCodeBuffer);
-                    logger.info(`Successfully replaced QR code placeholder at ${qrZipPath} for certificate ${certificateNumber}`);
-                } else {
-                    logger.warn(`Could not find QR placeholder image inside docx template for certificate ${certificateNumber}`);
-                }
-            } else {
-                logger.warn(`qr_placeholder.png not found at ${qrPlaceholderPath}, skipped replacing QR code in docx`);
-            }
-            finalDocxBuffer = await zip.generateAsync({ type: 'nodebuffer' });
-        } catch (qrErr) {
-            logger.error('Failed to embed dynamic QR code inside certificate docx:', qrErr);
-        }
-
-        const docxUrl = await s3Service.uploadFile(
-            finalDocxBuffer,
-            `${certificateNumber}.docx`,
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        const pdfBuffer = await certificatePdfService.htmlToPdfBuffer(finalHtml);
+        const fileUrl = await s3Service.uploadFile(
+            pdfBuffer,
+            `${certificateNumber}.pdf`,
+            'application/pdf',
             s3Service.UPLOAD_FOLDERS.CERTIFICATES
         );
         
-        await cert.update({ pdf_file_url: docxUrl, generated_pdf_url: docxUrl }, { transaction });
-        return docxUrl;
+        await cert.update({ pdf_file_url: fileUrl, generated_pdf_url: fileUrl }, { transaction });
+        return fileUrl;
     } catch (err) {
         logger.error('Error in _generateCertificateFile', { certId: cert.id, err: err.message });
-        if (err.message && (err.message.includes("Can't find end of central directory") || err.message.includes("zip"))) {
-            throw {
-                statusCode: 400,
-                message: `The template file '${template?.template_name || 'unknown'}' is not a valid Word document (.docx). Please upload a valid .docx file for this template.`
-            };
-        }
         throw err;
     }
 };

@@ -26,7 +26,10 @@
     "db:migrate:undo:all": "sequelize-cli db:migrate:undo:all",
     "db:seed:all": "sequelize-cli db:seed:all",
     "record:activity": "node scripts/record_activity_responses.js",
-    "db:clean-admin": "node scripts/clean_and_seed_admin.js"
+    "db:clean-admin": "node scripts/clean_and_seed_admin.js",
+    "upsert:templates": "node scripts/upsert_certificate_and_checklist_templates.js",
+    "upsert:cert-templates": "CERT_ONLY=true node scripts/upsert_certificate_and_checklist_templates.js",
+    "upsert:checklist-templates": "CHECK_ONLY=true node scripts/upsert_certificate_and_checklist_templates.js"
   },
   "devDependencies": {
     "exceljs": "^4.4.0",

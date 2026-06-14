@@ -136,7 +136,7 @@ export const resolveEntity = async (data, user = null) => {
             // If it's a Sequelize model instance, convert to plain object
             let plain = (typeof item.get === 'function') ? item.get({ plain: true }) : { ...item };
 
-            const urlKeys = ['url', 'file_url', 'logo_url', 'attachment_url', 'attendance_photo_url', 'signature_url', 'evidence_proof_url', 'survey_statement_pdf_url', 'pdf_file_url', 'qr_code_url', 'document_url', 'cv_file_url', 'id_proof_url', 'certificate_files_url', 'profile_pic_url', 'cv_url', 'license_copy_url', 'signed_checklist_files', 'thumbnail_url', 'receipt_url', 'template_file_url', 'template_files', 'uploaded_file_url', 'generated_pdf_url', 'manually_overridden_file_url', 'file_key'];
+            const urlKeys = ['url', 'file_url', 'logo_url', 'attachment_url', 'attendance_photo_url', 'signature_url', 'evidence_proof_url', 'survey_statement_pdf_url', 'pdf_file_url', 'qr_code_url', 'document_url', 'cv_file_url', 'id_proof_url', 'certificate_files_url', 'profile_pic_url', 'cv_url', 'license_copy_url', 'signed_checklist_files', 'thumbnail_url', 'receipt_url', 'template_files', 'uploaded_file_url', 'generated_pdf_url', 'manually_overridden_file_url', 'file_key'];
 
             const fieldPromises = Object.entries(plain).map(async ([key, value]) => {
                 if (urlKeys.includes(key)) {
@@ -200,7 +200,7 @@ export const resolveEntity = async (data, user = null) => {
                             plain[baseNameKey] = fullFileName;
                             plain[originalNameKey] = cleanFileName;
                             
-                            if (key === 'template_file_url' || key === 'file_url') {
+                            if (key === 'file_url') {
                                 plain['file_name'] = fullFileName;
                                 plain['fileName'] = fullFileName;
                                 plain['original_file_name'] = cleanFileName;

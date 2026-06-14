@@ -20,7 +20,7 @@ export const fillTemplate = (templateContent, data) => {
     if (!templateContent || typeof templateContent !== 'string') return '';
     let out = templateContent;
     for (const [key, value] of Object.entries(data)) {
-        const placeholder = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g');
+        const placeholder = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}|\\{\\s*${key}\\s*\\}`, 'g');
         const str = value instanceof Date ? FORMAT_DATE(value) : String(value ?? '');
         out = out.replace(placeholder, str);
     }

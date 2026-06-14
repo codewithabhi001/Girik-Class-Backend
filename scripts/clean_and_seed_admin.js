@@ -34,6 +34,12 @@ const USERS_TO_SEED = [
         email: 'abhivishwkarmaa52@gmail.com',
         role: 'SURVEYOR',
         status: 'ACTIVE'
+    },
+    {
+        name: 'Abhishek Surveyor',
+        email: 'abhisheksingh9709844475@gmail.com',
+        role: 'SURVEYOR',
+        status: 'ACTIVE'
     }
 ];
 
@@ -92,7 +98,7 @@ async function main() {
             if (u.role === 'SURVEYOR') {
                 await db.SurveyorProfile.create({
                     user_id: user.id,
-                    license_number: 'SURV-52',
+                    license_number: u.email === 'abhivishwkarmaa52@gmail.com' ? 'SURV-52' : 'SURV-B',
                     status: 'ACTIVE',
                     is_available: true,
                     authorized_ship_types: JSON.stringify(['TANKER', 'CARGO', 'PASSENGER']),

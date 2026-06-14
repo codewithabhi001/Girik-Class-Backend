@@ -75,8 +75,15 @@ async function expect(name, fn) {
     const admin = await db.User.findOne({ where: { role: 'ADMIN', status: 'ACTIVE' } });
     if (!admin) throw new Error('No ACTIVE ADMIN user found in DB. Seed one first.');
 
-    const certType = await db.CertificateType.findOne({ where: { status: 'ACTIVE' } });
-    if (!certType) throw new Error('No ACTIVE CertificateType found in DB. Seed one first.');
+    // Create a temporary certificate type for isolation
+    const stamp = Date.now();
+    const certType = await db.CertificateType.create({
+        name: `Temp Smoke Test ${stamp}`,
+        issuing_authority: 'CLASS',
+        validity_years: 5,
+        status: 'ACTIVE',
+        description: 'Temporary certificate type for smoke test'
+    });
 
     const adminToken = jwt.sign(
         { id: admin.id, role: admin.role, email: admin.email, type: 'access' },
@@ -93,7 +100,6 @@ async function expect(name, fn) {
     // =====================================================================
     log(cyan('\n[1] Checklist Templates'));
 
-    const stamp = Date.now();
     const ctCode = `TEST_CT_${stamp}`;
 
     // --- 1.1 GET upload URL --------------------------------------------------
@@ -262,13 +268,13 @@ async function expect(name, fn) {
         return 'status=ACTIVE';
     });
 
-    // --- 1.12 STRUCTURAL EDIT NOW BLOCKED (ACTIVE) -------------------------
-    await expect('PUT /checklist-templates/:id  (rename on ACTIVE → 400)', async () => {
+    // --- 1.12 STRUCTURAL EDIT NOW BLOCKED (ACTIVE) - REVERTED (ALLOWED) ----
+    await expect('PUT /checklist-templates/:id  (rename on ACTIVE → 200)', async () => {
         const r = await api(adminToken, 'PUT', `/api/v1/checklist-templates/${ctId}`, {
-            name: `Should be blocked ${stamp}`
+            name: `Should be allowed ${stamp}`
         });
-        if (r.status !== 400) throw new Error(`expected 400, got ${r.status}`);
-        return `400 — finalized template protected`;
+        if (r.status !== 200) throw new Error(`expected 200, got ${r.status}`);
+        return `200 — renaming active template succeeded`;
     });
 
     // --- 1.13 FILE-EDIT STILL ALLOWED ON ACTIVE ----------------------------
@@ -282,42 +288,14 @@ async function expect(name, fn) {
         return 'file appended on ACTIVE ✓';
     });
 
-    // --- 1.14 CLONE preserves template_files -------------------------------
-    let clonedId;
-    await expect('POST /checklist-templates/:id/clone  (clone preserves template_files)', async () => {
-        const r = await api(adminToken, 'POST', `/api/v1/checklist-templates/${ctId}/clone`);
-        if (r.status !== 200) throw new Error(`status=${r.status} body=${JSON.stringify(r.body)}`);
-        clonedId = r.body.data.id;
-        created.checklistTpls.push(clonedId);
-        if (r.body.data.status !== 'DRAFT') throw new Error('clone not in DRAFT');
-        if (!Array.isArray(r.body.data.template_files) || r.body.data.template_files.length === 0)
-            throw new Error('cloned template_files empty (regression)');
-        return `cloneId=${clonedId} files=${r.body.data.template_files.length}`;
-    });
-
-    // --- 1.15 DELETE (soft) ------------------------------------------------
-    await expect('DELETE /checklist-templates/:id  (soft → INACTIVE)', async () => {
-        const r = await api(adminToken, 'DELETE', `/api/v1/checklist-templates/${emptyTplId}`);
-        if (r.status !== 200) throw new Error(`status=${r.status}`);
-        const r2 = await api(adminToken, 'GET', `/api/v1/checklist-templates/${emptyTplId}`);
-        if (r2.body.data.status !== 'INACTIVE') throw new Error(`expected INACTIVE, got ${r2.body.data.status}`);
-        return 'status=INACTIVE';
-    });
+    // --- 1.14 CLONE and DELETE removed per user requirements ----------------
+    log(dim('  - skipped POST /checklist-templates/:id/clone (removed)'));
+    log(dim('  - skipped DELETE /checklist-templates/:id (removed)'));
 
     // =====================================================================
     //                      CERTIFICATE TEMPLATES
     // =====================================================================
     log(cyan('\n[2] Certificate Templates'));
-
-    let certTplFileKey;
-    await expect('GET /certificate-templates/get-upload-url', async () => {
-        const r = await api(adminToken, 'GET',
-            `/api/v1/certificate-templates/get-upload-url?fileName=cert_${stamp}.docx&contentType=application/vnd.openxmlformats-officedocument.wordprocessingml.document`);
-        if (r.status !== 200) throw new Error(`status=${r.status} body=${JSON.stringify(r.body)}`);
-        if (!r.body.data?.uploadUrl || !r.body.data?.fileKey) throw new Error('missing uploadUrl/fileKey');
-        certTplFileKey = r.body.data.fileKey;
-        return `fileKey=${certTplFileKey.slice(0, 40)}…`;
-    });
 
     let certTplId;
     await expect('POST /certificate-templates', async () => {
@@ -325,7 +303,7 @@ async function expect(name, fn) {
             template_name: `Test Cert Tpl ${stamp}`,
             certificate_type_id: certType.id,
             certificate_term: 'FULL_TERM',
-            template_file_url: certTplFileKey,
+            template_content: `<html><body>{{vessel_name}} - {{imo_number}}</body></html>`,
             variables: ['vessel_name', 'imo_number'],
             is_active: true,
         });
@@ -355,24 +333,14 @@ async function expect(name, fn) {
         return 'fetched ✓';
     });
 
-    let certTplFileKeyV2;
-    await expect('GET /certificate-templates/get-upload-url  (v2 file)', async () => {
-        const r = await api(adminToken, 'GET',
-            `/api/v1/certificate-templates/get-upload-url?fileName=cert_v2_${stamp}.docx&contentType=application/vnd.openxmlformats-officedocument.wordprocessingml.document`);
-        if (r.status !== 200) throw new Error(`status=${r.status}`);
-        certTplFileKeyV2 = r.body.data.fileKey;
-        return `fileKey=${certTplFileKeyV2.slice(0, 40)}…`;
-    });
-
-    await expect('PUT /certificate-templates/:id  (swap template_file_url)', async () => {
+    await expect('PUT /certificate-templates/:id  (swap template_content)', async () => {
         const r = await api(adminToken, 'PUT', `/api/v1/certificate-templates/${certTplId}`, {
-            template_file_url: certTplFileKeyV2,
+            template_content: `<html><body>{{vessel_name}} - {{imo_number}} v2</body></html>`,
             template_name: `Test Cert Tpl ${stamp} (v2)`
         });
         if (r.status !== 200) throw new Error(`status=${r.status} body=${JSON.stringify(r.body)}`);
-        // response value is a resolved signed URL — verify it references the new key.
-        if (typeof r.body.data.template_file_url !== 'string' || !r.body.data.template_file_url.includes(certTplFileKeyV2))
-            throw new Error(`file_url not swapped: ${r.body.data.template_file_url}`);
+        if (r.body.data.template_content !== `<html><body>{{vessel_name}} - {{imo_number}} v2</body></html>`)
+            throw new Error(`template_content not swapped: ${r.body.data.template_content}`);
         return 'swapped ✓';
     });
 
@@ -403,6 +371,13 @@ async function expect(name, fn) {
         } catch (e) {
             log(red(`  ! failed to remove ${id}: ${e.message}`));
         }
+    }
+
+    try {
+        await db.CertificateType.destroy({ where: { id: certType.id } });
+        log(dim(`  - removed temporary certificate-type ${certType.id}`));
+    } catch (e) {
+        log(red(`  ! failed to remove certType: ${e.message}`));
     }
 
     // ── Summary ──────────────────────────────────────────────────────────

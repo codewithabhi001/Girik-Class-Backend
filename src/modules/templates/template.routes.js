@@ -13,10 +13,6 @@ router.post('/', authorizeRoles('ADMIN'), validate(schemas.createTemplate), temp
 // List certificate templates
 router.get('/', authorizeRoles('ADMIN', 'GM', 'TM'), templateController.getTemplates);
 
-// Pre-signed S3 PUT URL for the DOCX template file
-// (registered before /:id so the static path wins)
-router.get('/get-upload-url', authorizeRoles('ADMIN'), templateController.getUploadUrl);
-
 // Get a specific template
 router.get('/:id', authorizeRoles('ADMIN', 'GM', 'TM'), templateController.getTemplateById);
 

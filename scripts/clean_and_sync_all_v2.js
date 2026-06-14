@@ -1,4 +1,6 @@
 import 'dotenv/config';
+import './disable_replica.js';
+process.env.DB_LOGGING = 'true';
 import fs from 'fs';
 import path from 'path';
 import JSZip from 'jszip';
@@ -399,7 +401,7 @@ async function syncRequiredDocuments(typeMap) {
     console.log(`✅ Found ${rows.length} valid required document rows in Excel.`);
 
     // Fetch all existing types in database to align maps
-    const existingTypes = await db.CertificateType.findAll();
+    const existingTypes = await db.CertificateType.findAll({ useMaster: true });
     const dbTypeMap = new Map();
     const dbCodeMap = new Map();
 
@@ -431,7 +433,8 @@ async function syncRequiredDocuments(typeMap) {
             where: {
                 certificate_type_id: certType.id,
                 document_name: row.docName
-            }
+            },
+            useMaster: true
         });
 
         if (!existingDoc) {
@@ -460,7 +463,6 @@ const main = async () => {
             console.warn(`   - Skipped table: ${table} (${err.message})`);
         }
     }
-    await db.sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
 
     console.log('\n📂 2. Collecting Certificate Folders...');
     const certFolders = getFolders(ONLY_CERTS_DIR);
@@ -504,50 +506,44 @@ const main = async () => {
         console.log(`   - Created CertificateType: "${folder}" (Code: ${short_code})`);
     }
 
-    console.log('\n📄 4. Tagging, Uploading and Syncing Certificates...');
+    console.log('\n📄 4. Reading and Syncing HTML Certificate Templates...');
     let certCount = 0;
     for (const certFolder of certFolders) {
         const matchedType = typeMap.get(normalize(certFolder));
         if (!matchedType) continue;
 
         const folderPath = path.join(ONLY_CERTS_DIR, certFolder);
-        const files = fs.readdirSync(folderPath).filter(f => f.endsWith('.docx') && !f.startsWith('~$'));
+        const htmlFolder = path.join(folderPath, 'html');
+        if (!fs.existsSync(htmlFolder)) {
+            console.warn(`   - [WARNING] No html folder found under: ${certFolder}`);
+            continue;
+        }
+
+        const files = fs.readdirSync(htmlFolder).filter(f => f.endsWith('.html') && !f.startsWith('~$'));
 
         for (const file of files) {
-            const filePath = path.join(folderPath, file);
-            await tagSingleDocx(filePath); // tag in-place
+            const filePath = path.join(htmlFolder, file);
+            console.log(`   - Seeding HTML certificate template ${file}...`);
+            const htmlContent = fs.readFileSync(filePath, 'utf8');
 
-            console.log(`   - Uploading certificate ${file}...`);
-            const buffer = fs.readFileSync(filePath);
-            const key = await uploadWithRetry(
-                buffer,
-                file,
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'templates/certificates'
-            );
-
-            const isST = file.includes('-ST') || file.includes(' - ST') || file.includes('_ST') || file.includes('ST.docx') || file.includes('ST ');
+            const isST = file.includes('_ST_') || file.includes('-ST') || file.includes('ST.html') || file.includes('ST ') || file.includes('_ST.');
             const term = isST ? 'SHORT_TERM' : 'FULL_TERM';
             const template_name = `${matchedType.name} ${term === 'SHORT_TERM' ? 'ST' : 'FT'}`;
 
-            const zip = await JSZip.loadAsync(buffer);
-            const docEntry = zip.file('word/document.xml');
+            // Scan tags from HTML content
             const scannedTags = new Set();
-            if (docEntry) {
-                const xml = await docEntry.async('text');
-                const doc = new DOMParser().parseFromString(xml, 'text/xml');
-                const tagNodes = selectWithNs('//w:sdt/w:sdtPr/w:tag', doc);
-                tagNodes.forEach(node => {
-                    const val = node.getAttribute('w:val');
-                    if (val) scannedTags.add(val);
-                });
+            const tagRegex = /\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}|\{\s*([a-zA-Z0-9_.-]+)\s*\}/g;
+            let match;
+            while ((match = tagRegex.exec(htmlContent)) !== null) {
+                const val = match[1] || match[2];
+                if (val) scannedTags.add(val);
             }
 
             await db.CertificateTemplate.create({
                 template_name,
                 certificate_type_id: matchedType.id,
                 certificate_term: term,
-                template_file_url: key,
+                template_content: htmlContent,
                 variables: Array.from(scannedTags),
                 is_active: true
             });
@@ -646,6 +642,7 @@ const main = async () => {
     console.log('\n🗒️ 6. Syncing Required Documents from Excel...');
     await syncRequiredDocuments(typeMap);
 
+    await db.sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
     console.log('\n🚀 ALL RESET AND SYNC COMPLETED COMPLETED SUCCESSFULLY!');
 };
 

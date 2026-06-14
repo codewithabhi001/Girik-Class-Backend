@@ -986,6 +986,46 @@ ${generateNewTagsComment(cert)}
 
 // ─── Run ───────────────────────────────────────────────────────────────
 
+const FOLDER_MAPPING = {
+  'AFS': 'ANTI FOULING SYSTEM CERTIFICATE',
+  'BWM': 'BALLAST WATER MANAGEMENT CERTIFICATE',
+  'BPTC': 'BOLLARD PULL ASSESMENT',
+  'BS': 'BOTTOM INSPECTION',
+  'SAFCE': 'CARGO SHIP SAFETY CERTIFICATE',
+  'CCC': 'CARGO SHIP SAFETY CONSTRUCTION CERTIFICATE',
+  'CEC': 'CARGO SHIP SAFETY EQUIPMENT CERTIFICATE',
+  'CRC': 'CARGO SHIP SAFETY RADIO CERTIFICATE',
+  'SARCE': 'CARGO SHIP SAFETY RADIOTELEPHONY CERTIFICATE',
+  'CCSSC': 'CARIBBEAN CARGO SHIP SAFETY CERTIFICATE',
+  'OMCA': 'CICA',
+  'IMSBC': 'Certificate of Compliance with the International Maritime Solid Bulk Cargoes (IMSBC) CODE',
+  'IBC': 'Certificate of Fitness for Carriage of Dangerous Chemicals in Bulk',
+  'IGC': 'Certificate of Fitness for Carriage of Liquefied Gases in Bulk',
+  'DOC': 'DOC',
+  'DS': 'Docking Survey',
+  'GRALO': 'Document of Authorization for the Carriage of Grain',
+  'CDG': 'Document of Compliance with the Special Requirements for Ships Carrying Dangerous Goods',
+  'EIAPP': 'EIAPP',
+  'FISVEL': 'FISHING VESSEL SAFETY CERTIFICATE',
+  'GMC': 'Garbage Management Certificate',
+  'HSC': 'High Speed Craft Safety Certificate',
+  'IAPP': 'IAPP',
+  'IOPP': 'INTERNATIONAL OIL POLLUTION PREVENTION CERTIFICATE',
+  'ISPP': 'INTERNATIONAL SEWAGE POLLUTION PREVENTION CERTIFICATE',
+  'ISSC': 'ISSC',
+  'BCH': 'International Certificate of Fitness for Carriage of Dangerous Chemicals in Bulk',
+  'NLS': 'International Pollution Prevention Certificate for the Carriage of Noxious Liquid Substances in Bulk',
+  'LL': 'LL',
+  'MLC': 'MLC',
+  'MODU': 'MODU',
+  'TON': 'National Tonnage Certificate (vessel under 24 m in length )',
+  'PLECE': 'Pleasure Craft Safety Certificate',
+  'SMC': 'SMC',
+  'SPS': 'SPS',
+  'SWC': 'Sea Worthiness Certificate',
+  'IHM': 'Statement of Compliance of the International Certificate on Inventory of Hazardous Materials'
+};
+
 let generated = 0;
 let errors = [];
 
@@ -993,9 +1033,23 @@ for (const cert of CERT_REGISTRY) {
   try {
     const html = generateCertHTML(cert);
     const fileName = `GRClass_${cert.code.replace(/-/g, '_')}_Certificate.html`;
-    const outPath = path.join(OUTPUT_DIR, fileName);
+    
+    // Resolve specific output directory for this certificate
+    const base = cert.code.replace(/-(FT|ST|SOC-FT)$/, '');
+    const folderName = FOLDER_MAPPING[base];
+    let certOutputDir = OUTPUT_DIR;
+    
+    if (folderName) {
+      const specificDir = path.resolve('ONLY CERTIFICATES', folderName, 'html');
+      if (!fs.existsSync(specificDir)) {
+        fs.mkdirSync(specificDir, { recursive: true });
+      }
+      certOutputDir = specificDir;
+    }
+
+    const outPath = path.join(certOutputDir, fileName);
     fs.writeFileSync(outPath, html);
-    console.log(`✓  ${fileName}`);
+    console.log(`✓  ${fileName} -> ${folderName ? `${folderName}/html/` : 'HTML_OUTPUT/'}`);
     generated++;
   } catch (e) {
     errors.push({ code: cert.code, error: e.message });
@@ -1006,8 +1060,8 @@ for (const cert of CERT_REGISTRY) {
 console.log(`\n════════════════════════════════════════`);
 console.log(`Generated: ${generated} certificates`);
 console.log(`Errors: ${errors.length}`);
-console.log(`Output: ${OUTPUT_DIR}`);
 if (errors.length > 0) {
   console.log(`\nFailed:`);
   errors.forEach(e => console.log(`  - ${e.code}: ${e.error}`));
 }
+

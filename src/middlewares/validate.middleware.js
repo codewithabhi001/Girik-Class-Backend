@@ -427,9 +427,7 @@ export const schemas = {
         template_name: Joi.string().required(),
         certificate_type_id: Joi.string().guid().required(),
         certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM').optional().allow(null),
-        template_file_url: Joi.string().pattern(/\.docx$/i).required().messages({
-            'string.pattern.base': 'Template file must be a valid Microsoft Word document (.docx)'
-        }),
+        template_content: Joi.string().required(),
         variables: Joi.array().items(Joi.string()).optional(),
         is_active: Joi.boolean().optional().default(true)
     }),
@@ -437,9 +435,7 @@ export const schemas = {
         template_name: Joi.string().optional(),
         certificate_type_id: Joi.string().guid().optional(),
         certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM').optional().allow(null),
-        template_file_url: Joi.string().pattern(/\.docx$/i).optional().messages({
-            'string.pattern.base': 'Template file must be a valid Microsoft Word document (.docx)'
-        }),
+        template_content: Joi.string().optional(),
         variables: Joi.array().items(Joi.string()).optional(),
         is_active: Joi.boolean().optional()
     }),
