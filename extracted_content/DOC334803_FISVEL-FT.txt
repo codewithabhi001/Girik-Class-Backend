@@ -1,0 +1,84 @@
+
+
+FULL TERM FISHING VESSEL SAFETY CERTIFICATE
+
+Issued under the provisions of the relevant international conventions, under the authority of the Government of
+
+THE MERCHANT MARINE
+
+By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)
+
+Certificate number
+
+{certificate_number}
+
+
+
+Name of ship
+
+Distinctive number or letters
+
+Port of registry
+
+Gross tonnage
+
+{vessel_name}
+
+{call_sign}
+
+{port_of_registry}
+
+{gross_tonnage}
+
+IMO number
+
+Ship type
+
+Net tonnage
+
+Deadweight
+
+{imo_number}
+
+{ship_type}
+
+{net_tonnage}
+
+{deadweight}
+
+
+
+This is to certify that the vessel has been surveyed and found in compliance with the relevant safety and technical standards for the issuance of the FISHING VESSEL SAFETY CERTIFICATE.
+
+THIS IS TO CERTIFY THAT:
+
+1. The ship has been surveyed in accordance with the applicable rules and regulations;
+2. The survey shows that the structure, equipment, and condition of the ship comply with the safety standards of GR CLASS.
+
+This certificate is valid until: {expiry_date}
+
+Completion date of the survey on which this certificate is based: {survey_completion_date}
+
+Issued at
+
+Date of issue
+
+{place_of_survey}
+
+{issue_date}
+
+
+
+
+
+Scan to Verify
+
+
+
+{surveyor_name}GR CLASS REPRESENTATIVE
+
+GR CLASS – CLASSIFIED FOR STANDARD (GR CLASS)
+E-mail: info@grclass.com Web: www.grclass.com
+
+Form FVSC-FT                                                              Approved by: GM                                                        Page 1 of 1
+

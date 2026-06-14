@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GR CLASS · Certificate Editor</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #0f1117;
+  --panel: #181b22;
+  --card: #1e2129;
+  --border: #2a2d36;
+  --accent: #3b82f6;
+  --accent-h: #2563eb;
+  --gold: #d4a93a;
+  --navy: #0B2443;
+  --green: #22c55e;
+  --red: #ef4444;
+  --text: #f4f4f5;
+  --muted: #a1a1aa;
+  --input-bg: #23262f;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+}
+
+/* ── LAYOUT ── */
+.app { display: grid; grid-template-columns: 320px 1fr 300px; grid-template-rows: 50px 1fr; height: 100vh; }
+
+/* ── TOP BAR ── */
+.topbar {
+  grid-column: 1 / -1;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  z-index: 100;
+}
+.topbar-brand {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+  display: flex; align-items: center; gap: 8px;
+}
+.topbar-brand span { color: var(--muted); font-weight: 400; font-size: 12px; }
+.topbar-sep { width: 1px; height: 24px; background: var(--border); }
+.topbar-actions { display: flex; gap: 6px; }
+
+.btn {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex; align-items: center; gap: 5px;
+  font-family: inherit;
+}
+.btn:hover { background: var(--border); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-h); }
+.btn-danger { background: var(--red); border-color: var(--red); color: #fff; }
+.btn-danger:hover { opacity: .85; }
+.btn-success { background: var(--green); border-color: var(--green); color: #fff; }
+.btn-success:hover { opacity: .85; }
+
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.zoom-ctrl { display: flex; align-items: center; gap: 6px; }
+.zoom-ctrl span { font-size: 11px; color: var(--muted); min-width: 36px; text-align: center; }
+.zoom-slider { width: 100px; accent-color: var(--accent); }
+
+/* ── LEFT PANEL ── */
+.left-panel {
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.tab {
+  flex: 1;
+  padding: 10px 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all .15s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab:hover { color: var(--text); }
+
+.tab-content { flex: 1; overflow-y: auto; padding: 12px; }
+.tab-content::-webkit-scrollbar { width: 5px; }
+.tab-content::-webkit-scrollbar-track { background: transparent; }
+.tab-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.panel-section { margin-bottom: 16px; }
+.panel-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gold);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.field-group { margin-bottom: 10px; }
+.field-label {
+  font-size: 11px;
+  color: #e2e8f0;
+  font-weight: 600;
+  margin-bottom: 3px;
+  display: flex; align-items: center; gap: 4px;
+}
+.field-input {
+  width: 100%;
+  padding: 7px 10px;
+  background: #0f1117;
+  border: 1px solid #475569;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 5px;
+  font-family: inherit;
+  transition: all .15s;
+}
+.field-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.field-input::placeholder { color: #94a3b8; font-weight: 500; }
+textarea.field-input { min-height: 56px; resize: vertical; }
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.color-field {
+  display: flex; align-items: center; gap: 8px;
+}
+.color-swatch {
+  width: 28px; height: 28px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.color-swatch input[type="color"] {
+  opacity: 0; width: 28px; height: 28px; cursor: pointer;
+  position: absolute;
+}
+.color-hex {
+  flex: 1;
+  padding: 5px 8px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 11px;
+  border-radius: 4px;
+  font-family: 'Inter', monospace;
+}
+
+/* ── CERT LIST ── */
+.cert-list { display: flex; flex-direction: column; gap: 3px; }
+.cert-list-item {
+  padding: 8px 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all .15s;
+  font-size: 12px;
+}
+.cert-list-item:hover { border-color: var(--accent); background: rgba(59,130,246,.08); }
+.cert-list-item.active { border-color: var(--accent); background: rgba(59,130,246,.15); }
+.cert-list-item .cert-code {
+  font-weight: 700;
+  color: var(--gold);
+  font-size: 11px;
+}
+.cert-list-item .cert-name {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+.cert-search {
+  margin-bottom: 10px;
+}
+
+/* ── CENTER PREVIEW ── */
+.preview-area {
+  background: #52525b;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+.preview-area::-webkit-scrollbar { width: 8px; height: 8px; }
+.preview-area::-webkit-scrollbar-track { background: #3f3f46; }
+.preview-area::-webkit-scrollbar-thumb { background: #71717a; border-radius: 4px; }
+
+.preview-wrapper {
+  transform-origin: top center;
+  flex-shrink: 0;
+}
+.preview-frame {
+  width: 210mm;
+  background: #fff;
+  box-shadow: 0 12px 60px rgba(0,0,0,.5);
+  position: relative;
+}
+
+/* ── RIGHT PANEL ── */
+.right-panel {
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.right-panel .tab-content { padding: 12px; }
+
+.block-item {
+  padding: 8px 10px;
+  background: #1e293b;
+  border: 1px solid #475569;
+  border-radius: 5px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.block-item:hover { border-color: var(--accent); }
+.block-item.selected { border-color: var(--gold); background: rgba(212,169,58,.15); }
+.block-icon {
+  width: 24px; height: 24px;
+  background: #334155;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: #f8fafc;
+  flex-shrink: 0;
+}
+.block-info { flex: 1; min-width: 0; }
+.block-name { font-size: 12px; font-weight: 600; color: #ffffff; }
+.block-type { font-size: 10px; color: #cbd5e1; font-weight: 500; }
+
+.block-actions {
+  display: flex; flex-direction: column; gap: 4px;
+  margin-top: 10px;
+}
+.block-actions .btn { justify-content: center; font-size: 11px; }
+
+/* ── TABLE EDITOR ── */
+.table-editor { margin-top: 12px; }
+.te-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+.te-controls { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+
+/* ── STATUS BAR ── */
+.status-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 24px;
+  background: var(--navy);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 10px;
+  color: var(--muted);
+  gap: 16px;
+  z-index: 100;
+}
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+/* ── LOADING OVERLAY ── */
+.loading-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,17,23,.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.loading-overlay.hidden { display: none; }
+.loading-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { margin-top: 16px; color: var(--muted); font-size: 13px; }
+
+/* ── URL MODAL ── */
+.modal-bg {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+}
+.modal-bg.hidden { display: none; }
+.modal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  width: 520px;
+  max-width: 90vw;
+}
+.modal h3 { font-size: 16px; margin-bottom: 16px; color: var(--gold); }
+.modal .field-input { margin-bottom: 12px; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      GR CLASS <span>Certificate Editor</span>
+    </div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-actions">
+      <button class="btn" onclick="showLoadModal()" title="Load certificate from URL">📂 Load URL</button>
+      <button class="btn" onclick="loadFromFile()" title="Load certificate from file">📄 Open File</button>
+      <button class="btn" onclick="undo()" id="btnUndo" disabled title="Undo (Ctrl+Z)">↶ Undo</button>
+      <button class="btn" onclick="redo()" id="btnRedo" disabled title="Redo (Ctrl+Y)">↷ Redo</button>
+    </div>
+    <div class="topbar-right">
+      <div class="zoom-ctrl">
+        <button class="btn" onclick="changeZoom(-10)">−</button>
+        <span id="zoomLabel">60%</span>
+        <input type="range" class="zoom-slider" min="20" max="150" value="60" oninput="setZoom(this.value)">
+        <button class="btn" onclick="changeZoom(10)">+</button>
+      </div>
+      <div class="topbar-sep"></div>
+      <button class="btn btn-primary" onclick="exportHTML()" title="Export final HTML">⬇ Export HTML</button>
+    </div>
+  </div>
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="tabs">
+      <div class="tab active" data-tab="fields" onclick="switchLeftTab('fields')">Fields</div>
+      <div class="tab" data-tab="certs" onclick="switchLeftTab('certs')">Certificates</div>
+      <div class="tab" data-tab="style" onclick="switchLeftTab('style')">Style</div>
+    </div>
+
+    <!-- FIELDS TAB -->
+    <div class="tab-content" id="tab-fields">
+      <div class="panel-section">
+        <div class="panel-title">Certificate Info</div>
+        <div class="field-group">
+          <div class="field-label">Certificate Number</div>
+          <input class="field-input" data-tag="certificate_number" placeholder="{certificate_number}">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Certificate Term</div>
+          <input class="field-input" data-tag="certificate_term" placeholder="Full Term / Short Term">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Flag State</div>
+          <input class="field-input" data-tag="flag_state" placeholder="{flag_state}">
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-title">Vessel Particulars</div>
+        <div class="field-group">
+          <div class="field-label">Vessel Name</div>
+          <input class="field-input" data-tag="vessel_name" placeholder="{vessel_name}">
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">Call Sign</div>
+            <input class="field-input" data-tag="call_sign" placeholder="{call_sign}">
+          </div>
+          <div class="field-group">
+            <div class="field-label">IMO Number</div>
+            <input class="field-input" data-tag="imo_number" placeholder="{imo_number}">
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Port of Registry</div>
+          <input class="field-input" data-tag="port_of_registry" placeholder="{port_of_registry}">
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">Gross Tonnage</div>
+            <input class="field-input" data-tag="gross_tonnage" placeholder="{gross_tonnage}">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Net Tonnage</div>
+            <input class="field-input" data-tag="net_tonnage" placeholder="{net_tonnage}">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">Deadweight</div>
+            <input class="field-input" data-tag="deadweight" placeholder="{deadweight}">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Ship Type</div>
+            <input class="field-input" data-tag="ship_type" placeholder="{ship_type}">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-title">Dates & Survey</div>
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">Survey Completion</div>
+            <input class="field-input" data-tag="survey_completion_date" placeholder="{survey_completion_date}">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Issue Date</div>
+            <input class="field-input" data-tag="issue_date" placeholder="{issue_date}">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">Expiry Date</div>
+            <input class="field-input" data-tag="expiry_date" placeholder="{expiry_date}">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Place of Survey</div>
+            <input class="field-input" data-tag="place_of_survey" placeholder="{place_of_survey}">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-title">Signature</div>
+        <div class="field-group">
+          <div class="field-label">Surveyor Name</div>
+          <input class="field-input" data-tag="surveyor_name" placeholder="{surveyor_name}">
+        </div>
+      </div>
+
+      <div class="panel-section" id="afs-fields" style="display:none;">
+        <div class="panel-title">AFS Specific</div>
+        <div class="field-group">
+          <div class="field-label">Facility Name</div>
+          <input class="field-input" data-tag="facility_name" placeholder="{facility_name}">
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">Facility Date</div>
+            <input class="field-input" data-tag="facility_date" placeholder="{facility_date}">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Compliance Deadline</div>
+            <input class="field-input" data-tag="compliance_deadline" placeholder="{compliance_deadline}">
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Checked Option (1-4, e.g. "checked")</div>
+          <div class="field-row">
+            <input class="field-input" data-tag="afs_option_1_check" placeholder="opt 1">
+            <input class="field-input" data-tag="afs_option_2_check" placeholder="opt 2">
+          </div>
+          <div class="field-row" style="margin-top:4px;">
+            <input class="field-input" data-tag="afs_option_3_check" placeholder="opt 3">
+            <input class="field-input" data-tag="afs_option_4_check" placeholder="opt 4">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section" id="bwm-fields" style="display:none;">
+        <div class="panel-title">BWM Specific</div>
+        <div class="field-group">
+          <div class="field-label">BWM Method</div>
+          <input class="field-input" data-tag="bwm_method" placeholder="{bwm_method}">
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">Install Date</div>
+            <input class="field-input" data-tag="bwm_install_date" placeholder="{bwm_install_date}">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Manufacturer</div>
+            <input class="field-input" data-tag="bwm_manufacturer" placeholder="{bwm_manufacturer}">
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Ballast Water Capacity</div>
+          <input class="field-input" data-tag="ballast_water_capacity" placeholder="{ballast_water_capacity}">
+        </div>
+        <div class="field-group">
+          <div class="field-label">D-2 Description</div>
+          <input class="field-input" data-tag="bwm_d2_description" placeholder="{bwm_d2_description}">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Check marks (type "checked")</div>
+          <div class="field-row">
+            <input class="field-input" data-tag="bwm_d1_check" placeholder="D-1">
+            <input class="field-input" data-tag="bwm_d2_check" placeholder="D-2">
+          </div>
+          <div style="margin-top:4px;">
+            <input class="field-input" data-tag="bwm_d4_check" placeholder="D-4" style="width:calc(50% - 4px);">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CERTIFICATES TAB -->
+    <div class="tab-content" id="tab-certs" style="display:none;">
+      <div class="cert-search">
+        <input class="field-input" id="certSearchInput" placeholder="🔍 Search certificates..." oninput="filterCerts(this.value)">
+      </div>
+      <div class="cert-list" id="certList"></div>
+    </div>
+
+    <!-- STYLE TAB -->
+    <div class="tab-content" id="tab-style" style="display:none;">
+      <div class="panel-section">
+        <div class="panel-title">Page</div>
+        <div class="field-group">
+          <div class="field-label">Page Background</div>
+          <div class="color-field">
+            <div class="color-swatch" style="background:#fff;position:relative;">
+              <input type="color" value="#ffffff" onchange="setStyle('--page-bg', this.value); this.parentElement.style.background=this.value;">
+            </div>
+            <input class="color-hex" value="#FFFFFF" placeholder="#FFFFFF">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-title">Header</div>
+        <div class="field-group">
+          <div class="field-label">Header Background</div>
+          <div class="color-field">
+            <div class="color-swatch" style="background:#0B2443;position:relative;">
+              <input type="color" value="#0B2443" onchange="setCSSVar('--navy', this.value); this.parentElement.style.background=this.value;">
+            </div>
+            <input class="color-hex" value="#0B2443">
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Gold Accent</div>
+          <div class="color-field">
+            <div class="color-swatch" style="background:#D4A93A;position:relative;">
+              <input type="color" value="#D4A93A" onchange="setCSSVar('--gold-lt', this.value); this.parentElement.style.background=this.value;">
+            </div>
+            <input class="color-hex" value="#D4A93A">
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Accent Blue</div>
+          <div class="color-field">
+            <div class="color-swatch" style="background:#005BAA;position:relative;">
+              <input type="color" value="#005BAA" onchange="setCSSVar('--blue', this.value); this.parentElement.style.background=this.value;">
+            </div>
+            <input class="color-hex" value="#005BAA">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-title">Authority Band</div>
+        <div class="field-group">
+          <div class="field-label">Band Background</div>
+          <div class="color-field">
+            <div class="color-swatch" style="background:#EEF3F9;position:relative;">
+              <input type="color" value="#EEF3F9" onchange="setCSSVar('--light', this.value); this.parentElement.style.background=this.value;">
+            </div>
+            <input class="color-hex" value="#EEF3F9">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-title">Table</div>
+        <div class="field-group">
+          <div class="field-label">Table Header Bg</div>
+          <div class="color-field">
+            <div class="color-swatch" style="background:#0B2443;position:relative;">
+              <input type="color" value="#0B2443" onchange="setTableHeaderBg(this.value); this.parentElement.style.background=this.value;">
+            </div>
+            <input class="color-hex" value="#0B2443">
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Border Color</div>
+          <div class="color-field">
+            <div class="color-swatch" style="background:#C8D8E8;position:relative;">
+              <input type="color" value="#C8D8E8" onchange="setCSSVar('--border-cert', this.value); this.parentElement.style.background=this.value;">
+            </div>
+            <input class="color-hex" value="#C8D8E8">
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Frame Border</div>
+          <div class="color-field">
+            <div class="color-swatch" style="background:#C4A84A;position:relative;">
+              <input type="color" value="#C4A84A" onchange="setCSSVar('--rule', this.value); this.parentElement.style.background=this.value;">
+            </div>
+            <input class="color-hex" value="#C4A84A">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-title">Typography</div>
+        <div class="field-group">
+          <div class="field-label">Body Font Size (pt)</div>
+          <input class="field-input" type="number" value="10" min="6" max="16" step="0.5" onchange="setBodyFontSize(this.value)">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Value Font Size (pt)</div>
+          <input class="field-input" type="number" value="12" min="8" max="18" step="0.5" onchange="setValueFontSize(this.value)">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER PREVIEW -->
+  <div class="preview-area" id="previewArea">
+    <div class="preview-wrapper" id="previewWrapper">
+      <div class="preview-frame" id="previewFrame">
+        <div style="padding:60px 40px;text-align:center;color:#999;">
+          <div style="font-size:48px;margin-bottom:16px;">📄</div>
+          <div style="font-size:18px;font-weight:600;margin-bottom:8px;">No Certificate Loaded</div>
+          <div style="font-size:13px;color:#777;">
+            Click <b>📂 Load URL</b> or <b>📄 Open File</b> to load a certificate,<br>
+            or pick one from the <b>Certificates</b> tab on the left.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="tabs">
+      <div class="tab active" data-tab="blocks" onclick="switchRightTab('blocks')">Blocks</div>
+      <div class="tab" data-tab="edit" onclick="switchRightTab('edit')">Edit Block</div>
+    </div>
+
+    <div class="tab-content" id="tab-blocks">
+      <div class="panel-title">Certificate Blocks</div>
+      <div id="blockList"></div>
+      <div class="block-actions" style="margin-top:16px;">
+        <button class="btn btn-primary" onclick="addCustomBlock()" style="width:100%;justify-content:center;">+ Add Text Block</button>
+        <button class="btn" onclick="addTableBlock()" style="width:100%;justify-content:center;">+ Add Table Block</button>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-edit" style="display:none;">
+      <div id="blockEditor">
+        <div style="text-align:center;padding:40px 0;color:#71717a;">
+          Select a block to edit
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div class="status-dot"></div>
+  <span id="statusText">Ready</span>
+  <span style="margin-left:auto;" id="statusRight">GR CLASS Certificate Editor v2.0</span>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay hidden" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">Loading certificate...</div>
+</div>
+
+<!-- URL MODAL -->
+<div class="modal-bg hidden" id="urlModal">
+  <div class="modal">
+    <h3>📂 Load Certificate from URL</h3>
+    <div class="field-group">
+      <div class="field-label">Certificate HTML URL</div>
+      <input class="field-input" id="urlInput" placeholder="http://localhost:8888/ONLY%20CERTIFICATES/HTML_OUTPUT/GRClass_AFS_FT_Certificate.html">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Or paste the base URL for all certificates</div>
+      <input class="field-input" id="baseUrlInput" placeholder="http://localhost:8888/ONLY%20CERTIFICATES/HTML_OUTPUT/" value="http://localhost:8888/ONLY%20CERTIFICATES/HTML_OUTPUT/">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="hideLoadModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="loadFromURL()">Load</button>
+    </div>
+  </div>
+</div>
+
+<!-- FILE INPUT (hidden) -->
+<input type="file" id="fileInput" accept=".html,.htm" style="display:none" onchange="handleFileLoad(event)">
+
+<script>
+// ─── State ──────────────────────────────────────────────────────────
+let originalHTML = '';
+let templateHTML = ''; // Stores the untouched DOM structure for compiling
+let fieldValues = {}; // Maps {tags} to typed values
+let undoStack = [];
+let redoStack = [];
+let currentZoom = 60;
+let selectedBlockIdx = -1;
+let certBlocks = [];
+
+// ─── Certificate List ───────────────────────────────────────────────
+const CERTS = [
+  {code:'AFS-FT', name:'Anti-Fouling System (Full Term)', file:'GRClass_AFS_FT_Certificate.html'},
+  {code:'AFS-ST', name:'Anti-Fouling System (Short Term)', file:'GRClass_AFS_ST_Certificate.html'},
+  {code:'BWM-ST', name:'Ballast Water Management (Short Term)', file:'GRClass_BWM_ST_Certificate.html'},
+  {code:'BPTC', name:'Bollard Pull Assessment', file:'GRClass_BPTC_Certificate.html'},
+  {code:'BS-FT', name:'Bottom Inspection (Full Term)', file:'GRClass_BS_FT_Certificate.html'},
+  {code:'BS-ST', name:'Bottom Inspection (Short Term)', file:'GRClass_BS_ST_Certificate.html'},
+  {code:'SAFCE-FT', name:'Cargo Ship Safety (Full Term)', file:'GRClass_SAFCE_FT_Certificate.html'},
+  {code:'SAFCE-ST', name:'Cargo Ship Safety (Short Term)', file:'GRClass_SAFCE_ST_Certificate.html'},
+  {code:'CCC-FT', name:'Cargo Ship Safety Construction (FT)', file:'GRClass_CCC_FT_Certificate.html'},
+  {code:'CCC-ST', name:'Cargo Ship Safety Construction (ST)', file:'GRClass_CCC_ST_Certificate.html'},
+  {code:'CEC-FT', name:'Cargo Ship Safety Equipment (FT)', file:'GRClass_CEC_FT_Certificate.html'},
+  {code:'CEC-ST', name:'Cargo Ship Safety Equipment (ST)', file:'GRClass_CEC_ST_Certificate.html'},
+  {code:'CRC-FT', name:'Cargo Ship Safety Radio (FT)', file:'GRClass_CRC_FT_Certificate.html'},
+  {code:'CRC-ST', name:'Cargo Ship Safety Radio (ST)', file:'GRClass_CRC_ST_Certificate.html'},
+  {code:'SARCE-FT', name:'Cargo Ship Safety Radiotelephony (FT)', file:'GRClass_SARCE_FT_Certificate.html'},
+  {code:'SARCE-ST', name:'Cargo Ship Safety Radiotelephony (ST)', file:'GRClass_SARCE_ST_Certificate.html'},
+  {code:'CCSSC-FT', name:'Caribbean Cargo Ship Safety (FT)', file:'GRClass_CCSSC_FT_Certificate.html'},
+  {code:'CCSSC-ST', name:'Caribbean Cargo Ship Safety (ST)', file:'GRClass_CCSSC_ST_Certificate.html'},
+  {code:'IMSBC-FT', name:'IMSBC Code Compliance (FT)', file:'GRClass_IMSBC_FT_Certificate.html'},
+  {code:'IMSBC-ST', name:'IMSBC Code Compliance (ST)', file:'GRClass_IMSBC_ST_Certificate.html'},
+  {code:'IBC-FT', name:'Fitness — Dangerous Chemicals (FT)', file:'GRClass_IBC_FT_Certificate.html'},
+  {code:'IBC-ST', name:'Fitness — Dangerous Chemicals (ST)', file:'GRClass_IBC_ST_Certificate.html'},
+  {code:'IGC-FT', name:'Fitness — Liquefied Gases (FT)', file:'GRClass_IGC_FT_Certificate.html'},
+  {code:'IGC-ST', name:'Fitness — Liquefied Gases (ST)', file:'GRClass_IGC_ST_Certificate.html'},
+  {code:'OMCA-FT', name:'Oil & Maritime Compliance (FT)', file:'GRClass_OMCA_FT_Certificate.html'},
+  {code:'OMCA-ST', name:'Oil & Maritime Compliance (ST)', file:'GRClass_OMCA_ST_Certificate.html'},
+  {code:'DOC-FT', name:'Document of Compliance ISM (FT)', file:'GRClass_DOC_FT_Certificate.html'},
+  {code:'DOC-ST', name:'Document of Compliance ISM (ST)', file:'GRClass_DOC_ST_Certificate.html'},
+  {code:'DS-FT', name:'Docking Survey (FT)', file:'GRClass_DS_FT_Certificate.html'},
+  {code:'GRALO-FT', name:'Auth. Carriage of Grain (FT)', file:'GRClass_GRALO_FT_Certificate.html'},
+  {code:'GRALO-ST', name:'Auth. Carriage of Grain (ST)', file:'GRClass_GRALO_ST_Certificate.html'},
+  {code:'CDG-FT', name:'Dangerous Goods Compliance (FT)', file:'GRClass_CDG_FT_Certificate.html'},
+  {code:'CDG-ST', name:'Dangerous Goods Compliance (ST)', file:'GRClass_CDG_ST_Certificate.html'},
+  {code:'EIAPP-FT', name:'Engine Int. Air Pollution (FT)', file:'GRClass_EIAPP_FT_Certificate.html'},
+  {code:'EIAPP-ST', name:'Engine Int. Air Pollution (ST)', file:'GRClass_EIAPP_ST_Certificate.html'},
+  {code:'FISVEL-FT', name:'Fishing Vessel Safety (FT)', file:'GRClass_FISVEL_FT_Certificate.html'},
+  {code:'FISVEL-ST', name:'Fishing Vessel Safety (ST)', file:'GRClass_FISVEL_ST_Certificate.html'},
+  {code:'GMC-FT', name:'Garbage Management (FT)', file:'GRClass_GMC_FT_Certificate.html'},
+  {code:'GMC-ST', name:'Garbage Management (ST)', file:'GRClass_GMC_ST_Certificate.html'},
+  {code:'HSC-FT', name:'High Speed Craft Safety (FT)', file:'GRClass_HSC_FT_Certificate.html'},
+  {code:'HSC-ST', name:'High Speed Craft Safety (ST)', file:'GRClass_HSC_ST_Certificate.html'},
+  {code:'IAPP-FT', name:'Air Pollution Prevention (FT)', file:'GRClass_IAPP_FT_Certificate.html'},
+  {code:'IAPP-ST', name:'Air Pollution Prevention (ST)', file:'GRClass_IAPP_ST_Certificate.html'},
+  {code:'BCH-FT', name:'BCH Dangerous Chemicals (FT)', file:'GRClass_BCH_FT_Certificate.html'},
+  {code:'BCH-ST', name:'BCH Dangerous Chemicals (ST)', file:'GRClass_BCH_ST_Certificate.html'},
+  {code:'IOPP-FT', name:'Oil Pollution Prevention (FT)', file:'GRClass_IOPP_FT_Certificate.html'},
+  {code:'IOPP-ST', name:'Oil Pollution Prevention (ST)', file:'GRClass_IOPP_ST_Certificate.html'},
+  {code:'NLS-FT', name:'Noxious Liquid Substances (FT)', file:'GRClass_NLS_FT_Certificate.html'},
+  {code:'NLS-ST', name:'Noxious Liquid Substances (ST)', file:'GRClass_NLS_ST_Certificate.html'},
+  {code:'ISPP-FT', name:'Sewage Pollution Prevention (FT)', file:'GRClass_ISPP_FT_Certificate.html'},
+  {code:'ISPP-ST', name:'Sewage Pollution Prevention (ST)', file:'GRClass_ISPP_ST_Certificate.html'},
+  {code:'ISSC-FT', name:'Ship Security (FT)', file:'GRClass_ISSC_FT_Certificate.html'},
+  {code:'ISSC-ST', name:'Ship Security (ST)', file:'GRClass_ISSC_ST_Certificate.html'},
+  {code:'LL-FT', name:'Load Line (FT)', file:'GRClass_LL_FT_Certificate.html'},
+  {code:'LL-ST', name:'Load Line (ST)', file:'GRClass_LL_ST_Certificate.html'},
+  {code:'MLC-FT', name:'Maritime Labour (FT)', file:'GRClass_MLC_FT_Certificate.html'},
+  {code:'MLC-ST', name:'Maritime Labour (ST)', file:'GRClass_MLC_ST_Certificate.html'},
+  {code:'MODU-FT', name:'MODU Safety (FT)', file:'GRClass_MODU_FT_Certificate.html'},
+  {code:'MODU-ST', name:'MODU Safety (ST)', file:'GRClass_MODU_ST_Certificate.html'},
+  {code:'TON-ST', name:'National Tonnage (ST)', file:'GRClass_TON_ST_Certificate.html'},
+  {code:'PLECE-FT', name:'Pleasure Craft Safety (FT)', file:'GRClass_PLECE_FT_Certificate.html'},
+  {code:'PLECE-ST', name:'Pleasure Craft Safety (ST)', file:'GRClass_PLECE_ST_Certificate.html'},
+  {code:'SWC-FT', name:'Sea Worthiness (FT)', file:'GRClass_SWC_FT_Certificate.html'},
+  {code:'SWC-ST', name:'Sea Worthiness (ST)', file:'GRClass_SWC_ST_Certificate.html'},
+  {code:'SMC-FT', name:'Safety Management (FT)', file:'GRClass_SMC_FT_Certificate.html'},
+  {code:'SMC-ST', name:'Safety Management (ST)', file:'GRClass_SMC_ST_Certificate.html'},
+  {code:'SPS-FT', name:'Special Purpose Ship (FT)', file:'GRClass_SPS_FT_Certificate.html'},
+  {code:'SPS-ST', name:'Special Purpose Ship (ST)', file:'GRClass_SPS_ST_Certificate.html'},
+  {code:'IHM-FT', name:'IHM Statement of Compliance (FT)', file:'GRClass_IHM_FT_Certificate.html'},
+  {code:'IHM-SOC-FT', name:'IHM SOC Nigeria (FT)', file:'GRClass_IHM_SOC_FT_Certificate.html'},
+];
+
+// ─── Init ───────────────────────────────────────────────────────────
+function init() {
+  renderCertList();
+  setZoom(60);
+  bindFieldInputs();
+}
+
+// ─── Certificate List ───────────────────────────────────────────────
+function renderCertList(filter = '') {
+  const list = document.getElementById('certList');
+  const lf = filter.toLowerCase();
+  list.innerHTML = CERTS.filter(c =>
+    !lf || c.code.toLowerCase().includes(lf) || c.name.toLowerCase().includes(lf)
+  ).map((c, i) => `
+    <div class="cert-list-item" data-file="${c.file}" onclick="loadCertFromList('${c.file}', this)">
+      <div class="cert-code">${c.code}</div>
+      <div class="cert-name">${c.name}</div>
+    </div>
+  `).join('');
+}
+function filterCerts(val) { renderCertList(val); }
+
+async function loadCertFromList(file, el) {
+  document.querySelectorAll('.cert-list-item').forEach(e => e.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const base = document.getElementById('baseUrlInput').value || './';
+  const url = base + file;
+  await loadCert(url);
+}
+
+// ─── Load Certificate ───────────────────────────────────────────────
+async function loadCert(url) {
+  showLoading('Loading ' + url.split('/').pop() + '...');
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    let html = await res.text();
+    loadHTML(html);
+    setStatus('Loaded: ' + url.split('/').pop());
+  } catch (e) {
+    setStatus('Error: ' + e.message);
+    alert('Failed to load: ' + e.message);
+  }
+  hideLoading();
+}
+
+function loadHTML(html) {
+  // Extract only the cert content (between <body> tags)
+  let bodyContent = html;
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  if (bodyMatch) bodyContent = bodyMatch[1];
+
+  // Extract styles
+  let styles = '';
+  const styleMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+  if (styleMatch) styles = styleMatch[1];
+
+  // Remove print button div from preview
+  bodyContent = bodyContent.replace(/<div class="no-print">[\s\S]*?<\/div>/i, '');
+
+  // Set preview
+  const frame = document.getElementById('previewFrame');
+  frame.innerHTML = `<style>${styles}</style>${bodyContent}`;
+
+  // Override preview-specific styles
+  const previewStyle = document.createElement('style');
+  previewStyle.textContent = `
+    html, body { background: transparent !important; padding: 0 !important; margin: 0 !important; }
+    .cert { margin: 0 !important; box-shadow: none !important; overflow: hidden !important; }
+    .cert::before, .cert::after { z-index: 0 !important; }
+  `;
+  frame.prepend(previewStyle);
+
+  originalHTML = html;
+  templateHTML = frame.innerHTML; // Store for compilation
+  fieldValues = {}; // Reset values
+  undoStack = [];
+  redoStack = [];
+  updateUndoButtons();
+
+  // Parse blocks
+  parseBlocks();
+  renderBlockList();
+
+  // Detect AFS/BWM fields
+  const hasAFS = html.includes('afs_option');
+  const hasBWM = html.includes('bwm_method');
+  document.getElementById('afs-fields').style.display = hasAFS ? '' : 'none';
+  document.getElementById('bwm-fields').style.display = hasBWM ? '' : 'none';
+
+  // Extract tag values from loaded HTML and populate fields
+  extractAndPopulateFields(html);
+
+  // Make certificate editable inline
+  makePreviewEditable();
+}
+
+function makePreviewEditable() {
+  const frame = document.getElementById('previewFrame');
+  const certEl = frame.querySelector('.cert');
+  if (certEl) {
+    certEl.setAttribute('contenteditable', 'true');
+    certEl.style.outline = 'none';
+    
+    // Sync manual inline edits back to the template so they aren't lost
+    certEl.addEventListener('input', () => {
+      templateHTML = frame.innerHTML;
+    });
+  }
+}
+
+// ─── Fields ─────────────────────────────────────────────────────────
+function bindFieldInputs() {
+  document.querySelectorAll('[data-tag]').forEach(input => {
+    input.addEventListener('input', (e) => {
+      // Store the value
+      fieldValues[e.target.dataset.tag] = e.target.value;
+      updatePreviewFromTemplate();
+    });
+  });
+}
+
+function updatePreviewFromTemplate() {
+  const frame = document.getElementById('previewFrame');
+  let compiled = templateHTML;
+  
+  // Replace all tracked values
+  for (const [tag, value] of Object.entries(fieldValues)) {
+    if (value) {
+      compiled = compiled.split(`{${tag}}`).join(value);
+    }
+  }
+  
+  frame.innerHTML = compiled;
+  
+  makePreviewEditable();
+  
+  // Need to re-bind block clicking since DOM changed
+  parseBlocks();
+  if (selectedBlockIdx >= 0 && certBlocks[selectedBlockIdx]) {
+    highlightBlockInPreview(certBlocks[selectedBlockIdx].el);
+  }
+}
+
+function extractAndPopulateFields(html) {
+  document.querySelectorAll('[data-tag]').forEach(input => {
+    const tag = input.dataset.tag;
+    const regex = new RegExp(`\\{${escapeRegex(tag)}\\}`, 'g');
+    // Check if the tag exists in HTML
+    if (regex.test(html)) {
+      input.value = '';
+      input.placeholder = `{${tag}}`;
+    }
+  });
+}
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// ─── Blocks ─────────────────────────────────────────────────────────
+function parseBlocks() {
+  certBlocks = [];
+  const frame = document.getElementById('previewFrame');
+  const cert = frame.querySelector('.cert');
+  if (!cert) return;
+
+  // Parse main sections
+  const sections = [
+    { selector: '.hdr', name: 'Header', icon: '🔷', type: 'header' },
+    { selector: '.authority', name: 'Authority Band', icon: '🏛', type: 'band' },
+    { selector: '.body', name: 'Certificate Body', icon: '📝', type: 'body' },
+    { selector: '.ftr', name: 'Footer / Signature', icon: '✒️', type: 'footer' },
+  ];
+
+  sections.forEach(s => {
+    const el = cert.querySelector(s.selector);
+    if (el) {
+      certBlocks.push({ ...s, el });
+    }
+  });
+
+  // Parse body sub-blocks
+  const body = cert.querySelector('.body');
+  if (body) {
+    body.querySelectorAll('.sec-label, .vtable, .mtable, .chk-list, .certify, .vgrid, .vgrid-2, .footnotes, .cert-desc').forEach(el => {
+      let name = 'Block';
+      let icon = '📋';
+      if (el.classList.contains('sec-label')) { name = 'Section: ' + el.textContent; icon = '📌'; }
+      else if (el.classList.contains('vtable')) { name = 'Vessel Table'; icon = '📊'; }
+      else if (el.classList.contains('mtable')) { name = 'Data Table'; icon = '📊'; }
+      else if (el.classList.contains('chk-list')) { name = 'Checkbox List'; icon = '☑️'; }
+      else if (el.classList.contains('certify')) { name = 'Certification Box'; icon = '📜'; }
+      else if (el.classList.contains('vgrid') || el.classList.contains('vgrid-2')) { name = 'Validity Grid'; icon = '📅'; }
+      else if (el.classList.contains('footnotes')) { name = 'Footnotes'; icon = '📎'; }
+      else if (el.classList.contains('cert-desc')) { name = 'Description'; icon = '📝'; }
+      certBlocks.push({ name, icon, type: 'sub', el });
+    });
+  }
+}
+
+function renderBlockList() {
+  const list = document.getElementById('blockList');
+  list.innerHTML = certBlocks.map((b, i) => `
+    <div class="block-item ${i === selectedBlockIdx ? 'selected' : ''}" onclick="selectBlock(${i})">
+      <div class="block-icon">${b.icon}</div>
+      <div class="block-info">
+        <div class="block-name">${b.name}</div>
+        <div class="block-type">${b.type}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectBlock(idx) {
+  selectedBlockIdx = idx;
+  renderBlockList();
+
+  // Highlight block in preview
+  certBlocks.forEach((b, i) => {
+    if (b.el) {
+      b.el.style.outline = i === idx ? '2px solid #3b82f6' : '';
+      b.el.style.outlineOffset = i === idx ? '2px' : '';
+    }
+  });
+
+  // Show edit panel
+  switchRightTab('edit');
+  renderBlockEditor(idx);
+}
+
+function renderBlockEditor(idx) {
+  const editor = document.getElementById('blockEditor');
+  if (idx < 0 || idx >= certBlocks.length) {
+    editor.innerHTML = '<div style="text-align:center;padding:40px 0;color:#71717a;">Select a block to edit</div>';
+    return;
+  }
+
+  const block = certBlocks[idx];
+  const el = block.el;
+  if (!el) return;
+
+  let html = `<div class="panel-title">${block.icon} ${block.name}</div>`;
+
+  // Inline content editing
+  if (block.type === 'sub' || block.type === 'band') {
+    html += `
+      <div class="field-group">
+        <div class="field-label">Content (HTML)</div>
+        <textarea class="field-input" style="min-height:120px;font-family:monospace;font-size:11px;" 
+          oninput="updateBlockContent(${idx}, this.value)">${escapeHTML(el.innerHTML.trim())}</textarea>
+      </div>`;
+  }
+
+  // Style controls for any block
+  const cs = getComputedStyle(el);
+  html += `
+    <div class="panel-section" style="margin-top:12px;">
+      <div class="panel-title">Spacing</div>
+      <div class="field-row">
+        <div class="field-group">
+          <div class="field-label">Padding (px)</div>
+          <input class="field-input" type="text" value="${cs.padding}" 
+            onchange="setBlockStyle(${idx}, 'padding', this.value)">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Margin (px)</div>
+          <input class="field-input" type="text" value="${cs.margin}"
+            onchange="setBlockStyle(${idx}, 'margin', this.value)">
+        </div>
+      </div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-title">Background</div>
+      <div class="field-group">
+        <div class="color-field">
+          <div class="color-swatch" style="background:${cs.backgroundColor};position:relative;">
+            <input type="color" value="${rgbToHex(cs.backgroundColor)}" 
+              onchange="setBlockStyle(${idx}, 'backgroundColor', this.value); this.parentElement.style.background=this.value;">
+          </div>
+          <input class="color-hex" value="${rgbToHex(cs.backgroundColor)}">
+        </div>
+      </div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-title">Font</div>
+      <div class="field-row">
+        <div class="field-group">
+          <div class="field-label">Size</div>
+          <input class="field-input" type="text" value="${cs.fontSize}"
+            onchange="setBlockStyle(${idx}, 'fontSize', this.value)">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Color</div>
+          <input type="color" value="${rgbToHex(cs.color)}" style="width:100%;height:28px;border:none;cursor:pointer;"
+            onchange="setBlockStyle(${idx}, 'color', this.value)">
+        </div>
+      </div>
+    </div>`;
+
+  // Table-specific controls
+  if (el.tagName === 'TABLE' || el.classList.contains('vtable') || el.classList.contains('mtable')) {
+    const rows = el.querySelectorAll('tr').length;
+    const cols = el.querySelector('tr') ? el.querySelector('tr').children.length : 0;
+    html += `
+      <div class="panel-section">
+        <div class="panel-title">Table Controls</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">${rows} rows × ${cols} columns</div>
+        <div class="te-controls">
+          <button class="btn btn-primary" onclick="addTableRow(${idx})" style="width:100%;justify-content:center;">+ Add Row</button>
+          <button class="btn" onclick="addTableCol(${idx})" style="width:100%;justify-content:center;">+ Add Column</button>
+          <button class="btn btn-danger" onclick="removeLastRow(${idx})" style="width:100%;justify-content:center;">− Remove Last Row</button>
+        </div>
+      </div>`;
+  }
+
+  // Block move/delete
+  html += `
+    <div class="panel-section" style="margin-top:16px;">
+      <div class="panel-title">Block Actions</div>
+      <div class="te-controls">
+        <button class="btn" onclick="moveBlock(${idx}, -1)" style="width:100%;justify-content:center;">↑ Move Up</button>
+        <button class="btn" onclick="moveBlock(${idx}, 1)" style="width:100%;justify-content:center;">↓ Move Down</button>
+        <button class="btn" onclick="duplicateBlock(${idx})" style="width:100%;justify-content:center;">⎘ Duplicate</button>
+        <button class="btn btn-danger" onclick="deleteBlock(${idx})" style="width:100%;justify-content:center;">✕ Delete Block</button>
+      </div>
+    </div>`;
+
+  editor.innerHTML = html;
+}
+
+function updateBlockContent(idx, htmlContent) {
+  pushUndo();
+  const block = certBlocks[idx];
+  if (block && block.el) {
+    block.el.innerHTML = htmlContent;
+  }
+}
+
+function setBlockStyle(idx, prop, val) {
+  pushUndo();
+  const block = certBlocks[idx];
+  if (block && block.el) {
+    block.el.style[prop] = val;
+  }
+}
+
+function addTableRow(idx) {
+  pushUndo();
+  const block = certBlocks[idx];
+  if (!block || !block.el) return;
+  const table = block.el.tagName === 'TABLE' ? block.el : block.el.querySelector('table');
+  if (!table) return;
+  const lastRow = table.querySelector('tr:last-child');
+  if (lastRow) {
+    const newRow = lastRow.cloneNode(true);
+    newRow.querySelectorAll('td, th').forEach(cell => {
+      cell.innerHTML = cell.tagName === 'TH' ? 'Header' : '<span class="val">&nbsp;</span>';
+    });
+    table.appendChild(newRow);
+    renderBlockEditor(idx);
+  }
+}
+
+function addTableCol(idx) {
+  pushUndo();
+  const block = certBlocks[idx];
+  if (!block || !block.el) return;
+  const table = block.el.tagName === 'TABLE' ? block.el : block.el.querySelector('table');
+  if (!table) return;
+  table.querySelectorAll('tr').forEach(row => {
+    const lastCell = row.querySelector('td:last-child, th:last-child');
+    if (lastCell) {
+      const newCell = lastCell.cloneNode(true);
+      newCell.innerHTML = lastCell.tagName === 'TH' ? 'Header' : '<span class="val">&nbsp;</span>';
+      row.appendChild(newCell);
+    }
+  });
+  renderBlockEditor(idx);
+}
+
+function removeLastRow(idx) {
+  pushUndo();
+  const block = certBlocks[idx];
+  if (!block || !block.el) return;
+  const table = block.el.tagName === 'TABLE' ? block.el : block.el.querySelector('table');
+  if (!table) return;
+  const rows = table.querySelectorAll('tr');
+  if (rows.length > 1) {
+    rows[rows.length - 1].remove();
+    renderBlockEditor(idx);
+  }
+}
+
+function moveBlock(idx, dir) {
+  pushUndo();
+  const block = certBlocks[idx];
+  if (!block || !block.el) return;
+  const parent = block.el.parentElement;
+  if (!parent) return;
+  if (dir === -1 && block.el.previousElementSibling) {
+    parent.insertBefore(block.el, block.el.previousElementSibling);
+  } else if (dir === 1 && block.el.nextElementSibling) {
+    parent.insertBefore(block.el.nextElementSibling, block.el);
+  }
+  parseBlocks();
+  selectedBlockIdx = certBlocks.findIndex(b => b.el === block.el);
+  renderBlockList();
+}
+
+function duplicateBlock(idx) {
+  pushUndo();
+  const block = certBlocks[idx];
+  if (!block || !block.el) return;
+  const clone = block.el.cloneNode(true);
+  block.el.parentElement.insertBefore(clone, block.el.nextSibling);
+  parseBlocks();
+  renderBlockList();
+}
+
+function deleteBlock(idx) {
+  if (!confirm('Delete this block?')) return;
+  pushUndo();
+  const block = certBlocks[idx];
+  if (!block || !block.el) return;
+  block.el.remove();
+  selectedBlockIdx = -1;
+  parseBlocks();
+  renderBlockList();
+  renderBlockEditor(-1);
+}
+
+function addCustomBlock() {
+  pushUndo();
+  const frame = document.getElementById('previewFrame');
+  const body = frame.querySelector('.body');
+  if (!body) return;
+  const div = document.createElement('div');
+  div.className = 'cert-desc';
+  div.textContent = 'New custom text block — click to edit';
+  div.style.padding = '8px 0';
+  body.appendChild(div);
+  parseBlocks();
+  renderBlockList();
+  selectBlock(certBlocks.length - 1);
+}
+
+function addTableBlock() {
+  pushUndo();
+  const frame = document.getElementById('previewFrame');
+  const body = frame.querySelector('.body');
+  if (!body) return;
+  const secLabel = document.createElement('div');
+  secLabel.className = 'sec-label';
+  secLabel.textContent = 'New Section';
+  body.appendChild(secLabel);
+
+  const table = document.createElement('table');
+  table.className = 'vtable';
+  table.innerHTML = `<tr><th>Column 1</th><th>Column 2</th></tr><tr><td><span class="val">&nbsp;</span></td><td><span class="val">&nbsp;</span></td></tr>`;
+  body.appendChild(table);
+  parseBlocks();
+  renderBlockList();
+  selectBlock(certBlocks.length - 1);
+}
+
+// ─── Style Controls ─────────────────────────────────────────────────
+function setCSSVar(varName, value) {
+  const frame = document.getElementById('previewFrame');
+  const cert = frame.querySelector('.cert');
+  if (cert) cert.style.setProperty(varName, value);
+}
+
+function setTableHeaderBg(value) {
+  const frame = document.getElementById('previewFrame');
+  frame.querySelectorAll('.vtable th').forEach(th => th.style.backgroundColor = value);
+}
+
+function setBodyFontSize(value) {
+  const frame = document.getElementById('previewFrame');
+  const cert = frame.querySelector('.cert');
+  if (cert) cert.style.fontSize = value + 'pt';
+}
+
+function setValueFontSize(value) {
+  const frame = document.getElementById('previewFrame');
+  frame.querySelectorAll('.val, .vc-val, .m-val').forEach(el => el.style.fontSize = value + 'pt');
+}
+
+// ─── Zoom ───────────────────────────────────────────────────────────
+function setZoom(val) {
+  currentZoom = parseInt(val);
+  const wrapper = document.getElementById('previewWrapper');
+  wrapper.style.transform = `scale(${currentZoom / 100})`;
+  document.getElementById('zoomLabel').textContent = currentZoom + '%';
+  document.querySelector('.zoom-slider').value = currentZoom;
+}
+function changeZoom(delta) { setZoom(Math.max(20, Math.min(150, currentZoom + delta))); }
+
+// ─── Undo / Redo ────────────────────────────────────────────────────
+function pushUndo() {
+  const frame = document.getElementById('previewFrame');
+  undoStack.push(frame.innerHTML);
+  if (undoStack.length > 50) undoStack.shift();
+  redoStack = [];
+  updateUndoButtons();
+}
+
+function undo() {
+  if (undoStack.length === 0) return;
+  const frame = document.getElementById('previewFrame');
+  redoStack.push(frame.innerHTML);
+  frame.innerHTML = undoStack.pop();
+  parseBlocks();
+  renderBlockList();
+  updateUndoButtons();
+}
+
+function redo() {
+  if (redoStack.length === 0) return;
+  const frame = document.getElementById('previewFrame');
+  undoStack.push(frame.innerHTML);
+  frame.innerHTML = redoStack.pop();
+  parseBlocks();
+  renderBlockList();
+  updateUndoButtons();
+}
+
+function updateUndoButtons() {
+  document.getElementById('btnUndo').disabled = undoStack.length === 0;
+  document.getElementById('btnRedo').disabled = redoStack.length === 0;
+}
+
+// ─── Export ─────────────────────────────────────────────────────────
+function exportHTML() {
+  const frame = document.getElementById('previewFrame');
+  // Remove any editor outlines
+  frame.querySelectorAll('[style*="outline"]').forEach(el => {
+    el.style.outline = '';
+    el.style.outlineOffset = '';
+  });
+
+  // Collect styles from frame
+  let styles = '';
+  frame.querySelectorAll('style').forEach(s => styles += s.textContent);
+
+  // Get cert content
+  const cert = frame.querySelector('.cert');
+  if (!cert) { alert('No certificate loaded'); return; }
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GR Class Certificate</title>
+<style>
+${styles}
+</style>
+</head>
+<body>
+
+<div class="no-print">
+  <button class="btn-print" onclick="window.print()">🖨&nbsp; Print / Save as PDF</button>
+  <span class="tag-hint">Tags like {tag} are replaced by software at generation time.</span>
+</div>
+
+${cert.outerHTML}
+
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'GRClass_Certificate_Edited.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  setStatus('Exported certificate HTML');
+}
+
+// ─── Modal ──────────────────────────────────────────────────────────
+function showLoadModal() { document.getElementById('urlModal').classList.remove('hidden'); }
+function hideLoadModal() { document.getElementById('urlModal').classList.add('hidden'); }
+
+async function loadFromURL() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) return;
+  hideLoadModal();
+  await loadCert(url);
+}
+
+function loadFromFile() {
+  document.getElementById('fileInput').click();
+}
+
+function handleFileLoad(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    loadHTML(reader.result);
+    setStatus('Loaded: ' + file.name);
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ─── Tab Switching ──────────────────────────────────────────────────
+function switchLeftTab(tab) {
+  document.querySelectorAll('.left-panel .tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.getElementById('tab-fields').style.display = tab === 'fields' ? '' : 'none';
+  document.getElementById('tab-certs').style.display = tab === 'certs' ? '' : 'none';
+  document.getElementById('tab-style').style.display = tab === 'style' ? '' : 'none';
+}
+
+function switchRightTab(tab) {
+  document.querySelectorAll('.right-panel .tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.getElementById('tab-blocks').style.display = tab === 'blocks' ? '' : 'none';
+  document.getElementById('tab-edit').style.display = tab === 'edit' ? '' : 'none';
+}
+
+// ─── Utilities ──────────────────────────────────────────────────────
+function showLoading(text) {
+  document.getElementById('loadingText').textContent = text || 'Loading...';
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+}
+function hideLoading() { document.getElementById('loadingOverlay').classList.add('hidden'); }
+
+function setStatus(text) { document.getElementById('statusText').textContent = text; }
+
+function rgbToHex(rgb) {
+  if (!rgb || rgb === 'transparent' || rgb === 'rgba(0, 0, 0, 0)') return '#ffffff';
+  const match = rgb.match(/\d+/g);
+  if (!match || match.length < 3) return '#ffffff';
+  return '#' + match.slice(0, 3).map(n => parseInt(n).toString(16).padStart(2, '0')).join('');
+}
+
+function escapeHTML(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ─── Keyboard Shortcuts ────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); }
+  if (e.ctrlKey && e.key === 'y') { e.preventDefault(); redo(); }
+  if (e.ctrlKey && e.key === 's') { e.preventDefault(); exportHTML(); }
+});
+
+// ─── Init ───────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

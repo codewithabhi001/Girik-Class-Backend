@@ -1,0 +1,104 @@
+
+
+SHORT TERM ANTI FOULING SYSTEM CERTIFICATE
+
+Issued under the provisions of the relevant international conventions, under the authority of the Government of
+
+THE MERCHANT MARINE
+
+By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)
+
+Certificate number
+
+{certificate_number}
+
+
+
+Name of ship
+
+Distinctive number or letters
+
+Port of registry
+
+Gross tonnage
+
+{vessel_name}
+
+{call_sign}
+
+{port_of_registry}
+
+{gross_tonnage}
+
+IMO number
+
+Ship type
+
+Net tonnage
+
+Deadweight
+
+{imo_number}
+
+{ship_type}
+
+{net_tonnage}
+
+{deadweight}
+
+
+
+[  ]  An anti-fouling system controlled under Annex 1 has not been applied during or after construction of this ship
+
+[  ]  An anti-fouling system controlled under Annex 1 has been applied on this ship previously, but has been removed by (NAME OF THE FACILITY) on (DD-MM-YYYY)
+
+[  ]  An anti-fouling system controlled under Annex 1 has been applied on this ship previously, but has been covered with a sealer coat applied by (NAME OF THE FACILITY) on (DD-MM-YYYY)
+
+[  ]  An anti-fouling system controlled under Annex 1 was applied on this ship prior to (DD-MM-YYYY) but must be removed or covered with a sealer coat prior to (DD-MM-YYYY)
+
+Name of the Facility
+
+Date of application
+
+Compliance deadline
+
+{facility_name}
+
+{facility_date}
+
+{compliance_deadline}
+
+
+
+THIS IS TO CERTIFY THAT:
+
+1. The ship has been surveyed in accordance with the applicable rules and regulations;
+2. The survey shows that the structure, equipment, and condition of the ship comply with the safety standards of GR CLASS.
+
+This certificate is valid until: {expiry_date}
+
+Completion date of the survey on which this certificate is based: {survey_completion_date}
+
+Issued at
+
+Date of issue
+
+{place_of_survey}
+
+{issue_date}
+
+
+
+
+
+Scan to Verify
+
+
+
+{surveyor_name}GR CLASS REPRESENTATIVE
+
+GR CLASS – CLASSIFIED FOR STANDARD (GR CLASS)
+E-mail: info@grclass.com Web: www.grclass.com
+
+Form AFSC-ST                                                              Approved by: GM                                                        Page 1 of 1
+

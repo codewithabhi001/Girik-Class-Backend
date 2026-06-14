@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GR Class – Bollard Pull Test Certificate</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --navy:    #0B2443;
+  --blue:    #005BAA;
+  --gold:    #B5891F;
+  --gold-lt: #D4A93A;
+  --cream:   #F9F6F0;
+  --light:   #EEF3F9;
+  --border:  #C8D8E8;
+  --rule:    #C4A84A;
+  --text:    #18181B;
+  --muted:   #52525B;
+  --span-lbl:#71717A;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { background: #8A8A8A; }
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 10pt;
+  color: var(--text);
+  background: #8A8A8A;
+  padding: 16px 0 40px;
+}
+
+/* ── PRINT BUTTON ── */
+.no-print {
+  width: 210mm;
+  margin: 0 auto 10px;
+  display: flex;
+  gap: 8px;
+}
+.btn-print {
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  font-size: 9pt;
+  font-weight: 600;
+  letter-spacing: .4px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.btn-print:hover { background: var(--blue); }
+
+/* ── CERTIFICATE PAGE ── */
+.cert {
+  width: 210mm;
+  min-height: 297mm;
+  background: #fff;
+  margin: 0 auto;
+  box-shadow: 0 8px 48px rgba(0,0,0,.35);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Outer decorative frame */
+.cert::before {
+  content: '';
+  position: absolute;
+  inset: 5mm;
+  border: 1px solid var(--rule);
+  pointer-events: none;
+  z-index: 5;
+}
+.cert::after {
+  content: '';
+  position: absolute;
+  inset: 7mm;
+  border: .4px solid rgba(196,168,74,.4);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ══════════════ HEADER ══════════════ */
+.hdr {
+  background: var(--navy);
+  padding: 0;
+  position: relative;
+  flex-shrink: 0;
+}
+.hdr-gold-top {
+  height: 4px;
+  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
+}
+.hdr-inner {
+  padding: 8mm 12mm 7mm;
+  display: grid;
+  grid-template-columns: 60px 1fr 110px;
+  gap: 15px;
+  align-items: center;
+}
+.hdr-gold-bottom {
+  height: 2.5px;
+  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
+}
+
+/* Logo */
+.logo {
+  width: 60px; height: 60px;
+  background: #fff;
+  border-radius: 2px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(196,168,74,.6);
+}
+.logo-gr {
+  font-family: 'EB Garamond', serif;
+  font-weight: 700;
+  font-size: 18pt;
+  color: var(--navy);
+  line-height: 1;
+  letter-spacing: 1px;
+}
+.logo-word {
+  font-size: 5.5pt;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* Centre Title */
+.hdr-title {}
+.hdr-eyebrow {
+  font-size: 7pt;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold-lt);
+  margin-bottom: 3px;
+}
+.hdr-certname {
+  font-family: 'EB Garamond', serif;
+  font-size: 15pt;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+.hdr-certname-es {
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 8.5pt;
+  font-style: italic;
+  font-weight: 400;
+  color: rgba(255,255,255,0.7);
+  margin-top: 2px;
+}
+
+/* Right Meta */
+.hdr-meta { text-align: right; }
+.hdr-meta-label {
+  font-size: 6pt;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--gold-lt);
+  display: block;
+}
+.hdr-meta-no {
+  font-family: 'EB Garamond', serif;
+  font-size: 14pt;
+  font-weight: 700;
+  color: #fff;
+  display: block;
+  line-height: 1.15;
+  letter-spacing: .5px;
+}
+.hdr-meta-form {
+  font-size: 6.5pt;
+  color: rgba(255,255,255,.35);
+  margin-top: 4px;
+}
+
+/* ══════════════ AUTHORITY BAND ══════════════ */
+.authority {
+  background: var(--light);
+  border-bottom: 1px solid var(--border);
+  padding: 3.5mm 12mm;
+  text-align: center;
+  font-size: 8.5pt;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.authority strong { color: var(--navy); font-weight: 700; }
+.auth-es { font-style: italic; font-size: 7.5pt; color: #71717A; display: block; margin-top: 1px; }
+
+/* ══════════════ BODY ══════════════ */
+.body { padding: 4mm 12mm 4mm; flex: 1; }
+
+/* Section label */
+.sec-label {
+  font-size: 6.5pt;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--blue);
+  padding-bottom: 2mm;
+  border-bottom: 1.5px solid var(--rule);
+  margin: 4mm 0 2.5mm;
+}
+.sec-label span { font-size: 5.5pt; font-weight: 500; font-style: italic; text-transform: none; letter-spacing: 0; color: var(--muted); margin-left: 5px; }
+
+/* ── VESSEL PARTICULARS TABLE ── */
+.vtable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8.5pt;
+  margin-bottom: 1mm;
+}
+.vtable th {
+  background: var(--navy);
+  color: var(--gold-lt);
+  font-size: 6.5pt;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border: 1px solid var(--navy);
+  text-align: left;
+}
+.vtable th span {
+  display: block;
+  font-size: 5.5pt;
+  font-weight: 400;
+  text-transform: none;
+  font-style: italic;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 0;
+}
+.vtable td {
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  vertical-align: middle;
+}
+.vtable .val {
+  font-family: 'EB Garamond', serif;
+  font-size: 11pt;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.2;
+}
+.vtable tr:nth-child(even) td { background: #FAFCFF; }
+
+/* ── RESULTS BOX ── */
+.certify {
+  border-left: 3.5px solid var(--gold);
+  background: var(--light);
+  padding: 6px 11px;
+  margin: 3mm 0;
+  font-size: 9pt;
+  line-height: 1.5;
+}
+.certify-title {
+  font-weight: 700;
+  color: var(--navy);
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.certify-title span {
+  display: block;
+  font-size: 7.5pt;
+  font-weight: 400;
+  text-transform: none;
+  font-style: italic;
+  color: var(--muted);
+  letter-spacing: 0;
+  margin-bottom: 4px;
+}
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 3mm;
+  margin-top: 2mm;
+}
+.res-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: center;
+}
+.res-lbl {
+  font-size: 7pt;
+  font-weight: 700;
+  color: var(--navy);
+  text-transform: uppercase;
+}
+.res-lbl-es {
+  display: block;
+  font-size: 6pt;
+  font-style: italic;
+  color: var(--span-lbl);
+  font-weight: 400;
+  text-transform: none;
+  margin-bottom: 2px;
+}
+.res-val {
+  font-family: 'EB Garamond', serif;
+  font-size: 14pt;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+/* ── EQUIPMENT & SUPPLIER TABLE ── */
+.eq-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8.5pt;
+  margin-top: 1mm;
+}
+.eq-table th {
+  background: var(--light);
+  color: var(--navy);
+  font-size: 7pt;
+  font-weight: 700;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  text-align: left;
+  text-transform: uppercase;
+}
+.eq-table th span {
+  display: block;
+  font-size: 6pt;
+  font-style: italic;
+  color: var(--muted);
+  text-transform: none;
+}
+.eq-table td {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-family: 'EB Garamond', serif;
+  font-size: 11pt;
+  font-weight: 600;
+}
+
+/* ── VALIDITY & DATES GRID ── */
+.vgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3mm;
+  margin: 3mm 0;
+}
+.vcell {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  background: #fff;
+}
+.vc-label {
+  font-size: 6.5pt;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: var(--navy);
+}
+.vc-label span {
+  display: block;
+  font-size: 5.5pt;
+  font-style: italic;
+  color: var(--span-lbl);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-bottom: 2px;
+}
+.vc-val {
+  font-family: 'EB Garamond', serif;
+  font-size: 12pt;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.2;
+}
+
+/* ── FOOTNOTES / NOTE BOX ── */
+.note-box {
+  background: #FAF8F5;
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  font-size: 7.5pt;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.note-box strong { color: var(--navy); }
+
+/* ══════════════ FOOTER ══════════════ */
+.ftr {
+  background: var(--navy);
+  flex-shrink: 0;
+  position: relative;
+}
+.ftr-gold-top {
+  height: 2.5px;
+  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
+}
+.ftr-inner {
+  padding: 5.5mm 12mm 6mm;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12mm;
+  align-items: end;
+}
+.sig-area { color: #fff; }
+.sig-line {
+  border-bottom: 1px solid rgba(255,255,255,.3);
+  height: 24px;
+  margin-bottom: 5px;
+  width: 180px;
+}
+.sig-label {
+  font-size: 6pt;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+  margin-bottom: 2px;
+}
+.sig-name {
+  font-family: 'EB Garamond', serif;
+  font-size: 11.5pt;
+  color: rgba(255,255,255,.9);
+  font-style: italic;
+  line-height: 1.2;
+}
+.ftr-contact {
+  text-align: right;
+  font-size: 7pt;
+  color: rgba(255,255,255,.45);
+  line-height: 1.8;
+}
+.ftr-contact strong {
+  display: block;
+  color: var(--gold-lt);
+  font-size: 8.5pt;
+  font-weight: 700;
+  letter-spacing: .5px;
+  margin-bottom: 2px;
+}
+.ftr-contact a { color: rgba(255,255,255,.55); text-decoration: none; }
+
+/* ══════════════ PRINT ══════════════ */
+@media print {
+  html, body { background: none; padding: 0; }
+  .no-print { display: none !important; }
+  .cert {
+    margin: 0;
+    box-shadow: none;
+    width: 210mm;
+    min-height: 297mm;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="no-print">
+  <button class="btn-print" onclick="window.print()">🖨&nbsp; Print / Save as PDF</button>
+</div>
+
+<div class="cert">
+
+  <div class="hdr">
+    <div class="hdr-gold-top"></div>
+    <div class="hdr-inner">
+
+      <div class="logo">
+        <span class="logo-gr">GR</span>
+        <span class="logo-word">Class</span>
+      </div>
+
+      <div class="hdr-title">
+        <div class="hdr-eyebrow">Technical Report</div>
+        <div class="hdr-certname">CERTIFICATE OF BOLLARD PULL TEST</div>
+        <div class="hdr-certname-es">CERTIFICADO DE PRUEBA DE TRACCIÓN A PUNTO FIJO</div>
+      </div>
+
+      <div class="hdr-meta">
+        <span class="hdr-meta-label">BPTC No.</span>
+        <span class="hdr-meta-no">GRC-BPT<br>2026-8812</span>
+        <div class="hdr-meta-form">Form BPTC-FT · Approved by: GM</div>
+      </div>
+
+    </div>
+    <div class="hdr-gold-bottom"></div>
+  </div>
+
+  <div class="authority">
+    Issued as per request of / <i>Emitido a pedido de:</i> <strong>THE OWNER</strong><br>
+    By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS)
+  </div>
+
+  <div class="body">
+
+    <div class="sec-label">Vessel Particulars <span>/ Detalles del Buque</span></div>
+    <table class="vtable">
+      <tr>
+        <th style="width:25%">Ship's Name <span>Nombre del barco</span></th>
+        <th style="width:25%">IMO Number <span>Número IMO</span></th>
+        <th style="width:25%">Call Sign <span>Distintivo de llamada</span></th>
+        <th style="width:25%">Port of Registry <span>Puerto de matrícula</span></th>
+      </tr>
+      <tr>
+        <td><span class="val">MV VALIDATOR</span></td>
+        <td><span class="val">IMO 9432185</span></td>
+        <td><span class="val">3E2451</span></td>
+        <td><span class="val">Panama City</span></td>
+      </tr>
+      <tr>
+        <th>Length (m) <span>Eslora (m)</span></th>
+        <th>Breadth (m) <span>Manga (m)</span></th>
+        <th>Depth (m) <span>Puntal (m)</span></th>
+        <th>Gross Tonnage <span>Tonelaje bruto</span></th>
+      </tr>
+      <tr>
+        <td><span class="val">32.50 m</span></td>
+        <td><span class="val">11.40 m</span></td>
+        <td><span class="val">5.20 m</span></td>
+        <td><span class="val">495 GT</span></td>
+      </tr>
+      <tr>
+        <th colspan="2">Name of Owner <span>Nombre de propietario</span></th>
+        <th colspan="1">Propulsion Engine <span>Motor de propulsión</span></th>
+        <th colspan="1">Rated Power <span>Potencia nominal</span></th>
+      </tr>
+      <tr>
+        <td colspan="2"><span class="val">PACIFIC SHIPPING LINES S.A.</span></td>
+        <td colspan="1"><span class="val">Wärtsilä 8L20</span></td>
+        <td colspan="1"><span class="val">1600 kW x 2</span></td>
+      </tr>
+      <tr>
+        <th colspan="4">Date of Built <span>Fecha de construcción</span></th>
+      </tr>
+      <tr>
+        <td colspan="4"><span class="val">14 October 2015</span></td>
+      </tr>
+    </table>
+
+    <div class="sec-label">Test Performance &amp; Results <span>/ Rendimiento y Resultados</span></div>
+    <div class="certify">
+      <div class="certify-title">
+        THIS IS TO CERTIFY THAT THE ABOVE-MENTIONED VESSEL ACHIEVED:
+        <span>Se certifica que, el buque antes mencionado logró:</span>
+      </div>
+      
+      <div class="results-grid">
+        <div class="res-card">
+          <div class="res-lbl">Steady Bollard Pull <span class="res-lbl-es">Tracción constante</span></div>
+          <div class="res-val">45.20 MT</div>
+        </div>
+        <div class="res-card">
+          <div class="res-lbl">Maximum Bollard Pull <span class="res-lbl-es">Tracción máxima</span></div>
+          <div class="res-val">48.50 MT</div>
+        </div>
+        <div class="res-card">
+          <div class="res-lbl">Average Bollard Pull <span class="res-lbl-es">Tracción promedio</span></div>
+          <div class="res-val">46.10 MT</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-label">Authorized Supplier &amp; Calibration <span>/ Proveedor y Calibración</span></div>
+    <table class="eq-table">
+      <tr>
+        <th style="width: 40%">Authorized Services Supplier <span>Proveedor de Servicios Autorizado</span></th>
+        <th style="width: 35%">Equipment Reference <span>Referencia de Equipo</span></th>
+        <th style="width: 25%">Last Calibration <span>Última calibración</span></th>
+      </tr>
+      <tr>
+        <td>GR Marine Testing Labs Pvt. Ltd.</td>
+        <td>Load Cell / Dynamometer - Model LC-500</td>
+        <td>18 January 2026</td>
+      </tr>
+    </table>
+
+    <div class="sec-label">Trial Metadata &amp; Execution <span>/ Ubicación y Fechas</span></div>
+    <div class="vgrid">
+      <div class="vcell">
+        <div class="vc-label">During bollard pull trial carried out at: <span>Durante la prueba llevada a cabo en (Place of issue)</span></div>
+        <div class="vc-val">Mumbai Port Trust, India</div>
+      </div>
+      <div class="vcell">
+        <div class="vc-label">Date of Issue <span>Fecha de emisión (DD-MM-YYYY)</span></div>
+        <div class="vc-val">12 June 2026</div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      During the Bollard Pull Test the necessary corrections were applied according to **Document ITS 2002, No. 5 Figure 1**.
+      <br>
+      <span style="font-style: italic; color: #71717A;">Durante la prueba de Bolardo se aplicaron las correcciones necesarias de acuerdo Documento ITS 2002, No. 5 Figura 1.</span>
+    </div>
+
+  </div><div class="ftr">
+    <div class="ftr-gold-top"></div>
+    <div class="ftr-inner">
+
+      <div class="sig-area">
+        <div class="sig-line"></div>
+        <div class="sig-label">GR CLASS REPRESENTATIVE</div>
+        <div class="sig-name">Capt. Rajesh Kumar Mehta</div>
+        <div style="font-size: 7.5pt; color: var(--gold-lt); font-weight: 600; margin-top: 1px;">Senior Surveyor &amp; Auditor</div>
+      </div>
+
+      <div class="ftr-contact">
+        <strong>GR CLASS</strong>
+        <a href="mailto:info@grclass.com">info@grclass.com</a><br>
+        <a href="https://www.grclass.com">www.grclass.com</a><br>
+        Classified for Standard (GR CLASS)<br>
+        Page 1 of 1
+      </div>
+
+    </div>
+  </div>
+
+</div></body>
+</html>
