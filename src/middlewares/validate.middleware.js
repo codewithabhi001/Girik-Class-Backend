@@ -603,6 +603,9 @@ export const schemas = {
         issue_date: Joi.date().iso().optional(),
         expiry_date: Joi.date().iso().optional(),
     }),
+    updateCertificateLayout: Joi.object({
+        custom_html: Joi.string().required(),
+    }),
     uploadExternalCertificate: Joi.alternatives().try(
         Joi.object({
             certificates: Joi.array().items(Joi.object({

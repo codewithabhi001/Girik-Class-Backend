@@ -353,105 +353,113 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
         const jobId = cert.job_id;
         const certificateNumber = cert.certificate_number;
         
-        // 1. Resolve logos and basic info
-        const grClassLogo = 'https://grclass.com/grclass-logo.webp';
-        let flagLogo = null;
-        if (cert.flag_administration_id || cert.FlagState) {
-            const flag = cert.FlagState || await db.FlagAdministration.findByPk(cert.flag_administration_id, { transaction });
-            if (flag?.logo_url) {
-                flagLogo = await fileAccessService.resolveUrl(flag.logo_url, user, true);
-            }
-        }
-        const issuingAuthority = cert.CertificateType?.issuing_authority === 'FLAG' ? (cert.FlagState?.flag_state_name || 'Flag Administration') : 'GR CLASS';
-        
-        // 2. Build dynamic tags
-        const dynamicTags = jobId ? await buildTagValuesForJob(jobId) : {};
-
-        const formatDate = (v) => {
-            if (!v) return '';
-            try {
-                const d = (v instanceof Date) ? v : new Date(v);
-                if (Number.isNaN(d.getTime())) return String(v);
-                return d.toISOString().slice(0, 10);
-            } catch {
-                return String(v);
-            }
-        };
-
-        const allDataSources = {
-            ...dynamicTags,
-            vessel_name: cert.Vessel?.vessel_name || '',
-            imo_number: cert.Vessel?.imo_number || '',
-            call_sign: cert.Vessel?.call_sign || '',
-            mmsi_number: cert.Vessel?.mmsi_number || '',
-            port_of_registry: cert.Vessel?.port_of_registry || '',
-            year_built: cert.Vessel?.year_built || '',
-            ship_type: cert.Vessel?.ship_type || '',
-            gross_tonnage: cert.Vessel?.gross_tonnage || '',
-            net_tonnage: cert.Vessel?.net_tonnage || '',
-            deadweight: cert.Vessel?.deadweight || '',
-            certificate_number: certificateNumber,
-            certificate_type: cert.CertificateType?.name || '',
-            issue_date: formatDate(cert.issue_date),
-            expiry_date: formatDate(cert.expiry_date),
-            survey_completion_date: dynamicTags.survey_completed_date || formatDate(cert.issue_date),
-            certificate_term: cert.certificate_term || '',
-            issuing_authority: issuingAuthority,
-            flag_state: cert.FlagState?.flag_state_name || '',
-            port: dynamicTags.place_of_survey || '',
-            place: dynamicTags.place_of_survey || '',
-            surveyor_name: dynamicTags.surveyor_name || '',
-            gr_class_logo: grClassLogo,
-            flag_logo: flagLogo
-        };
-
-        // 3. Fetch Template
-        if (cert.certificate_term) {
-            // Attempt to find a template matching the specified term
-            template = await db.CertificateTemplate.findOne({
-                where: {
-                    certificate_type_id: cert.certificate_type_id,
-                    is_active: true,
-                    certificate_term: cert.certificate_term,
-                },
-                order: [['createdAt', 'DESC']],
-                transaction,
-            });
-            
-            if (!template) {
-                throw { statusCode: 400, message: `No active certificate template found for term ${cert.certificate_term}` };
-            }
+        let finalHtml;
+        if (cert.custom_html) {
+            finalHtml = cert.custom_html;
         } else {
-            // No term specified; attempt to find a template without a term (default template)
-            template = await db.CertificateTemplate.findOne({
-                where: {
-                    certificate_type_id: cert.certificate_type_id,
-                    is_active: true,
-                    certificate_term: null,
-                },
-                order: [['createdAt', 'DESC']],
-                transaction,
-            });
-            
-            if (!template) {
-                throw { statusCode: 400, message: 'No active default certificate template found' };
+            // 1. Resolve logos and basic info
+            const grClassLogo = 'https://grclass.com/grclass-logo.webp';
+            let flagLogo = null;
+            if (cert.flag_administration_id || cert.FlagState) {
+                const flag = cert.FlagState || await db.FlagAdministration.findByPk(cert.flag_administration_id, { transaction });
+                if (flag?.logo_url) {
+                    flagLogo = await fileAccessService.resolveUrl(flag.logo_url, user, true);
+                }
             }
+            const issuingAuthority = cert.CertificateType?.issuing_authority === 'FLAG' ? (cert.FlagState?.flag_state_name || 'Flag Administration') : 'GR CLASS';
+            
+            // 2. Build dynamic tags
+            const dynamicTags = jobId ? await buildTagValuesForJob(jobId) : {};
+
+            const formatDate = (v) => {
+                if (!v) return '';
+                try {
+                    const d = (v instanceof Date) ? v : new Date(v);
+                    if (Number.isNaN(d.getTime())) return String(v);
+                    return d.toISOString().slice(0, 10);
+                } catch {
+                    return String(v);
+                }
+            };
+
+            const allDataSources = {
+                ...dynamicTags,
+                vessel_name: cert.Vessel?.vessel_name || '',
+                imo_number: cert.Vessel?.imo_number || '',
+                call_sign: cert.Vessel?.call_sign || '',
+                mmsi_number: cert.Vessel?.mmsi_number || '',
+                port_of_registry: cert.Vessel?.port_of_registry || '',
+                year_built: cert.Vessel?.year_built || '',
+                ship_type: cert.Vessel?.ship_type || '',
+                gross_tonnage: cert.Vessel?.gross_tonnage || '',
+                net_tonnage: cert.Vessel?.net_tonnage || '',
+                deadweight: cert.Vessel?.deadweight || '',
+                certificate_number: certificateNumber,
+                certificate_type: cert.CertificateType?.name || '',
+                issue_date: formatDate(cert.issue_date),
+                expiry_date: formatDate(cert.expiry_date),
+                survey_completion_date: dynamicTags.survey_completed_date || formatDate(cert.issue_date),
+                certificate_term: cert.certificate_term || '',
+                issuing_authority: issuingAuthority,
+                flag_state: cert.FlagState?.flag_state_name || '',
+                port: dynamicTags.place_of_survey || '',
+                place: dynamicTags.place_of_survey || '',
+                surveyor_name: dynamicTags.surveyor_name || '',
+                gr_class_logo: grClassLogo,
+                flag_logo: flagLogo
+            };
+
+            // 3. Fetch Template
+            if (cert.certificate_term) {
+                // Attempt to find a template matching the specified term
+                template = await db.CertificateTemplate.findOne({
+                    where: {
+                        certificate_type_id: cert.certificate_type_id,
+                        is_active: true,
+                        certificate_term: cert.certificate_term,
+                    },
+                    order: [['createdAt', 'DESC']],
+                    transaction,
+                });
+                
+                if (!template) {
+                    throw { statusCode: 400, message: `No active certificate template found for term ${cert.certificate_term}` };
+                }
+            } else {
+                // No term specified; attempt to find a template without a term (default template)
+                template = await db.CertificateTemplate.findOne({
+                    where: {
+                        certificate_type_id: cert.certificate_type_id,
+                        is_active: true,
+                        certificate_term: null,
+                    },
+                    order: [['createdAt', 'DESC']],
+                    transaction,
+                });
+                
+                if (!template) {
+                    throw { statusCode: 400, message: 'No active default certificate template found' };
+                }
+            }
+
+            if (!template?.template_content) {
+                logger.warn('No valid template content found for certificate', { certId: cert.id });
+                throw { statusCode: 400, message: 'No valid template content found for this certificate.' };
+            }
+
+            const verificationUrl = `${env.publicApiBaseUrl}/api/v1/public/certificate/verify/${certificateNumber}`;
+            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { width: 120, margin: 1 });
+            
+            allDataSources.qr_code = `<img src="${qrDataUrl}" style="width:120px;height:120px;" alt="QR Code"/>`;
+            allDataSources.qr_data_url = qrDataUrl;
+            allDataSources.qr_code_url = qrDataUrl;
+
+            const filledHtml = certificatePdfService.fillTemplate(template.template_content, allDataSources);
+            finalHtml = filledHtml.includes('<html') ? filledHtml : certificatePdfService.wrapHtmlForPdf(filledHtml);
+            
+            // Save compiled HTML to db
+            await cert.update({ custom_html: finalHtml }, { transaction });
         }
-
-        if (!template?.template_content) {
-            logger.warn('No valid template content found for certificate', { certId: cert.id });
-            throw { statusCode: 400, message: 'No valid template content found for this certificate.' };
-        }
-
-        const verificationUrl = `${env.publicApiBaseUrl}/api/v1/public/certificate/verify/${certificateNumber}`;
-        const qrDataUrl = await QRCode.toDataURL(verificationUrl, { width: 120, margin: 1 });
-        
-        allDataSources.qr_code = `<img src="${qrDataUrl}" style="width:120px;height:120px;" alt="QR Code"/>`;
-        allDataSources.qr_data_url = qrDataUrl;
-        allDataSources.qr_code_url = qrDataUrl;
-
-        const filledHtml = certificatePdfService.fillTemplate(template.template_content, allDataSources);
-        const finalHtml = filledHtml.includes('<html') ? filledHtml : certificatePdfService.wrapHtmlForPdf(filledHtml);
 
         const pdfBuffer = await certificatePdfService.htmlToPdfBuffer(finalHtml);
         const fileUrl = await s3Service.uploadFile(
@@ -1020,7 +1028,8 @@ export const updateDraft = async (id, data, user) => {
         certificate_term,
         remarks,
         issue_date,
-        expiry_date
+        expiry_date,
+        ...(certificate_term && certificate_term !== cert.certificate_term ? { custom_html: null } : {})
     });
 
     await db.CertificateHistory.create({
@@ -1032,6 +1041,52 @@ export const updateDraft = async (id, data, user) => {
     });
 
     // Regenerate PDF file on draft update
+    const freshCert = await Certificate.findByPk(cert.id, {
+        useMaster: true,
+        include: [
+            { model: db.Vessel },
+            { model: db.CertificateType },
+            { model: db.FlagAdministration, as: 'FlagState' }
+        ]
+    });
+    await _generateCertificateFile(freshCert, user);
+
+    const finalCert = await Certificate.findByPk(cert.id, {
+        useMaster: true,
+        include: [
+            { model: db.Vessel, attributes: ['vessel_name', 'imo_number'] },
+            { model: db.CertificateType, attributes: ['name'] }
+        ]
+    });
+    if (finalCert && finalCert.pdf_file_url) {
+        const key = fileAccessService.getKeyFromUrl(finalCert.pdf_file_url);
+        const signedUrl = await fileAccessService.generateSignedUrl(key, 3600, user);
+        finalCert.setDataValue('pdf_url', signedUrl);
+    }
+
+    return finalCert;
+};
+
+export const updateDraftLayout = async (id, data, user) => {
+    const cert = await Certificate.findByPk(id, { useMaster: true });
+    if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
+    if (cert.status !== 'DRAFT') throw { statusCode: 400, message: 'Only draft certificates can be updated' };
+
+    const { custom_html } = data;
+    
+    await cert.update({
+        custom_html
+    });
+
+    await db.CertificateHistory.create({
+        certificate_id: cert.id,
+        status: cert.status,
+        changed_by_user_id: user.id,
+        change_reason: 'Draft layout visually edited',
+        changed_at: new Date()
+    });
+
+    // Regenerate PDF file on draft layout update
     const freshCert = await Certificate.findByPk(cert.id, {
         useMaster: true,
         include: [

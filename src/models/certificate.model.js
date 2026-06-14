@@ -46,6 +46,11 @@ export default (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             comment: 'S3 key for system generated certificates'
         },
+        custom_html: {
+            type: DataTypes.TEXT('long'),
+            allowNull: true,
+            comment: 'Custom HTML content after manual updates/compilation'
+        },
         issued_at: DataTypes.DATE,
         issued_by_user_id: DataTypes.UUID,
     }, {

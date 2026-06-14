@@ -90,6 +90,13 @@ export const updateDraft = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
+export const updateDraftLayout = async (req, res, next) => {
+    try {
+        const result = await certService.updateDraftLayout(req.params.id, req.body, req.user);
+        res.json({ success: true, message: 'Draft layout updated successfully', data: result });
+    } catch (error) { next(error); }
+};
+
 export const issueCertificate = async (req, res, next) => {
     try {
         if (req.body && Object.keys(req.body).length > 0) {

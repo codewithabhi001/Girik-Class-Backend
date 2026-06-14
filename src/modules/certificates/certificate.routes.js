@@ -46,6 +46,7 @@ router.post('/', authorizeRoles('ADMIN', 'GM'), certController.generateCertifica
 
 // Update draft details
 router.put('/:id', authorizeRoles('ADMIN', 'GM'), validate(schemas.updateCertificateDraft), certController.updateDraft);
+router.put('/:id/layout', authorizeRoles('ADMIN', 'GM'), validate(schemas.updateCertificateLayout), certController.updateDraftLayout);
 
 // Issue certificate (Status -> ISSUED, Generate PDF)
 router.post('/:id/issue', authorizeRoles('ADMIN', 'GM'), validate(schemas.updateCertificateDraft), certController.issueCertificate);
