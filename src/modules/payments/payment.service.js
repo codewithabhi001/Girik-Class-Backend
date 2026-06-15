@@ -588,7 +588,17 @@ export const generateInvoicePdf = async (paymentId) => {
     const options = { day: 'numeric', month: 'long', year: 'numeric' };
     const invoiceDate = createdDate.toLocaleDateString('en-US', options);
 
-    // Dynamic bank details
+    // Read signature image and convert to Base64
+    const signImgPath = path.join(__dirname, 'Gr-class-sign.png');
+    let signImgBase64 = '';
+    try {
+        const buffer = await fs.readFile(signImgPath);
+        signImgBase64 = `data:image/png;base64,${buffer.toString('base64')}`;
+    } catch (err) {
+        logger.error('Error reading signature image:', err);
+    }
+
+    // Dynamic bank details (empty bank details as requested by user)
     const replacements = {
         invoice_number: payment.invoice_number,
         invoice_date: invoiceDate,
@@ -605,11 +615,13 @@ export const generateInvoicePdf = async (paymentId) => {
         total_eur: totalEur,
         say_amount: sayAmount,
         client_company: clientCompany,
-        bank_name: 'STATE BANK OF INDIA',
-        bank_branch: 'Vasai Road Branch',
-        bank_swift: 'SBININBBXXX',
-        iban_usd: 'IN12SBIN00001234567890',
-        iban_eur: 'IN12SBIN00009876543210',
+        bank_name: '',
+        bank_branch: '',
+        bank_swift: '',
+        iban_usd: '',
+        iban_eur: '',
+        signature_img: signImgBase64,
+        signature_display: signImgBase64 ? 'block' : 'none',
     };
 
     // Replace placeholders in HTML template
