@@ -8,6 +8,7 @@ export default (sequelize, DataTypes) => {
         payment_status: { type: DataTypes.ENUM('UNPAID', 'PARTIALLY_PAID', 'PAID', 'ON_HOLD'), defaultValue: 'UNPAID' },
         payment_date: DataTypes.DATE,
         verified_by_user_id: DataTypes.UUID,
+        reason: DataTypes.TEXT,
     }, {
         tableName: 'payments',
         underscored: true,

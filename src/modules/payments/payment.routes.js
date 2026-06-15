@@ -36,6 +36,9 @@ router.post('/:id/partial', authorizeRoles('ADMIN', 'GM'), paymentController.rec
 // Financial Compliance / Ledger
 router.get('/:id/ledger', authorizeRoles('CLIENT', 'ADMIN', 'GM'), paymentController.getLedger);
 
+// Download Invoice PDF
+router.get('/:id/pdf', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), paymentController.downloadInvoicePdf);
+
 // Write off
 router.post('/writeoff', authorizeRoles('ADMIN'), paymentController.writeOff);
 

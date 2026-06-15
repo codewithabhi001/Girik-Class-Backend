@@ -90,3 +90,12 @@ export const recordPartial = async (req, res, next) => {
         res.json({ success: true, data: resolved });
     } catch (e) { next(e); }
 };
+
+export const downloadInvoicePdf = async (req, res, next) => {
+    try {
+        const pdfBuffer = await paymentService.generateInvoicePdf(req.params.id);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="invoice-${req.params.id}.pdf"`);
+        res.send(pdfBuffer);
+    } catch (e) { next(e); }
+};

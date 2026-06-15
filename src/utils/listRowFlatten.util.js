@@ -121,6 +121,7 @@ export const flatPaymentListRow = (row) => {
         client_id: na(p.JobRequest?.Vessel?.client_id),
         company_name: na(p.JobRequest?.Vessel?.Client?.company_name),
         job_status: na(p.JobRequest?.job_status),
+        reason: na(p.reason),
     };
 };
 
