@@ -27,6 +27,9 @@ router.post('/invoice', authorizeRoles('ADMIN', 'GM'), paymentController.createI
 // Mark an invoice as paid
 router.put('/:id/pay', authorizeRoles('ADMIN', 'GM'), upload.single('receipt'), paymentController.markPaid);
 
+// Associate standalone payment with a job request
+router.put('/:id/associate-job', authorizeRoles('ADMIN', 'GM'), paymentController.associateJob);
+
 // Process Refund
 router.post('/:id/refund', authorizeRoles('ADMIN', 'GM'), paymentController.refund);
 

@@ -780,3 +780,64 @@ export const processRefund = async (paymentId, amount, reason, userId) => {
         throw e;
     }
 };
+
+export const associateJob = async (paymentId, jobId, userId) => {
+    const txn = await db.sequelize.transaction();
+    try {
+        const payment = await Payment.findByPk(paymentId, { transaction: txn, lock: txn.LOCK.UPDATE });
+        if (!payment) throw { statusCode: 404, message: 'Payment record not found' };
+
+        if (payment.job_id) {
+            throw { statusCode: 400, message: 'Payment is already associated with a job.' };
+        }
+
+        const job = await JobRequest.findByPk(jobId, { transaction: txn });
+        if (!job) throw { statusCode: 404, message: 'Job not found' };
+
+        if (job.job_status === 'REJECTED') {
+            throw { statusCode: 400, message: `Cannot associate payment: Job is in a rejected state (${job.job_status}).` };
+        }
+
+        const existing = await Payment.findOne({
+            where: { job_id: jobId, payment_status: ['UNPAID', 'PARTIALLY_PAID', 'PAID'] },
+            transaction: txn
+        });
+        if (existing) {
+            throw { statusCode: 409, message: 'An invoice already exists for this job.' };
+        }
+
+        const oldJobId = payment.job_id;
+
+        await payment.update({
+            job_id: jobId
+        }, { transaction: txn });
+
+        await FinancialLedger.update({
+            job_id: jobId
+        }, {
+            where: { invoice_id: paymentId },
+            transaction: txn
+        });
+
+        await AuditLog.create({
+            user_id: userId,
+            action: 'ASSOCIATE_PAYMENT_JOB',
+            entity_name: 'Payment',
+            entity_id: payment.id,
+            old_values: { job_id: oldJobId },
+            new_values: { job_id: jobId }
+        }, { transaction: txn });
+
+        await txn.commit();
+
+        logger.info({ entity: 'PAYMENT', event: 'ASSOCIATED_JOB', jobId, paymentId, triggeredBy: userId });
+
+        const ledgers = await FinancialLedger.findAll({ where: { invoice_id: paymentId }, order: [['createdAt', 'ASC']] });
+        const plain = enrichPaymentWithLedger(payment.get({ plain: true }), ledgers);
+        plain.ledgers = formatLedgerRows(ledgers);
+        return plain;
+    } catch (e) {
+        await txn.rollback();
+        throw e;
+    }
+};

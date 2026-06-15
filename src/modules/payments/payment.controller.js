@@ -99,3 +99,12 @@ export const downloadInvoicePdf = async (req, res, next) => {
         res.send(pdfBuffer);
     } catch (e) { next(e); }
 };
+
+export const associateJob = async (req, res, next) => {
+    try {
+        const { jobId } = req.body;
+        if (!jobId) throw { statusCode: 400, message: 'jobId is required.' };
+        const result = await paymentService.associateJob(req.params.id, jobId, req.user.id);
+        res.json({ success: true, data: result });
+    } catch (e) { next(e); }
+};

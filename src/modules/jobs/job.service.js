@@ -371,13 +371,28 @@ export const surveyorCanAccessJob = async (jobId, userId) => {
 };
 
 export const getJobs = async (query, scopeFilters = {}, userRole = null, user = null) => {
-    const { page = 1, limit = 10, status, created_from, created_to, recent_days, search, ...rest } = query;
+    const { page = 1, limit = 10, status, created_from, created_to, recent_days, search, without_payment, ...rest } = query;
 
     const whereClause = {};
     Object.entries(scopeFilters || {}).forEach(([k, v]) => {
         whereClause[k] = Array.isArray(v) ? { [Op.in]: v } : v;
     });
     await applySurveyorScope(whereClause, user);
+
+    if (without_payment === 'true') {
+        const jobsWithPayments = await Payment.findAll({
+            attributes: ['job_id'],
+            where: {
+                job_id: { [Op.ne]: null }
+            },
+            raw: true,
+            useReplica: true
+        });
+        const jobIdsWithPayments = jobsWithPayments.map(p => p.job_id).filter(Boolean);
+        if (jobIdsWithPayments.length > 0) {
+            whereClause.id = { [Op.notIn]: jobIdsWithPayments };
+        }
+    }
 
     const statuses = parseCsvOrSingle(status);
     if (statuses.length === 1) whereClause.job_status = statuses[0];
