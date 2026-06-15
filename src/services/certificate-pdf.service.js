@@ -14,17 +14,65 @@ const FORMAT_DATE = (d) => {
  * Replace {{variable}} placeholders in template content with values from data.
  * @param {string} templateContent - HTML string with {{var}} placeholders
  * @param {Record<string, string|number|Date>} data - key-value for replacement
+ * @param {string[]} wrapFields - fields to wrap in dynamic spans for sync
  * @returns {string} Filled HTML
  */
-export const fillTemplate = (templateContent, data) => {
+export const fillTemplate = (templateContent, data, wrapFields = ['certificate_number', 'issue_date', 'expiry_date', 'flag_state'], imageFields = ['flag_logo']) => {
     if (!templateContent || typeof templateContent !== 'string') return '';
     let out = templateContent;
     for (const [key, value] of Object.entries(data)) {
         const placeholder = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}|\\{\\s*${key}\\s*\\}`, 'g');
-        const str = value instanceof Date ? FORMAT_DATE(value) : String(value ?? '');
+        let str = value instanceof Date ? FORMAT_DATE(value) : String(value ?? '');
+        if (wrapFields && wrapFields.includes(key)) {
+            str = `<span class="cert-field" data-field="${key}">${str}</span>`;
+        } else if (imageFields && imageFields.includes(key) && str) {
+            str = `${str}" data-img-field="${key}`;
+        }
         out = out.replace(placeholder, str);
     }
     return out;
+};
+
+/**
+ * Extracts data-field tag values from HTML.
+ * @param {string} html
+ * @returns {Record<string, string>}
+ */
+export const extractFieldsFromHtml = (html) => {
+    if (!html || typeof html !== 'string') return {};
+    const fields = {};
+    const regex = /<[^>]*data-field=["']([^"']+)["'][^>]*>([\s\S]*?)<\/[^>]+>/g;
+    let match;
+    while ((match = regex.exec(html)) !== null) {
+        fields[match[1]] = match[2].replace(/<[^>]*>/g, '').trim();
+    }
+    return fields;
+};
+
+/**
+ * Updates data-field tag contents inside HTML string.
+ * @param {string} html
+ * @param {Record<string, string>} data
+ * @returns {string}
+ */
+export const updateFieldsInHtml = (html, data) => {
+    if (!html || typeof html !== 'string') return html;
+    let updatedHtml = html;
+    for (const [key, value] of Object.entries(data)) {
+        const formattedValue = value instanceof Date ? FORMAT_DATE(value) : String(value ?? '');
+        
+        // 1. Update text fields inside data-field spans
+        const spanRegex = new RegExp(`(<([^\\s>]+)[^>]*data-field=["']${key}["'][^>]*>)([\\s\\S]*?)(<\\/\\2>)`, 'g');
+        updatedHtml = updatedHtml.replace(spanRegex, `$1${formattedValue}$4`);
+
+        // 2. Update image fields inside src of tags with data-img-field
+        const imgRegex = new RegExp(`(<img[^>]*src=["'])([^"']*)(["'][^>]*data-img-field=["']${key}["'][^>]*>)`, 'g');
+        updatedHtml = updatedHtml.replace(imgRegex, `$1${formattedValue}$3`);
+        
+        const imgRegex2 = new RegExp(`(<img[^>]*data-img-field=["']${key}["'][^>]*src=["'])([^"']*)(["'][^>]*>)`, 'g');
+        updatedHtml = updatedHtml.replace(imgRegex2, `$1${formattedValue}$3`);
+    }
+    return updatedHtml;
 };
 
 /**

@@ -355,7 +355,27 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
         
         let finalHtml;
         if (cert.custom_html) {
-            finalHtml = cert.custom_html;
+            let flagStateName = '';
+            let flagLogo = null;
+            if (cert.flag_administration_id || cert.FlagState) {
+                const flag = cert.FlagState || await db.FlagAdministration.findByPk(cert.flag_administration_id, { transaction });
+                if (flag) {
+                    flagStateName = flag.flag_state_name || '';
+                    if (flag.logo_url) {
+                        flagLogo = await fileAccessService.resolveUrl(flag.logo_url, user, true);
+                    }
+                }
+            }
+            finalHtml = certificatePdfService.updateFieldsInHtml(cert.custom_html, {
+                certificate_number: certificateNumber,
+                issue_date: cert.issue_date,
+                expiry_date: cert.expiry_date,
+                flag_state: flagStateName,
+                flag_logo: flagLogo
+            });
+            if (finalHtml !== cert.custom_html) {
+                await cert.update({ custom_html: finalHtml }, { transaction });
+            }
         } else {
             // 1. Resolve logos and basic info
             const grClassLogo = 'https://grclass.com/grclass-logo.webp';
@@ -566,7 +586,14 @@ export const generateCertificate = async (data, user) => {
                     message: `Certificate can only be generated after the job request has been approved by a General Manager.`
                 };
             }
-            allowedStatuses = ['DOCUMENT_VERIFIED', 'SURVEY_DONE', 'REWORK_REQUESTED'];
+            const requiredDocsCount = await db.CertificateRequiredDocument.count({
+                where: { certificate_type_id: certTypeId },
+                transaction
+            });
+            const needsVerification = requiredDocsCount > 0;
+            allowedStatuses = needsVerification
+                ? ['DOCUMENT_VERIFIED', 'SURVEY_DONE', 'REWORK_REQUESTED']
+                : ['PENDING', 'DOCUMENT_VERIFIED', 'SURVEY_DONE', 'REWORK_REQUESTED'];
         }
 
         if (!allowedStatuses.includes(targetStatus)) {
@@ -915,7 +942,12 @@ export const getCertificateById = async (id, user) => {
     const scopeWhere = await getCertificateScopeFilter(user);
     const cert = await Certificate.findOne({
         where: { id, ...scopeWhere },
-        include: [{ model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }, { model: db.CertificateType, attributes: ['name'] }],
+        include: [
+            { model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }, 
+            { model: db.CertificateType, attributes: ['name'] },
+            { model: db.JobRequest, attributes: ['id', 'job_request_number'] },
+            { model: db.FlagAdministration, as: 'FlagState', attributes: ['id', 'flag_state_name', 'logo_url'] }
+        ],
     });
     if (cert) {
         if (cert.pdf_file_url) {
@@ -1023,12 +1055,36 @@ export const updateDraft = async (id, data, user) => {
         await verifyTemplateExists(cert.certificate_type_id, certificate_term);
     }
     
+    let updatedHtml = cert.custom_html;
+    if (updatedHtml) {
+        const updates = {};
+        if (issue_date !== undefined) updates.issue_date = issue_date;
+        if (expiry_date !== undefined) updates.expiry_date = expiry_date;
+        if (flag_administration_id !== undefined) {
+            let flagStateName = '';
+            let flagLogo = null;
+            if (flag_administration_id) {
+                const flag = await db.FlagAdministration.findByPk(flag_administration_id);
+                if (flag) {
+                    flagStateName = flag.flag_state_name || '';
+                    if (flag.logo_url) {
+                        flagLogo = await fileAccessService.resolveUrl(flag.logo_url, user, true);
+                    }
+                }
+            }
+            updates.flag_state = flagStateName;
+            updates.flag_logo = flagLogo;
+        }
+        updatedHtml = certificatePdfService.updateFieldsInHtml(updatedHtml, updates);
+    }
+
     await cert.update({
         flag_administration_id,
         certificate_term,
         remarks,
         issue_date,
         expiry_date,
+        custom_html: updatedHtml,
         ...(certificate_term && certificate_term !== cert.certificate_term ? { custom_html: null } : {})
     });
 
@@ -1074,9 +1130,35 @@ export const updateDraftLayout = async (id, data, user) => {
 
     const { custom_html } = data;
     
-    await cert.update({
-        custom_html
-    });
+    const extractedData = certificatePdfService.extractFieldsFromHtml(custom_html);
+    const updates = { custom_html };
+    
+    if (extractedData.certificate_number !== undefined) {
+        updates.certificate_number = extractedData.certificate_number;
+    }
+    if (extractedData.issue_date !== undefined) {
+        const parsedDate = new Date(extractedData.issue_date);
+        if (!Number.isNaN(parsedDate.getTime())) {
+            updates.issue_date = parsedDate;
+        }
+    }
+    if (extractedData.expiry_date !== undefined) {
+        const parsedDate = new Date(extractedData.expiry_date);
+        if (!Number.isNaN(parsedDate.getTime())) {
+            updates.expiry_date = parsedDate;
+        }
+    }
+    
+    if (extractedData.flag_state !== undefined) {
+        const flag = await db.FlagAdministration.findOne({
+            where: { flag_state_name: extractedData.flag_state }
+        });
+        if (flag) {
+            updates.flag_administration_id = flag.id;
+        }
+    }
+    
+    await cert.update(updates);
 
     await db.CertificateHistory.create({
         certificate_id: cert.id,
