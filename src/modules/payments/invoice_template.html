@@ -129,7 +129,9 @@
   .sign-area { margin-top: auto; position: relative; }
   .sign-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; position: relative; }
   .sign-col { text-align: center; font-size: 9.5pt; min-width: 180px; position: relative; z-index: 2; }
-  .sign-line { border-bottom: 1px solid #000; height: 46px; margin-bottom: 4px; position: relative; }
+  .sign-line { border-bottom: 1px solid #000; margin-bottom: 4px; position: relative; }
+  .sign-img-wrap { height: 60px; position: relative; display: flex; align-items: flex-end; justify-content: center; overflow: hidden; }
+  .sign-img-wrap img { max-height: 70px; max-width: 160px; object-fit: contain; }
   .sign-label { font-weight: 700; color: #0B2443; }
   
   .computerized-note { font-size: 9pt; color: #222; font-weight: bold; font-style: italic; margin-top: 14px; text-align: center; position: relative; z-index: 2; background: #f9f9f9; padding: 6px; border: 1px dashed #ccc; }
@@ -244,9 +246,10 @@
   <div class="sign-area">
     <div class="sign-row">
       <div class="sign-col">
-        <div class="sign-line">
-          <img src="{{signature_img}}" style="max-height: 120px; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%) rotate(-10deg); z-index: 1; display: {{signature_display}};" alt="Director Signature">
+        <div class="sign-img-wrap">
+          <img src="{{signature_img}}" style="display: {{signature_display}};" alt="Director Signature">
         </div>
+        <div class="sign-line"></div>
         <div class="sign-label">Director</div>
         <div>GR Class</div>
       </div>
