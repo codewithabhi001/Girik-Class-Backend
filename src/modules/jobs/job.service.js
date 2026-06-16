@@ -625,6 +625,29 @@ export const getJobById = async (id, scopeFilters = {}, user = null) => {
         delete jobPlain.SourceActivityRequest;
     }
 
+    // ── Hide DRAFT certificates from CLIENT users ──
+    // The certificate scope filter only applies to direct /certificates endpoints.
+    // When certificates are embedded in the job response, we must filter them here too.
+    if (user?.role === 'CLIENT') {
+        if (Array.isArray(jobPlain.certificates)) {
+            jobPlain.certificates = jobPlain.certificates.map(jc => {
+                // If the generated Certificate is in DRAFT status, hide it from the client
+                if (jc.Certificate && jc.Certificate.status === 'DRAFT') {
+                    const { Certificate, ...rest } = jc;
+                    return { ...rest, Certificate: null };
+                }
+                return jc;
+            });
+        }
+        // Also clear legacy top-level Certificate if it's a draft
+        if (jobPlain.Certificate && jobPlain.Certificate.status === 'DRAFT') {
+            delete jobPlain.Certificate;
+            delete jobPlain.certificate_url;
+            delete jobPlain.certificate_number;
+            delete jobPlain.certificate_id;
+        }
+    }
+
     return await fileAccessService.resolveEntity(jobPlain, user);
 };
 
