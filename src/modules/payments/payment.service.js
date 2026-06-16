@@ -356,7 +356,11 @@ export const getPaymentById = async (id, scopeFilters = {}, user = null) => {
             required: false,
             attributes: ['id', 'job_request_number', 'job_status'],
             include: [
-                { model: Vessel, attributes: ['vessel_name', 'imo_number'] },
+                { 
+                    model: Vessel, 
+                    attributes: ['vessel_name', 'imo_number', 'client_id'],
+                    include: [{ model: db.Client, as: 'Client', attributes: ['company_name', 'address', 'country'] }]
+                },
                 {
                     model: db.JobCertificate,
                     as: 'certificates',
@@ -376,6 +380,9 @@ export const getPaymentById = async (id, scopeFilters = {}, user = null) => {
     enriched.vessel_name = plain.JobRequest?.Vessel?.vessel_name ?? null;
     enriched.imo_number = plain.JobRequest?.Vessel?.imo_number ?? null;
     enriched.job_status = plain.JobRequest?.job_status ?? null;
+    const client = plain.JobRequest?.Vessel?.Client;
+    enriched.client_company = client?.company_name ?? null;
+    enriched.client_address = client ? `${client.address || ''} ${client.country || ''}`.trim() : null;
     enriched.reason = plain.reason ?? null;
     enriched.certificates = plain.JobRequest?.certificates || [];
 
@@ -401,7 +408,11 @@ export const getPaymentByJobId = async (jobId, scopeFilters = {}, user = null) =
             required: false,
             attributes: ['id', 'job_request_number', 'job_status'],
             include: [
-                { model: Vessel, attributes: ['vessel_name', 'imo_number'] },
+                { 
+                    model: Vessel, 
+                    attributes: ['vessel_name', 'imo_number', 'client_id'],
+                    include: [{ model: db.Client, as: 'Client', attributes: ['company_name', 'address', 'country'] }]
+                },
                 {
                     model: db.JobCertificate,
                     as: 'certificates',
@@ -411,7 +422,7 @@ export const getPaymentByJobId = async (jobId, scopeFilters = {}, user = null) =
             ],
         }],
     });
-    if (!payment) throw { statusCode: 404, message: 'Payment record not found for this job.' };
+    if (!payment) return null;
 
     const plain = payment.get({ plain: true });
     const ledgers = await FinancialLedger.findAll({ where: { invoice_id: plain.id }, order: [['createdAt', 'ASC']] });
@@ -421,6 +432,9 @@ export const getPaymentByJobId = async (jobId, scopeFilters = {}, user = null) =
     enriched.vessel_name = plain.JobRequest?.Vessel?.vessel_name ?? null;
     enriched.imo_number = plain.JobRequest?.Vessel?.imo_number ?? null;
     enriched.job_status = plain.JobRequest?.job_status ?? null;
+    const client = plain.JobRequest?.Vessel?.Client;
+    enriched.client_company = client?.company_name ?? null;
+    enriched.client_address = client ? `${client.address || ''} ${client.country || ''}`.trim() : null;
     enriched.reason = plain.reason ?? null;
     enriched.certificates = plain.JobRequest?.certificates || [];
 
@@ -480,7 +494,7 @@ export const generateInvoicePdf = async (paymentId) => {
         }
     } catch (e) {}
 
-    if (payment.JobRequest) {
+    if (payment.JobRequest && !parsedReason) {
         const vessel = payment.JobRequest.Vessel;
         const client = vessel?.Client;
 
@@ -497,8 +511,6 @@ export const generateInvoicePdf = async (paymentId) => {
         // Build item rows for job certificates
         const certs = payment.JobRequest.certificates || [];
         if (certs.length > 0) {
-            const count = certs.length;
-            const unitPrice = (parseFloat(payment.amount) / count).toFixed(2);
             certs.forEach((cert, index) => {
                 const certName = cert.CertificateType?.name || 'Certificate';
                 itemRows += `
@@ -507,8 +519,8 @@ export const generateInvoicePdf = async (paymentId) => {
                   <td>
                     Statutory inspection and certification for: <strong>${certName}</strong> under job <strong>${payment.JobRequest.job_request_number}</strong>
                   </td>
-                  <td class="num">${Number(unitPrice).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                  <td class="num">${Number(unitPrice).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  <td class="num"></td>
+                  <td class="num"></td>
                 </tr>`;
             });
         } else {
