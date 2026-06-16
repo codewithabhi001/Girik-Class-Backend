@@ -225,7 +225,7 @@ export const getMaintenanceMode = async () => {
     }
 
     try {
-        const setting = await db.SystemSetting.findByPk('maintenance_mode');
+        const setting = await db.SystemSetting.findByPk('maintenance_mode', { useMaster: true });
         let value = { isMaintenance: false, message: 'System is currently undergoing maintenance. Please try again later.' };
         if (setting) {
             value = JSON.parse(setting.value);
@@ -273,7 +273,7 @@ export const getAppStatus = async (platform, version) => {
     };
 
     try {
-        const setting = await db.SystemSetting.findByPk('mobile_app_config');
+        const setting = await db.SystemSetting.findByPk('mobile_app_config', { useMaster: true });
         if (setting) {
             config = JSON.parse(setting.value);
         }
