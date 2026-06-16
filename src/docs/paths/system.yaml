@@ -129,3 +129,54 @@
     responses:
       "200": { description: Locales }
       "403": { description: Forbidden }
+
+/api/v1/system/maintenance:
+  get:
+    tags: [System]
+    summary: Get global maintenance mode status
+    operationId: getMaintenanceMode
+    x-roles: [PUBLIC, ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    responses:
+      "200":
+        description: Current maintenance state
+  post:
+    tags: [System]
+    summary: Update global maintenance mode status (Admin only)
+    operationId: updateMaintenanceMode
+    x-roles: [ADMIN]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [isMaintenance]
+            properties:
+              isMaintenance: { type: boolean }
+              message: { type: string }
+    responses:
+      "200":
+        description: Maintenance state updated successfully
+      "403":
+        description: Forbidden
+
+/api/v1/system/app-status:
+  get:
+    tags: [System]
+    summary: Check mobile app version support and maintenance status
+    operationId: getAppStatus
+    x-roles: [PUBLIC, ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    parameters:
+      - name: platform
+        in: query
+        required: true
+        schema: { type: string, enum: [ios, android] }
+      - name: version
+        in: query
+        required: true
+        schema: { type: integer }
+    responses:
+      "200":
+        description: Mobile app status and update requirement details
+      "400":
+        description: Bad request / unsupported platform or version

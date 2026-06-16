@@ -218,3 +218,124 @@ export const getVersion = async () => {
         return { version: '1.0.0', error: 'Internal version lookup failed' };
     }
 };
+
+export const getMaintenanceMode = async () => {
+    if (global._maintenanceCache && (Date.now() - global._maintenanceCache.ts < 5000)) {
+        return global._maintenanceCache.value;
+    }
+
+    try {
+        const setting = await db.SystemSetting.findByPk('maintenance_mode');
+        let value = { isMaintenance: false, message: 'System is currently undergoing maintenance. Please try again later.' };
+        if (setting) {
+            value = JSON.parse(setting.value);
+        }
+        global._maintenanceCache = { value, ts: Date.now() };
+        return value;
+    } catch (err) {
+        return { isMaintenance: false, message: 'System is currently undergoing maintenance. Please try again later.' };
+    }
+};
+
+export const updateMaintenanceMode = async (isMaintenance, message, userId, userEmail) => {
+    logger.warn(`MAINTENANCE_TOGGLE: User ${userEmail} (ID: ${userId}) set maintenance to ${isMaintenance} with message: "${message || ''}"`);
+
+    const value = {
+        isMaintenance: !!isMaintenance,
+        message: message || 'System is currently undergoing maintenance. Please try again later.'
+    };
+
+    await db.SystemSetting.upsert({
+        key: 'maintenance_mode',
+        value: JSON.stringify(value)
+    });
+
+    global._maintenanceCache = { value, ts: Date.now() };
+    return value;
+};
+
+export const getAppStatus = async (platform, version) => {
+    let config = {
+        android: {
+            minVersion: 10,
+            latestVersion: 12,
+            isMaintenance: false,
+            maintenanceMessage: 'Android app is undergoing maintenance.',
+            storeUrl: 'https://play.google.com/store/apps/details?id=com.grclass.app'
+        },
+        ios: {
+            minVersion: 10,
+            latestVersion: 12,
+            isMaintenance: false,
+            maintenanceMessage: 'iOS app is undergoing maintenance.',
+            storeUrl: 'https://apps.apple.com/app/gr-class/id6400000000'
+        }
+    };
+
+    try {
+        const setting = await db.SystemSetting.findByPk('mobile_app_config');
+        if (setting) {
+            config = JSON.parse(setting.value);
+        }
+    } catch (err) {
+        // Fallback
+    }
+
+    const platformKey = platform.toLowerCase();
+    const platformConfig = config[platformKey];
+    if (!platformConfig) {
+        throw { statusCode: 400, message: `Unsupported platform: ${platform}` };
+    }
+
+    const currentVersion = parseInt(version, 10);
+    const minVer = parseInt(platformConfig.minVersion, 10);
+    const latestVer = parseInt(platformConfig.latestVersion, 10);
+
+    return {
+        platform: platformKey,
+        currentVersion,
+        isMaintenance: !!platformConfig.isMaintenance,
+        maintenanceMessage: platformConfig.maintenanceMessage,
+        updateRequired: currentVersion < minVer,
+        updateAvailable: currentVersion < latestVer,
+        storeUrl: platformConfig.storeUrl
+    };
+};
+
+export const getAppConfig = async () => {
+    let config = {
+        android: {
+            minVersion: 10,
+            latestVersion: 12,
+            isMaintenance: false,
+            maintenanceMessage: 'Android app is undergoing maintenance.',
+            storeUrl: 'https://play.google.com/store/apps/details?id=com.grclass.app'
+        },
+        ios: {
+            minVersion: 10,
+            latestVersion: 12,
+            isMaintenance: false,
+            maintenanceMessage: 'iOS app is undergoing maintenance.',
+            storeUrl: 'https://apps.apple.com/app/gr-class/id6400000000'
+        }
+    };
+
+    try {
+        const setting = await db.SystemSetting.findByPk('mobile_app_config');
+        if (setting) {
+            config = JSON.parse(setting.value);
+        }
+    } catch (err) {
+        // Fallback
+    }
+
+    return config;
+};
+
+export const updateAppConfig = async (config) => {
+    await db.SystemSetting.upsert({
+        key: 'mobile_app_config',
+        value: JSON.stringify(config)
+    });
+    return config;
+};

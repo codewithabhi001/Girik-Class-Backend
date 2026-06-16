@@ -1,0 +1,76 @@
+/api/v1/system-issues:
+  post:
+    tags: [System Issues]
+    summary: Report a new system issue / code break / runtime error
+    operationId: createSystemIssueReport
+    x-roles: [PUBLIC, ADMIN, GM, TM, TO, SURVEYOR, CLIENT]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [error_message]
+            properties:
+              error_message: { type: string }
+              stack_trace: { type: string }
+              description: { type: string }
+              page_url: { type: string }
+              user_agent: { type: string }
+    responses:
+      "201":
+        description: Issue reported successfully
+      "400":
+        description: Validation error
+
+  get:
+    tags: [System Issues]
+    summary: Get system issue reports list (Admin only)
+    operationId: getSystemIssueReports
+    x-roles: [ADMIN]
+    parameters:
+      - name: page
+        in: query
+        required: false
+        schema: { type: integer, default: 1 }
+      - name: limit
+        in: query
+        required: false
+        schema: { type: integer, default: 20 }
+      - name: status
+        in: query
+        required: false
+        schema: { type: string, enum: [OPEN, IN_PROGRESS, RESOLVED] }
+    responses:
+      "200":
+        description: List of system issue reports
+      "403":
+        description: Forbidden
+
+/api/v1/system-issues/{id}/status:
+  put:
+    tags: [System Issues]
+    summary: Update status of a system issue report (Admin only)
+    operationId: updateSystemIssueStatus
+    x-roles: [ADMIN]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status: { type: string, enum: [OPEN, IN_PROGRESS, RESOLVED] }
+    responses:
+      "200":
+        description: Status updated successfully
+      "403":
+        description: Forbidden
+      "404":
+        description: Issue report not found

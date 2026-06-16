@@ -16,6 +16,8 @@ import { setupSwagger } from './middlewares/swagger.middleware.js';
 import { contextMiddleware } from './middlewares/context.middleware.js';
 import { probeBlockMiddleware } from './middlewares/probe-block.middleware.js';
 import { isAuthRateLimitedRoute, rateLimitClientKey } from './middlewares/rate-limit.util.js';
+import { optionalAuthenticate } from './middlewares/auth.middleware.js';
+import { checkMaintenanceMode } from './middlewares/maintenance.middleware.js';
 import './models/index.js'; // Initialize DB
 
 const app = express();
@@ -103,8 +105,11 @@ const limiter = rateLimit({
 app.use('/api/v1', limiter);
 
 // API Request/Response Logger - Logs every API hit with details
-// API Request/Response Logger - Logs every API hit with details
 app.use('/api/v1', apiLogger);
+
+// Global Maintenance Mode check
+app.use('/api/v1', optionalAuthenticate);
+app.use('/api/v1', checkMaintenanceMode);
 
 // Routes
 app.use('/api/v1', routes);

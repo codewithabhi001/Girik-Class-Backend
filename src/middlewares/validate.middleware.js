@@ -722,5 +722,39 @@ export const schemas = {
         })).optional(),
         is_published: Joi.boolean().optional(),
     }).unknown(true),
+    reportSystemIssue: Joi.object({
+        error_message: Joi.string().required(),
+        stack_trace: Joi.string().allow('', null).optional(),
+        description: Joi.string().allow('', null).optional(),
+        page_url: Joi.string().allow('', null).optional(),
+        user_agent: Joi.string().allow('', null).optional()
+    }),
+    updateSystemIssueStatus: Joi.object({
+        status: Joi.string().valid('OPEN', 'IN_PROGRESS', 'RESOLVED').required()
+    }),
+    updateMaintenanceMode: Joi.object({
+        isMaintenance: Joi.boolean().required(),
+        message: Joi.string().allow('', null).optional()
+    }),
+    checkMobileAppStatus: Joi.object({
+        platform: Joi.string().valid('ios', 'android').required(),
+        version: Joi.alternatives().try(Joi.number().integer(), Joi.string().pattern(/^\d+$/)).required()
+    }),
+    updateMobileAppConfig: Joi.object({
+        android: Joi.object({
+            minVersion: Joi.number().integer().required(),
+            latestVersion: Joi.number().integer().required(),
+            isMaintenance: Joi.boolean().required(),
+            maintenanceMessage: Joi.string().required(),
+            storeUrl: Joi.string().uri().required()
+        }).required(),
+        ios: Joi.object({
+            minVersion: Joi.number().integer().required(),
+            latestVersion: Joi.number().integer().required(),
+            isMaintenance: Joi.boolean().required(),
+            maintenanceMessage: Joi.string().required(),
+            storeUrl: Joi.string().uri().required()
+        }).required()
+    })
 };
 

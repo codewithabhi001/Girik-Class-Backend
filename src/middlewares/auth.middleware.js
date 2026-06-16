@@ -95,7 +95,18 @@ export const optionalAuthenticate = async (req, res, next) => {
             return next();
         }
 
-        const user = await db.User.findByPk(decoded.id);
+        // ── Check cache first ──
+        const cached = _userCache.get(decoded.id);
+        let user;
+        if (cached && (Date.now() - cached.ts < USER_CACHE_TTL)) {
+            user = cached.user;
+        } else {
+            user = await db.User.findByPk(decoded.id);
+            if (user) {
+                _userCache.set(decoded.id, { user, ts: Date.now() });
+            }
+        }
+
         if (user && user.status === 'ACTIVE') {
             req.user = user;
             req.token = token;

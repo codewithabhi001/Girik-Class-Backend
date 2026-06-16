@@ -1,4 +1,5 @@
 import * as systemService from './system.service.js';
+import { schemas } from '../../middlewares/validate.middleware.js';
 
 export const getMetrics = async (req, res, next) => {
     try {
@@ -77,6 +78,47 @@ export const getLocales = async (req, res, next) => {
 export const getVersion = async (req, res, next) => {
     try {
         const result = await systemService.getVersion();
+        res.json({ success: true, data: result });
+    } catch (e) { next(e); }
+};
+
+export const getMaintenanceMode = async (req, res, next) => {
+    try {
+        const result = await systemService.getMaintenanceMode();
+        res.json({ success: true, data: result });
+    } catch (e) { next(e); }
+};
+
+export const updateMaintenanceMode = async (req, res, next) => {
+    try {
+        const { isMaintenance, message } = req.body;
+        const result = await systemService.updateMaintenanceMode(isMaintenance, message, req.user.id, req.user.email);
+        res.json({ success: true, data: result });
+    } catch (e) { next(e); }
+};
+
+export const getAppStatus = async (req, res, next) => {
+    try {
+        const { error } = schemas.checkMobileAppStatus.validate(req.query);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.details[0].message.replace(/"/g, '') });
+        }
+        const { platform, version } = req.query;
+        const result = await systemService.getAppStatus(platform, parseInt(version, 10));
+        res.json({ success: true, data: result });
+    } catch (e) { next(e); }
+};
+
+export const getAppConfig = async (req, res, next) => {
+    try {
+        const result = await systemService.getAppConfig();
+        res.json({ success: true, data: result });
+    } catch (e) { next(e); }
+};
+
+export const updateAppConfig = async (req, res, next) => {
+    try {
+        const result = await systemService.updateAppConfig(req.body);
         res.json({ success: true, data: result });
     } catch (e) { next(e); }
 };
