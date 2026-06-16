@@ -9,7 +9,7 @@ import { startMonitoring } from './services/cron.service.js';
 import * as websocketService from './services/websocket.service.js';
 
 
-const PORT = env.port;
+const PORT = env.port; // Trigger watch reload
 
 const startServer = async () => {
     try {

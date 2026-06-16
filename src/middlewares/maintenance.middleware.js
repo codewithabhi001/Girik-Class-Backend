@@ -23,9 +23,10 @@ export const checkMaintenanceMode = async (req, res, next) => {
         const maintenance = await getMaintenanceMode();
 
         if (maintenance.isMaintenance) {
-            // 3. Bypass check for ADMIN role.
+            // 3. Bypass check for staff/admin roles.
             // If the request was optionally authenticated before this middleware, req.user will be set.
-            if (req.user && req.user.role === 'ADMIN') {
+            const staffRoles = ['ADMIN', 'GM', 'TM', 'TO'];
+            if (req.user && staffRoles.includes(req.user.role)) {
                 return next();
             }
 

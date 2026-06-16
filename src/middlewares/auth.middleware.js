@@ -112,8 +112,24 @@ export const optionalAuthenticate = async (req, res, next) => {
             req.token = token;
             updateContextUser(user);
         }
-    } catch {
-        // Invalid or expired token — treat as anonymous
+    } catch (error) {
+        // Invalid or expired token — treat as anonymous.
+        // If it was a staff/admin token, return 401 so the frontend can refresh it
+        try {
+            if (token) {
+                const decoded = jwt.decode(token);
+                const staffRoles = ['ADMIN', 'GM', 'TM', 'TO'];
+                if (decoded && staffRoles.includes(decoded.role)) {
+                    return res.status(401).json({
+                        success: false,
+                        message: 'Staff session expired. Please refresh token.',
+                        error_code: 'TOKEN_EXPIRED'
+                    });
+                }
+            }
+        } catch (decodeError) {
+            // Ignore decode errors
+        }
     }
     next();
 };
