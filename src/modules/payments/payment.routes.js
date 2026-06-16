@@ -45,4 +45,7 @@ router.get('/:id/pdf', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), paym
 // Write off
 router.post('/writeoff', authorizeRoles('ADMIN'), paymentController.writeOff);
 
+// Update payment details
+router.put('/:id', authorizeRoles('ADMIN', 'GM'), paymentController.updatePayment);
+
 export default router;

@@ -841,3 +841,78 @@ export const associateJob = async (paymentId, jobId, userId) => {
         throw e;
     }
 };
+
+export const updatePayment = async (paymentId, data, userId) => {
+    const txn = await db.sequelize.transaction();
+    try {
+        const payment = await Payment.findByPk(paymentId, { transaction: txn, lock: txn.LOCK.UPDATE });
+        if (!payment) throw { statusCode: 404, message: 'Payment record not found' };
+
+        const oldValues = {
+            amount: payment.amount,
+            currency: payment.currency,
+            reason: payment.reason,
+            payment_status: payment.payment_status
+        };
+
+        const updatedFields = {};
+
+        if (data.currency !== undefined) {
+            updatedFields.currency = data.currency;
+        }
+
+        if (data.reason !== undefined) {
+            updatedFields.reason = typeof data.reason === 'object' ? JSON.stringify(data.reason) : data.reason;
+        }
+
+        if (data.amount !== undefined) {
+            const newAmount = parseFloat(data.amount);
+            if (isNaN(newAmount) || newAmount <= 0) {
+                throw { statusCode: 400, message: 'Amount must be a positive number' };
+            }
+            updatedFields.amount = newAmount;
+
+            // Recalculate status based on ledger totals
+            const ledgers = await FinancialLedger.findAll({
+                where: { invoice_id: paymentId },
+                transaction: txn
+            });
+            const { collected, refunded } = calculateLedgerTotals(ledgers);
+            const remaining = Math.max(0, newAmount - collected + refunded);
+
+            if (remaining <= 0) {
+                updatedFields.payment_status = 'PAID';
+                if (!payment.payment_date) {
+                    updatedFields.payment_date = new Date();
+                }
+                if (!payment.verified_by_user_id) {
+                    updatedFields.verified_by_user_id = userId;
+                }
+            } else if (collected > 0) {
+                updatedFields.payment_status = 'PARTIALLY_PAID';
+            } else {
+                updatedFields.payment_status = 'UNPAID';
+            }
+        }
+
+        await payment.update(updatedFields, { transaction: txn });
+
+        await AuditLog.create({
+            user_id: userId,
+            action: 'UPDATE_PAYMENT',
+            entity_name: 'Payment',
+            entity_id: payment.id,
+            old_values: oldValues,
+            new_values: updatedFields
+        }, { transaction: txn });
+
+        await txn.commit();
+
+        const enriched = await getPaymentById(paymentId, {}, { id: userId, role: 'ADMIN' });
+        return enriched;
+    } catch (e) {
+        await txn.rollback();
+        throw e;
+    }
+};
+

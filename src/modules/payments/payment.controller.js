@@ -108,3 +108,11 @@ export const associateJob = async (req, res, next) => {
         res.json({ success: true, data: result });
     } catch (e) { next(e); }
 };
+
+export const updatePayment = async (req, res, next) => {
+    try {
+        const result = await paymentService.updatePayment(req.params.id, req.body, req.user.id);
+        res.json({ success: true, data: result });
+    } catch (e) { next(e); }
+};
+
