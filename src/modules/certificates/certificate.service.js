@@ -657,6 +657,48 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
             await cert.update({ custom_html: finalHtml }, { transaction });
         }
 
+        // Always ensure signature and stamp placeholders are replaced with base64 images in final PDF html
+        let signatureBase64 = '';
+        let stampBase64 = '';
+        try {
+            const dynamicTags = jobId ? await buildTagValuesForJob(jobId) : {};
+            signatureBase64 = dynamicTags.signature || '';
+            stampBase64 = dynamicTags.stamp || '';
+        } catch (err) {
+            logger.error('Error fetching dynamic tags for PDF signature/stamp:', err);
+        }
+
+        // Fallback to reading from local filesystem if not resolved from job
+        try {
+            const fs = await import('fs');
+            const path = await import('path');
+            const { fileURLToPath } = await import('url');
+            const __filename = fileURLToPath(import.meta.url);
+            const __dirname = path.dirname(__filename);
+
+            if (!signatureBase64) {
+                const sigPath = path.join(__dirname, '..', 'payments', 'Gr-class-sign.png');
+                if (fs.existsSync(sigPath)) {
+                    signatureBase64 = `data:image/png;base64,${fs.readFileSync(sigPath).toString('base64')}`;
+                }
+            }
+            if (!stampBase64) {
+                const stampPath = path.join(__dirname, '..', 'payments', 'Gr-class-stamp.png');
+                if (fs.existsSync(stampPath)) {
+                    stampBase64 = `data:image/png;base64,${fs.readFileSync(stampPath).toString('base64')}`;
+                }
+            }
+        } catch (err) {
+            logger.error('Error loading fallback signature/stamp files for PDF:', err);
+        }
+
+        if (signatureBase64) {
+            finalHtml = finalHtml.replaceAll('{signature}', signatureBase64);
+        }
+        if (stampBase64) {
+            finalHtml = finalHtml.replaceAll('{stamp}', stampBase64);
+        }
+
         const pdfBuffer = await certificatePdfService.htmlToPdfBuffer(finalHtml);
         const fileUrl = await s3Service.uploadFile(
             pdfBuffer,
