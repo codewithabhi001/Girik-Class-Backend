@@ -250,6 +250,16 @@ export const deactivateCertificateType = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
+export const deleteCertificateType = async (req, res, next) => {
+    try {
+        const result = await certService.deleteCertificateType(req.params.id);
+        await cache.invalidatePattern('cert:types:*');
+        await cache.del(`cert:type:detail:${req.params.id}`);
+        res.json({ success: true, message: result.message, data: result });
+    } catch (e) { next(e); }
+};
+
+
 export const getCertificateTypeRequiredDocuments = async (req, res, next) => {
     try {
         const docs = await certService.getCertificateTypeRequiredDocuments(req.params.id, req.query);

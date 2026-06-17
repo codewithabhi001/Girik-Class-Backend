@@ -261,6 +261,151 @@ export const deactivateCertificateType = async (id) => {
     return { id: type.id, name: type.name, status: 'INACTIVE', message: 'Certificate type deactivated successfully.' };
 };
 
+/** Permanently delete a certificate type and all its associated templates, checklists, and certificates (ADMIN). */
+export const deleteCertificateType = async (id) => {
+    const type = await CertificateType.findByPk(id, { useMaster: true });
+    if (!type) throw { statusCode: 404, message: 'Certificate type not found' };
+
+    const transaction = await db.sequelize.transaction();
+    try {
+        // 1. Find and delete all Certificates of this type
+        const certificates = await db.Certificate.findAll({
+            where: { certificate_type_id: id },
+            transaction
+        });
+        const certificateIds = certificates.map(c => c.id);
+
+        if (certificateIds.length > 0) {
+            // Delete CertificateHistory records
+            await db.CertificateHistory.destroy({
+                where: { certificate_id: { [Op.in]: certificateIds } },
+                transaction
+            });
+
+            // Set generated_certificate_id to null in JobCertificates
+            await db.JobCertificate.update(
+                { generated_certificate_id: null },
+                { where: { generated_certificate_id: { [Op.in]: certificateIds } }, transaction }
+            );
+
+            // Delete Certificate records
+            await db.Certificate.destroy({
+                where: { id: { [Op.in]: certificateIds } },
+                transaction
+            });
+        }
+
+        // 2. Find and delete all JobCertificates of this type
+        const jobCertificates = await db.JobCertificate.findAll({
+            where: { certificate_type_id: id },
+            transaction
+        });
+        const jobCertificateIds = jobCertificates.map(jc => jc.id);
+
+        if (jobCertificateIds.length > 0) {
+            // Find related surveys
+            const surveys = await db.Survey.findAll({
+                where: { job_certificate_id: { [Op.in]: jobCertificateIds } },
+                transaction
+            });
+            const surveyIds = surveys.map(s => s.id);
+
+            if (surveyIds.length > 0) {
+                // Delete survey status history
+                await db.SurveyStatusHistory.destroy({
+                    where: { survey_id: { [Op.in]: surveyIds } },
+                    transaction
+                });
+
+                // Delete survey signed documents
+                await db.SurveySignedDocument.destroy({
+                    where: { survey_id: { [Op.in]: surveyIds } },
+                    transaction
+                });
+
+                // Delete surveys
+                await db.Survey.destroy({
+                    where: { id: { [Op.in]: surveyIds } },
+                    transaction
+                });
+            }
+
+            // Delete JobDocuments
+            await db.JobDocument.destroy({
+                where: { job_certificate_id: { [Op.in]: jobCertificateIds } },
+                transaction
+            });
+
+            // Delete ActivityPlanning (surveyor checklist answers)
+            await db.ActivityPlanning.destroy({
+                where: { job_certificate_id: { [Op.in]: jobCertificateIds } },
+                transaction
+            });
+
+            // Delete GpsTracking
+            await db.GpsTracking.destroy({
+                where: { job_certificate_id: { [Op.in]: jobCertificateIds } },
+                transaction
+            });
+
+            // Delete NonConformity
+            await db.NonConformity.destroy({
+                where: { job_certificate_id: { [Op.in]: jobCertificateIds } },
+                transaction
+            });
+
+            // Delete JobCertificate records
+            await db.JobCertificate.destroy({
+                where: { id: { [Op.in]: jobCertificateIds } },
+                transaction
+            });
+        }
+
+        // 3. Delete Certificate Templates of this type
+        await db.CertificateTemplate.destroy({
+            where: { certificate_type_id: id },
+            transaction
+        });
+
+        // 4. Find and delete Checklist Templates of this type
+        const checklistTemplates = await db.ChecklistTemplate.findAll({
+            where: { certificate_type_id: id },
+            transaction
+        });
+        const checklistTemplateIds = checklistTemplates.map(ct => ct.id);
+
+        if (checklistTemplateIds.length > 0) {
+            // Delete ChecklistTemplateFiles
+            await db.ChecklistTemplateFile.destroy({
+                where: { checklist_template_id: { [Op.in]: checklistTemplateIds } },
+                transaction
+            });
+
+            // Delete ChecklistTemplates
+            await db.ChecklistTemplate.destroy({
+                where: { id: { [Op.in]: checklistTemplateIds } },
+                transaction
+            });
+        }
+
+        // 5. Delete Certificate Required Documents
+        await db.CertificateRequiredDocument.destroy({
+            where: { certificate_type_id: id },
+            transaction
+        });
+
+        // 6. Delete the Certificate Type itself
+        await type.destroy({ transaction });
+
+        await transaction.commit();
+        return { id, name: type.name, message: 'Certificate type and all associated templates, certificates, and checklists deleted successfully.' };
+    } catch (error) {
+        await transaction.rollback();
+        throw error;
+    }
+};
+
+
 
 /** List required documents for a certificate type. */
 export const getCertificateTypeRequiredDocuments = async (certificateTypeId, query = {}) => {
