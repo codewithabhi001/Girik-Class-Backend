@@ -66,7 +66,11 @@ const enrichUploadedDocuments = async (jobId, user = null) => {
  * @param {{ includeVessel?: boolean }} options
  */
 const requireJob = async (id, { includeVessel = false, useMaster = false } = {}) => {
-    const include = includeVessel ? ['Vessel'] : [];
+    const include = [];
+    if (includeVessel) {
+        include.push('Vessel');
+        include.push({ model: db.Client, as: 'Client' });
+    }
     const job = await JobRequest.findByPk(id, { include, ...(useMaster ? { useMaster: true } : {}) });
     if (!job) throw { statusCode: 404, message: 'The requested job could not be found.' };
     return job;
@@ -153,6 +157,7 @@ export const createJob = async (data, userId, options = {}) => {
     }
 
     const vessel = data.vessel_id ? await Vessel.findByPk(data.vessel_id, { include: [{ model: db.Client, as: 'Client' }], useMaster: true }) : null;
+    const client = data.client_id ? await db.Client.findByPk(data.client_id, { useMaster: true }) : null;
 
     if (data.vessel_id) {
         if (!vessel) throw { statusCode: 400, message: 'The selected vessel is invalid.' };
@@ -168,6 +173,14 @@ export const createJob = async (data, userId, options = {}) => {
             throw {
                 statusCode: 400,
                 message: 'Cannot create job: The associated client company is currently INACTIVE.'
+            };
+        }
+    } else if (data.client_id) {
+        if (!client) throw { statusCode: 400, message: 'The selected client company is invalid.' };
+        if (client.status !== 'ACTIVE') {
+            throw {
+                statusCode: 400,
+                message: 'Cannot create job: The client company is currently INACTIVE.'
             };
         }
     }
@@ -325,16 +338,19 @@ export const createJob = async (data, userId, options = {}) => {
             await txn.commit();
 
             if (!skipNotifications) {
-                const jobWithVessel = await JobRequest.findByPk(job.id, { include: ['Vessel'], useMaster: true });
+                const jobWithVessel = await JobRequest.findByPk(job.id, { include: ['Vessel', { model: db.Client, as: 'Client' }], useMaster: true });
+                const vesselName = jobWithVessel.Vessel?.vessel_name || jobWithVessel.Client?.company_name || 'Company-wide';
+                const clientId = jobWithVessel.Vessel?.client_id || jobWithVessel.client_id;
+
                 notificationService.notifyRoles(['ADMIN', 'GM', 'TM'], 'JOB_CREATED', {
-                    vesselName: jobWithVessel.Vessel.vessel_name,
+                    vesselName: vesselName,
                     port: jobWithVessel.target_port
                 });
 
-                const clientUser = await User.findOne({ where: { client_id: jobWithVessel.Vessel.client_id, role: 'CLIENT' } });
+                const clientUser = clientId ? await User.findOne({ where: { client_id: clientId, role: 'CLIENT' } }) : null;
                 if (clientUser) {
                     notificationService.sendNotification(clientUser.id, 'JOB_CREATED', {
-                        vesselName: jobWithVessel.Vessel.vessel_name, port: jobWithVessel.target_port
+                        vesselName: vesselName, port: jobWithVessel.target_port
                     });
                 }
             }
@@ -348,9 +364,13 @@ export const createJob = async (data, userId, options = {}) => {
 };
 
 export const createJobForClient = async (data, clientId, userId) => {
-    if (!data.vessel_id) throw { statusCode: 400, message: 'Vessel ID is required' };
-    const vessel = await Vessel.findOne({ where: { id: data.vessel_id, client_id: clientId } });
-    if (!vessel) throw { statusCode: 403, message: 'Access denied: you do not have permission to select this vessel.' };
+    if (!data.vessel_id) {
+        data.client_id = clientId;
+    } else {
+        const vessel = await Vessel.findOne({ where: { id: data.vessel_id, client_id: clientId } });
+        if (!vessel) throw { statusCode: 403, message: 'Access denied: you do not have permission to select this vessel.' };
+        data.client_id = clientId;
+    }
     return createJob(data, userId);
 };
 
@@ -463,13 +483,18 @@ export const getJobs = async (query, scopeFilters = {}, userRole = null, user = 
     const pageNum = Math.max(1, parseInt(page, 10));
     const pageLimit = Math.max(1, parseInt(limit, 10));
 
-    const jobAttributes = ['id', 'job_request_number', 'vessel_id', 'target_port', 'target_date', 'job_status', 'priority', 'is_survey_required', 'createdAt', 'updatedAt'];
+    const jobAttributes = ['id', 'job_request_number', 'vessel_id', 'client_id', 'target_port', 'target_date', 'job_status', 'priority', 'is_survey_required', 'createdAt', 'updatedAt'];
 
     const include = [
         {
             model: Vessel,
             attributes: ['id', 'vessel_name', 'imo_number'],
             include: [{ model: db.Client, as: 'Client', attributes: ['id', 'company_name'] }]
+        },
+        {
+            model: db.Client,
+            as: 'Client',
+            attributes: ['id', 'company_name']
         },
         {
             model: JobCertificate,
@@ -511,9 +536,9 @@ export const getJobs = async (query, scopeFilters = {}, userRole = null, user = 
     });
 
     const jobs = (await fileAccessService.resolveEntity(rows)).map(j => {
-        const vessel_name = j.Vessel?.vessel_name || 'N/A';
+        const vessel_name = j.Vessel?.vessel_name || 'Company Wide';
         const imo_number = j.Vessel?.imo_number || 'N/A';
-        const company_name = j.Vessel?.Client?.company_name || 'N/A';
+        const company_name = j.Vessel?.Client?.company_name || j.Client?.company_name || 'N/A';
         // Summarise all certificate names for list view
         const certificate_names = (j.certificates || []).map(c => c.CertificateType?.name).filter(Boolean).join(', ') || 'N/A';
 
@@ -529,7 +554,7 @@ export const getJobs = async (query, scopeFilters = {}, userRole = null, user = 
             vessel_name,
             imo_number,
             company_name,
-            Client: j.Vessel?.Client ? { company_name } : null,
+            Client: j.Vessel?.Client || j.Client ? { company_name } : null,
             certificate_names,
             certificate_count: (j.certificates || []).length
         };
@@ -559,6 +584,11 @@ export const getJobById = async (id, scopeFilters = {}, user = null) => {
                     { model: db.FlagAdministration, as: 'FlagAdministration', attributes: ['id', 'flag_state_name'] },
                     { model: db.Client, as: 'Client', attributes: ['id', 'company_name'] }
                 ]
+            },
+            {
+                model: db.Client,
+                as: 'Client',
+                attributes: ['id', 'company_name', 'address', 'company_id_number']
             },
             {
                 model: db.JobCertificate,
@@ -620,11 +650,11 @@ export const getJobById = async (id, scopeFilters = {}, user = null) => {
     // ── Vessel Details (flat, N/A for nulls) ──
     const v = jobPlain.Vessel || {};
     jobPlain.vessel_details = {
-        vessel_name:  v.vessel_name   || 'N/A',
+        vessel_name:  v.vessel_name   || 'Company Wide',
         imo_number:   v.imo_number    || 'N/A',
         ship_type:    v.ship_type     || 'N/A',
         flag_state:   v.FlagAdministration?.flag_state_name || 'N/A',
-        company_name: v.Client?.company_name               || 'N/A',
+        company_name: v.Client?.company_name || jobPlain.Client?.company_name || 'N/A',
         class_status: v.class_status  || 'N/A',
     };
 
@@ -902,14 +932,18 @@ export const verifyJobCertificateDocuments = async (jobCertificateId, body, user
         });
 
         // Notify client to re-upload
-        const clientUser = await User.findOne({ where: { client_id: job.Vessel.client_id, role: 'CLIENT' }, useMaster: true });
-        if (clientUser) {
-            notificationService.sendNotification(clientUser.id, 'JOB_DOCUMENTS_REJECTED', {
-                jobId: jobId,
-                vesselName: job.Vessel.vessel_name,
-                rejectedCount: rejectedDocs.length,
-                reasons: rejectedDocs.map(rd => rd.reason).filter(Boolean)
-            }).catch(() => { });
+        const clientId = job.Vessel?.client_id || job.client_id;
+        const vesselName = job.Vessel?.vessel_name || job.Client?.company_name || 'Company Wide';
+        if (clientId) {
+            const clientUser = await User.findOne({ where: { client_id: clientId, role: 'CLIENT' }, useMaster: true });
+            if (clientUser) {
+                notificationService.sendNotification(clientUser.id, 'JOB_DOCUMENTS_REJECTED', {
+                    jobId: jobId,
+                    vesselName: vesselName,
+                    rejectedCount: rejectedDocs.length,
+                    reasons: rejectedDocs.map(rd => rd.reason).filter(Boolean)
+                }).catch(() => { });
+            }
         }
 
         const updatedDocs = await JobDocument.findAll({
@@ -952,8 +986,9 @@ export const verifyJobCertificateDocuments = async (jobCertificateId, body, user
     }
 
     // Notify ADMIN/GM/TM
+    const vesselName = job.Vessel?.vessel_name || job.Client?.company_name || 'Company Wide';
     notificationService.notifyRoles(['ADMIN', 'GM', 'TM'], 'JOB_DOCUMENT_VERIFIED', {
-        jobId: jobId, vesselName: job.Vessel.vessel_name
+        jobId: jobId, vesselName: vesselName
     }).catch(() => { });
 
     return { message: 'All documents verified successfully for this certificate.', data: updatedJc };
@@ -1053,8 +1088,9 @@ export const verifyAllJobDocuments = async (jobId, body, user) => {
     }
 
     // Notify ADMIN/GM/TM
+    const vesselName = job.Vessel?.vessel_name || job.Client?.company_name || 'Company Wide';
     notificationService.notifyRoles(['ADMIN', 'GM', 'TM'], 'JOB_DOCUMENT_VERIFIED', {
-        jobId: jobId, vesselName: job.Vessel.vessel_name
+        jobId: jobId, vesselName: vesselName
     }).catch(() => { });
 
     return { 
@@ -1122,12 +1158,16 @@ export const approveRequest = async (id, remarks, user) => {
         await updated.update({ approved_by_user_id: user.id });
     }
 
-    // Notify Client (vessel already loaded)
-    const clientUser = await User.findOne({ where: { client_id: job.Vessel.client_id, role: 'CLIENT' }, useMaster: true });
-    if (clientUser) {
-        notificationService.sendNotification(clientUser.id, 'JOB_APPROVED', {
-            jobId: id, vesselName: job.Vessel.vessel_name
-        }).catch(() => { });
+    // Notify Client
+    const clientId = job.Vessel?.client_id || job.client_id;
+    const vesselName = job.Vessel?.vessel_name || job.Client?.company_name || 'Company Wide';
+    if (clientId) {
+        const clientUser = await User.findOne({ where: { client_id: clientId, role: 'CLIENT' }, useMaster: true });
+        if (clientUser) {
+            notificationService.sendNotification(clientUser.id, 'JOB_APPROVED', {
+                jobId: id, vesselName: vesselName
+            }).catch(() => { });
+        }
     }
 
     return updated;
@@ -1244,8 +1284,9 @@ export const assignSurveyor = async (jobId, surveyorId, user) => {
     }
 
     // Vessel already loaded
+    const vesselName = job.Vessel?.vessel_name || job.Client?.company_name || 'Company Wide';
     notificationService.sendNotification(surveyorId, 'JOB_ASSIGNED', {
-        jobId, vesselName: job.Vessel.vessel_name, port: job.target_port
+        jobId, vesselName: vesselName, port: job.target_port
     });
     return job;
 };
@@ -1515,9 +1556,10 @@ export const reassignSurveyorToCertificate = async (jobCertificateId, surveyorId
         reason: `Certificate (${certName}): reassigned from Surveyor ${oldName} to Surveyor ${newName}: ${reason}`,
     });
 
+    const vesselName = job.Vessel?.vessel_name || job.Client?.company_name || 'Company Wide';
     notificationService.sendNotification(surveyorId, 'JOB_ASSIGNED', {
         jobId: job.id,
-        vesselName: job.Vessel.vessel_name,
+        vesselName: vesselName,
         port: job.target_port,
     });
 
@@ -2044,7 +2086,8 @@ export const cancelJob = async (id, reason, userId) => {
 export const cancelJobForClient = async (id, reason, clientId, userId) => {
     const job = await JobRequest.findByPk(id, { include: ['Vessel'], useMaster: true });
     if (!job) throw { statusCode: 404, message: 'The requested job could not be found.' };
-    if (job.Vessel.client_id !== clientId) {
+    const jobClientId = job.Vessel?.client_id || job.client_id;
+    if (jobClientId !== clientId) {
         throw { statusCode: 403, message: 'Access denied: this job does not belong to your account.' };
     }
     if (job.job_status !== 'CREATED') {
@@ -2069,8 +2112,8 @@ export const getJobDocuments = async (jobId, user) => {
 
     // Client can only see their own jobs' docs
     if (user.role === 'CLIENT') {
-        const vessel = await Vessel.findByPk(job.vessel_id);
-        if (!vessel || vessel.client_id !== user.client_id) {
+        const jobClientId = job.Vessel?.client_id || job.client_id;
+        if (jobClientId !== user.client_id) {
             throw { statusCode: 403, message: 'Access denied: this job does not belong to your account.' };
         }
     }
@@ -2193,8 +2236,8 @@ export const uploadJobDocuments = async (jobId, documents, user) => {
 
     // Client ownership check
     if (user.role === 'CLIENT') {
-        const vessel = await Vessel.findByPk(job.vessel_id, { useMaster: true });
-        if (!vessel || vessel.client_id !== user.client_id) {
+        const jobClientId = job.Vessel?.client_id || job.client_id;
+        if (jobClientId !== user.client_id) {
             throw { statusCode: 403, message: 'Access denied: this job does not belong to your account.' };
         }
     }
@@ -2243,9 +2286,10 @@ export const uploadJobDocuments = async (jobId, documents, user) => {
     }
 
     // Notify TO that new documents were uploaded
+    const vesselName = job.Vessel?.vessel_name || job.Client?.company_name || 'Company Wide';
     notificationService.notifyRoles(['TO'], 'JOB_DOCUMENTS_UPLOADED', {
         jobId,
-        vesselName: job.Vessel.vessel_name,
+        vesselName: vesselName,
         count: created.length
     }).catch(() => { });
 
@@ -2274,8 +2318,8 @@ export const reuploadJobDocument = async (jobId, documentId, body, user) => {
 
     // Client ownership check
     if (user.role === 'CLIENT') {
-        const vessel = await Vessel.findByPk(job.vessel_id, { useMaster: true });
-        if (!vessel || vessel.client_id !== user.client_id) {
+        const jobClientId = job.Vessel?.client_id || job.client_id;
+        if (jobClientId !== user.client_id) {
             throw { statusCode: 403, message: 'Access denied: this job does not belong to your account.' };
         }
     }
@@ -2324,9 +2368,10 @@ export const reuploadJobDocument = async (jobId, documentId, body, user) => {
     });
 
     // Notify TO that a document was re-uploaded (or updated)
+    const vesselName = job.Vessel?.vessel_name || job.Client?.company_name || 'Company Wide';
     notificationService.notifyRoles(['TO'], 'JOB_DOCUMENT_REUPLOADED', {
         jobId,
-        vesselName: job.Vessel.vessel_name,
+        vesselName: vesselName,
         documentId: resultDoc.id
     }).catch(() => { });
 

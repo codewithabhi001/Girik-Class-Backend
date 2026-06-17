@@ -67,7 +67,8 @@ export const schemas = {
         phone: Joi.string().optional().allow('', null)
     }).unknown(true),
     createJob: Joi.object({
-        vessel_id: Joi.string().guid().required(),
+        vessel_id: Joi.string().guid().optional().allow(null, ''),
+        client_id: Joi.string().guid().optional().allow(null, ''),
         target_port: Joi.string().required(),
         target_date: Joi.date().iso().required(),
         priority: Joi.string().valid('LOW', 'NORMAL', 'HIGH', 'URGENT').optional().default('NORMAL'),
@@ -91,7 +92,7 @@ export const schemas = {
             currency: Joi.string().optional().default('USD')
         }).optional(),
         skip_mandatory_check: Joi.boolean().optional().default(false)
-    }),
+    }).or('vessel_id', 'client_id'),
     submitSurvey: Joi.object({
         submit_latitude: Joi.number().optional(),
         submit_longitude: Joi.number().optional(),

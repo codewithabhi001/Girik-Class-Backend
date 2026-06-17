@@ -2,6 +2,7 @@ export default (sequelize, DataTypes) => {
     const Certificate = sequelize.define('Certificate', {
         id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV7, primaryKey: true },
         vessel_id: DataTypes.UUID,
+        client_id: DataTypes.UUID,
         job_id: DataTypes.UUID,
         certificate_type_id: DataTypes.UUID,
         certificate_number: { type: DataTypes.STRING, unique: true },
@@ -61,6 +62,7 @@ export default (sequelize, DataTypes) => {
 
     Certificate.associate = (models) => {
         Certificate.belongsTo(models.Vessel, { foreignKey: 'vessel_id' });
+        Certificate.belongsTo(models.Client, { foreignKey: 'client_id', as: 'Client' });
         Certificate.belongsTo(models.JobRequest, { foreignKey: 'job_id' });
         Certificate.belongsTo(models.CertificateType, { foreignKey: 'certificate_type_id' });
         Certificate.belongsTo(models.FlagAdministration, { foreignKey: 'flag_administration_id', as: 'FlagState' });

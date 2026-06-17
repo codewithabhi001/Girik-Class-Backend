@@ -40,6 +40,10 @@ export const buildTagValuesForJob = async (jobId) => {
                     { model: db.FlagAdministration, as: 'FlagAdministration' }
                 ] 
             },
+            {
+                model: db.Client,
+                as: 'Client'
+            },
             { model: db.User, as: 'surveyor' },
         ]
     });
@@ -47,7 +51,7 @@ export const buildTagValuesForJob = async (jobId) => {
     if (!job) return {};
 
     const vessel = job.Vessel;
-    const client = vessel?.Client;
+    const client = vessel?.Client || job.Client;
     const surveyor = job.surveyor;
 
     const jobCerts = await db.JobCertificate.findAll({

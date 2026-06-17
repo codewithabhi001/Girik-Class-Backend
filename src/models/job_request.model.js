@@ -8,7 +8,8 @@ export default (sequelize, DataTypes) => {
             unique: true,
             comment: 'Formatted random ID: GRJ-XXXXXXXX'
         },
-        vessel_id: { type: DataTypes.UUID, allowNull: false },
+        vessel_id: { type: DataTypes.UUID, allowNull: true },
+        client_id: { type: DataTypes.UUID, allowNull: true },
         requested_by_user_id: { type: DataTypes.UUID, allowNull: false },
         reason: { type: DataTypes.TEXT, allowNull: true, defaultValue: 'Certificate inspection requested' },
         target_port: { type: DataTypes.STRING, allowNull: false },
@@ -221,6 +222,7 @@ export default (sequelize, DataTypes) => {
 
     JobRequest.associate = (models) => {
         JobRequest.belongsTo(models.Vessel, { foreignKey: 'vessel_id' });
+        JobRequest.belongsTo(models.Client, { foreignKey: 'client_id', as: 'Client' });
         JobRequest.belongsTo(models.User, { foreignKey: 'requested_by_user_id', as: 'requester' });
         JobRequest.belongsTo(models.User, { foreignKey: 'assigned_surveyor_id', as: 'surveyor' });
         JobRequest.belongsTo(models.User, { foreignKey: 'assigned_by_user_id', as: 'assigned_by' });

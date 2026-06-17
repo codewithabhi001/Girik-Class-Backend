@@ -575,21 +575,21 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
 
             const allDataSources = {
                 ...dynamicTags,
-                vessel_name: cert.Vessel?.vessel_name || '',
-                imo_number: cert.Vessel?.imo_number || '',
-                call_sign: cert.Vessel?.call_sign || '',
-                mmsi_number: cert.Vessel?.mmsi_number || '',
-                port_of_registry: cert.Vessel?.port_of_registry || '',
-                year_built: cert.Vessel?.year_built || '',
-                ship_type: cert.Vessel?.ship_type || '',
-                gross_tonnage: cert.Vessel?.gross_tonnage || '',
-                net_tonnage: cert.Vessel?.net_tonnage || '',
-                deadweight: cert.Vessel?.deadweight || '',
-                ballast_water_capacity: cert.Vessel?.ballast_water_capacity || '',
+                vessel_name: cert.Vessel?.vessel_name || 'Company Wide',
+                imo_number: cert.Vessel?.imo_number || 'N/A',
+                call_sign: cert.Vessel?.call_sign || 'N/A',
+                mmsi_number: cert.Vessel?.mmsi_number || 'N/A',
+                port_of_registry: cert.Vessel?.port_of_registry || 'N/A',
+                year_built: cert.Vessel?.year_built || 'N/A',
+                ship_type: cert.Vessel?.ship_type || 'N/A',
+                gross_tonnage: cert.Vessel?.gross_tonnage || 'N/A',
+                net_tonnage: cert.Vessel?.net_tonnage || 'N/A',
+                deadweight: cert.Vessel?.deadweight || 'N/A',
+                ballast_water_capacity: cert.Vessel?.ballast_water_capacity || 'N/A',
                 // Company (client) fields — used by DOC and other company-level certificates
-                company_name: cert.Vessel?.Client?.company_name || '',
-                company_address: cert.Vessel?.Client?.address || '',
-                company_id_number: cert.Vessel?.Client?.company_id_number || '',
+                company_name: cert.Vessel?.Client?.company_name || cert.Client?.company_name || '',
+                company_address: cert.Vessel?.Client?.address || cert.Client?.address || '',
+                company_id_number: cert.Vessel?.Client?.company_id_number || cert.Client?.company_id_number || '',
                 certificate_number: certificateNumber,
                 certificate_type: cert.CertificateType?.name || '',
                 issue_date: formatDate(cert.issue_date),
@@ -853,7 +853,13 @@ export const generateCertificate = async (data, user) => {
         if ((jobCert && jobCert.generated_certificate_id) || job.generated_certificate_id) {
             throw { statusCode: 409, message: 'A draft or certificate already exists for this job/certificate.' };
         }
-        const existingCert = await Certificate.findOne({ where: { vessel_id: job.vessel_id, certificate_type_id: certTypeId, status: 'VALID' }, transaction });
+        const existingCertWhere = { certificate_type_id: certTypeId, status: 'VALID' };
+        if (job.vessel_id) {
+            existingCertWhere.vessel_id = job.vessel_id;
+        } else {
+            existingCertWhere.client_id = job.client_id;
+        }
+        const existingCert = await Certificate.findOne({ where: existingCertWhere, transaction });
         if (existingCert) {
             logger?.warn('Possible duplicate certificate attempt', { job_id: resolvedJobId, existing_cert_id: existingCert.id });
         }
@@ -889,7 +895,8 @@ export const generateCertificate = async (data, user) => {
         const certificateNumber = await generateUniqueCertificateNumber(certType?.short_code);
 
         const cert = await Certificate.create({
-            vessel_id: job.vessel_id,
+            vessel_id: job.vessel_id || null,
+            client_id: job.client_id || null,
             job_id: job.id,
             certificate_type_id: certTypeId,
             certificate_number: certificateNumber,
@@ -934,6 +941,7 @@ export const generateCertificate = async (data, user) => {
                 useMaster: true,
                 include: [
                     { model: db.Vessel, include: [{ model: db.Client, as: 'Client', attributes: ['company_name', 'address', 'company_id_number'] }] },
+                    { model: db.Client, as: 'Client', attributes: ['id', 'company_name', 'address', 'company_id_number'] },
                     { model: db.CertificateType },
                     { model: db.FlagAdministration, as: 'FlagState' }
                 ]
@@ -1021,9 +1029,9 @@ export const generateCertificate = async (data, user) => {
     }
 };
 
-const ALLOWED_CERT_LIST_FILTERS = ['vessel_id', 'certificate_type_id', 'status'];
-
 export const getCertificates = async (query, user) => {
+    const ALLOWED_CERT_LIST_FILTERS = ['vessel_id', 'client_id', 'certificate_type_id', 'status'];
+
     const scopeWhere = await getCertificateScopeFilter(user);
     const { page = 1, limit = 10, ...rest } = query;
     const where = { ...scopeWhere };
@@ -1060,15 +1068,26 @@ export const getCertificates = async (query, user) => {
     };
 
     if (rest.client_id != null && rest.client_id !== '') {
-        vesselInclude.where = { client_id: rest.client_id };
+        // Enforce either direct client_id on the certificate (for company certificates)
+        // or through the associated vessel's client_id.
+        where[Op.or] = [
+            { client_id: rest.client_id },
+            { '$Vessel.client_id$': rest.client_id }
+        ];
+        // Clean up direct client_id filter so it doesn't try to query { client_id: rest.client_id } as an AND condition
+        delete where.client_id;
     }
 
     const { count, rows } = await Certificate.findAndCountAll({
         where,
-        attributes: ['id', 'vessel_id', 'certificate_type_id', 'certificate_number', 'issue_date', 'expiry_date', 'status', 'createdAt', 'source_type', 'pdf_file_url', 'uploaded_file_url', 'generated_pdf_url', 'manually_overridden_file_url'],
+        attributes: ['id', 'vessel_id', 'client_id', 'certificate_type_id', 'certificate_number', 'issue_date', 'expiry_date', 'status', 'createdAt', 'source_type', 'pdf_file_url', 'uploaded_file_url', 'generated_pdf_url', 'manually_overridden_file_url'],
         limit: Math.min(parseInt(limit, 10) || 10, 100),
         offset: (Math.max(1, parseInt(page, 10)) - 1) * (parseInt(limit, 10) || 10),
-        include: [vesselInclude, { model: db.CertificateType, attributes: ['id', 'name'] }],
+        include: [
+            vesselInclude,
+            { model: db.Client, as: 'Client', attributes: ['id', 'company_name'] },
+            { model: db.CertificateType, attributes: ['id', 'name'] }
+        ],
         order: [['createdAt', 'DESC']],
         subQuery: false,
         useReplica: true
@@ -1168,6 +1187,7 @@ export const getCertificateById = async (id, user) => {
         where: { id, ...scopeWhere },
         include: [
             { model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }, 
+            { model: db.Client, as: 'Client', attributes: ['id', 'company_name', 'address', 'company_id_number'] },
             { model: db.CertificateType, attributes: ['name'] },
             { model: db.JobRequest, attributes: ['id', 'job_request_number'] },
             { model: db.FlagAdministration, as: 'FlagState', attributes: ['id', 'flag_state_name', 'logo_url'] }
@@ -1705,7 +1725,6 @@ export const bulkRenew = async (ids, validityYears, reason, userId) => {
     const results = await Promise.all(renewalPromises);
     return results;
 };
-
 export const verifyCertificate = async (certificateNumber) => {
     const cert = await Certificate.findOne({
         where: { certificate_number: certificateNumber },
@@ -1713,7 +1732,7 @@ export const verifyCertificate = async (certificateNumber) => {
             { model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }, 
             { model: db.CertificateType, attributes: ['name'] },
             { model: db.FlagAdministration, as: 'FlagState', attributes: ['flag_state_name'] },
-            { model: db.User, as: 'issuer', attributes: ['first_name', 'last_name'] }
+            { model: db.User, as: 'issuer', attributes: ['name'] }
         ]
     });
     if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
@@ -1738,7 +1757,7 @@ export const verifyCertificate = async (certificateNumber) => {
             imo_number: cert.Vessel?.imo_number,
             certificate_type: cert.CertificateType?.name,
             flag_state: cert.FlagState?.flag_state_name,
-            issued_by: cert.issuer ? `${cert.issuer.first_name} ${cert.issuer.last_name}` : 'GR CLASS'
+            issued_by: cert.issuer ? cert.issuer.name : 'GR CLASS'
         },
         pdf_url: pdfUrl
     };
