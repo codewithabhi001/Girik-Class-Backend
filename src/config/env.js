@@ -65,6 +65,12 @@ export default {
      */
     publicApiBaseUrl: (process.env.PUBLIC_API_BASE_URL || process.env.API_PUBLIC_URL || `http://localhost:${process.env.PORT || 3000}`).replace(/\/$/, ''),
     /**
+     * Public frontend URL used inside QR codes on certificates.
+     * Format: https://grclass.com/verify?certificate={number}
+     * Set CERTIFICATE_VERIFY_PUBLIC_URL in .env to override.
+     */
+    certificateVerifyPublicUrl: (process.env.CERTIFICATE_VERIFY_PUBLIC_URL || 'https://grclass.com/verify?certificate={number}').trim(),
+    /**
      * RFC 2919 List-Id header value (not including "List-Id:").
      * Gmail shows this name in the Unsubscribe dialog; without it you often see "(Unknown)".
     newsletterListId: (process.env.NEWSLETTER_LIST_ID || 'GR-Class Newsletter').trim(),

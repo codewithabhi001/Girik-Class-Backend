@@ -1,0 +1,14 @@
+MISSING CERTIFICATE TEMPLATES REPORT
+====================================
+
+The following 10 certificate types from "DOCUMENTS REQUIRED.xlsx" are missing their template folders in the directory structure:
+
+1. International Energy Efficiency (IEE) Certificate (shortForm: IEE)
+2. Cargo Securing Manuals (shortForm: CSM)
+3. Enhanced Surveys Program for Bulk Carriers (shortForm: ESP)
+4. A Fire/ Safety Control Plan (shortForm: FSC)
+5. General Checklist (shortForm: GAP)
+6. Ship Energy Efficiency Management Plan (shortForm: SEEMP)
+7. Shipboard Marine Pollution Emergency Plan (shortForm: SMPEP)
+8. Ship Oil Pollution Emergency Plan (shortForm: SOPEP)
+9. Ship-to-Ship Transfer Plan (shortForm: STS)

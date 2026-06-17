@@ -643,7 +643,7 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
                 throw { statusCode: 400, message: 'No valid template content found for this certificate.' };
             }
 
-            const verificationUrl = `${env.publicApiBaseUrl}/api/v1/public/certificate/verify/${certificateNumber}`;
+            const verificationUrl = env.certificateVerifyPublicUrl.replace('{number}', encodeURIComponent(certificateNumber));
             const qrDataUrl = await QRCode.toDataURL(verificationUrl, { width: 120, margin: 1 });
             
             allDataSources.qr_code = `<img src="${qrDataUrl}" style="width:120px;height:120px;" alt="QR Code"/>`;
