@@ -43,8 +43,22 @@ export const downloadCertificate = async (req, res, next) => {
     try {
         const cert = await certService.getCertificateById(req.params.id, req.user);
         if (cert.pdf_file_url) {
-            const process = await fileAccessService.processFileAccess({ file_url: cert.pdf_file_url }, req.user);
-            if (process.signedUrl) return res.redirect(302, process.signedUrl);
+            let filename = 'certificate.pdf';
+            if (cert.certificate_number) {
+                const cleanNumber = cert.certificate_number.replace(/[^a-zA-Z0-9_\-]/g, '_');
+                filename = `certificate_${cleanNumber}.pdf`;
+            }
+            const options = {
+                ResponseContentDisposition: `attachment; filename="${filename}"`
+            };
+            const process = await fileAccessService.processFileAccess({ file_url: cert.pdf_file_url }, req.user, options);
+            if (process.signedUrl) {
+                // Return JSON if requested via AJAX/API (e.g. has Authorization header, expects json, or has json parameter)
+                if (req.headers.authorization || (req.headers.accept && req.headers.accept.includes('application/json')) || req.query.json === 'true') {
+                    return res.json({ success: true, downloadUrl: process.signedUrl, pdf_file_url: process.signedUrl });
+                }
+                return res.redirect(302, process.signedUrl);
+            }
         }
         res.status(404).json({ success: false, message: 'Certificate PDF is not available for download yet.' });
     } catch (error) { next(error); }

@@ -59,12 +59,15 @@ export const getCertificateTypes = async (options = {}) => {
     }
 
     if (search) {
-        where.name = { [Op.like]: `%${search}%` };
+        where[Op.or] = [
+            { name: { [Op.like]: `%${search}%` } },
+            { short_code: { [Op.like]: `%${search}%` } }
+        ];
     }
 
     const queryOptions = {
         where,
-        attributes: ['id', 'name', 'issuing_authority', 'validity_years', 'status', 'requires_survey'],
+        attributes: ['id', 'name', 'short_code', 'issuing_authority', 'validity_years', 'status', 'requires_survey'],
         order: [['name', 'ASC']],
         useReplica: true
     };
@@ -102,7 +105,7 @@ export const getCertificateTypes = async (options = {}) => {
 /** Get a single certificate type by ID with full detail including description and required documents. */
 export const getCertificateTypeById = async (id) => {
     const type = await CertificateType.findByPk(id, {
-        attributes: ['id', 'name', 'issuing_authority', 'validity_years', 'status', 'description', 'requires_survey'],
+        attributes: ['id', 'name', 'short_code', 'issuing_authority', 'validity_years', 'status', 'description', 'requires_survey'],
         include: [{
             model: db.CertificateRequiredDocument,
             attributes: ['id', 'document_name', 'is_mandatory'],
@@ -138,6 +141,7 @@ export const createCertificateType = async (data) => {
 
         const type = await CertificateType.create({
             name: certData.name,
+            short_code: certData.short_code ?? null,
             issuing_authority: certData.issuing_authority,
             validity_years: certData.validity_years,
             status: certData.status ?? 'ACTIVE',

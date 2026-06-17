@@ -60,18 +60,18 @@ export const generatePublicCdnUrl = (key) => {
  * @param {boolean} skipAudit - Whether to skip individual audit logging
  * @returns {Promise<string>} Signed URL
  */
-export const generateSignedUrl = async (key, expiresInSeconds = 300, user = null, skipAudit = false) => {
+export const generateSignedUrl = async (key, expiresInSeconds = 300, user = null, skipAudit = false, options = {}) => {
     const cleanKey = getKeyFromUrl(key);
     if (!cleanKey) return null;
 
     // ── Check cache first ──
-    const cacheKey = `${cleanKey}:${expiresInSeconds}`;
+    const cacheKey = `${cleanKey}:${expiresInSeconds}:${options.ResponseContentDisposition || ''}`;
     const cached = _signedUrlCache.get(cacheKey);
     if (cached && (Date.now() - cached.ts < SIGNED_URL_CACHE_TTL)) {
         return cached.url;
     }
 
-    const signedUrl = await s3Service.getSignedFileUrl(cleanKey, expiresInSeconds);
+    const signedUrl = await s3Service.getSignedFileUrl(cleanKey, expiresInSeconds, options);
     _signedUrlCache.set(cacheKey, { url: signedUrl, ts: Date.now() });
 
     // Audit Log (non-blocking) - Only if not skipped
@@ -312,7 +312,7 @@ export const validateUserEntityAccess = async (user, entityType, entityId) => {
  * @param {Object} user 
  * @returns {Promise<Object>}
  */
-export const processFileAccess = async (fileRecord, user) => {
+export const processFileAccess = async (fileRecord, user, options = {}) => {
     const key = getKeyFromUrl(fileRecord.file_url);
     const isPublic = key.startsWith('public/');
 
@@ -323,7 +323,7 @@ export const processFileAccess = async (fileRecord, user) => {
         signedUrl = generatePublicCdnUrl(key);
     } else {
         const expiresIn = 600; // 10 minutes
-        signedUrl = await generateSignedUrl(key, expiresIn, user);
+        signedUrl = await generateSignedUrl(key, expiresIn, user, false, options);
         expiresAt = new Date(Date.now() + expiresIn * 1000);
     }
 

@@ -53,15 +53,19 @@ export const UPLOAD_FOLDERS = {
     WEBSITE_VIDEOS: 'public/website/videos',
 };
 
-export const getSignedFileUrl = async (key, expiresIn = 3600) => {
+export const getSignedFileUrl = async (key, expiresIn = 3600, options = {}) => {
     if (!env.aws.bucketName || !env.aws.accessKeyId) {
         if (env.nodeEnv === 'production') throw new Error('FATAL: AWS credentials not configured in production environment.');
         return `https://mock-s3.com/${key}`;
     }
-    const command = new GetObjectCommand({
+    const commandParams = {
         Bucket: env.aws.bucketName,
         Key: key,
-    });
+    };
+    if (options.ResponseContentDisposition) {
+        commandParams.ResponseContentDisposition = options.ResponseContentDisposition;
+    }
+    const command = new GetObjectCommand(commandParams);
     return await getSignedUrl(s3Client, command, { expiresIn });
 };
 

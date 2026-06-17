@@ -11,6 +11,7 @@ export const flatCertificateTypeListRow = (row) => {
     return {
         id: t.id,
         name: t.name,
+        short_code: t.short_code ?? '',
         issuing_authority: t.issuing_authority,
         validity_years: t.validity_years,
         status: t.status,
@@ -27,6 +28,7 @@ export const shapeCertificateTypeDetail = (row) => {
     return {
         id: t.id,
         name: t.name,
+        short_code: t.short_code ?? '',
         issuing_authority: t.issuing_authority,
         validity_years: t.validity_years,
         status: t.status,
