@@ -1,4 +1,5 @@
 import db from '../../models/index.js';
+import { Op } from 'sequelize';
 import * as fileAccessService from '../../services/fileAccess.service.js';
 
 const Certificate = db.Certificate;
@@ -7,7 +8,7 @@ const Vessel = db.Vessel;
 export const verifyCertificate = async (certificateNumber) => {
     if (!certificateNumber) throw { statusCode: 400, message: 'Certificate number is required' };
     const cert = await Certificate.findOne({
-        where: { certificate_number: certificateNumber, status: !'DRAFT' },
+        where: { certificate_number: certificateNumber, status: { [Op.ne]: 'DRAFT' } },
         include: [
             { model: Vessel, attributes: ['vessel_name', 'imo_number'] }
         ],
