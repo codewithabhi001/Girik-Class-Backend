@@ -274,6 +274,7 @@ export const schemas = {
     createClient: Joi.object({
         company_name: Joi.string().required(),
         company_code: Joi.string().required(),
+        company_id_number: Joi.string().optional().allow('', null),
         email: Joi.string().email().required(),
         address: Joi.string().optional().allow(''),
         country: Joi.string().optional().allow(''),
