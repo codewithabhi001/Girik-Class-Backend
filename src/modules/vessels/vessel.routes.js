@@ -20,6 +20,9 @@ router.get('/client/:clientId', authorizeRoles('ADMIN', 'GM'), vesselController.
 // Create a new vessel
 router.post('/', authorizeRoles('ADMIN', 'GM'), validate(schemas.createVessel), vesselController.createVessel);
 
+// Lookup vessel details by IMO number from external registry
+router.get('/lookup/:imo', authorizeRoles('ADMIN', 'GM'), vesselController.lookupVesselByImo);
+
 // Get specific vessel details
 router.get('/:id', authorizeRoles('ADMIN', 'GM', 'SURVEYOR', 'CLIENT'), vesselController.getVesselById);
 

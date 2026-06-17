@@ -3,6 +3,9 @@ import { VESSEL_CLASS_STATUSES } from '../../constants/statuses.js';
 import { buildFullStatusCounts } from '../../utils/statusCount.util.js';
 import { flatVesselListRow } from '../../utils/listRowFlatten.util.js';
 import * as fileAccessService from '../../services/fileAccess.service.js';
+import axios from 'axios';
+import env from '../../config/env.js';
+
 
 const enrichVesselUploadedDocuments = async (docs, user = null) => {
     return Promise.all(docs.map(async (doc) => {
@@ -247,5 +250,94 @@ export const updateVessel = async (id, data, scopeFilters = {}, userId = null) =
     } catch (error) {
         await txn.rollback();
         throw error;
+    }
+};
+
+export const lookupVesselByImo = async (imoNumber) => {
+    if (!imoNumber || !/^\d{7}$/.test(imoNumber)) {
+        throw { statusCode: 400, message: 'Invalid IMO number format. Must be 7 digits.' };
+    }
+
+    const apiKey = env.vesselApiKey;
+    if (!apiKey) {
+        throw { statusCode: 500, message: 'Vessel API key is not configured.' };
+    }
+
+    try {
+        const response = await axios.get(`https://api.vesselapi.com/v1/vessel/${imoNumber}?filter.idType=imo`, {
+            headers: {
+                'Authorization': `Bearer ${apiKey}`
+            }
+        });
+
+        const data = response.data;
+        if (!data || !data.vessel) {
+            throw { statusCode: 404, message: 'Vessel not found in external registry.' };
+        }
+
+        const extVessel = data.vessel;
+
+        // Try to match Flag Administration
+        let flag_administration_id = null;
+        if (extVessel.country) {
+            const countryLower = extVessel.country.toLowerCase().trim();
+            let flag = await db.FlagAdministration.findOne({
+                where: {
+                    status: 'ACTIVE',
+                    [db.Sequelize.Op.or]: [
+                        db.Sequelize.where(
+                            db.Sequelize.fn('lower', db.Sequelize.col('country')),
+                            countryLower
+                        ),
+                        db.Sequelize.where(
+                            db.Sequelize.fn('lower', db.Sequelize.col('flag_state_name')),
+                            { [db.Sequelize.Op.like]: `%${countryLower}%` }
+                        )
+                    ]
+                }
+            });
+            
+            if (!flag) {
+                // Dynamically create the flag administration
+                const newFlagStateName = `${extVessel.country} Shipping Registry`;
+                flag = await db.FlagAdministration.create({
+                    flag_state_name: newFlagStateName,
+                    country: extVessel.country,
+                    authority_name: `${extVessel.country} Maritime Authority`,
+                    contact_email: `administration@${extVessel.country.toLowerCase().replace(/[^a-z0-9]/g, '')}.gov`,
+                    status: 'ACTIVE'
+                });
+            }
+
+            if (flag) {
+                flag_administration_id = flag.id;
+            }
+        }
+
+        return {
+            vessel_name: extVessel.name ? extVessel.name.toUpperCase() : '',
+            imo_number: String(extVessel.imo),
+            mmsi_number: extVessel.mmsi ? String(extVessel.mmsi) : '',
+            call_sign: extVessel.call_sign || '',
+            ship_type: extVessel.vessel_type || '',
+            year_built: extVessel.year_built || null,
+            gross_tonnage: extVessel.gross_tonnage || null,
+            net_tonnage: null,
+            deadweight: extVessel.deadweight_tonnage || null,
+            port_of_registry: extVessel.home_port || '',
+            current_class_society: extVessel.class_society || '',
+            engine_type: extVessel.engine_model_name || '',
+            builder_name: extVessel.builder || '',
+            flag_administration_id,
+            external_flag: extVessel.country || ''
+        };
+
+    } catch (error) {
+        if (error.statusCode) throw error;
+        console.error('Error looking up vessel from API:', error.message);
+        throw { 
+            statusCode: error.response?.status || 500, 
+            message: error.response?.data?.error?.message || 'Error fetching vessel details from external registry.' 
+        };
     }
 };

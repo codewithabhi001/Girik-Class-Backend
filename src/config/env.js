@@ -101,5 +101,6 @@ export default {
     },
     firebase: {
         serviceAccountPath: process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './src/config/grclass-platform-firebase-adminsdk-fbsvc-05f339dc4f.json'
-    }
+    },
+    vesselApiKey: process.env.VESSEL_API_KEY || null
 };

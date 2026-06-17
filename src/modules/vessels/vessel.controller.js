@@ -88,3 +88,17 @@ export const updateVessel = async (req, res, next) => {
         });
     } catch (error) { next(error); }
 };
+
+export const lookupVesselByImo = async (req, res, next) => {
+    try {
+        const { imo } = req.params;
+        const vesselData = await vesselService.lookupVesselByImo(imo);
+        res.json({
+            success: true,
+            message: 'Vessel details fetched from registry successfully',
+            data: vesselData
+        });
+    } catch (error) {
+        next(error);
+    }
+};
