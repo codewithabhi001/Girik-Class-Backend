@@ -44,7 +44,7 @@ export default (sequelize, DataTypes) => {
         timestamps: true,
         hooks: {
             beforeValidate: (vessel) => {
-                const fieldsToLower = [
+                const fieldsToTrim = [
                     'vessel_name',
                     'imo_number',
                     'call_sign',
@@ -55,9 +55,9 @@ export default (sequelize, DataTypes) => {
                     'engine_type',
                     'builder_name'
                 ];
-                for (const field of fieldsToLower) {
+                for (const field of fieldsToTrim) {
                     if (typeof vessel[field] === 'string') {
-                        vessel[field] = vessel[field].toLowerCase().trim();
+                        vessel[field] = vessel[field].trim();
                     }
                 }
             }

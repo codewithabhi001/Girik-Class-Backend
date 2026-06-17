@@ -18,7 +18,7 @@ export default (sequelize, DataTypes) => {
         updatedAt: false,
         hooks: {
             beforeValidate: (client) => {
-                const fieldsToLower = [
+                const fieldsToTrim = [
                     'company_name',
                     'company_code',
                     'country',
@@ -26,9 +26,18 @@ export default (sequelize, DataTypes) => {
                     'contact_person_name',
                     'contact_person_email'
                 ];
+                for (const field of fieldsToTrim) {
+                    if (typeof client[field] === 'string') {
+                        client[field] = client[field].trim();
+                    }
+                }
+                const fieldsToLower = [
+                    'email',
+                    'contact_person_email'
+                ];
                 for (const field of fieldsToLower) {
                     if (typeof client[field] === 'string') {
-                        client[field] = client[field].toLowerCase().trim();
+                        client[field] = client[field].toLowerCase();
                     }
                 }
             }

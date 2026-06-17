@@ -30,16 +30,19 @@ export default (sequelize, DataTypes) => {
         ],
         hooks: {
             beforeValidate: (flag) => {
-                const fieldsToLower = [
+                const fieldsToTrim = [
                     'flag_state_name',
                     'country',
                     'authority_name',
                     'contact_email'
                 ];
-                for (const field of fieldsToLower) {
+                for (const field of fieldsToTrim) {
                     if (typeof flag[field] === 'string') {
-                        flag[field] = flag[field].toLowerCase().trim();
+                        flag[field] = flag[field].trim();
                     }
+                }
+                if (typeof flag.contact_email === 'string') {
+                    flag.contact_email = flag.contact_email.toLowerCase();
                 }
             }
         }
