@@ -15,6 +15,8 @@ export const flatCertificateTypeListRow = (row) => {
         validity_years: t.validity_years,
         status: t.status,
         requires_survey: t.requires_survey,
+        requires_survey_short_term: t.requires_survey_short_term,
+        requires_survey_full_term: t.requires_survey_full_term,
     };
 };
 
@@ -30,10 +32,13 @@ export const shapeCertificateTypeDetail = (row) => {
         status: t.status,
         description: t.description ?? null,
         requires_survey: t.requires_survey,
+        requires_survey_short_term: t.requires_survey_short_term,
+        requires_survey_full_term: t.requires_survey_full_term,
         required_documents: docs.map((d) => ({
             id: d.id,
             document_name: d.document_name,
             is_mandatory: d.is_mandatory,
+            applies_to_term: d.applies_to_term,
         })),
     };
 };

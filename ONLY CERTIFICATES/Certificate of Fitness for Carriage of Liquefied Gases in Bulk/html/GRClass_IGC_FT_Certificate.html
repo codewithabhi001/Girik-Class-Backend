@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>GR Class – IGC-FT Certificate</title>
+<title>GR Class – Certificate of Fitness for Carriage of Liquefied Gases in Bulk - Full Term</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
 
@@ -30,7 +30,6 @@ body {
   padding: 16px 0 40px;
 }
 
-/* ── PRINT BUTTON ── */
 .no-print {
   width: 210mm;
   margin: 0 auto 10px;
@@ -50,13 +49,7 @@ body {
   border-radius: 3px;
 }
 .btn-print:hover { background: var(--blue); }
-.tag-hint {
-  font-size: 8pt;
-  color: #aaa;
-  margin-left: 12px;
-}
 
-/* ── CERTIFICATE PAGE ── */
 .cert {
   width: 210mm;
   min-height: 297mm;
@@ -69,10 +62,8 @@ body {
   overflow: hidden;
 }
 
-/* prevent any text from overflowing */
 .cert * { word-wrap: break-word; overflow-wrap: break-word; }
 
-/* outer decorative frame */
 .cert::before {
   content: '';
   position: absolute;
@@ -90,7 +81,6 @@ body {
   z-index: 5;
 }
 
-/* ══════════════ HEADER ══════════════ */
 .hdr {
   background: var(--navy);
   padding: 0;
@@ -113,7 +103,6 @@ body {
   background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
 }
 
-/* logo */
 .logo {
   width: 60px; height: 60px;
   background: #fff;
@@ -124,24 +113,7 @@ body {
   flex-shrink: 0;
   box-shadow: 0 0 0 1px rgba(196,168,74,.6);
 }
-.logo-gr {
-  font-family: 'EB Garamond', serif;
-  font-weight: 700;
-  font-size: 18pt;
-  color: var(--navy);
-  line-height: 1;
-  letter-spacing: 1px;
-}
-.logo-word {
-  font-size: 5.5pt;
-  font-weight: 700;
-  color: var(--blue);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
 
-/* centre title */
-.hdr-title {}
 .hdr-eyebrow {
   font-size: 7pt;
   font-weight: 600;
@@ -167,7 +139,6 @@ body {
   word-wrap: break-word;
 }
 
-/* right meta */
 .hdr-meta { text-align: right; word-wrap: break-word; }
 .hdr-meta-label {
   font-size: 6pt;
@@ -184,8 +155,6 @@ body {
   display: block;
   line-height: 1.15;
   letter-spacing: .5px;
-  
-  
   white-space: nowrap;
 }
 .hdr-meta-form {
@@ -194,7 +163,6 @@ body {
   margin-top: 4px;
 }
 
-/* ══════════════ AUTHORITY BAND ══════════════ */
 .authority {
   background: var(--light);
   border-bottom: 1px solid var(--border);
@@ -206,30 +174,25 @@ body {
 }
 .authority strong { color: var(--navy); font-weight: 700; }
 
-/* ══════════════ BODY ══════════════ */
-.body { padding: 4mm 12mm 4mm; flex: 1; }
+.body { padding: 8mm 12mm 8mm; flex: 1; }
 
-/* section label */
-.sec-label {
-  font-size: 6.5pt;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--blue);
-  padding-bottom: 2.5px;
-  border-bottom: 1.5px solid var(--rule);
-  margin: 4mm 0 2.5mm;
+.body p {
+  margin-bottom: 8px;
+  line-height: 1.5;
+  font-size: 9pt;
 }
-
-/* ── VESSEL TABLE ── */
-.vtable {
+.body table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 9pt;
-  margin-bottom: 1mm;
-  table-layout: fixed;
+  margin: 10px 0;
+  font-size: 8.5pt;
 }
-.vtable th {
+.body table td, .body table th {
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+.body table th {
   background: var(--navy);
   color: var(--gold-lt);
   font-size: 6.5pt;
@@ -239,199 +202,15 @@ body {
   padding: 5px 9px;
   border: 1px solid var(--navy);
   text-align: left;
-  overflow: hidden;
 }
-.vtable td {
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  background: #fff;
-  vertical-align: middle;
-  overflow: hidden;
+.body ul, .body ol {
+  margin-left: 20px;
+  margin-bottom: 10px;
 }
-.vtable .val {
-  font-family: 'EB Garamond', serif;
-  font-size: 12pt;
-  font-weight: 600;
-  color: var(--navy);
-  line-height: 1.2;
-  word-break: break-word;
-}
-.vtable .sub {
-  font-size: 7pt;
-  color: var(--muted);
-  font-family: 'Source Sans 3', sans-serif;
-  font-weight: 400;
-  display: block;
-  margin-top: 1px;
-}
-.vtable tr:nth-child(even) td { background: #FAFCFF; }
-
-/* ── EXTRA DATA TABLE ── */
-.mtable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 9pt;
-  margin-bottom: 1mm;
-}
-.mtable th {
-  background: var(--light);
-  color: var(--navy);
-  font-size: 7pt;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  text-align: left;
-}
-.mtable td {
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  background: #fff;
-}
-.mtable .m-val {
-  font-family: 'EB Garamond', serif;
-  font-size: 11pt;
-  font-weight: 600;
-  color: var(--text);
+.body li {
+  margin-bottom: 4px;
 }
 
-/* ── CHECKBOX LIST ── */
-.chk-list { display: flex; flex-direction: column; gap: 2.5px; margin-bottom: 2mm; }
-.chk-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  padding: 5.5px 9px;
-  border: 1px solid var(--border);
-  border-radius: 1px;
-  font-size: 9pt;
-  line-height: 1.5;
-  background: #fff;
-  color: var(--muted);
-}
-.chk-item.checked {
-  border-color: var(--blue);
-  background: var(--light);
-  color: var(--text);
-}
-.chk-item.checked .chk-text { color: var(--text); }
-.checkbox {
-  width: 13px; height: 13px;
-  border: 1.5px solid #aaa;
-  border-radius: 1px;
-  flex-shrink: 0;
-  margin-top: 1.5px;
-  background: #fff;
-  position: relative;
-}
-.chk-item.checked .checkbox {
-  background: var(--blue);
-  border-color: var(--blue);
-}
-.chk-item.checked .checkbox::after {
-  content: '';
-  position: absolute;
-  left: 2.5px; top: .5px;
-  width: 5px; height: 9px;
-  border-right: 2px solid #fff;
-  border-bottom: 2px solid #fff;
-  transform: rotate(38deg);
-}
-.chk-text b { color: var(--navy); }
-.inline-val {
-  display: inline-block;
-  font-family: 'EB Garamond', serif;
-  font-size: 10.5pt;
-  font-weight: 600;
-  color: var(--navy);
-  border-bottom: 1px solid var(--navy);
-  padding: 0 4px;
-  min-width: 100px;
-  line-height: 1.2;
-  vertical-align: bottom;
-}
-
-/* ── CERTIFY BOX ── */
-.certify {
-  border-left: 3.5px solid var(--gold);
-  background: var(--light);
-  padding: 5px 11px 6px;
-  margin: 1mm 0 3mm;
-  font-size: 9pt;
-  line-height: 1.6;
-}
-.certify-title {
-  font-weight: 700;
-  color: var(--navy);
-  font-size: 9pt;
-  margin-bottom: 3px;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-}
-.certify ul { margin-left: 16px; color: var(--muted); }
-.certify ul li { margin-bottom: 1px; }
-
-/* description text */
-.cert-desc {
-  font-size: 9pt;
-  line-height: 1.6;
-  color: var(--muted);
-  margin-bottom: 2mm;
-}
-
-/* ── VALIDITY GRID ── */
-.vgrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 2.5mm;
-  margin-bottom: 2.5mm;
-}
-.vgrid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2.5mm;
-  margin-bottom: 2mm;
-}
-.vcell {
-  border: 1px solid var(--border);
-  padding: 5.5px 9px;
-  background: #fff;
-}
-.vcell.hi {
-  border-color: var(--blue);
-  background: var(--light);
-}
-.vc-label {
-  font-size: 6pt;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--muted);
-  display: block;
-  margin-bottom: 3px;
-}
-.vc-val {
-  font-family: 'EB Garamond', serif;
-  font-size: 12.5pt;
-  font-weight: 600;
-  color: var(--navy);
-  line-height: 1.2;
-}
-.vcell.hi .vc-val { color: var(--blue); }
-
-/* ── FOOTNOTES ── */
-.footnotes {
-  border-top: 1px solid var(--border);
-  padding: 3mm 0 2mm;
-  font-size: 7pt;
-  color: var(--muted);
-  line-height: 1.65;
-}
-.footnotes p { margin-bottom: 1.5px; }
-sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
-
-/* ══════════════ FOOTER ══════════════ */
 .ftr {
   background: var(--navy);
   flex-shrink: 0;
@@ -492,7 +271,6 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
 }
 .ftr-contact a { color: rgba(255,255,255,.55); text-decoration: none; }
 
-/* ══════════════ PRINT ══════════════ */
 @page { size: A4; margin: 0; }
 @media print {
   html, body { background: none !important; padding: 0 !important; margin: 0 !important; }
@@ -512,7 +290,6 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
 
 <div class="no-print">
   <button class="btn-print" onclick="window.print()">🖨&nbsp; Print / Save as PDF</button>
-  <span class="tag-hint">Tags like {tag} are replaced by software at generation time.</span>
 </div>
 
 <div class="cert">
@@ -521,125 +298,44 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
   <div class="hdr">
     <div class="hdr-gold-top"></div>
     <div class="hdr-inner">
-
       <div class="logo">
         <img src="https://grclass.com/grclass-logo.webp" alt="GR Glass Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
       </div>
-
       <div class="hdr-title">
-        <div class="hdr-eyebrow">{certificate_term}</div>
-        <div class="hdr-certname">Certificate of Fitness for the Carriage of Liquefied Gases in Bulk</div>
-        <div class="hdr-convention">
-          Issued under the provisions of the International Code for the Construction and Equipment of Ships Carrying Liquefied Gases in Bulk (IGC Code)
-        </div>
+        <div class="hdr-eyebrow">Full Term</div>
+        <div class="hdr-certname">Certificate of Fitness for Carriage of Liquefied Gases in Bulk</div>
+        <div class="hdr-convention">Issued under the provisions of the relevant international conventions</div>
       </div>
-
       <div class="hdr-meta">
         <span class="hdr-meta-label">IGC-FT No.</span>
-        <span class="hdr-meta-no">{certificate_number}</span>
+        <span class="hdr-meta-no"><span class="cert-field" data-field="certificate_number">{certificate_number}</span></span>
         <div class="hdr-meta-form">Form IGC-FT · Approved by: GM</div>
       </div>
-
     </div>
     <div class="hdr-gold-bottom"></div>
   </div>
 
   <!-- ═══ AUTHORITY BAND ═══ -->
   <div class="authority">
-    Issued under the authority of the Government of <strong>{flag_state}</strong><br>
+    Issued under the authority of the Government of <strong><span class="cert-field" data-field="flag_state">{flag_state}</span></strong><br>
     By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO) operating under IMO Framework
   </div>
 
   <!-- ═══ BODY ═══ -->
   <div class="body">
-
-    <!-- VESSEL PARTICULARS -->
-    <div class="sec-label">Vessel Particulars</div>
-    <table class="vtable">
-      <tr>
-        <th style="width:25%">Name of Ship</th>
-        <th style="width:25%">Distinctive No. / Letters</th>
-        <th style="width:25%">Port of Registry</th>
-        <th style="width:25%">Gross Tonnage</th>
-      </tr>
-      <tr>
-        <td><span class="val">{vessel_name}</span></td>
-        <td><span class="val">{call_sign}</span></td>
-        <td><span class="val">{port_of_registry}</span></td>
-        <td><span class="val">{gross_tonnage}</span></td>
-      </tr>
-      <tr>
-        <th>IMO Number <sup>1</sup></th>
-        <th>Ship Type</th>
-        <th>Net Tonnage</th>
-        <th>Deadweight</th>
-      </tr>
-      <tr>
-        <td><span class="val">{imo_number}</span></td>
-        <td><span class="val">{ship_type}</span></td>
-        <td><span class="val">{net_tonnage}</span></td>
-        <td><span class="val">{deadweight}</span></td>
-      </tr>
-    </table>
-
-
-    <!-- CERTIFICATION -->
-    <div class="sec-label">Certification</div>
-    <p class="cert-desc">This is to certify that the vessel has been surveyed and found in compliance with the relevant safety and technical standards for the issuance of the Certificate of Fitness for Carriage of Liquefied Gases in Bulk.</p>
-    <div class="certify">
-      <div class="certify-title">This is to certify that:</div>
-      <ul>
-        <li>The ship has been surveyed in accordance with the applicable rules and regulations;</li>
-        <li>The survey shows that the structure, equipment, and condition of the ship comply with the safety standards of GR CLASS.</li>
-      </ul>
-    </div>
-
-    <!-- DATES & VALIDITY -->
-    <div class="sec-label">Dates &amp; Validity</div>
-    <div class="vgrid">
-      <div class="vcell">
-        <span class="vc-label">Survey Completion Date</span>
-        <div class="vc-val">{survey_completion_date}</div>
-      </div>
-      <div class="vcell">
-        <span class="vc-label">Date of Issue</span>
-        <div class="vc-val">{issue_date}</div>
-      </div>
-      <div class="vcell hi">
-        <span class="vc-label">Valid Until</span>
-        <div class="vc-val">{expiry_date}</div>
-      </div>
-    </div>
-    <div class="vgrid-2">
-      <div class="vcell">
-        <span class="vc-label">Place of Issue</span>
-        <div class="vc-val">{place_of_survey}</div>
-      </div>
-      <div class="vcell">
-        <span class="vc-label">Page</span>
-        <div class="vc-val">1 of 1</div>
-      </div>
-    </div>
-
-    <!-- FOOTNOTES -->
-    <div class="footnotes">
-      <p><sup>1</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600(15).</p>
-    </div>
-
-  </div><!-- /body -->
+    <h1><img src="data:image/jpeg;base64,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" />INTERNATIONAL CERTIFICATE OF FITNESS FOR THE CARRIAGE OF LIQUEFIED</h1><p><strong>GASES IN BULK</strong></p><p>Issued under the provisions of the INTERNATIONAL CODE FOR THE CONSTRUCTION AND EQUIPMENT</p><p>OF SHIPS CARRYING LIQUEFIED GASES IN BULK</p><p>(Resolution MSC. 5(48) as amended by resolution MSC. 17(58)) Under the authority of the Government of</p><p><strong> THE MERCHANT MARINE HONDURAS </strong></p><p><strong>By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><p><strong>IGC No.</strong></p><table><tr><td><p><strong>Name Ship</strong></p></td><td><p><strong>Distinctive Number or Letters</strong></p></td><td><p><strong>Port of Registry</strong></p></td><td><p><strong>Gross Tonnage</strong></p></td><td><p><strong>Cargo Capacity (m3)</strong></p></td><td><p><strong>Ship Type</strong></p><p><strong>(Code paragraph 2.1.2)</strong></p></td></tr><tr><td rowspan="3"></td><td><p>{call_sign}</p></td><td rowspan="3"><p>{port_of_registry}</p></td><td rowspan="3"><p>{gross_tonnage}</p></td><td rowspan="3"></td><td rowspan="3"><p>{ship_type}</p></td></tr><tr><td><p><strong>IMO number</strong></p></td></tr><tr><td><p>{imo_number}</p></td></tr></table><p>Date on which keel was laid or ship was at a similar stage of construction or (in the case of a converted ship) date on which conversion to gas carrier was commenced:     	</p><p>The ship also complies fully with the following amendments to the Code:   	</p><p>The ship is exempted from compliance with the following provisions of the Code:  	</p><p>THIS IS TO CERTIFY:</p><p>1</p><ol><li>That the ship has been surveyed in accordance with the provisions of section 1.5 of the Code.</li><li>That the survey showed that the structure, equipment, fittings, arrangements and materials of the ship and the conditions thereof are in all respects satisfactory and that the ship complies with the relevant provisions of the Code:</li><li>That the following designed criteria have been used:<ol><li>ambient air temperature		ºC</li><li>ambient water temperature	ºC</li></ol></li></ol><p>.3</p><table><tr><td rowspan="2"><p><strong>Tank type and number</strong></p></td><td colspan="4"><p><strong>Stress factors</strong></p></td><td rowspan="2"><p><strong>Materials</strong></p></td><td rowspan="2"><p><strong>MARVS</strong></p></td></tr><tr><td><p><strong>A</strong></p></td><td><p><strong>B</strong></p></td><td><p><strong>C</strong></p></td><td><p><strong>D</strong></p></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Cargo piping</strong></p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table><p>NB: Tank numbers referred to in this list are identified on attachment 2, signed and dated tank plan.</p><p>.4 Mechanical properties of the cargo tank material were determined at		ºC</p><ol><li>That the ship is suitable for the carriage in bulk of the following products, provided that all relevant operational provisions of the Code are observed.</li></ol><table><tr><td><p><strong>Products</strong></p></td><td><p><strong>Conditions of Carriage (tank numbers, etc.)</strong></p></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td colspan="2"><p>Continued on attachment 1.1, Tank numbers referred to in this list are identified on attachment 2</p></td></tr></table><ol><li>That in accordance with 1.4./2.8.2, the provisions of the Code are modified in respect of the ship in the following manner;</li><li>That the ship must be loaded:</li><li>in accordance with the loading conditions provided in the approved loading manual, stamped and dated	 	 and signed by a responsible officer of the Administration, or of an organization recognized by the Administration;</li><li>in accordance with the loading limitations appended to this Certificate.</li></ol><p>Where it is required to load the ship other than in accordance with the above instruction, then the necessary calculations to justify the proposed loading conditions shall be communicated to the certifying Administration who may authorize in writing the adoption of the proposed loading condition.2</p><p>This certificate is valid until		3subject to surveys in accordance with 1.5 of the Code.{expiry_date}</p><p>Completion date of the survey on which this certificate is based:     	{survey_completion_date}</p><table><tr><td><p>Issued at</p></td><td><p> 	</p></td><td><p>Date of Issue</p></td><td><p> 	</p></td></tr><tr><td><p>{place_of_survey}</p></td><td><p>(Place of issue of certificate)</p></td><td><p>{issue_date}</p></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p>{surveyor_name}GR CLASS REPRESENTATIVE</p><p>Notes on completion of Certificate:</p><ol><li>“Ship type”: Any entry under this line must be related to all relevant recommendations, e.g. an entry “Type 2G” should mean Type 2G in all respects prescribed by the Code.</li><li>Paragraph 2.1 and 2.2: The ambient temperatures accepted or required by the Administration for the purposes of 4.8.1 of the Code to be inserted.</li><li>Paragraph 2.3: Stress factors and materials as accepted or required by the Administration for the purposes of 4.5.1.4 and 4.5.1.6 of the Code to be inserted.</li><li>Paragraph 2.4: Temperature accepted by the Administration for the purposes of 4.5.1.7 to be inserted.</li><li>Paragraph 3: Only products listed in chapter 19 of the Code or which have been evaluated by the Administration in accordance with paragraph 1.1.6 of the Code or their compatible mixtures having physical properties within the limitations of tank design should be listed. In respect of the latter “new” products, any special requirements provisionally prescribed should be noted.</li></ol><p>1 Delete as appropriate.</p><p>2 Instead of being incorporated in the Certificate, this text may be appended to the Certificate if duly signed and stamped.</p><p>3 The date of expiry as specified by the Administration in accordance with 1.5.6.1 of the Code. The day and the month of his day correspond to the anniversary date as defined in 1.3.3 of the Code, unless amended in accordance with 1.5.6.8 of the Code.</p><p><strong>IGC No 	 IMO No 	</strong></p><p><a id="ENDORSEMENT_FOR_ANNUAL_AND_INTERMEDIATE_"></a><strong>ENDORSEMENT FOR ANNUAL AND INTERMEDIATE SURVEYS</strong></p><p><strong>THIS IS TO CERTIFY that, at the survey required by 1.5.2 of the Code the ship was found to comply with the relevant provisions of the Code.</strong></p><p><strong>Annual survey</strong></p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p><strong>Annual/Intermediate4 survey</strong></p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p><strong>Annual/Intermediate4 survey</strong></p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p><strong>Annual survey</strong></p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p><strong>IGC No 	 IMO No 	</strong></p><p><a id="ANNUAL_/_INTERMEDIATE_SURVEYS_IN_ACCORDA"></a><strong>ANNUAL / INTERMEDIATE SURVEYS IN ACCORDANCE WITH 1.5.6.8.3</strong></p><p><strong>THIS IS TO CERTIFY that, at the annual/intermediate5 survey in accordance with 1.5.6.8.3 of the Code, the ship was found comply with the relevant provisions of the Code.</strong></p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p><a id="ENDORSEMENT_TO_EXTEND_THE_CERTIFICATE_IF"></a><strong>ENDORSEMENT TO EXTEND THE CERTIFICATE IF VALID FOR LESS THAN 5 YEARS WHERE 1.5.6.3 APPLIES</strong></p><p><strong>The ship complies with the relevant provisions of the Code, and this Certificate should, in accordance with 1.5.6.3 of the Code, be accepted as valid until</strong>{expiry_date}</p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p><a id="ENDORSEMENT_WHERE_THE_RENEWAL_SURVEY_HAS"></a><strong>ENDORSEMENT WHERE THE RENEWAL SURVEY HAS BEEN COMPLETED AND 1.5.6.4 APPLIES</strong></p><p><strong>The ship complies with the relevant provisions of the Code, and this Certificate should, in accordance with 1.5.6.4 of the Code, be accepted as valid until</strong>{expiry_date}</p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p><strong>IGC No 	 IMO No 	</strong></p><p><a id="ENDORSEMENT_TO_EXTEND_THE_VALIDITY_OF_TH"></a><strong>ENDORSEMENT TO EXTEND THE VALIDITY OF THE CERTIFICATE UNTIL REACHING THE PORT OF SURVEY OR FOR A PERIOD OF GRACE WHERE 1.5.6.5/1.5.6.66 APPLIES</strong></p><p><strong>This Certificate should, in accordance with 1.5.6.5/1.5.6.66 of the Code, be accepted as valid until</strong>{expiry_date}</p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p><a id="ENDORSEMENT_FOR_ADVANCEMENT_OF_ANNIVERSA"></a><strong>ENDORSEMENT FOR ADVANCEMENT OF ANNIVERSARY DATE WHERE 1.5.6.8 APPLIES</strong></p><p><strong>In accordance with 1.5.6.8 of the Code, the anniversary date is</strong></p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p><strong>In accordance with 1.5.6.8 of the Code, the anniversary date is</strong></p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p>6 Delete as apropriate</p><p><strong>IGC No 	 IMO No 	</strong></p><p><strong>               GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><h2>INTERNATIONAL CERTIFICATE OF FITNESS FOR THE CARRIAGE OF LIQUEFIED GASES IN BULK</h2><h3>ATTACHMENT No. 1</h3><p><strong>Continued list of products to those specified in section 3, and the conditions of their carriage.</strong></p><table><tr><td><p><strong>Products</strong></p></td><td><p><strong>Conditions of Carriage (tank numbers, etc.)</strong></p></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table><p>	</p><p>{surveyor_name}GR CLASS REPRESENTATIVE</p><p><strong>	</strong></p><p><strong>IGC No 	 IMO No 	</strong></p><p><strong>               GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><h2>INTERNATIONAL CERTIFICATE OF FITNTESS FOR THE CARRIAGE LIQUEFIED GASES IN BULK</h2><h3>ATTACHMENT No. 2 TANK PLAN</h3><table><tr><td><p><strong>Name of ship</strong></p></td><td></td></tr><tr><td><p><strong>Distinctive number or letters:</strong></p></td><td></td></tr><tr><td><p><strong>IMO Number</strong></p></td><td></td></tr></table><img src="data:image/png;base64,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" /><p><strong>Cargo area</strong></p><p>	</p><p>{surveyor_name}GR CLASS REPRESENTATIVE</p>
+  </div>
 
   <!-- ═══ FOOTER / SIGNATURE ═══ -->
   <div class="ftr">
     <div class="ftr-gold-top"></div>
     <div class="ftr-inner">
-
       <div class="sig-area">
         <div class="sig-line"></div>
         <div class="sig-label">GR CLASS Representative</div>
         <div class="sig-name">{surveyor_name}</div>
         <div class="sig-desig">GR CLASS Representative · Surveyor</div>
       </div>
-
       <div class="ftr-contact">
         <strong>GR CLASS</strong>
         <a href="mailto:info@grclass.com">info@grclass.com</a><br>
@@ -647,11 +343,10 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
         Classified for Standard (GR CLASS)<br>
         Recognized Organization · Global Marine Services
       </div>
-
     </div>
   </div>
 
-</div><!-- /cert -->
+</div>
 
 </body>
 </html>

@@ -8,6 +8,8 @@ export default (sequelize, DataTypes) => {
         status: { type: DataTypes.ENUM('ACTIVE', 'INACTIVE'), defaultValue: 'ACTIVE' },
         description: DataTypes.TEXT,
         requires_survey: { type: DataTypes.BOOLEAN, defaultValue: true },
+        requires_survey_short_term: { type: DataTypes.BOOLEAN, defaultValue: false },
+        requires_survey_full_term: { type: DataTypes.BOOLEAN, defaultValue: true },
     }, {
         tableName: 'certificate_types',
         underscored: true,

@@ -10,7 +10,7 @@ const Certificate = db.Certificate;
 const Payment = db.Payment;
 
 const CLIENT_FIELDS = [
-    'company_name', 'company_code', 'address', 'country', 'email', 'phone',
+    'company_name', 'company_code', 'company_id_number', 'address', 'country', 'email', 'phone',
     'contact_person_name', 'contact_person_email', 'status',
 ];
 

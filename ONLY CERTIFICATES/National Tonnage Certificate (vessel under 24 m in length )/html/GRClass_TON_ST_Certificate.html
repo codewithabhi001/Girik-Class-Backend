@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>GR Class – TON-ST Certificate</title>
+<title>GR Class – National Tonnage Certificate (vessel under 24 m in length ) - Short Term</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
 
@@ -30,7 +30,6 @@ body {
   padding: 16px 0 40px;
 }
 
-/* ── PRINT BUTTON ── */
 .no-print {
   width: 210mm;
   margin: 0 auto 10px;
@@ -50,13 +49,7 @@ body {
   border-radius: 3px;
 }
 .btn-print:hover { background: var(--blue); }
-.tag-hint {
-  font-size: 8pt;
-  color: #aaa;
-  margin-left: 12px;
-}
 
-/* ── CERTIFICATE PAGE ── */
 .cert {
   width: 210mm;
   min-height: 297mm;
@@ -69,10 +62,8 @@ body {
   overflow: hidden;
 }
 
-/* prevent any text from overflowing */
 .cert * { word-wrap: break-word; overflow-wrap: break-word; }
 
-/* outer decorative frame */
 .cert::before {
   content: '';
   position: absolute;
@@ -90,7 +81,6 @@ body {
   z-index: 5;
 }
 
-/* ══════════════ HEADER ══════════════ */
 .hdr {
   background: var(--navy);
   padding: 0;
@@ -113,7 +103,6 @@ body {
   background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
 }
 
-/* logo */
 .logo {
   width: 60px; height: 60px;
   background: #fff;
@@ -124,24 +113,7 @@ body {
   flex-shrink: 0;
   box-shadow: 0 0 0 1px rgba(196,168,74,.6);
 }
-.logo-gr {
-  font-family: 'EB Garamond', serif;
-  font-weight: 700;
-  font-size: 18pt;
-  color: var(--navy);
-  line-height: 1;
-  letter-spacing: 1px;
-}
-.logo-word {
-  font-size: 5.5pt;
-  font-weight: 700;
-  color: var(--blue);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
 
-/* centre title */
-.hdr-title {}
 .hdr-eyebrow {
   font-size: 7pt;
   font-weight: 600;
@@ -167,7 +139,6 @@ body {
   word-wrap: break-word;
 }
 
-/* right meta */
 .hdr-meta { text-align: right; word-wrap: break-word; }
 .hdr-meta-label {
   font-size: 6pt;
@@ -184,8 +155,6 @@ body {
   display: block;
   line-height: 1.15;
   letter-spacing: .5px;
-  
-  
   white-space: nowrap;
 }
 .hdr-meta-form {
@@ -194,7 +163,6 @@ body {
   margin-top: 4px;
 }
 
-/* ══════════════ AUTHORITY BAND ══════════════ */
 .authority {
   background: var(--light);
   border-bottom: 1px solid var(--border);
@@ -206,30 +174,25 @@ body {
 }
 .authority strong { color: var(--navy); font-weight: 700; }
 
-/* ══════════════ BODY ══════════════ */
-.body { padding: 4mm 12mm 4mm; flex: 1; }
+.body { padding: 8mm 12mm 8mm; flex: 1; }
 
-/* section label */
-.sec-label {
-  font-size: 6.5pt;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--blue);
-  padding-bottom: 2.5px;
-  border-bottom: 1.5px solid var(--rule);
-  margin: 4mm 0 2.5mm;
+.body p {
+  margin-bottom: 8px;
+  line-height: 1.5;
+  font-size: 9pt;
 }
-
-/* ── VESSEL TABLE ── */
-.vtable {
+.body table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 9pt;
-  margin-bottom: 1mm;
-  table-layout: fixed;
+  margin: 10px 0;
+  font-size: 8.5pt;
 }
-.vtable th {
+.body table td, .body table th {
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+.body table th {
   background: var(--navy);
   color: var(--gold-lt);
   font-size: 6.5pt;
@@ -239,199 +202,15 @@ body {
   padding: 5px 9px;
   border: 1px solid var(--navy);
   text-align: left;
-  overflow: hidden;
 }
-.vtable td {
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  background: #fff;
-  vertical-align: middle;
-  overflow: hidden;
+.body ul, .body ol {
+  margin-left: 20px;
+  margin-bottom: 10px;
 }
-.vtable .val {
-  font-family: 'EB Garamond', serif;
-  font-size: 12pt;
-  font-weight: 600;
-  color: var(--navy);
-  line-height: 1.2;
-  word-break: break-word;
-}
-.vtable .sub {
-  font-size: 7pt;
-  color: var(--muted);
-  font-family: 'Source Sans 3', sans-serif;
-  font-weight: 400;
-  display: block;
-  margin-top: 1px;
-}
-.vtable tr:nth-child(even) td { background: #FAFCFF; }
-
-/* ── EXTRA DATA TABLE ── */
-.mtable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 9pt;
-  margin-bottom: 1mm;
-}
-.mtable th {
-  background: var(--light);
-  color: var(--navy);
-  font-size: 7pt;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  text-align: left;
-}
-.mtable td {
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  background: #fff;
-}
-.mtable .m-val {
-  font-family: 'EB Garamond', serif;
-  font-size: 11pt;
-  font-weight: 600;
-  color: var(--text);
+.body li {
+  margin-bottom: 4px;
 }
 
-/* ── CHECKBOX LIST ── */
-.chk-list { display: flex; flex-direction: column; gap: 2.5px; margin-bottom: 2mm; }
-.chk-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  padding: 5.5px 9px;
-  border: 1px solid var(--border);
-  border-radius: 1px;
-  font-size: 9pt;
-  line-height: 1.5;
-  background: #fff;
-  color: var(--muted);
-}
-.chk-item.checked {
-  border-color: var(--blue);
-  background: var(--light);
-  color: var(--text);
-}
-.chk-item.checked .chk-text { color: var(--text); }
-.checkbox {
-  width: 13px; height: 13px;
-  border: 1.5px solid #aaa;
-  border-radius: 1px;
-  flex-shrink: 0;
-  margin-top: 1.5px;
-  background: #fff;
-  position: relative;
-}
-.chk-item.checked .checkbox {
-  background: var(--blue);
-  border-color: var(--blue);
-}
-.chk-item.checked .checkbox::after {
-  content: '';
-  position: absolute;
-  left: 2.5px; top: .5px;
-  width: 5px; height: 9px;
-  border-right: 2px solid #fff;
-  border-bottom: 2px solid #fff;
-  transform: rotate(38deg);
-}
-.chk-text b { color: var(--navy); }
-.inline-val {
-  display: inline-block;
-  font-family: 'EB Garamond', serif;
-  font-size: 10.5pt;
-  font-weight: 600;
-  color: var(--navy);
-  border-bottom: 1px solid var(--navy);
-  padding: 0 4px;
-  min-width: 100px;
-  line-height: 1.2;
-  vertical-align: bottom;
-}
-
-/* ── CERTIFY BOX ── */
-.certify {
-  border-left: 3.5px solid var(--gold);
-  background: var(--light);
-  padding: 5px 11px 6px;
-  margin: 1mm 0 3mm;
-  font-size: 9pt;
-  line-height: 1.6;
-}
-.certify-title {
-  font-weight: 700;
-  color: var(--navy);
-  font-size: 9pt;
-  margin-bottom: 3px;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-}
-.certify ul { margin-left: 16px; color: var(--muted); }
-.certify ul li { margin-bottom: 1px; }
-
-/* description text */
-.cert-desc {
-  font-size: 9pt;
-  line-height: 1.6;
-  color: var(--muted);
-  margin-bottom: 2mm;
-}
-
-/* ── VALIDITY GRID ── */
-.vgrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 2.5mm;
-  margin-bottom: 2.5mm;
-}
-.vgrid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2.5mm;
-  margin-bottom: 2mm;
-}
-.vcell {
-  border: 1px solid var(--border);
-  padding: 5.5px 9px;
-  background: #fff;
-}
-.vcell.hi {
-  border-color: var(--blue);
-  background: var(--light);
-}
-.vc-label {
-  font-size: 6pt;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--muted);
-  display: block;
-  margin-bottom: 3px;
-}
-.vc-val {
-  font-family: 'EB Garamond', serif;
-  font-size: 12.5pt;
-  font-weight: 600;
-  color: var(--navy);
-  line-height: 1.2;
-}
-.vcell.hi .vc-val { color: var(--blue); }
-
-/* ── FOOTNOTES ── */
-.footnotes {
-  border-top: 1px solid var(--border);
-  padding: 3mm 0 2mm;
-  font-size: 7pt;
-  color: var(--muted);
-  line-height: 1.65;
-}
-.footnotes p { margin-bottom: 1.5px; }
-sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
-
-/* ══════════════ FOOTER ══════════════ */
 .ftr {
   background: var(--navy);
   flex-shrink: 0;
@@ -492,7 +271,6 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
 }
 .ftr-contact a { color: rgba(255,255,255,.55); text-decoration: none; }
 
-/* ══════════════ PRINT ══════════════ */
 @page { size: A4; margin: 0; }
 @media print {
   html, body { background: none !important; padding: 0 !important; margin: 0 !important; }
@@ -512,7 +290,6 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
 
 <div class="no-print">
   <button class="btn-print" onclick="window.print()">🖨&nbsp; Print / Save as PDF</button>
-  <span class="tag-hint">Tags like {tag} are replaced by software at generation time.</span>
 </div>
 
 <div class="cert">
@@ -521,125 +298,44 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
   <div class="hdr">
     <div class="hdr-gold-top"></div>
     <div class="hdr-inner">
-
       <div class="logo">
         <img src="https://grclass.com/grclass-logo.webp" alt="GR Glass Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
       </div>
-
       <div class="hdr-title">
-        <div class="hdr-eyebrow">{certificate_term}</div>
-        <div class="hdr-certname">National Tonnage Certificate (Vessel Under 24m)</div>
-        <div class="hdr-convention">
-          Issued under the provisions of the national tonnage measurement regulations for vessels under 24 metres in length
-        </div>
+        <div class="hdr-eyebrow">Short Term</div>
+        <div class="hdr-certname">National Tonnage Certificate (vessel under 24 m in length )</div>
+        <div class="hdr-convention">Issued under the provisions of the relevant international conventions</div>
       </div>
-
       <div class="hdr-meta">
         <span class="hdr-meta-label">TON-ST No.</span>
-        <span class="hdr-meta-no">{certificate_number}</span>
-        <div class="hdr-meta-form">Form NTC-ST · Approved by: GM</div>
+        <span class="hdr-meta-no"><span class="cert-field" data-field="certificate_number">{certificate_number}</span></span>
+        <div class="hdr-meta-form">Form TON-ST · Approved by: GM</div>
       </div>
-
     </div>
     <div class="hdr-gold-bottom"></div>
   </div>
 
   <!-- ═══ AUTHORITY BAND ═══ -->
   <div class="authority">
-    Issued under the authority of the Government of <strong>{flag_state}</strong><br>
+    Issued under the authority of the Government of <strong><span class="cert-field" data-field="flag_state">{flag_state}</span></strong><br>
     By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO) operating under IMO Framework
   </div>
 
   <!-- ═══ BODY ═══ -->
   <div class="body">
-
-    <!-- VESSEL PARTICULARS -->
-    <div class="sec-label">Vessel Particulars</div>
-    <table class="vtable">
-      <tr>
-        <th style="width:25%">Name of Ship</th>
-        <th style="width:25%">Distinctive No. / Letters</th>
-        <th style="width:25%">Port of Registry</th>
-        <th style="width:25%">Gross Tonnage</th>
-      </tr>
-      <tr>
-        <td><span class="val">{vessel_name}</span></td>
-        <td><span class="val">{call_sign}</span></td>
-        <td><span class="val">{port_of_registry}</span></td>
-        <td><span class="val">{gross_tonnage}</span></td>
-      </tr>
-      <tr>
-        <th>IMO Number <sup>1</sup></th>
-        <th>Ship Type</th>
-        <th>Net Tonnage</th>
-        <th>Deadweight</th>
-      </tr>
-      <tr>
-        <td><span class="val">{imo_number}</span></td>
-        <td><span class="val">{ship_type}</span></td>
-        <td><span class="val">{net_tonnage}</span></td>
-        <td><span class="val">{deadweight}</span></td>
-      </tr>
-    </table>
-
-
-    <!-- CERTIFICATION -->
-    <div class="sec-label">Certification</div>
-    <p class="cert-desc">This is to certify that the vessel has been surveyed and found in compliance with the relevant safety and technical standards for the issuance of the National Tonnage Certificate (vessel under 24 m in length ).</p>
-    <div class="certify">
-      <div class="certify-title">This is to certify that:</div>
-      <ul>
-        <li>The ship has been surveyed in accordance with the applicable rules and regulations;</li>
-        <li>The survey shows that the structure, equipment, and condition of the ship comply with the safety standards of GR CLASS.</li>
-      </ul>
-    </div>
-
-    <!-- DATES & VALIDITY -->
-    <div class="sec-label">Dates &amp; Validity</div>
-    <div class="vgrid">
-      <div class="vcell">
-        <span class="vc-label">Survey Completion Date</span>
-        <div class="vc-val">{survey_completion_date}</div>
-      </div>
-      <div class="vcell">
-        <span class="vc-label">Date of Issue</span>
-        <div class="vc-val">{issue_date}</div>
-      </div>
-      <div class="vcell hi">
-        <span class="vc-label">Valid Until</span>
-        <div class="vc-val">{expiry_date}</div>
-      </div>
-    </div>
-    <div class="vgrid-2">
-      <div class="vcell">
-        <span class="vc-label">Place of Issue</span>
-        <div class="vc-val">{place_of_survey}</div>
-      </div>
-      <div class="vcell">
-        <span class="vc-label">Page</span>
-        <div class="vc-val">1 of 1</div>
-      </div>
-    </div>
-
-    <!-- FOOTNOTES -->
-    <div class="footnotes">
-      <p><sup>1</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600(15).</p>
-    </div>
-
-  </div><!-- /body -->
+    <p><strong><img src="data:image/jpeg;base64,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" />SHORT TERM TONNAGE CERTIFICATE</strong></p><h2><a id="CERTIFICADO_PROVISIONAL_DE_ARQUEO"></a>CERTIFICADO PROVISIONAL DE ARQUEO</h2><p>Under the authority of the Government of Bajo la autoridad del Gobierno de</p><a id="SHORT_TERM_TONNAGE_CERTIFICATE"></a><p><strong> THE MERCHANT MARINE HONDURAS</strong></p><p><strong>By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><h2>SERVICE CONDITION OF VESSEL</h2><p><strong>CONDICION DE SERVICIO DE LA NAVE</strong></p><h3>TON No.</h3><table><tr><td colspan="2"><p><strong>Name of ship Nombre de la Nave</strong></p></td><td colspan="2"><p><strong>Official No.</strong></p><p>Número Oficial</p></td><td><p><strong>Port of Registry</strong></p><p>Puerto de Registro</p></td><td><p><strong>Propulsion</strong></p><p>Propulsión</p></td></tr><tr><td><p>{vessel_name}</p></td><td colspan="2"></td><td><p>{port_of_registry}</p></td><td></td></tr><tr><td><p><strong>Date of Build</strong></p><p>Año de Construcción</p></td><td colspan="2"><p><strong>Built by</strong></p><p>Construido por</p></td><td colspan="2"><p><strong>Place of Build</strong></p><p>Lugar de Construcción</p></td><td><p><strong>Builder’s Hull No.</strong></p><p>No. de Casco</p></td></tr><tr><td><p>{year_built}</p></td><td colspan="2"></td><td colspan="2"></td><td></td></tr><tr><td><p><strong>Number of Masts</strong></p><p>Número de Mástiles</p></td><td><p><strong>Number of Decks</strong></p><p>Número de Cubiertas</p></td><td colspan="2"><p><strong>Material</strong></p><p>Material</p></td><td><p><strong>Type of Stern</strong></p><p>Tipo de Popa</p></td><td><p><strong>Type of bow</strong></p><p>Tipo de Proa</p></td></tr><tr><td></td><td></td><td colspan="2"></td><td></td><td></td></tr></table><p>REGISTER DIMENSIONS</p><h3>DIMENSIONES DE REGISTRO</h3><p>(In the case of dual tonnage vessels the dimensions below are for the deep condition)</p><h3>(En el caso de nave de doble tonelaje las dimensiones dadas más abajo son para la condición profunda)</h3><table><tr><td></td><td><p><strong>LENGTH</strong></p><p>ESLORA</p></td><td><p><strong>BREATH</strong></p><p>MANGA</p></td><td><p><strong>DEPTH</strong></p><p>PUNTAL</p></td><td><p>HEIGHT UNDER UPPERMOST DECK</p><p><strong>ALTURA POR DEBAJO DE LA CUBIERTA SUPERIOR</strong></p></td></tr><tr><td><p><strong>METRES</strong></p><p>METROS</p></td><td></td><td></td><td></td><td></td></tr></table><p>That a measurement has been made of the above described vessel and that her tonnage are as follows and computed as shown on the reverse side hereof:</p><p>Por el presente se certifica que se ha hecho el arqueo del buque más arriba descrito y que sus tonelajes son como sigue y han sido calculados según se muestra en el reverso presente:</p><p><img src="data:image/jpeg;base64,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" /></p><table><tr><td rowspan="2"><p><strong>Single tonnage vessel</strong></p><p>Nave de un solo tonelaje</p></td><td colspan="4"><p><strong>TONS</strong></p><p>TONELADAS</p></td><td colspan="4"><p><strong>CUBIC METERS</strong></p><p>METROS CUBICOS</p></td></tr><tr><td colspan="2"><p><strong>GROSS</strong></p><p>BRUTAS</p></td><td colspan="2"><p><strong>NET</strong></p><p>NETAS</p></td><td colspan="2"><p><strong>GROSS</strong></p><p>BRUTOS</p></td><td colspan="2"><p><strong>NET</strong></p><p>NETOS</p></td></tr><tr><td><p><strong>Not tonnage mark required</strong></p><p>No se necesita marca de arqueo</p></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Tonnage mark level with uppermost line of L.L. grid (see</strong></p><p><strong>diagram “B” below)</strong></p><p>La marca de arqueo a nivel con la línea superior de la reja</p><p>de la línea de flotación (véase figura “B” más abajo)</p></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table><table><tr><td rowspan="2"><p><strong>Dual tonnage vessel</strong></p><p>Nave de doble tonelaje</p></td><td colspan="4"><p><strong>TONS</strong></p><p>TONELADAS</p></td><td colspan="4"><p><strong>CUBIC METERS</strong></p><p>METROS CUBICOS</p></td></tr><tr><td colspan="2"><p><strong>GROSS </strong>BRUTAS</p></td><td colspan="2"><p><strong>NET</strong></p><p>NETAS</p></td><td colspan="2"><p><strong>GROSS </strong>BRUTOS</p></td><td colspan="2"><p><strong>NET</strong></p><p>NETOS</p></td></tr><tr><td><p><strong>Tonnage mark submerged</strong></p><p>Marca de arqueo sumergida (véase figura “A” más abajo)</p></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Tonnage mark not submerged (see diagram “A” below) </strong>Marca de arqueo no sumergida (véase figura “A” más abajo)</p></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table><h3>Y que el nombre y puerto de registro de la nave están pintados en su popa y que una marca de arqueo</h3><p><strong>Está  marcada  a  cada</strong></p><p><strong> 	lado.</strong></p><p>And that the vessel’s name and port of registry are painted on her stern; and that a tonnage</p><p>mark is</p><p>Marked on each side.</p><h3>Si marcada, la marca de arqueo está situada a cada lado de la nave según aparece en el diagrama</h3><p><strong>Más abajo:</strong></p><p>If marked, the tonnage is located on each side of the vessel as indicated in diagram	Below:</p><table><tr><td><p><strong>DIAGRAMA “A”</strong></p><p>DIAGRAM “A”</p></td><td><p><strong>METROS</strong></p><p>METERS</p></td><td></td><td><p><strong>METROS</strong></p><p>METERS</p></td><td><p><strong>DIAGRAMA “B”</strong></p><p>DIAGRAM “B”</p></td></tr><tr><td rowspan="5"><p>Parte superior de	A proa</p><p>La cubierta de	 	 Francobordo</p><p>Línea de trazado de</p><p> 	la segunda cubierta</p><p>w</p><p>m</p><p>a</p><p>Línea del centro del disco</p><p>k</p></td><td></td><td><p><strong>Puntal (Ds)</strong></p><p>Depth</p></td><td></td><td rowspan="5"><p>A proa</p><p>Francobordo a la parte superior de la Reja de la línea de flotación o carga</p><p>Línea de base</p><p>I	B</p><p>Marca De tonelaje</p><p>k</p></td></tr><tr><td></td><td><p><strong>Eslora (Lt)</strong></p><p>Length</p></td><td></td></tr><tr><td></td><td><p><strong>Distancia vertical (e)</strong></p><p>Vertical distance</p></td><td></td></tr><tr><td></td><td><p><strong>Distancia máxima desde el eje del disco de la línea de flotación (k) </strong>Long.t distance from CL of L.L. disc</p></td><td></td></tr><tr><td></td><td><p><strong>T</strong></p><p><strong>Tolerancia por aguas dulces y tropicales (w)</strong></p><p>Allowance for fresh &amp; tropical waters</p></td><td></td></tr></table><p>Este certificado es valido hasta{expiry_date}</p><h3>This Certificate is valid until	 	{expiry_date}</h3><table><tr><td><p>Expedido en</p></td><td></td><td><p>Fecha de emision</p></td><td></td></tr><tr><td><p>Issued at</p></td><td><p> 	</p></td><td><p>Date of issue</p></td><td><p> 	</p></td></tr><tr><td><p>{place_of_survey}</p></td><td><p>(Place of issue of certificate)</p></td><td><p>{issue_date}</p></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p><strong> </strong></p><p>{surveyor_name}GR CLASS REPRESENTATIVE</p><table><tr><td rowspan="2"><p><strong>Los tanques de los raseles de proa y popa están incluidos en el tonelaje de arqueo bajo cubierta si se emplean para todo aquello que no sea lastre de agua salada.</strong></p><p>Fore &amp; aft peak tanks are included to tonnage measurement under upper deck. If used as sea water ballast.</p></td><td colspan="2"><p><strong>TONELAJE UNICO</strong></p><p>SINGLE TONNAGE</p></td><td colspan="2"><p><strong>MARCA DE ARQUE SUMERGIDA </strong>TONNAGE MARK SUBMERGED</p></td><td colspan="2"><p><strong>MARCA DE ARQUE NO SUMERGIDO </strong>TONNAGE MARK NOT SUBMERGED</p></td></tr><tr><td><p><strong>Toneladas</strong></p><p>Tons</p></td><td><p>100</p><p>Avos</p></td><td><p><strong>Toneladas</strong></p><p>Tons</p></td><td><p>100</p><p>Avos</p></td><td><p><strong>Toneladas</strong></p><p>Tons</p></td><td><p>100</p><p>Avos</p></td></tr><tr><td><p><strong>Capacidad bajo la cubierta de arqueo</strong></p><p>Capacity under tonnage deck</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Capacidades entre cubiertas, por encima de la cubierta de arqueo</strong></p><p>Capacity between decks, above tonnage deck</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table><h3>CAPACIDADES DE LOS RECINTOS SOBRE O SPERIORES A LA CUBIERTA SUPERIOR COMPLETA, A SABER:</h3><p>CAPACITIES OF ENCLOSURES ON OR ABOVE THE UPPERMOST COMPLETE DECK, VIZ:</p><table><tr><td><p><strong>Castillo de proa </strong>/ Forecastle</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Puente </strong>/ Bridge</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Toldilla </strong>/ Poop</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Saltillo de cubierta </strong>/ Break</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Tronco </strong>/ Trunk</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Otras casetas </strong>/ Other deck houses</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Escotillas de exceso </strong>/ Excess hatchways</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Luz y aire </strong>/ Light and air</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>TONELAJE BRUTO </strong>/ GROSS TONNAGE</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table><p><strong>DEDUCCIONES/</strong>DEDUCTIONS</p><table><tr><td><p><strong>Espacio para la tripulación </strong>/ Crew space</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Espacio para el capitán </strong>/ Master’s cabin</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Aparato de gobernar </strong>/ Steering gear</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Equipo de anclas </strong>/ Anchor gear</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Cuarto del contramaestre </strong>/ Boatswain’s stores</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Cuarto de derrota </strong>/ Charthose</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Cuarto de radio </strong>/ Radio house</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Cuarto de bombas </strong>/ Pump room</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Fuerza motriz de propulsión </strong>/ Propelling power (…)</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>DEDUCCIONES TOTALES </strong>/ TOTAL DEDUCTIONS</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>TONELAJE NETO </strong>/ NET TONNAGE</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table><h3>LOS ESPACIOS DESCRITOS ABAJO, Y NINGUN OTRO, HAN SIDO OMITIDOS (EXCENTOS), A SABER:</h3><p>THE FOLLOWING DESCRIBED SPACES, AND NO OTHERS, HAVE BEEN OMITTED (EXEMPTED), VIZ:</p><table><tr><td><p><strong>Raseles de proa </strong>/ Forepeak</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Raseles de popa </strong>/ Afterpeak</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Otros espacios** </strong>/ Other spaces**</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Cabinas </strong>/ Cabins</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Escalas de baja </strong>/ Companionways</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Cocina </strong>/ Galley</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Lumbreas </strong>/ Skylight</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Caseta de gobierno </strong>/ Wheelhouse</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Retretes </strong>/ Waterclosets</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Equipo de anclas </strong>/ Anchor gear</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Aparato de gobierno </strong>/ Steering gear</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Espacios de luz y aire </strong>/ Light and air spaces</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Otros espacios para maquinarias</strong>/Other machinery spaces</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Castillo de proa* </strong>/ Forecastle*</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Puente </strong>/ Bridge</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Toldilla* </strong>/ Poop*</p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Cubierta de abrigo </strong>/ Shelterdeck<img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA3ADcAAD/2wBDAAIBAQEBAQIBAQECAgICAgQDAgICAgUEBAMEBgUGBgYFBgYGBwkIBgcJBwYGCAsICQoKCgoKBggLDAsKDAkKCgr/2wBDAQICAgICAgUDAwUKBwYHCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgr/wAARCACSAM8DASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKRmK9qAFopnmHOMU7cvrQAtFJuX1o3L60BcWik3L60bl9aAuLRSbl9aNy+tAXFopNy+tG5fWgLi0Um71pNz/3aSdwHUU3c/8Ado3P/dpgOopu5/7tG5/7tADqKbuf+7Ruf+7QA6im7n/u0bn/ALtADqKaGagsw4IoAdRUZlYfw1JQAj/dqK6Z1XcnXb0qV/u0y4/1bf7lOO5NT4GeQ+Cfiz8cPiFoa+I/DvgLR3tmmeNTLqjIcq208bD3zWyfEP7R7HH/AAgOhf8Ag4f/AON1B+yP/wAkhh/6/rn/ANGGvT8AHOK9XGVqWHxU6caUbJ2W/wDmeDgcJXxWFhVlWleSTe3+R5wfEX7Rf/RP9D/8HD//ABuj/hIv2i/+hA0P/wAHD/8AxuvR9q+lIwQLurl+uQ/59R/H/M7P7Nqf8/pfh/kedf2/+0b/ANCBof8A4OG/+N0h1/8AaOHP/CA6H/4OG/8AjdegPcwxJ5kkgVR/E3QVz+qfFz4baHJ5Gr+NtNgf+7JdoP61dOtKr8FBP0Tf6mNbC06P8TEyj6tL9Dnj4h/aN25PgDQ//Bw//wAbpV8Q/tFgZHgHQ/8AwcN/8brc0j4z/C7xBqUOkaP430+4uJ22wwR3KlnPoB+FaVz408L2k7W1zq0Mcith1ZxwfStJVKkZcssOk/NS/wAzDlwvJz/W3ba/NHf1scl/wkH7Rf8A0IGif+Dhv/jdJ/wkP7Rn/RP9F/8ABw3/AMbrqx4/8JHrrkH/AH2KB4/8JjrrcP8A32KXtJf8+I/c/wDMjmwP/Qa//Ao/5HKJr/7RTP8AvPAOhqueT/bDHj/v3XRDUPiG33dGs/8AwIP+FXrLxj4ev7hbS01SGSRjhVVuTTfEnjLwz4PtF1DxTrVvYws4VZbmQKpY5wOe/BrGU5Skoqkk/JP/ADNoUaNSm6kcVJxW7Tjb77WKf9ofEX/oDWn/AIEH/Cj+0PiJ30S0/wDAg/4VR/4aB+Di9PiFpf8A4GL/AI0H9oL4N/8ARQ9J/wDAtf8AGtPq+L/58v7mZ82D/wCgx/8AgUf8i9/aHxF/6Atp/wCBJ/wo/tD4i/8AQGtP/Ag/4VR/4aC+Df8A0UPSf/ApaB+0B8HCePiHpf8A4FrR9Xxf/Pl/+AsXNg/+gx/+BR/yL39ofETodFtP/Ak/4U37f8Rv+gJaf+BB/wAKrW3x3+ENzKIYfiHpLOxwq/bF5P510dhrGl6tbC50y9juI2GVkicMPzFZVI1qOs6dvVNGtGjRr/w8W5ekov8AQxv7Q+Iucf2LZ/8AgQf8KX7f8RP+gJZ/+BB/wroomDHvxUlZe2j/ACr8Tq/s2p/z/n96/wAjmft/xFI/5Atn/wCBJ/wqrqHijxhpBhfU9Kt1jluEiBWYk8n0xXXA9jXM/ExQLKxOOf7Ri/maulOM6ii4rU48wwtbC4OVaFaV4q+rX+R0cbhlB5zjJqWooT+7T/dFSg5GcVzvc96HwoKjuP8AVv8A7hqSo7j/AFb/AO4aI/EKp/DZ5n+yQf8Ai0cH/X9c/wDow16h3ry/9kj/AJJHB/1/XP8A6MNeod67cz/36p6s4Mp/5F1P0Q0k7q5P4pfFLw/8LvD76prcm6WTK2tpGQZJm9APTuSeAK6LV9StdJsJtTvJBHDBE0krN2UDJNfF/wAUPiFqfxN8Y3PiXUG2xljHYw5/1UIPA+p4LY7+uBXo8PZLLN8U1LSEdW/0XqeXxNn0cmwqUNak9F5d2aHxD+Nvj34jzSJqOqyWtjuzHp9rIUXHoxGC3v29uBXIYVTwOc9fWlBx/wDrrZ8FfDjxh8Qr1rTwro0lwFx5k/3Y4/TLHgfTrX6vTo5flOHtZQivRfez8clVx2bYjVynJ+r+41fgMT/wt/QgSf8Aj8bOf9xq9n8SDPiG+Kn/AJem7+9cx8K/2aPiJ4W8eaV4m1c2i29rPvmVJ8tjBHpz1r0TWPhv4gvtXubuBovLkmZl3Mc4JzXwmeZlgcRmaqUpprltdd7s9+tkOcSyKNJUZOXtL2625bX9DlBwcUoEjt5aAszHCqBk5roj8LfEx4DQ+v3j/hW54L+Hk2kXR1HVyjyq37lV5C+/1/l+NePUx1CEHZ3Z5uX8I5zisZGFSm4x6yeiS6/Mm8E+FIfDenNquqbVuGQtIWbiJeuP8TXzb8ffixJ8TvFzJYXTf2Tp7FLGPGFkOfml/HHB9BkdTX0N8bvDnj3xX4Qfw54Dlhhe8by7yaaTaRERyq8fxdCewzjnFeI/8MifFDHMun/8CnP+Fejw3Vy2nXli8ZUXNtFPp5n2mf4DH0cHTy3LqL9ml7zXX+vzPLS2OOtGfb/x6vUx+x/8Ve01h/4Ef/Wp3/DIfxS/572H/gQf8K+4/wBYMl/5/I+L/wBXc860JHleD6frSZKrkCvVv+GQvil/z2sf+/5/wpjfsg/FQc+fYH/tuf8ACj/WDJv+f0fvD/V3PP8AnxL8TyvGTyM1s+C/iB4u+H+o/wBpeFtYe3O395bnLRSDrhl6fiMHHGccVN48+GXi/wCHF9HZeKLDyhPkwzK26OTBGQD7Ajjg1gckblXtmu62DzLD6WnCXo0effG5bibawlH5M+x/g38V9J+K/h7+1LP9zdQ4S/s2bmJ8Z49QeoOOfYgiuyRscGvkX9mzxjdeEvipYWqOfsurH7HdKT3ILIfqGAH0Y+1fWwORzX4/xBlf9k5g6cfhauvn0+TP2rhnNpZtlynP4ovll69/mTVy/wATv+POx/7CEX8zXUA5GRXL/E7/AI87H/sIRfzNeXhv40Tuzn/kWVPT9TpIP9Sn+6KkqOH/AFKf7oqSsX8TPSp/w0FR3H+rf/cNSVHcf6t/9w04/EKp/DZ5n+yR/wAkjg/6/rn/ANGGvUO9eX/skf8AJI4P+v65/wDRhr1DvXbmf+/VPVnBlP8AyLqfojzH9rLXrnRvhHdWtpLsbULiO2Zx/cJ3MPxVSv8AwKvlMAdD3FfTX7ZMDyfDS1lUfLHqkbN/3y4r5lJIXjtX6RwTCEcslJbuTv8AhY/LeOqlSWb8r2UVb9TQ8H+GLvxp4q0/wpYvtkvrlY2f+4ucs31C5Pvivs/wh4Q0fwXoMGgaFZrDBCgUbVGWP94nuT1Jr5O+AerWmi/F/RLq+IWNrkxBm7M6sq/qQPxr7EMuxd+75cflXg8bYiu8ZCi37qjf1bf6Hv8AAOGw/wBVqV7e9e3orfqV9U1S00exkvbuTaqrXEyfFrU10/VL+PTosWel3F1CrMfmKLkA/wBapeN/EOo+Ir/7PBBKLWJvk/dn5j6n2rGayvW0HXQlrKWbw7eBVEZ5Ozge5r57D4SlGknU3dvktCMw4izCvncaGFTVOOjdt3Z/gjk1/bP8cD/mWNP/AO/rf4Uf8Nm+OD18MWH/AH8b/CvJl0HXcY/sO8Pv9lf/AAqK5sL2zK/bbKaHd93zoyufzFfpdPI+HqllGEW/X/gny9TiDiSmm5VJW9P+Aevf8Nm+Oc/8ixY/9/G/wrsPgb+0N4k+KHjOTw7q+kWtvEtm0vmQuSSQyjHI9zXzdt9zV3QfEev+Frw6j4b1iaxuGXYZrfG4qSCRyD7VGP4Xy6phZxoU1GdtHruVgeLM0p4uEq9Ryinqu6PuZWVX25+lO8z/AGq+M/8Ahd3xg/6KNqX/AH0n/wATR/wu74v/APRRdS/76T/4mvko8D5n/PH73/kfZrj7Lf5JfgfZ2802SQhea+M/+F2/F/8A6KNqX/fSf/E0n/C7fjF/0UfUfzT/AOJofA+Z/wA8fvf+Qv8AX7Lf+fcvwPbf2xNX8Pp8O49HuDG2oXF9G1gn8Qwcuw9BtyufVsV80qCV4/Sres65rfiO9bUfEOqT3lwePMuJMt+HYVULHH3q+6yHK55TgVRlK7u2+2vReR+e59mkc4zB14x5VZJfLv5nRfCm3nu/ih4ftoFLM2rQkfgwY/oDX2omO1fOP7I/wyu9Q15viRqloy29qjR6azjG+RsqzD6Llc+rH0r6OjAUZbrX59xhjKWKzTlp68is/X+rH6VwTga2FytzqK3O7r0SsSDpXL/E7/jzsf8AsIRfzNdRXL/E7/jzsf8AsIRfzNfNYb+NE+gzn/kWVPT9TpIf9Sn+6KkqOH/Up/uipKxfxM9Kn/DQVHcf6t/9w1JUdx/q3/3DTj8Qqn8Nnmf7JH/JI4P+v65/9GGvUO9eX/skf8kjg/6/rn/0Ya9QPWu3M/8Afqnqzgyn/kXU/RHI/GnwX/wn/wAOtS8NRj99JB5lq3pMh3ofpuUA+xNfGbq8MjQzoUdXKuh6qR1WvvWRN3Ge1fO/7S/wHu7XUZ/iF4QsfMhmbfqVnFH8yN3kUDse/uc19Nwfm9PB1ZYaq7Rm7p+f/B/Q+T41yWpjKaxdFXcVZry7/I8SUvGyyxOysrKwZTgqc5yD65GQa+hvg/8AtS6LeaZHofxEuvst3Cqot4V/dzDHU+h/n1r55DbuPXoaTgjBPX07193muUYXN6KjV3WzW6v+h+e5TnGMyWu50duqezPtSD4m/Da4iW4i8W6ftbpm4UfzqU/Ef4dnhfFmm/hdJ/jXxH5cbHd5S59cdad5cZ48pf8AvkV81/qLR/5/P7j6qPHuIX/LiP3n2wPiL8OyT/xVWm/+BKf414Z+114h8P69qOhnQtVt7pY0uPMa3kDbcmPGcV40IoSv+qX8hSoqRnCqv4DAruy3hSnl2MjiI1XLlvpburHnZpxdVzLCSw8qSjfr87j6veHPC+v+Lb9tL8O6ZJdXCoZDFH12jGT+oqjz1xXqX7ICA/FWYbeulyZ4/wBtK+gzXF1MDl9SvBapXsz57KcHHH5hToTekna6ObPwJ+LA/wCZMuv0/wAaP+FE/Fj/AKEu6/If419jEJ0VaNo/u1+d/wCvGZ/yR+7/AIJ+lf6gZf8Azy/A+Nbn4HfFO1he4l8G3e1FLNgDOBXJh+TkfnX3myIw27RzmvnL9pr4Fjw5cy/EPwpaYs5ZC2pW6dIWP/LUeinv6E5r2Mk4weMxPscUlG+zW1+zPCzzgv6hhvb4aTlb4k/zPGi3PSvTP2fvgr4X+Jkralr3iBGjtZMzaTEMSMMn7x/usB27cV5ct1FjHmL97+8K0PCnjLVfBOuQ+IvD+peRcQsPut8rr3Vh3H/66+mzWniMVg5Qw9Tll0f6eXqfLZTUoYXHQqYmnzw6o+4NI06w0izj03TrVYYYU2pDGuAoq4cFc1w/wb+MegfFjRPtFnIkd9Ao+3WfmZaM+o9VPXNdvv8AkNfiWIo1qNaUKqaknrfufvWDr4fEYeNSj8LWluw+uX+J3/HnY/8AYQi/ma6iuX+J3/HnY/8AYQi/maeG/jROXOf+RZU9P1Okh/1Kf7oqSo4f9Sn+6KkrF/Ez0qf8NBUdx/q3/wBw1Jmo7g5ifH9w04/EKp/DZ5n+yR/ySOD/AK/rn/0Ya9QJwc15f+yRn/hUcB/6frn/ANGGvUO9duZ/79U9WcGU/wDIup+iI2ORUciJLG0Lx7twNSMQDXO6l4zlXUpdK0PSpLx4f9cythVJ7VywjKT903xWKw+FinVe+m2r9EjiviT+yx4R8Wyvqfh9/wCy7xvv+Sv7t/qvbtyK8t1v9kr4radOV0xbG9j7utx5Zx9CDX0r4d1+XW4ZBPp0lvLE22SOQdDjPHqK1NmeSa9zCcSZvl8VTUrpd9f+CeBiOGclzVe3jFxv1Wn4HyN/wzL8YwP+Rfh/8Cx/hSD9mf4yg/8AIux9f+fsf4V9bz7kRpAM8ZxVDwvrn/CR6RDq4t/LWQH5N2e+K9BcZZty81o/d/wTzXwTk0aypucuZq6Xkt+nmfLI/Zm+Mv8A0LsP/gUv+FB/Zm+M2M/8I7F/4FL/AIV9dIgx81I6qF6Yqf8AXTNe0fu/4Jp/qHlP80vvPkYfsz/GRuB4dj/8Cl/wrvv2cvg38RPAXj+TWvFGlRw2/wBhkjVlmDZYshH8jXs3ibxBH4d0/wC3NA0jNIEjjX+Ik0vhnXY/EGnLfiPy23FZI8/cYHGKxxnE2aY7Byp1FHllpt/wQwPDeS4HNIxpzl7SPvWv0NVQCOadtFMU4PSnM4XrXyv2j7fQjbAbOKhuba3vbdrW6gWSORSskci5DKexHpziuen8eXMt7cW2kaJJcpbzFJG3gEsDyBW9pd4dQtI7xrdo2kUExyD5l9jW0qcqa5nocWHx2FxkpQpu9t/y9Gcj4g8AQQXYOg+CdIkiK9JLdRg/lVL/AIQfVVOR8PtD/wC/S/4V6KytjArP8Q69B4d0x9SuAzqvyhV/iJOAK6KeMxGkVr8zy8VkuEjzVpVHFb9LL8Dk9M0TxPoU7XWk+DdJtZGXazwYUkZ6cDpnFdppkl5LZJLewCKZly6K2QD9axdL8UapfX0dnd+HZollztmDBlXvzXQLx1NZ4ic5S99a9zoymjRpxcqVSUltZ/f2RNXL/E7/AI87H/sIRfzNdQOlcv8AE7/jzsf+whF/M1OG/jRNs5/5FlT0/U6SH/Up/uipKjh/1Kf7oqSsX8TPSp/w0In3ajm4hb/dNSL92orgkRFf9k0LcVT+GzzX9kkkfCCHH/P9cf8Ao016ePvGvLf2SnC/CGFS3/L/AHP/AKMNen5XrvFdmZXePqer/M8/KZR/s6n6IbLz3/KuL0fUIvB2q6haa1bvGlxdvPDPtJVgTnGfUZrtQQ3Q0yW3t5hiWNWHowrnpy5bprRjxmFliJQqU52lFu2l1qrO5m+Hddh19ZpLWzljjSTajSLjfx1FayDcvWmxxxRqFUBfp2pxxjIZamUtdEddBTp00qkrvq9vwG3e4wOFznbXH/D3xHpdh4ftNIuppFmxtC+U3c/T3rsDtPBIxUaWVojhlgjHcfLVxlam4tdjkxGFqVMXCvTmlyppp9m1+OhYiYlMmiUsE+UU3CgcMtAAxneKyVz0bo4vxlc32p+KbXT7HTmuI7H97IvRWbsM+1Hgy5v9N8TXml3untbreDz4o+qq2eTn36/hXZCOAMzqi5bqQOtHl2+4OVXI/i449q6Pb/u+S3Q8BZROOO+s+115r2srWta33DkwcUSkjtSiSMcg0haLpXOtD3rxPPNV/wCEdS9uryyvLzT7xZn+TyziVsnnHcH9a63wXc6lc6FbT6vGVmZTuDDqMnB+uMfnWhLa2M0itJAjMvqBkVKnkgYXH+Fb1K3PBRsePgct+qYyVbnVmnotE7u935oeTg1i+MV086DMNUtpJoSyhliXcwORzWwHQ8bhTW8lhtYLhv1rKL5ZJnpYiEa9CVO61Vu+/kef6PczWev2dr4X1e6ubdpMSwyqdsa49SOK9AwQQSTzTYbezhOYokU/7IHNSB06Eirq1PaSVkcWWYF4CnJOd7u9ui0Wiu2SVy/xO/487H/sIRfzNdJvi7H9a5n4mMhsrDaf+YhF396eHv7ZDzmUf7Nqa9P1Olh5gT/dFS1DEMRKc/w81MDkdKye56VP+GgqO4jEq7M/eGKkqOUkcp97FIJW5dTyvSf2Z18P239n6F8WfFFjbhiywWt8qKCTknAWrg+AmrE4/wCF3eL/APwZD/4muu0u7u31KSK7a63CSQeX5f7sKG+XBxz8uP1qxY6lIdRuLKaKX/WZjZomC7cDjdjHXNehLHYyUm3K/d2X+R4tPA5douRrWy1f+ZxI+Auqodv/AAu/xf8A+DIf/E0H4C6rnH/C7fGH/gyH/wATXWPf6ofEQYRzfZvM8nbt+X7u7f8An8vpUd/e6nD4kihhjmkikZVZVQhR1BbOCD75I6cZzij63iv5l9y/yIeHy/ldqb0lbd/fvscv/wAKG1QH/kt/jD3/AOJkP/iaB8BdU7fG7xh/4MR/8TXUa3danBrtulss7RMUWRI4zwS3Jzggj1HHrmtFJLltXkjYMIxAhXjgtls/0pfXMVb4l9y/yLjg8vlOUeR6O277X7nDf8KE1UH/AJLf4v5/6iQ/+JpB8BtW5z8bvGH/AIMR/wDE12eiHVW86a+VuZH8stJ23HHGBjj3NR3l1qSeHmuQZfOEn8KncRv9ME9Paj67ir25l9y/yF9UwPs+bkeze76W8zkf+FC6tjJ+NvjDH/YSH/xNH/ChdYHB+N/jD8NRH/xNdbPc3/8Awjb3duJhNtx91mf73bIH8ql8OXF5dQ3D3JkKrN+4aZCrFdi9QcfxbqPrmJtfmX3L/IccHgJVVDkeqvu9vvONX4CapHIpHxr8YMc7tp1Ec/8AjtdF/wAIHP1Hi/U/+/3/ANar2ltqsuoTy3at5IlZYyzEen8OOnvmqs15rA1hreJrjd9rUKrQny/KwMndjrjOOfvYqJYitU3kvuRMsFgVFN03q7LV/wCZGvgO4bgeLtSP/banf8IFO3H/AAl+pf8Af7/61Gt3Wtx6y32Pzvs6rDlo1JAJdg3GPm4A78DmtDxA95DpUk1nIyyAptKxlm+8M8D24+nNT7SppruSsDlr5/3b93zev4+Rm/8ACBzkfL4t1L/v9/8AWobwJMPmHi3U/wDv9/8AWq9p1xf3fh5ppkmim+cDfjdwxx26EdMjOOtNeTUYfDUJi85rqdUGcfMjNjLdOMZPal7Spe1xrAZa483s3a19392+5THgSc/d8Xan/wCBFB8CzA/8jdqX/f8Aq3HcarceH2DGWO6VTGz7OdwONw9QfvU3Qr3WJotQ+3RyCSKfbFuQjOI05HsWyfx9qftK3cX1PLeZR9nL3lfd+vcrf8IDODz4u1L/AL/Uf8IFPnnxdqfp/rqseGLy9uN5la4eNYYzm4hKESYOcZAPpn3/ABp2iXuqzX8xvIpPJuF32+6PGwA4wfTIxweetHtKuuoU8Dls+X3Hrfq+nzKp8B3CZz4t1P8A7/U1/h6kjxvc+IdQnWOQPskkBGQfpViyudcPiBkuY5BbtJIFJXK8AYB44HfOTTbi+1Zdfa3tvPb9/GFXyW8sx7RuO7GM/e79aftK19zP6nlko3dJ72tdvzvvsb8I2pjP51PUK9fmzz6VNXKz6KKsgowD1FFFIoNo6gUbR6fpRRQAm1T/AA0u1eu2iigBNqj+Gl2j+7RRQAm1cY20uB6fpRRQAYHTFGAOgoooAMD0o2j+7RRQAm0f3R+VLtH92iigBNq4xt/SjYpGNvvS0UAGB/dpNq9lpaKAE2qP4f0pdo9P0oooANq9dtJtUfw/pS0UAAAAwBRSLnvS0AFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAH/9k=" /></p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table><p><strong>Cuando aparece un asterisco (*) en uno de los espacios omitidos (exentos) de arriba, la nave ha sido arqueada de acuerdo con las provisiones alternas de los reglamentos de tonelaje sin ninguna marca de tonelaje visible en el casco (p.c. castillo de popa*).</strong></p><p>When an asterik (*) appears in any of the above exempted spaces, the vessel has been measured in accordance with the provisions of the alternate tonnage regulations without a tonnage mark displayed on the hull (e.g. forecastle*)</p><p><strong>** (salvo dobles fondos) para lastre de agua </strong>/ ** (except double bottom) for water ballast.</p><h1>REMARKS</h1><table><tr><td><p>Expedido en</p></td><td></td><td><p>Fecha de emision</p></td><td></td></tr><tr><td><p>Issued at</p></td><td><p> 	</p><p>(Place of issue of certificate)</p></td><td><p>Date of issue</p></td><td><p> 	</p><p>(DD-MM-YYYY)</p></td></tr></table><p>{surveyor_name}GR CLASS REPRESENTATIVE</p>
+  </div>
 
   <!-- ═══ FOOTER / SIGNATURE ═══ -->
   <div class="ftr">
     <div class="ftr-gold-top"></div>
     <div class="ftr-inner">
-
       <div class="sig-area">
         <div class="sig-line"></div>
         <div class="sig-label">GR CLASS Representative</div>
         <div class="sig-name">{surveyor_name}</div>
         <div class="sig-desig">GR CLASS Representative · Surveyor</div>
       </div>
-
       <div class="ftr-contact">
         <strong>GR CLASS</strong>
         <a href="mailto:info@grclass.com">info@grclass.com</a><br>
@@ -647,11 +343,10 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
         Classified for Standard (GR CLASS)<br>
         Recognized Organization · Global Marine Services
       </div>
-
     </div>
   </div>
 
-</div><!-- /cert -->
+</div>
 
 </body>
 </html>

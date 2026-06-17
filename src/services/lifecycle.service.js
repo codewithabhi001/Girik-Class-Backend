@@ -232,11 +232,13 @@ export const updateJobStatus = async (jobId, newStatus, userId, reason = null, o
 
             if (['ASSIGNED', 'SURVEY_AUTHORIZED', 'IN_PROGRESS'].includes(newStatus) && job.assigned_surveyor_id) {
                 // Provision/sync one Survey per JobCertificate
-                for (const jc of jobCerts) {
-                    const certType = await db.CertificateType.findByPk(jc.certificate_type_id, { transaction: txn });
-                    if (certType && certType.requires_survey === false) {
-                        continue; // Skip survey creation and status update for non-survey certs
-                    }
+                    for (const jc of jobCerts) {
+                        const certType = await db.CertificateType.findByPk(jc.certificate_type_id, { transaction: txn });
+                        const term = jc.certificate_term || 'FULL_TERM';
+                        const isSurveyReq = term === 'SHORT_TERM' ? certType.requires_survey_short_term : certType.requires_survey_full_term;
+                        if (certType && !isSurveyReq) {
+                            continue; // Skip survey creation and status update for non-survey certs
+                        }
 
                     const existingSurvey = await Survey.findOne({ where: { job_certificate_id: jc.id }, transaction: txn });
                     if (!existingSurvey) {
@@ -435,13 +437,17 @@ export const updateSurveyStatus = async (surveyId, newStatus, userId, reason = n
 
                  if (!_skipJobSync) {
                     const parentJobId = jcForLog.job_request_id;
-                    const jobCerts = await db.JobCertificate.findAll({
-                        where: { job_request_id: parentJobId },
-                        include: [{ model: db.CertificateType, attributes: ['id', 'requires_survey'] }],
-                        transaction: txn
-                    });
-                    
-                    const surveyRequiredCerts = jobCerts.filter(c => !c.CertificateType || c.CertificateType.requires_survey !== false);
+                     const jobCerts = await db.JobCertificate.findAll({
+                         where: { job_request_id: parentJobId },
+                         include: [{ model: db.CertificateType, attributes: ['id', 'requires_survey', 'requires_survey_short_term', 'requires_survey_full_term'] }],
+                         transaction: txn
+                     });
+                     
+                     const surveyRequiredCerts = jobCerts.filter(c => {
+                         if (!c.CertificateType) return true;
+                         const term = c.certificate_term || 'FULL_TERM';
+                         return term === 'SHORT_TERM' ? c.CertificateType.requires_survey_short_term : c.CertificateType.requires_survey_full_term;
+                     });
                     const certIds = surveyRequiredCerts.map(c => c.id);
                     const surveys = await Survey.findAll({ where: { job_certificate_id: certIds }, transaction: txn });
 

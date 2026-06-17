@@ -53,6 +53,9 @@ export const buildTagValuesForJob = async (jobId) => {
         flag_state: vessel?.FlagAdministration?.name || '',
 
         owner_operators: client?.company_name || client?.name || '',
+        company_name: client?.company_name || client?.name || '',
+        company_address: client?.address || '',
+        company_id_number: client?.company_code || '',
 
         survey_commenced_date: formatDate(job.target_date || job.createdAt),
         survey_completed_date: formatDate(job.updatedAt), // Rough estimate if not finalized

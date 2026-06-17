@@ -39,6 +39,10 @@ export default (sequelize, DataTypes) => {
             type: DataTypes.TEXT,
             allowNull: true,
             comment: 'Specific remarks if this particular certificate needs rework'
+        },
+        certificate_term: {
+            type: DataTypes.ENUM('FULL_TERM', 'SHORT_TERM'),
+            defaultValue: 'FULL_TERM'
         }
     }, {
         tableName: 'job_certificates',

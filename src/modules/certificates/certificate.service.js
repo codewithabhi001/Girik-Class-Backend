@@ -132,20 +132,27 @@ export const createCertificateType = async (data) => {
     const { required_documents, ...certData } = data;
     const txn = await db.sequelize.transaction();
     try {
+        const requiresSurvey = certData.requires_survey ?? true;
+        const requiresSurveyShortTerm = certData.requires_survey_short_term ?? (requiresSurvey ? false : false);
+        const requiresSurveyFullTerm = certData.requires_survey_full_term ?? (requiresSurvey ? true : false);
+
         const type = await CertificateType.create({
             name: certData.name,
             issuing_authority: certData.issuing_authority,
             validity_years: certData.validity_years,
             status: certData.status ?? 'ACTIVE',
             description: certData.description ?? null,
-            requires_survey: certData.requires_survey ?? true,
+            requires_survey: requiresSurvey,
+            requires_survey_short_term: requiresSurveyShortTerm,
+            requires_survey_full_term: requiresSurveyFullTerm,
         }, { transaction: txn });
 
         if (required_documents && required_documents.length > 0) {
             const docsToCreate = required_documents.map(doc => ({
                 certificate_type_id: type.id,
                 document_name: doc.document_name,
-                is_mandatory: doc.is_mandatory ?? true
+                is_mandatory: doc.is_mandatory ?? true,
+                applies_to_term: doc.applies_to_term ?? 'FULL_TERM'
             }));
             await db.CertificateRequiredDocument.bulkCreate(docsToCreate, { transaction: txn });
         }
@@ -173,7 +180,15 @@ export const updateCertificateType = async (id, data) => {
     const { required_documents, ...certData } = data;
     const txn = await db.sequelize.transaction();
     try {
-        await type.update(certData, { transaction: txn });
+        const requiresSurvey = certData.requires_survey !== undefined ? certData.requires_survey : type.requires_survey;
+        const requiresSurveyShortTerm = certData.requires_survey_short_term !== undefined ? certData.requires_survey_short_term : (certData.requires_survey === false ? false : type.requires_survey_short_term);
+        const requiresSurveyFullTerm = certData.requires_survey_full_term !== undefined ? certData.requires_survey_full_term : (certData.requires_survey === false ? false : type.requires_survey_full_term);
+
+        await type.update({
+            ...certData,
+            requires_survey_short_term: requiresSurveyShortTerm,
+            requires_survey_full_term: requiresSurveyFullTerm
+        }, { transaction: txn });
 
         if (required_documents) {
             // Re-create the required documents list for simplicity
@@ -182,7 +197,8 @@ export const updateCertificateType = async (id, data) => {
                 const docsToCreate = required_documents.map(doc => ({
                     certificate_type_id: id,
                     document_name: doc.document_name,
-                    is_mandatory: doc.is_mandatory ?? true
+                    is_mandatory: doc.is_mandatory ?? true,
+                    applies_to_term: doc.applies_to_term ?? 'FULL_TERM'
                 }));
                 await db.CertificateRequiredDocument.bulkCreate(docsToCreate, { transaction: txn });
             }
@@ -247,15 +263,21 @@ export const deactivateCertificateType = async (id) => {
 
 
 /** List required documents for a certificate type. */
-export const getCertificateTypeRequiredDocuments = async (certificateTypeId) => {
+export const getCertificateTypeRequiredDocuments = async (certificateTypeId, query = {}) => {
+    const term = query.term;
     const type = await CertificateType.findByPk(certificateTypeId, {
         attributes: ['id', 'name', 'status'],
     });
     if (!type) throw { statusCode: 404, message: 'Certificate type not found' };
 
+    const where = { certificate_type_id: certificateTypeId };
+    if (term) {
+        where.applies_to_term = { [Op.in]: [term, 'BOTH'] };
+    }
+
     return await db.CertificateRequiredDocument.findAll({
-        where: { certificate_type_id: certificateTypeId },
-        attributes: ['id', 'certificate_type_id', 'document_name', 'is_mandatory', 'createdAt', 'updatedAt'],
+        where,
+        attributes: ['id', 'certificate_type_id', 'document_name', 'is_mandatory', 'applies_to_term', 'createdAt', 'updatedAt'],
         order: [['document_name', 'ASC']],
         useReplica: true
     });
@@ -414,6 +436,11 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
                 gross_tonnage: cert.Vessel?.gross_tonnage || '',
                 net_tonnage: cert.Vessel?.net_tonnage || '',
                 deadweight: cert.Vessel?.deadweight || '',
+                ballast_water_capacity: cert.Vessel?.ballast_water_capacity || '',
+                // Company (client) fields — used by DOC and other company-level certificates
+                company_name: cert.Vessel?.Client?.company_name || '',
+                company_address: cert.Vessel?.Client?.address || '',
+                company_id_number: cert.Vessel?.Client?.company_id_number || '',
                 certificate_number: certificateNumber,
                 certificate_type: cert.CertificateType?.name || '',
                 issue_date: formatDate(cert.issue_date),
@@ -564,14 +591,17 @@ export const generateCertificate = async (data, user) => {
         const certTypeId = jobCert?.certificate_type_id;
         if (!certTypeId) throw { statusCode: 400, message: 'Certificate type not found for this job/certificate' };
 
-        const certType = await db.CertificateType.findByPk(certTypeId, { attributes: ['id', 'name', 'issuing_authority', 'short_code', 'requires_survey'], transaction });
+        const certType = await db.CertificateType.findByPk(certTypeId, { attributes: ['id', 'name', 'issuing_authority', 'short_code', 'requires_survey', 'requires_survey_short_term', 'requires_survey_full_term'], transaction });
         if (!certType) throw { statusCode: 404, message: 'Certificate type not found' };
 
-        if (!certificate_term || !['FULL_TERM', 'SHORT_TERM'].includes(certificate_term)) {
+        const term = certificate_term || jobCert?.certificate_term || 'FULL_TERM';
+        if (!term || !['FULL_TERM', 'SHORT_TERM'].includes(term)) {
             throw { statusCode: 400, message: 'Certificate term is required and must be either FULL_TERM or SHORT_TERM.' };
         }
 
-        await verifyTemplateExists(certTypeId, certificate_term, transaction);
+        await verifyTemplateExists(certTypeId, term, transaction);
+
+        const isSurveyReq = term === 'SHORT_TERM' ? certType.requires_survey_short_term : certType.requires_survey_full_term;
 
         // ── Guard 1: Status Check ──
         const targetStatus = jobCert ? jobCert.status : job.job_status;
@@ -579,7 +609,7 @@ export const generateCertificate = async (data, user) => {
             ? ['SURVEY_DONE', 'REWORK_REQUESTED']
             : ['FINALIZED', 'PAYMENT_DONE', 'REWORK_REQUESTED', 'SURVEY_DONE', 'REVIEWED'];
 
-        if (jobCert && certType.requires_survey === false) {
+        if (jobCert && !isSurveyReq) {
             if (!job.approved_by_user_id) {
                 throw {
                     statusCode: 400,
@@ -587,7 +617,10 @@ export const generateCertificate = async (data, user) => {
                 };
             }
             const requiredDocsCount = await db.CertificateRequiredDocument.count({
-                where: { certificate_type_id: certTypeId },
+                where: {
+                    certificate_type_id: certTypeId,
+                    applies_to_term: { [Op.in]: [term, 'BOTH'] }
+                },
                 transaction
             });
             const needsVerification = requiredDocsCount > 0;
@@ -604,7 +637,7 @@ export const generateCertificate = async (data, user) => {
         }
 
         // ── Guard 2: Survey Compliance (if required) ──
-        if (certType.requires_survey) {
+        if (isSurveyReq) {
             let surveyQuery;
             if (jobCert) {
                 surveyQuery = { job_certificate_id: jobCert.id };
@@ -676,7 +709,7 @@ export const generateCertificate = async (data, user) => {
             version: 1,
             issued_by_user_id: userId,
             flag_administration_id: flag_administration_id || null,
-            certificate_term: certificate_term,
+            certificate_term: term,
         }, { transaction });
 
         // Add history for initial draft
@@ -709,7 +742,7 @@ export const generateCertificate = async (data, user) => {
             const freshCert = await Certificate.findByPk(cert.id, {
                 useMaster: true,
                 include: [
-                    { model: db.Vessel },
+                    { model: db.Vessel, include: [{ model: db.Client, as: 'Client', attributes: ['company_name', 'address', 'company_id_number'] }] },
                     { model: db.CertificateType },
                     { model: db.FlagAdministration, as: 'FlagState' }
                 ]
@@ -1100,7 +1133,7 @@ export const updateDraft = async (id, data, user) => {
     const freshCert = await Certificate.findByPk(cert.id, {
         useMaster: true,
         include: [
-            { model: db.Vessel },
+            { model: db.Vessel, include: [{ model: db.Client, as: 'Client', attributes: ['company_name', 'address', 'company_id_number'] }] },
             { model: db.CertificateType },
             { model: db.FlagAdministration, as: 'FlagState' }
         ]
@@ -1172,7 +1205,7 @@ export const updateDraftLayout = async (id, data, user) => {
     const freshCert = await Certificate.findByPk(cert.id, {
         useMaster: true,
         include: [
-            { model: db.Vessel },
+            { model: db.Vessel, include: [{ model: db.Client, as: 'Client', attributes: ['company_name', 'address', 'company_id_number'] }] },
             { model: db.CertificateType },
             { model: db.FlagAdministration, as: 'FlagState' }
         ]
@@ -1202,7 +1235,7 @@ export const issueCertificate = async (id, user) => {
             transaction,
             lock: transaction.LOCK.UPDATE,
             include: [
-                { model: db.Vessel },
+                { model: db.Vessel, include: [{ model: db.Client, as: 'Client', attributes: ['company_name', 'address', 'company_id_number'] }] },
                 { model: db.CertificateType },
                 { model: db.FlagAdministration, as: 'FlagState' }
             ]

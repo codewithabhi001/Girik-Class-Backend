@@ -252,7 +252,7 @@ export const deactivateCertificateType = async (req, res, next) => {
 
 export const getCertificateTypeRequiredDocuments = async (req, res, next) => {
     try {
-        const docs = await certService.getCertificateTypeRequiredDocuments(req.params.id);
+        const docs = await certService.getCertificateTypeRequiredDocuments(req.params.id, req.query);
         res.json({ success: true, data: docs });
     } catch (e) { next(e); }
 };

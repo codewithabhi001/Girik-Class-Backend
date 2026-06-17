@@ -12,6 +12,10 @@ export default (sequelize, DataTypes) => {
         is_mandatory: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
+        },
+        applies_to_term: {
+            type: DataTypes.ENUM('FULL_TERM', 'SHORT_TERM', 'BOTH'),
+            defaultValue: 'FULL_TERM'
         }
     }, {
         tableName: 'certificate_required_documents',

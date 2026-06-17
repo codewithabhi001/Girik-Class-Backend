@@ -24,7 +24,7 @@
 html { background: #8A8A8A; }
 body {
   font-family: 'Source Sans 3', sans-serif;
-  font-size: 10pt;
+  font-size: 9pt;
   color: var(--text);
   background: #8A8A8A;
   padding: 16px 0 40px;
@@ -124,21 +124,6 @@ body {
   flex-shrink: 0;
   box-shadow: 0 0 0 1px rgba(196,168,74,.6);
 }
-.logo-gr {
-  font-family: 'EB Garamond', serif;
-  font-weight: 700;
-  font-size: 18pt;
-  color: var(--navy);
-  line-height: 1;
-  letter-spacing: 1px;
-}
-.logo-word {
-  font-size: 5.5pt;
-  font-weight: 700;
-  color: var(--blue);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
 
 /* centre title */
 .hdr-title {}
@@ -184,8 +169,6 @@ body {
   display: block;
   line-height: 1.15;
   letter-spacing: .5px;
-  
-  
   white-space: nowrap;
 }
 .hdr-meta-form {
@@ -194,7 +177,7 @@ body {
   margin-top: 4px;
 }
 
-/* ══════════════ AUTHORITY BAND ══════════════ */
+/* ══════════════ AUTHORITY BAND ═══ */
 .authority {
   background: var(--light);
   border-bottom: 1px solid var(--border);
@@ -221,7 +204,7 @@ body {
   margin: 4mm 0 2.5mm;
 }
 
-/* ── VESSEL TABLE ── */
+/* ── COMPANY TABLE ── */
 .vtable {
   width: 100%;
   border-collapse: collapse;
@@ -256,48 +239,15 @@ body {
   line-height: 1.2;
   word-break: break-word;
 }
-.vtable .sub {
-  font-size: 7pt;
-  color: var(--muted);
-  font-family: 'Source Sans 3', sans-serif;
-  font-weight: 400;
-  display: block;
-  margin-top: 1px;
-}
 .vtable tr:nth-child(even) td { background: #FAFCFF; }
 
-/* ── EXTRA DATA TABLE ── */
-.mtable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 9pt;
-  margin-bottom: 1mm;
-}
-.mtable th {
-  background: var(--light);
-  color: var(--navy);
-  font-size: 7pt;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  text-align: left;
-}
-.mtable td {
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  background: #fff;
-}
-.mtable .m-val {
-  font-family: 'EB Garamond', serif;
-  font-size: 11pt;
-  font-weight: 600;
-  color: var(--text);
-}
-
 /* ── CHECKBOX LIST ── */
-.chk-list { display: flex; flex-direction: column; gap: 2.5px; margin-bottom: 2mm; }
+.chk-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 2mm;
+}
 .chk-item {
   display: flex;
   align-items: flex-start;
@@ -305,8 +255,8 @@ body {
   padding: 5.5px 9px;
   border: 1px solid var(--border);
   border-radius: 1px;
-  font-size: 9pt;
-  line-height: 1.5;
+  font-size: 8.5pt;
+  line-height: 1.4;
   background: #fff;
   color: var(--muted);
 }
@@ -315,7 +265,6 @@ body {
   background: var(--light);
   color: var(--text);
 }
-.chk-item.checked .chk-text { color: var(--text); }
 .checkbox {
   width: 13px; height: 13px;
   border: 1.5px solid #aaa;
@@ -338,44 +287,11 @@ body {
   border-bottom: 2px solid #fff;
   transform: rotate(38deg);
 }
-.chk-text b { color: var(--navy); }
-.inline-val {
-  display: inline-block;
-  font-family: 'EB Garamond', serif;
-  font-size: 10.5pt;
-  font-weight: 600;
-  color: var(--navy);
-  border-bottom: 1px solid var(--navy);
-  padding: 0 4px;
-  min-width: 100px;
-  line-height: 1.2;
-  vertical-align: bottom;
-}
-
-/* ── CERTIFY BOX ── */
-.certify {
-  border-left: 3.5px solid var(--gold);
-  background: var(--light);
-  padding: 5px 11px 6px;
-  margin: 1mm 0 3mm;
-  font-size: 9pt;
-  line-height: 1.6;
-}
-.certify-title {
-  font-weight: 700;
-  color: var(--navy);
-  font-size: 9pt;
-  margin-bottom: 3px;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-}
-.certify ul { margin-left: 16px; color: var(--muted); }
-.certify ul li { margin-bottom: 1px; }
 
 /* description text */
 .cert-desc {
-  font-size: 9pt;
-  line-height: 1.6;
+  font-size: 8.5pt;
+  line-height: 1.5;
   color: var(--muted);
   margin-bottom: 2mm;
 }
@@ -413,7 +329,7 @@ body {
 }
 .vc-val {
   font-family: 'EB Garamond', serif;
-  font-size: 12.5pt;
+  font-size: 11pt;
   font-weight: 600;
   color: var(--navy);
   line-height: 1.2;
@@ -527,7 +443,7 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
       </div>
 
       <div class="hdr-title">
-        <div class="hdr-eyebrow">{certificate_term}</div>
+        <div class="hdr-eyebrow">Short Term</div>
         <div class="hdr-certname">Document of Compliance</div>
         <div class="hdr-convention">
           Issued under the provisions of the International Safety Management (ISM) Code
@@ -536,7 +452,7 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
 
       <div class="hdr-meta">
         <span class="hdr-meta-label">DOC-ST No.</span>
-        <span class="hdr-meta-no">{certificate_number}</span>
+        <span class="hdr-meta-no"><span class="cert-field" data-field="certificate_number">{certificate_number}</span></span>
         <div class="hdr-meta-form">Form DOC-ST · Approved by: GM</div>
       </div>
 
@@ -546,68 +462,90 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
 
   <!-- ═══ AUTHORITY BAND ═══ -->
   <div class="authority">
-    Issued under the authority of the Government of <strong>{flag_state}</strong><br>
+    Issued under the authority of the Government of <strong><span class="cert-field" data-field="flag_state">{flag_state}</span></strong><br>
     By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO) operating under IMO Framework
   </div>
 
   <!-- ═══ BODY ═══ -->
   <div class="body">
 
-    <!-- VESSEL PARTICULARS -->
-    <div class="sec-label">Vessel Particulars</div>
+    <!-- COMPANY PARTICULARS -->
+    <div class="sec-label">Company Particulars</div>
     <table class="vtable">
       <tr>
-        <th style="width:25%">Name of Ship</th>
-        <th style="width:25%">Distinctive No. / Letters</th>
-        <th style="width:25%">Port of Registry</th>
-        <th style="width:25%">Gross Tonnage</th>
+        <th style="width:50%">Name of the Company</th>
+        <th style="width:50%">Company Identification Number <sup>1</sup></th>
       </tr>
       <tr>
-        <td><span class="val">{vessel_name}</span></td>
-        <td><span class="val">{call_sign}</span></td>
-        <td><span class="val">{port_of_registry}</span></td>
-        <td><span class="val">{gross_tonnage}</span></td>
+        <td><span class="val">{company_name}</span></td>
+        <td><span class="val">{company_id_number}</span></td>
       </tr>
       <tr>
-        <th>IMO Number <sup>1</sup></th>
-        <th>Ship Type</th>
-        <th>Net Tonnage</th>
-        <th>Deadweight</th>
+        <th colspan="2">Address of the Company</th>
       </tr>
       <tr>
-        <td><span class="val">{imo_number}</span></td>
-        <td><span class="val">{ship_type}</span></td>
-        <td><span class="val">{net_tonnage}</span></td>
-        <td><span class="val">{deadweight}</span></td>
+        <td colspan="2"><span class="val">{company_address}</span></td>
       </tr>
     </table>
 
-
     <!-- CERTIFICATION -->
     <div class="sec-label">Certification</div>
-    <p class="cert-desc">This is to certify that the vessel has been surveyed and found in compliance with the relevant safety and technical standards for the issuance of the DOC.</p>
-    <div class="certify">
-      <div class="certify-title">This is to certify that:</div>
-      <ul>
-        <li>The ship has been surveyed in accordance with the applicable rules and regulations;</li>
-        <li>The survey shows that the structure, equipment, and condition of the ship comply with the safety standards of GR CLASS.</li>
-      </ul>
+    <p class="cert-desc">THIS IS TO CERTIFY THAT the safety management system of the Company has been Recognized as meeting objectives of paragraph 1.2.3 of the International Management Code for the Safe Operation of Ships and for Pollution Prevention (ISM Code) for the type(s) of ships listed below:</p>
+    
+    <!-- CHECKBOX LIST -->
+    <div class="chk-list">
+      <div class="chk-item checked">
+        <div class="checkbox"></div>
+        <div class="chk-text">Passenger Ship</div>
+      </div>
+      <div class="chk-item">
+        <div class="checkbox"></div>
+        <div class="chk-text">Passenger High-speed Craft</div>
+      </div>
+      <div class="chk-item">
+        <div class="checkbox"></div>
+        <div class="chk-text">Cargo High-speed Craft</div>
+      </div>
+      <div class="chk-item checked">
+        <div class="checkbox"></div>
+        <div class="chk-text">Bulk Carrier</div>
+      </div>
+      <div class="chk-item checked">
+        <div class="checkbox"></div>
+        <div class="chk-text">Oil Tanker</div>
+      </div>
+      <div class="chk-item">
+        <div class="checkbox"></div>
+        <div class="chk-text">Chemical Tanker</div>
+      </div>
+      <div class="chk-item">
+        <div class="checkbox"></div>
+        <div class="chk-text">Gas Carrier</div>
+      </div>
+      <div class="chk-item">
+        <div class="checkbox"></div>
+        <div class="chk-text">Mobile Offshore Drilling Unit</div>
+      </div>
+      <div class="chk-item checked">
+        <div class="checkbox"></div>
+        <div class="chk-text">Other Cargo Ship</div>
+      </div>
     </div>
 
     <!-- DATES & VALIDITY -->
     <div class="sec-label">Dates &amp; Validity</div>
     <div class="vgrid">
       <div class="vcell">
-        <span class="vc-label">Survey Completion Date</span>
+        <span class="vc-label">Verification Completion Date</span>
         <div class="vc-val">{survey_completion_date}</div>
       </div>
       <div class="vcell">
         <span class="vc-label">Date of Issue</span>
-        <div class="vc-val">{issue_date}</div>
+        <div class="vc-val"><span class="cert-field" data-field="issue_date">{issue_date}</span></div>
       </div>
       <div class="vcell hi">
         <span class="vc-label">Valid Until</span>
-        <div class="vc-val">{expiry_date}</div>
+        <div class="vc-val"><span class="cert-field" data-field="expiry_date">{expiry_date}</span></div>
       </div>
     </div>
     <div class="vgrid-2">
@@ -623,7 +561,7 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
 
     <!-- FOOTNOTES -->
     <div class="footnotes">
-      <p><sup>1</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600(15).</p>
+      <p><sup>1</sup> "Company Identification Number" item is added by Res. MSC. 195 (80) and this enter into force on January 01st, 2009.</p>
     </div>
 
   </div><!-- /body -->

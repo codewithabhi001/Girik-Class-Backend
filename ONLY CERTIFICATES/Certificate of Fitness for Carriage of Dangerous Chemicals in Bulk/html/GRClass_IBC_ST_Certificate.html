@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>GR Class – IBC-ST Certificate</title>
+<title>GR Class – Certificate of Fitness for Carriage of Dangerous Chemicals in Bulk - Short Term</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
 
@@ -30,7 +30,6 @@ body {
   padding: 16px 0 40px;
 }
 
-/* ── PRINT BUTTON ── */
 .no-print {
   width: 210mm;
   margin: 0 auto 10px;
@@ -50,13 +49,7 @@ body {
   border-radius: 3px;
 }
 .btn-print:hover { background: var(--blue); }
-.tag-hint {
-  font-size: 8pt;
-  color: #aaa;
-  margin-left: 12px;
-}
 
-/* ── CERTIFICATE PAGE ── */
 .cert {
   width: 210mm;
   min-height: 297mm;
@@ -69,10 +62,8 @@ body {
   overflow: hidden;
 }
 
-/* prevent any text from overflowing */
 .cert * { word-wrap: break-word; overflow-wrap: break-word; }
 
-/* outer decorative frame */
 .cert::before {
   content: '';
   position: absolute;
@@ -90,7 +81,6 @@ body {
   z-index: 5;
 }
 
-/* ══════════════ HEADER ══════════════ */
 .hdr {
   background: var(--navy);
   padding: 0;
@@ -113,7 +103,6 @@ body {
   background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
 }
 
-/* logo */
 .logo {
   width: 60px; height: 60px;
   background: #fff;
@@ -124,24 +113,7 @@ body {
   flex-shrink: 0;
   box-shadow: 0 0 0 1px rgba(196,168,74,.6);
 }
-.logo-gr {
-  font-family: 'EB Garamond', serif;
-  font-weight: 700;
-  font-size: 18pt;
-  color: var(--navy);
-  line-height: 1;
-  letter-spacing: 1px;
-}
-.logo-word {
-  font-size: 5.5pt;
-  font-weight: 700;
-  color: var(--blue);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
 
-/* centre title */
-.hdr-title {}
 .hdr-eyebrow {
   font-size: 7pt;
   font-weight: 600;
@@ -167,7 +139,6 @@ body {
   word-wrap: break-word;
 }
 
-/* right meta */
 .hdr-meta { text-align: right; word-wrap: break-word; }
 .hdr-meta-label {
   font-size: 6pt;
@@ -184,8 +155,6 @@ body {
   display: block;
   line-height: 1.15;
   letter-spacing: .5px;
-  
-  
   white-space: nowrap;
 }
 .hdr-meta-form {
@@ -194,7 +163,6 @@ body {
   margin-top: 4px;
 }
 
-/* ══════════════ AUTHORITY BAND ══════════════ */
 .authority {
   background: var(--light);
   border-bottom: 1px solid var(--border);
@@ -206,30 +174,25 @@ body {
 }
 .authority strong { color: var(--navy); font-weight: 700; }
 
-/* ══════════════ BODY ══════════════ */
-.body { padding: 4mm 12mm 4mm; flex: 1; }
+.body { padding: 8mm 12mm 8mm; flex: 1; }
 
-/* section label */
-.sec-label {
-  font-size: 6.5pt;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--blue);
-  padding-bottom: 2.5px;
-  border-bottom: 1.5px solid var(--rule);
-  margin: 4mm 0 2.5mm;
+.body p {
+  margin-bottom: 8px;
+  line-height: 1.5;
+  font-size: 9pt;
 }
-
-/* ── VESSEL TABLE ── */
-.vtable {
+.body table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 9pt;
-  margin-bottom: 1mm;
-  table-layout: fixed;
+  margin: 10px 0;
+  font-size: 8.5pt;
 }
-.vtable th {
+.body table td, .body table th {
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+.body table th {
   background: var(--navy);
   color: var(--gold-lt);
   font-size: 6.5pt;
@@ -239,199 +202,15 @@ body {
   padding: 5px 9px;
   border: 1px solid var(--navy);
   text-align: left;
-  overflow: hidden;
 }
-.vtable td {
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  background: #fff;
-  vertical-align: middle;
-  overflow: hidden;
+.body ul, .body ol {
+  margin-left: 20px;
+  margin-bottom: 10px;
 }
-.vtable .val {
-  font-family: 'EB Garamond', serif;
-  font-size: 12pt;
-  font-weight: 600;
-  color: var(--navy);
-  line-height: 1.2;
-  word-break: break-word;
-}
-.vtable .sub {
-  font-size: 7pt;
-  color: var(--muted);
-  font-family: 'Source Sans 3', sans-serif;
-  font-weight: 400;
-  display: block;
-  margin-top: 1px;
-}
-.vtable tr:nth-child(even) td { background: #FAFCFF; }
-
-/* ── EXTRA DATA TABLE ── */
-.mtable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 9pt;
-  margin-bottom: 1mm;
-}
-.mtable th {
-  background: var(--light);
-  color: var(--navy);
-  font-size: 7pt;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  text-align: left;
-}
-.mtable td {
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  background: #fff;
-}
-.mtable .m-val {
-  font-family: 'EB Garamond', serif;
-  font-size: 11pt;
-  font-weight: 600;
-  color: var(--text);
+.body li {
+  margin-bottom: 4px;
 }
 
-/* ── CHECKBOX LIST ── */
-.chk-list { display: flex; flex-direction: column; gap: 2.5px; margin-bottom: 2mm; }
-.chk-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  padding: 5.5px 9px;
-  border: 1px solid var(--border);
-  border-radius: 1px;
-  font-size: 9pt;
-  line-height: 1.5;
-  background: #fff;
-  color: var(--muted);
-}
-.chk-item.checked {
-  border-color: var(--blue);
-  background: var(--light);
-  color: var(--text);
-}
-.chk-item.checked .chk-text { color: var(--text); }
-.checkbox {
-  width: 13px; height: 13px;
-  border: 1.5px solid #aaa;
-  border-radius: 1px;
-  flex-shrink: 0;
-  margin-top: 1.5px;
-  background: #fff;
-  position: relative;
-}
-.chk-item.checked .checkbox {
-  background: var(--blue);
-  border-color: var(--blue);
-}
-.chk-item.checked .checkbox::after {
-  content: '';
-  position: absolute;
-  left: 2.5px; top: .5px;
-  width: 5px; height: 9px;
-  border-right: 2px solid #fff;
-  border-bottom: 2px solid #fff;
-  transform: rotate(38deg);
-}
-.chk-text b { color: var(--navy); }
-.inline-val {
-  display: inline-block;
-  font-family: 'EB Garamond', serif;
-  font-size: 10.5pt;
-  font-weight: 600;
-  color: var(--navy);
-  border-bottom: 1px solid var(--navy);
-  padding: 0 4px;
-  min-width: 100px;
-  line-height: 1.2;
-  vertical-align: bottom;
-}
-
-/* ── CERTIFY BOX ── */
-.certify {
-  border-left: 3.5px solid var(--gold);
-  background: var(--light);
-  padding: 5px 11px 6px;
-  margin: 1mm 0 3mm;
-  font-size: 9pt;
-  line-height: 1.6;
-}
-.certify-title {
-  font-weight: 700;
-  color: var(--navy);
-  font-size: 9pt;
-  margin-bottom: 3px;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-}
-.certify ul { margin-left: 16px; color: var(--muted); }
-.certify ul li { margin-bottom: 1px; }
-
-/* description text */
-.cert-desc {
-  font-size: 9pt;
-  line-height: 1.6;
-  color: var(--muted);
-  margin-bottom: 2mm;
-}
-
-/* ── VALIDITY GRID ── */
-.vgrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 2.5mm;
-  margin-bottom: 2.5mm;
-}
-.vgrid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2.5mm;
-  margin-bottom: 2mm;
-}
-.vcell {
-  border: 1px solid var(--border);
-  padding: 5.5px 9px;
-  background: #fff;
-}
-.vcell.hi {
-  border-color: var(--blue);
-  background: var(--light);
-}
-.vc-label {
-  font-size: 6pt;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--muted);
-  display: block;
-  margin-bottom: 3px;
-}
-.vc-val {
-  font-family: 'EB Garamond', serif;
-  font-size: 12.5pt;
-  font-weight: 600;
-  color: var(--navy);
-  line-height: 1.2;
-}
-.vcell.hi .vc-val { color: var(--blue); }
-
-/* ── FOOTNOTES ── */
-.footnotes {
-  border-top: 1px solid var(--border);
-  padding: 3mm 0 2mm;
-  font-size: 7pt;
-  color: var(--muted);
-  line-height: 1.65;
-}
-.footnotes p { margin-bottom: 1.5px; }
-sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
-
-/* ══════════════ FOOTER ══════════════ */
 .ftr {
   background: var(--navy);
   flex-shrink: 0;
@@ -492,7 +271,6 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
 }
 .ftr-contact a { color: rgba(255,255,255,.55); text-decoration: none; }
 
-/* ══════════════ PRINT ══════════════ */
 @page { size: A4; margin: 0; }
 @media print {
   html, body { background: none !important; padding: 0 !important; margin: 0 !important; }
@@ -512,7 +290,6 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
 
 <div class="no-print">
   <button class="btn-print" onclick="window.print()">🖨&nbsp; Print / Save as PDF</button>
-  <span class="tag-hint">Tags like {tag} are replaced by software at generation time.</span>
 </div>
 
 <div class="cert">
@@ -521,125 +298,44 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
   <div class="hdr">
     <div class="hdr-gold-top"></div>
     <div class="hdr-inner">
-
       <div class="logo">
         <img src="https://grclass.com/grclass-logo.webp" alt="GR Glass Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
       </div>
-
       <div class="hdr-title">
-        <div class="hdr-eyebrow">{certificate_term}</div>
-        <div class="hdr-certname">Certificate of Fitness for the Carriage of Dangerous Chemicals in Bulk</div>
-        <div class="hdr-convention">
-          Issued under the provisions of the International Code for the Construction and Equipment of Ships Carrying Dangerous Chemicals in Bulk (IBC Code)
-        </div>
+        <div class="hdr-eyebrow">Short Term</div>
+        <div class="hdr-certname">Certificate of Fitness for Carriage of Dangerous Chemicals in Bulk</div>
+        <div class="hdr-convention">Issued under the provisions of the relevant international conventions</div>
       </div>
-
       <div class="hdr-meta">
         <span class="hdr-meta-label">IBC-ST No.</span>
-        <span class="hdr-meta-no">{certificate_number}</span>
+        <span class="hdr-meta-no"><span class="cert-field" data-field="certificate_number">{certificate_number}</span></span>
         <div class="hdr-meta-form">Form IBC-ST · Approved by: GM</div>
       </div>
-
     </div>
     <div class="hdr-gold-bottom"></div>
   </div>
 
   <!-- ═══ AUTHORITY BAND ═══ -->
   <div class="authority">
-    Issued under the authority of the Government of <strong>{flag_state}</strong><br>
+    Issued under the authority of the Government of <strong><span class="cert-field" data-field="flag_state">{flag_state}</span></strong><br>
     By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO) operating under IMO Framework
   </div>
 
   <!-- ═══ BODY ═══ -->
   <div class="body">
-
-    <!-- VESSEL PARTICULARS -->
-    <div class="sec-label">Vessel Particulars</div>
-    <table class="vtable">
-      <tr>
-        <th style="width:25%">Name of Ship</th>
-        <th style="width:25%">Distinctive No. / Letters</th>
-        <th style="width:25%">Port of Registry</th>
-        <th style="width:25%">Gross Tonnage</th>
-      </tr>
-      <tr>
-        <td><span class="val">{vessel_name}</span></td>
-        <td><span class="val">{call_sign}</span></td>
-        <td><span class="val">{port_of_registry}</span></td>
-        <td><span class="val">{gross_tonnage}</span></td>
-      </tr>
-      <tr>
-        <th>IMO Number <sup>1</sup></th>
-        <th>Ship Type</th>
-        <th>Net Tonnage</th>
-        <th>Deadweight</th>
-      </tr>
-      <tr>
-        <td><span class="val">{imo_number}</span></td>
-        <td><span class="val">{ship_type}</span></td>
-        <td><span class="val">{net_tonnage}</span></td>
-        <td><span class="val">{deadweight}</span></td>
-      </tr>
-    </table>
-
-
-    <!-- CERTIFICATION -->
-    <div class="sec-label">Certification</div>
-    <p class="cert-desc">This is to certify that the vessel has been surveyed and found in compliance with the relevant safety and technical standards for the issuance of the Certificate of Fitness for Carriage of Dangerous Chemicals in Bulk.</p>
-    <div class="certify">
-      <div class="certify-title">This is to certify that:</div>
-      <ul>
-        <li>The ship has been surveyed in accordance with the applicable rules and regulations;</li>
-        <li>The survey shows that the structure, equipment, and condition of the ship comply with the safety standards of GR CLASS.</li>
-      </ul>
-    </div>
-
-    <!-- DATES & VALIDITY -->
-    <div class="sec-label">Dates &amp; Validity</div>
-    <div class="vgrid">
-      <div class="vcell">
-        <span class="vc-label">Survey Completion Date</span>
-        <div class="vc-val">{survey_completion_date}</div>
-      </div>
-      <div class="vcell">
-        <span class="vc-label">Date of Issue</span>
-        <div class="vc-val">{issue_date}</div>
-      </div>
-      <div class="vcell hi">
-        <span class="vc-label">Valid Until</span>
-        <div class="vc-val">{expiry_date}</div>
-      </div>
-    </div>
-    <div class="vgrid-2">
-      <div class="vcell">
-        <span class="vc-label">Place of Issue</span>
-        <div class="vc-val">{place_of_survey}</div>
-      </div>
-      <div class="vcell">
-        <span class="vc-label">Page</span>
-        <div class="vc-val">1 of 1</div>
-      </div>
-    </div>
-
-    <!-- FOOTNOTES -->
-    <div class="footnotes">
-      <p><sup>1</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600(15).</p>
-    </div>
-
-  </div><!-- /body -->
+    <h1>Short Term International Certificate of Fitness For the Carriage of Dangerous</h1><p><img src="data:image/jpeg;base64,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" /><strong>Chemicals in Bulk</strong></p><p>Issued under the provisions of the</p><p>INTERNATION CODE FOR THE CONSTRUCTION AND EQUIPMENT OF SHIPS CARRYING DANGEROUS CHEMICALS IN BULK</p><p>(Resolutions MSC. 176(79) and MEPC.119 (52))</p><p>Under the authority of the Government of</p><p><strong> THE MERCHANT MARINE HONDURAS</strong></p><p><strong> By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><p><strong>IBC No.:</strong></p><table><tr><td><p><strong>Name Ship</strong></p></td><td><p><strong>Distinctive number or letters</strong></p></td><td><p><strong>Port of registry</strong></p></td><td><p><strong>Gross tonnage</strong></p></td><td><p><strong>Ship type</strong></p><p><strong>(Code paragraph 2.1.2)</strong></p></td></tr><tr><td rowspan="3"></td><td><p>{call_sign}</p></td><td rowspan="3"><p><strong>HONDURAS</strong></p></td><td rowspan="3"><p>{gross_tonnage}</p></td><td rowspan="3"><p>{ship_type}</p></td></tr><tr><td><p><strong>IMO number:</strong></p></td></tr><tr><td><p>{imo_number}</p></td></tr></table><p>Date on which keel was laid or on which the ship was at a similar stage of construction or (in the case of a converted ship) date on which conversion to chemical tanker was commenced:	 	</p><p>The ship also complies fully with the following amendments to the Code:	 	</p><p>The ship is exempted from compliance with the following provisions of the Code:</p><p>THIS IS TO CERTIFY:</p><ol><li>That the ship has been surveyed in accordance with the provisions of section 1.5 of the Code.</li><li>That the survey showed that the construction and equipment of the ship and the condition thereof are in all respects satisfactory and that the ship complies with the relevant provisions of the Code:</li><li>That the ship has been provided with a Manual in accordance with Appendix 4 of Annex II of MARPOL 73/78 as called for by regulation 14 of Annex II, and that the arrangements and equipment of the ship prescribed in the Manual are in all respects satisfactory;</li><li>That the ship meets the requirements for the carriage in bulk of the following products, provided that all relevant operational provisions of the Code and Annex II of MARPOL 73/78 are observed:</li></ol><table><tr><td><p><strong>Products</strong></p></td><td><p><strong>Conditions of Carriage (tank numbers, etc.)</strong></p></td><td><p><strong>Pollution Category</strong></p></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td colspan="3"><p>Continued on attachment 1, additional signed and dated sheets1</p><p>Tank numbers referred to in this list are identified on attachment 2, signed and dated tank plan.</p></td></tr><tr><td colspan="3"><p>Continued on attachment 1, additional signed and dated sheets</p><p>Tank numbers referred to in this list are identified on attachment 2, signed and dated tank plan.</p></td></tr></table><ol><li>That, in accordance whit 1.4 / 2.8.22, he provisions of the Code are modified in respect of the ship in the following manner:</li></ol><p><strong>1 Delete as appropriate</strong></p><p><strong>2 Delete as appropriate.</strong></p><ol><li>That the ship must be loaded:</li><li>in accordance with the loading conditions provided in the approved loading manual, stamped and dated	 	 and signed by a responsible officer of the Administration, or of an organization recognized by the Administration2.</li><li>in accordance with the loading limitations appended to this Certificate2.</li></ol><p>Where it is required to load the ship other than in accordance with the above instruction, then the necessary calculations to justify the proposed loading conditions shall be communicated to the certifying Administration who may authorize in writing the adoption of the proposed loading condition3.</p><p>This certificate is valid until		4Subject to surveys in accordance with 1.5 of the Code. Completion date of the survey on which this certificate is based(YY/MM/DD):{expiry_date}</p><p>Issued at	Date of Issue</p><p>	</p><p>(Place of issue of certificate)	(YYYY-MM-DD)</p><p>The undersigned declares that he is duly authorized by the said Government to issue this certificate.</p><p><strong>Signature of authorized official issuing the certificate</strong></p><p>Notes on completion of Certificate:</p><ol><li>The Certificate can be issued only to ships entitled to fly the flags of States which are both a Contracting Government to the 1974 SOLAS Convention and Party to MARPOL 73/78.</li><li>“Ship type”: Any entry under this column must relate to all relevant recommendations, e.g. an entry “Type 2” means Type 2 in all respects prescribed by the Code.</li><li>Products: Products listed in Chapter 17 of the Code, or which have been evaluated by the Administration in accordance with 1.1.6 of the Code, shall be listed. In respect of the latter "new" products, any special requirements provisionally prescribed shall be noted.</li><li>Products The list of products the ship is suitable to carry shall include the Noxious Liquid Substances of Category Z which are not covered by the Code and shall be identified as "Chapter 18 category Z".</li></ol><p><strong>IBC No.:    	 IMO No.   	</strong></p><p><strong>3 Instead of being incorporated in the Certificate, this text may be appended to the Certificate if duly signed and stamped.</strong></p><p><strong>4 Insert the date of expiry as specified by the Administration in accordance with 1.5.6.1 of the Code. The day and the month of his day correspond to the anniversary date as defined in 1.3.3 of the Code, unless amended in accordance with 1.5.6.8 of the Code.</strong></p><p><strong>                                      GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><h3>INTERNATIONAL CERTIFICATE OF FITNESS FOR THE CARRIAGE OF DANGEROUS CHEMICALS IN BULK</h3><p><strong>ATTACHMENT No. 1</strong></p><p><strong>IBC No.</strong></p><p>Continued list of products to those specified in section 4, and their conditions of carriage.</p><table><tr><td><p><strong>Products</strong></p></td><td><p><strong>Conditions of Carriage (tank numbers, etc.)</strong></p></td><td><p><strong>Pollution Category</strong></p></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr></table><p>	</p><p>{surveyor_name}GR CLASS REPRESENTATIVE</p><p> </p><p><strong>GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><p><strong>INTERNATIONAL CERTIFICATE OF FITNTESSFOR THE CARRIAGE OF DANGEROUS CHEMICALS IN BULK</strong></p><p><strong>ATTACHMENT No. 2</strong></p><p><strong>TANK PLAN</strong></p><p><a id="IBC_No."></a><strong>IBC No.</strong></p><table><tr><td><p><strong>Name of ship</strong></p></td><td></td></tr><tr><td><p><strong>Distinctive number or letters:</strong></p></td><td></td></tr><tr><td><p><strong>IMO Number</strong></p></td><td></td></tr></table><img src="data:image/png;base64,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" /><p><strong>Cargo area</strong></p><p>	</p><p>{surveyor_name}GR CLASS REPRESENTATIVE</p>
+  </div>
 
   <!-- ═══ FOOTER / SIGNATURE ═══ -->
   <div class="ftr">
     <div class="ftr-gold-top"></div>
     <div class="ftr-inner">
-
       <div class="sig-area">
         <div class="sig-line"></div>
         <div class="sig-label">GR CLASS Representative</div>
         <div class="sig-name">{surveyor_name}</div>
         <div class="sig-desig">GR CLASS Representative · Surveyor</div>
       </div>
-
       <div class="ftr-contact">
         <strong>GR CLASS</strong>
         <a href="mailto:info@grclass.com">info@grclass.com</a><br>
@@ -647,11 +343,10 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
         Classified for Standard (GR CLASS)<br>
         Recognized Organization · Global Marine Services
       </div>
-
     </div>
   </div>
 
-</div><!-- /cert -->
+</div>
 
 </body>
 </html>

@@ -178,16 +178,19 @@ export const createJob = async (data, userId, options = {}) => {
         const certType = await CertificateType.findByPk(cert.certificate_type_id, { useMaster: true });
         if (!certType) throw { statusCode: 400, message: `The selected certificate type ${cert.certificate_type_id} is invalid.` };
         
+        const term = cert.certificate_term || 'FULL_TERM';
+        const isSurveyReq = term === 'SHORT_TERM' ? certType.requires_survey_short_term : certType.requires_survey_full_term;
+
         // ── Template Validations ──
         const certTemplate = await db.CertificateTemplate.findOne({
-            where: { certificate_type_id: cert.certificate_type_id, is_active: true },
+            where: { certificate_type_id: cert.certificate_type_id, is_active: true, certificate_term: term },
             useMaster: true
         });
         if (!certTemplate) {
-            throw { statusCode: 400, message: `Cannot create job. No active Certificate Template found for ${certType.name}.` };
+            throw { statusCode: 400, message: `Cannot create job. No active Certificate Template found for ${certType.name} (${term}).` };
         }
 
-        if (certType.requires_survey) {
+        if (isSurveyReq) {
             anySurveyRequired = true;
             const checklistTemplate = await db.ChecklistTemplate.findOne({
                 where: { certificate_type_id: cert.certificate_type_id, status: 'ACTIVE' },
@@ -200,7 +203,11 @@ export const createJob = async (data, userId, options = {}) => {
 
         if (!skipMandatoryDocumentCheck) {
             const requiredDocs = await CertificateRequiredDocument.findAll({
-                where: { certificate_type_id: cert.certificate_type_id, is_mandatory: true },
+                where: {
+                    certificate_type_id: cert.certificate_type_id,
+                    is_mandatory: true,
+                    applies_to_term: { [Op.in]: [term, 'BOTH'] }
+                },
                 useMaster: true
             });
             const uploadedDocIds = cert.uploaded_documents?.map(d => d.required_document_id) || [];
@@ -231,10 +238,24 @@ export const createJob = async (data, userId, options = {}) => {
 
         // Loop through certificates array to create JobCertificates and JobDocuments
         for (const cert of certificates) {
+            const term = cert.certificate_term || 'FULL_TERM';
+            
+            // Check if this certificate requires any documents for this term
+            const requiredDocs = await db.CertificateRequiredDocument.findAll({
+                where: {
+                    certificate_type_id: cert.certificate_type_id,
+                    applies_to_term: { [Op.in]: [term, 'BOTH'] }
+                },
+                transaction: txn
+            });
+
+            const initialStatus = requiredDocs.length === 0 ? 'DOCUMENT_VERIFIED' : 'PENDING';
+
             const jobCert = await db.JobCertificate.create({
                 job_request_id: job.id,
                 certificate_type_id: cert.certificate_type_id,
-                status: 'PENDING'
+                certificate_term: term,
+                status: initialStatus
             }, { transaction: txn });
 
             if (cert.uploaded_documents && cert.uploaded_documents.length > 0) {
@@ -265,12 +286,22 @@ export const createJob = async (data, userId, options = {}) => {
             await JobDocument.bulkCreate(globalDocsToCreate, { transaction: txn });
         }
 
+        // Check if all certificates created are DOCUMENT_VERIFIED
+        const createdCerts = await db.JobCertificate.findAll({
+            where: { job_request_id: job.id },
+            transaction: txn
+        });
+        const allCertsVerified = createdCerts.length > 0 && createdCerts.every(c => c.status === 'DOCUMENT_VERIFIED');
+        if (allCertsVerified) {
+            await job.update({ job_status: 'DOCUMENT_VERIFIED' }, { transaction: txn });
+        }
+
         await JobStatusHistory.create({
             job_id: job.id,
             previous_status: null,
-            new_status: 'CREATED',
+            new_status: allCertsVerified ? 'DOCUMENT_VERIFIED' : 'CREATED',
             changed_by: userId,
-            reason: statusHistoryReason
+            reason: allCertsVerified ? 'Auto-sync: No documents required for any of the certificates in this job.' : statusHistoryReason
         }, { transaction: txn });
 
         if (paymentData) {
@@ -559,8 +590,12 @@ export const getJobById = async (id, scopeFilters = {}, user = null) => {
     if (jobPlain.job_status === 'CREATED') {
         let hasRequiredDocs = false;
         for (const c of jobPlain.certificates || []) {
+            const term = c.certificate_term || 'FULL_TERM';
             const count = await CertificateRequiredDocument.count({
-                where: { certificate_type_id: c.certificate_type_id }
+                where: {
+                    certificate_type_id: c.certificate_type_id,
+                    applies_to_term: { [Op.in]: [term, 'BOTH'] }
+                }
             });
             if (count > 0) {
                 hasRequiredDocs = true;
@@ -791,8 +826,13 @@ export const verifyJobCertificateDocuments = async (jobCertificateId, body, user
     }
 
     // verifyJobCertificateDocuments: check mandatory docs for this specific certificate
+    const term = jc.certificate_term || 'FULL_TERM';
     const requiredDocs = await CertificateRequiredDocument.findAll({
-        where: { certificate_type_id: jc.certificate_type_id, is_mandatory: true },
+        where: {
+            certificate_type_id: jc.certificate_type_id,
+            is_mandatory: true,
+            applies_to_term: { [Op.in]: [term, 'BOTH'] }
+        },
         useMaster: true
     });
 
@@ -956,9 +996,13 @@ export const verifyAllJobDocuments = async (jobId, body, user) => {
     const verifiedCerts = [];
     
     for (const jc of pendingCerts) {
-        // Check mandatory docs
+        const term = jc.certificate_term || 'FULL_TERM';
         const requiredDocs = await CertificateRequiredDocument.findAll({
-            where: { certificate_type_id: jc.certificate_type_id, is_mandatory: true },
+            where: {
+                certificate_type_id: jc.certificate_type_id,
+                is_mandatory: true,
+                applies_to_term: { [Op.in]: [term, 'BOTH'] }
+            },
             useMaster: true
         });
 
@@ -1032,8 +1076,12 @@ export const approveRequest = async (id, remarks, user) => {
     
     let allCertsVerified = true;
     for (const c of jobCerts) {
+        const term = c.certificate_term || 'FULL_TERM';
         const requiredDocsCount = await db.CertificateRequiredDocument.count({
-            where: { certificate_type_id: c.certificate_type_id },
+            where: {
+                certificate_type_id: c.certificate_type_id,
+                applies_to_term: { [Op.in]: [term, 'BOTH'] }
+            },
             useMaster: true
         });
         const needsVerification = requiredDocsCount > 0;
@@ -1136,8 +1184,12 @@ export const assignSurveyor = async (jobId, surveyorId, user) => {
     const activeCerts = await db.JobCertificate.findAll({ where: { job_request_id: jobId } });
     let hasUnverifiedCerts = false;
     for (const cert of activeCerts) {
+        const term = cert.certificate_term || 'FULL_TERM';
         const requiredDocsCount = await db.CertificateRequiredDocument.count({
-            where: { certificate_type_id: cert.certificate_type_id }
+            where: {
+                certificate_type_id: cert.certificate_type_id,
+                applies_to_term: { [Op.in]: [term, 'BOTH'] }
+            }
         });
         const needsVerification = requiredDocsCount > 0;
         if (needsVerification && ['PENDING', 'REWORK_REQUESTED'].includes(cert.status)) {
@@ -1242,8 +1294,12 @@ export const assignSurveyorToCertificate = async (jobCertificateId, surveyorId, 
             throw { statusCode: 400, message: 'A surveyor is already assigned to this certificate. Please use the Reassign feature.' };
         }
 
+        const term = jc.certificate_term || 'FULL_TERM';
         const requiredDocsCount = await db.CertificateRequiredDocument.count({
-            where: { certificate_type_id: jc.certificate_type_id },
+            where: {
+                certificate_type_id: jc.certificate_type_id,
+                applies_to_term: { [Op.in]: [term, 'BOTH'] }
+            },
             transaction: txn
         });
         const needsVerification = requiredDocsCount > 0;
@@ -1486,8 +1542,12 @@ export const authorizeSurveyForCertificate = async (jobCertificateId, remarks, u
         throw { statusCode: 400, message: 'Cannot authorize survey: please assign a surveyor first.' };
     }
 
+    const term = jc.certificate_term || 'FULL_TERM';
     const requiredDocsCount = await db.CertificateRequiredDocument.count({
-        where: { certificate_type_id: jc.certificate_type_id }
+        where: {
+            certificate_type_id: jc.certificate_type_id,
+            applies_to_term: { [Op.in]: [term, 'BOTH'] }
+        }
     });
     const needsVerification = requiredDocsCount > 0;
     if (needsVerification && !['DOCUMENT_VERIFIED'].includes(jc.status)) {
@@ -1574,8 +1634,12 @@ export const authorizeAllSurveysForJob = async (jobId, remarks, user) => {
 
     const pendingCerts = [];
     for (const cert of allCerts) {
+        const term = cert.certificate_term || 'FULL_TERM';
         const requiredDocsCount = await db.CertificateRequiredDocument.count({
-            where: { certificate_type_id: cert.certificate_type_id },
+            where: {
+                certificate_type_id: cert.certificate_type_id,
+                applies_to_term: { [Op.in]: [term, 'BOTH'] }
+            },
             useMaster: true
         });
         const needsVerification = requiredDocsCount > 0;
@@ -2026,17 +2090,24 @@ export const getJobDocuments = async (jobId, user) => {
     // Fetch all certificates for this job (with type info)
     const jobCerts = await JobCertificate.findAll({
         where: { job_request_id: jobId },
-        include: [{ model: CertificateType, attributes: ['id', 'name', 'issuing_authority', 'requires_survey'] }],
+        include: [{ model: CertificateType, attributes: ['id', 'name', 'issuing_authority', 'requires_survey', 'requires_survey_short_term', 'requires_survey_full_term'] }],
         useReplica: true
     });
 
     // Build per-certificate grouped response
     const certificates = await Promise.all(jobCerts.map(async (jc) => {
         const jcPlain = jc.get({ plain: true });
+        const term = jcPlain.certificate_term || 'FULL_TERM';
+        const isSurveyReq = term === 'SHORT_TERM'
+            ? jcPlain.CertificateType?.requires_survey_short_term
+            : (jcPlain.CertificateType?.requires_survey_full_term ?? true);
 
-        // Required docs for this specific certificate type
+        // Required docs for this specific certificate type and term
         const requiredDocs = await CertificateRequiredDocument.findAll({
-            where: { certificate_type_id: jcPlain.certificate_type_id },
+            where: {
+                certificate_type_id: jcPlain.certificate_type_id,
+                applies_to_term: { [Op.in]: [term, 'BOTH'] }
+            },
             useReplica: true
         });
 
@@ -2067,8 +2138,9 @@ export const getJobDocuments = async (jobId, user) => {
             certificate_type_id: jcPlain.certificate_type_id,
             certificate_type_name: jcPlain.CertificateType?.name || null,
             issuing_authority: jcPlain.CertificateType?.issuing_authority || null,
-            requires_survey: jcPlain.CertificateType?.requires_survey ?? true,
+            requires_survey: isSurveyReq,
             certificate_status: jcPlain.status,
+            certificate_term: term,
             rework_remarks: jcPlain.rework_remarks || null,
             grouped_requirements: groupedRequirements,
             custom_documents: customDocuments,

@@ -3,6 +3,7 @@ export default (sequelize, DataTypes) => {
         id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV7, primaryKey: true },
         company_name: { type: DataTypes.STRING, allowNull: false },
         company_code: { type: DataTypes.STRING, allowNull: false }, // removed unique: true to fix ER_TOO_MANY_KEYS
+        company_id_number: { type: DataTypes.STRING(20), allowNull: true, defaultValue: null }, // IMO Company Identification Number (7 digits, per MSC.195(80))
         address: DataTypes.TEXT,
         country: DataTypes.STRING,
         email: { type: DataTypes.STRING, allowNull: false },
