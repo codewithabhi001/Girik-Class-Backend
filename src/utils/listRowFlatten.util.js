@@ -63,7 +63,12 @@ export const flatCertificateListRow = (row) => {
         result.pdf_file_url = activePdfUrl;
         result.pdf_url = activePdfUrl;
     }
-    if (c.Vessel !== undefined) {
+    if (c.vessel_id === null || c.vessel_id === undefined) {
+        result.vessel_name = 'Company Wide';
+        result.imo_number = 'N/A';
+        result.client_id = c.client_id || c.Client?.id || 'N/A';
+        result.company_name = na(c.Client?.company_name);
+    } else if (c.Vessel !== undefined) {
         result.vessel_name = na(c.Vessel?.vessel_name);
         result.imo_number = na(c.Vessel?.imo_number);
         result.client_id = na(c.Vessel?.client_id);

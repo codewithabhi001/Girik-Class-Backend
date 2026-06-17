@@ -1,4 +1,5 @@
 import db from '../../models/index.js';
+import { Op } from 'sequelize';
 import * as fileAccessService from '../../services/fileAccess.service.js';
 
 const Certificate = db.Certificate;
@@ -7,9 +8,16 @@ const Vessel = db.Vessel;
 export const verifyCertificate = async (certificateNumber) => {
     if (!certificateNumber) throw { statusCode: 400, message: 'Certificate number is required' };
     const cert = await Certificate.findOne({
-        where: { certificate_number: certificateNumber, status: !'DRAFT' },
+        where: { certificate_number: certificateNumber, status: { [Op.ne]: 'DRAFT' } },
         include: [
-            { model: Vessel, attributes: ['vessel_name', 'imo_number'] }
+            { 
+                model: Vessel, 
+                attributes: ['vessel_name', 'imo_number'],
+                include: [{ model: db.Client, as: 'Client', attributes: ['company_name', 'company_code'] }]
+            },
+            { model: db.Client, as: 'Client', attributes: ['company_name', 'company_code', 'address', 'company_id_number'] },
+            { model: db.CertificateType, attributes: ['name'] },
+            { model: db.FlagAdministration, as: 'FlagState', attributes: ['flag_state_name'] }
         ],
         useReplica: true
     });
@@ -35,6 +43,9 @@ export const verifyCertificate = async (certificateNumber) => {
         issue_date: cert.issue_date,
         expiry_date: cert.expiry_date,
         vessel: cert.Vessel,
+        client: cert.Client || cert.Vessel?.Client,
+        certificate_type: cert.CertificateType?.name,
+        flag: cert.FlagState?.flag_state_name || cert.FlagState,
         pdf_url: pdfUrl
     };
 };
