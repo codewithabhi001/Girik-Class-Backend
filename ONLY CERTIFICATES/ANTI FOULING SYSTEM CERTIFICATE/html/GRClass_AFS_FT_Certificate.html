@@ -431,9 +431,41 @@ body {
 .footnotes p { margin-bottom: 1.5px; }
 sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
 
+
+/* ── GENERATED NOTICE BAR ── */
+.generated-notice {
+  background: linear-gradient(135deg, #f0f5fb 0%, #e8f0f8 100%);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 3mm 12mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.generated-notice-icon {
+  font-size: 9pt;
+  opacity: 0.65;
+  flex-shrink: 0;
+}
+.generated-notice-text {
+  font-size: 6.8pt;
+  font-style: italic;
+  color: var(--muted);
+  letter-spacing: 0.15px;
+  line-height: 1.5;
+  text-align: center;
+}
+.generated-notice-text strong {
+  font-style: normal;
+  color: var(--blue);
+  font-weight: 600;
+}
+
 /* ══════════════ FOOTER ══════════════ */
 .ftr {
-  background: var(--navy);
+  background: #fff;
   flex-shrink: 0;
   position: relative;
 }
@@ -448,49 +480,56 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
   gap: 12mm;
   align-items: end;
 }
-.sig-area { color: #fff; }
+.sig-area {
+  color: var(--text);
+  position: relative;
+  min-width: 200px;
+}
 .sig-line {
-  border-bottom: 1px solid rgba(255,255,255,.3);
-  height: 24px;
-  margin-bottom: 5px;
-  width: 160px;
+  border-bottom: 1.5px solid var(--navy);
+  height: 1px;
+  margin-top: 0;
+  margin-bottom: 6px;
+  width: 180px;
 }
 .sig-label {
-  font-size: 6pt;
+  font-size: 6.5pt;
+  font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: rgba(255,255,255,.45);
-  margin-bottom: 2px;
+  color: var(--muted);
+  margin-bottom: 3px;
 }
 .sig-name {
   font-family: 'EB Garamond', serif;
   font-size: 12pt;
-  color: rgba(255,255,255,.9);
+  color: var(--navy);
   font-style: italic;
   line-height: 1.2;
 }
 .sig-desig {
   font-size: 7.5pt;
   font-weight: 600;
-  color: var(--gold-lt);
+  color: var(--gold);
   letter-spacing: .3px;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 .ftr-contact {
   text-align: right;
-  font-size: 7pt;
-  color: rgba(255,255,255,.45);
+  font-size: 7.5pt;
+  color: var(--muted);
   line-height: 1.8;
 }
 .ftr-contact strong {
   display: block;
-  color: var(--gold-lt);
-  font-size: 8.5pt;
+  color: var(--navy);
+  font-size: 9pt;
   font-weight: 700;
   letter-spacing: .5px;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
-.ftr-contact a { color: rgba(255,255,255,.55); text-decoration: none; }
+.ftr-contact a { color: var(--blue); text-decoration: none; font-weight: 500; }
+.ftr-contact a:hover { text-decoration: underline; }
 
 /* ══════════════ PRINT ══════════════ */
 @page { size: A4; margin: 0; }
@@ -663,24 +702,42 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
 
   </div><!-- /body -->
 
+
+  <!-- ═══ GENERATED NOTICE ═══ -->
+  <div class="generated-notice">
+    <span class="generated-notice-icon">🔒</span>
+    <span class="generated-notice-text">
+      This is a computer-generated certificate and does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
+      Verify authenticity at <strong>grclass.com</strong>
+    </span>
+  </div>
+
   <!-- ═══ FOOTER / SIGNATURE ═══ -->
   <div class="ftr">
     <div class="ftr-gold-top"></div>
     <div class="ftr-inner">
 
       <div class="sig-area">
+        <div style="position: relative; height: 65px; margin-bottom: 5px; width: 240px;">
+          <!-- Signature Image -->
+          <div class="sig-img-wrap" style="position: absolute; left: 10px; bottom: 0; z-index: 2;">
+            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=null;" alt="Signature" style="max-height: 50px; max-width: 100px; object-fit: contain; display: block;">
+          </div>
+          <!-- Stamp Image -->
+          <div class="stamp-img-wrap" style="position: absolute; left: 110px; bottom: -15px; z-index: 1; opacity: 0.85;">
+            <img src="{stamp}" onerror="this.src='../../../src/modules/payments/Gr-class-stamp.png'; this.onerror=null;" alt="Official Stamp" style="max-height: 70px; max-width: 105px; object-fit: contain; display: block;">
+          </div>
+        </div>
         <div class="sig-line"></div>
         <div class="sig-label">GR CLASS Representative</div>
         <div class="sig-name">{surveyor_name}</div>
         <div class="sig-desig">GR CLASS Representative · Surveyor</div>
-
-        <div style="font-size: 6.5pt; color: rgba(255, 255, 255, 0.6); margin-top: 5px; max-width: 180px; line-height: 1.3;">This is a computer-generated certificate and does not require a physical signature.</div>
       </div>
 
       <div class="ftr-contact" style="display: flex; gap: 15px; align-items: center; text-align: left; justify-content: flex-end;">
 
 
-        <div style="width: 70px; height: 70px; flex-shrink: 0; background: #fff; padding: 2px; border-radius: 2px;">
+        <div style="width: 70px; height: 70px; flex-shrink: 0; background: #fff; padding: 2px; border-radius: 2px; border: 1px solid var(--border);">
 
 
           <style>

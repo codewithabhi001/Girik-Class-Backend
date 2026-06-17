@@ -7,13 +7,13 @@ const Vessel = db.Vessel;
 export const verifyCertificate = async (certificateNumber) => {
     if (!certificateNumber) throw { statusCode: 400, message: 'Certificate number is required' };
     const cert = await Certificate.findOne({
-        where: { certificate_number: certificateNumber },
+        where: { certificate_number: certificateNumber, status: !'DRAFT' },
         include: [
             { model: Vessel, attributes: ['vessel_name', 'imo_number'] }
         ],
         useReplica: true
     });
-    console.log(cert)
+    console.log(cert, 'cert');
     if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
 
     // Determine valid PDF URL (CDN for new, Signed for legacy)

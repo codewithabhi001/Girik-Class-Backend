@@ -1,5 +1,34 @@
-
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import db from '../models/index.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Read signature image
+let signatureBase64 = '';
+try {
+    const sigPath = path.join(__dirname, '..', 'modules', 'payments', 'Gr-class-sign.png');
+    if (fs.existsSync(sigPath)) {
+        const buffer = fs.readFileSync(sigPath);
+        signatureBase64 = `data:image/png;base64,${buffer.toString('base64')}`;
+    }
+} catch (err) {
+    console.error('Error loading signature image for tags:', err);
+}
+
+// Read stamp image
+let stampBase64 = '';
+try {
+    const stampPath = path.join(__dirname, '..', 'modules', 'payments', 'Gr-class-stamp.png');
+    if (fs.existsSync(stampPath)) {
+        const buffer = fs.readFileSync(stampPath);
+        stampBase64 = `data:image/png;base64,${buffer.toString('base64')}`;
+    }
+} catch (err) {
+    console.error('Error loading stamp image for tags:', err);
+}
 
 export const buildTagValuesForJob = async (jobId) => {
     const job = await db.JobRequest.findByPk(jobId, {
@@ -65,6 +94,8 @@ export const buildTagValuesForJob = async (jobId) => {
         certificate_number: '', // Will be filled by certificate service if available
 
         surveyor_name: surveyor?.name || '',
+        signature: signatureBase64,
+        stamp: stampBase64,
     };
 
     // 2. Checklist tags (Activity Planning)

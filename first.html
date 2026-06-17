@@ -1,8 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="UTF-8">
-<title>GR Class – AFS-FT Certificate</title>
+<title>GR Class – DOC-ST Certificate</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
 
@@ -24,7 +22,7 @@
 html { background: #8A8A8A; }
 body {
   font-family: 'Source Sans 3', sans-serif;
-  font-size: 10pt;
+  font-size: 9pt;
   color: var(--text);
   background: #8A8A8A;
   padding: 16px 0 40px;
@@ -124,21 +122,6 @@ body {
   flex-shrink: 0;
   box-shadow: 0 0 0 1px rgba(196,168,74,.6);
 }
-.logo-gr {
-  font-family: 'EB Garamond', serif;
-  font-weight: 700;
-  font-size: 18pt;
-  color: var(--navy);
-  line-height: 1;
-  letter-spacing: 1px;
-}
-.logo-word {
-  font-size: 5.5pt;
-  font-weight: 700;
-  color: var(--blue);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
 
 /* centre title */
 .hdr-title {}
@@ -184,8 +167,6 @@ body {
   display: block;
   line-height: 1.15;
   letter-spacing: .5px;
-  
-  
   white-space: nowrap;
 }
 .hdr-meta-form {
@@ -194,7 +175,7 @@ body {
   margin-top: 4px;
 }
 
-/* ══════════════ AUTHORITY BAND ══════════════ */
+/* ══════════════ AUTHORITY BAND ═══ */
 .authority {
   background: var(--light);
   border-bottom: 1px solid var(--border);
@@ -221,7 +202,7 @@ body {
   margin: 4mm 0 2.5mm;
 }
 
-/* ── VESSEL TABLE ── */
+/* ── COMPANY TABLE ── */
 .vtable {
   width: 100%;
   border-collapse: collapse;
@@ -256,48 +237,15 @@ body {
   line-height: 1.2;
   word-break: break-word;
 }
-.vtable .sub {
-  font-size: 7pt;
-  color: var(--muted);
-  font-family: 'Source Sans 3', sans-serif;
-  font-weight: 400;
-  display: block;
-  margin-top: 1px;
-}
 .vtable tr:nth-child(even) td { background: #FAFCFF; }
 
-/* ── EXTRA DATA TABLE ── */
-.mtable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 9pt;
-  margin-bottom: 1mm;
-}
-.mtable th {
-  background: var(--light);
-  color: var(--navy);
-  font-size: 7pt;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  text-align: left;
-}
-.mtable td {
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  background: #fff;
-}
-.mtable .m-val {
-  font-family: 'EB Garamond', serif;
-  font-size: 11pt;
-  font-weight: 600;
-  color: var(--text);
-}
-
 /* ── CHECKBOX LIST ── */
-.chk-list { display: flex; flex-direction: column; gap: 2.5px; margin-bottom: 2mm; }
+.chk-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 2mm;
+}
 .chk-item {
   display: flex;
   align-items: flex-start;
@@ -305,8 +253,8 @@ body {
   padding: 5.5px 9px;
   border: 1px solid var(--border);
   border-radius: 1px;
-  font-size: 9pt;
-  line-height: 1.5;
+  font-size: 8.5pt;
+  line-height: 1.4;
   background: #fff;
   color: var(--muted);
 }
@@ -315,7 +263,6 @@ body {
   background: var(--light);
   color: var(--text);
 }
-.chk-item.checked .chk-text { color: var(--text); }
 .checkbox {
   width: 13px; height: 13px;
   border: 1.5px solid #aaa;
@@ -338,44 +285,11 @@ body {
   border-bottom: 2px solid #fff;
   transform: rotate(38deg);
 }
-.chk-text b { color: var(--navy); }
-.inline-val {
-  display: inline-block;
-  font-family: 'EB Garamond', serif;
-  font-size: 10.5pt;
-  font-weight: 600;
-  color: var(--navy);
-  border-bottom: 1px solid var(--navy);
-  padding: 0 4px;
-  min-width: 100px;
-  line-height: 1.2;
-  vertical-align: bottom;
-}
-
-/* ── CERTIFY BOX ── */
-.certify {
-  border-left: 3.5px solid var(--gold);
-  background: var(--light);
-  padding: 5px 11px 6px;
-  margin: 1mm 0 3mm;
-  font-size: 9pt;
-  line-height: 1.6;
-}
-.certify-title {
-  font-weight: 700;
-  color: var(--navy);
-  font-size: 9pt;
-  margin-bottom: 3px;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-}
-.certify ul { margin-left: 16px; color: var(--muted); }
-.certify ul li { margin-bottom: 1px; }
 
 /* description text */
 .cert-desc {
-  font-size: 9pt;
-  line-height: 1.6;
+  font-size: 8.5pt;
+  line-height: 1.5;
   color: var(--muted);
   margin-bottom: 2mm;
 }
@@ -413,7 +327,7 @@ body {
 }
 .vc-val {
   font-family: 'EB Garamond', serif;
-  font-size: 12.5pt;
+  font-size: 11pt;
   font-weight: 600;
   color: var(--navy);
   line-height: 1.2;
@@ -431,9 +345,40 @@ body {
 .footnotes p { margin-bottom: 1.5px; }
 sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
 
+/* ── GENERATED NOTICE BAR ── */
+.generated-notice {
+  background: linear-gradient(135deg, #f0f5fb 0%, #e8f0f8 100%);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 3mm 12mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.generated-notice-icon {
+  font-size: 9pt;
+  opacity: 0.65;
+  flex-shrink: 0;
+}
+.generated-notice-text {
+  font-size: 6.8pt;
+  font-style: italic;
+  color: var(--muted);
+  letter-spacing: 0.15px;
+  line-height: 1.5;
+  text-align: center;
+}
+.generated-notice-text strong {
+  font-style: normal;
+  color: var(--blue);
+  font-weight: 600;
+}
+
 /* ══════════════ FOOTER ══════════════ */
 .ftr {
-  background: var(--navy);
+  background: #fff;
   flex-shrink: 0;
   position: relative;
 }
@@ -448,49 +393,56 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
   gap: 12mm;
   align-items: end;
 }
-.sig-area { color: #fff; }
+.sig-area {
+  color: var(--text);
+  position: relative;
+  min-width: 200px;
+}
 .sig-line {
-  border-bottom: 1px solid rgba(255,255,255,.3);
-  height: 24px;
-  margin-bottom: 5px;
-  width: 160px;
+  border-bottom: 1.5px solid var(--navy);
+  height: 1px;
+  margin-top: 0;
+  margin-bottom: 6px;
+  width: 180px;
 }
 .sig-label {
-  font-size: 6pt;
+  font-size: 6.5pt;
+  font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: rgba(255,255,255,.45);
-  margin-bottom: 2px;
+  color: var(--muted);
+  margin-bottom: 3px;
 }
 .sig-name {
   font-family: 'EB Garamond', serif;
   font-size: 12pt;
-  color: rgba(255,255,255,.9);
+  color: var(--navy);
   font-style: italic;
   line-height: 1.2;
 }
 .sig-desig {
   font-size: 7.5pt;
   font-weight: 600;
-  color: var(--gold-lt);
+  color: var(--gold);
   letter-spacing: .3px;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 .ftr-contact {
   text-align: right;
-  font-size: 7pt;
-  color: rgba(255,255,255,.45);
+  font-size: 7.5pt;
+  color: var(--muted);
   line-height: 1.8;
 }
 .ftr-contact strong {
   display: block;
-  color: var(--gold-lt);
-  font-size: 8.5pt;
+  color: var(--navy);
+  font-size: 9pt;
   font-weight: 700;
   letter-spacing: .5px;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
-.ftr-contact a { color: rgba(255,255,255,.55); text-decoration: none; }
+.ftr-contact a { color: var(--blue); text-decoration: none; font-weight: 500; }
+.ftr-contact a:hover { text-decoration: underline; }
 
 /* ══════════════ PRINT ══════════════ */
 @page { size: A4; margin: 0; }
@@ -527,17 +479,17 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
       </div>
 
       <div class="hdr-title">
-        <div class="hdr-eyebrow">{certificate_term}</div>
-        <div class="hdr-certname">International Anti-Fouling System Certificate</div>
+        <div class="hdr-eyebrow">INTERIM</div>
+        <div class="hdr-certname">Document of Compliance</div>
         <div class="hdr-convention">
-          Issued under the International Convention on the Control of Harmful Anti-Fouling Systems on Ships (AFS Convention, 2001)
+          Issued under the provisions of the International Safety Management (ISM) Code
         </div>
       </div>
 
       <div class="hdr-meta">
-        <span class="hdr-meta-label">AFS-FT No.</span>
-        <span class="hdr-meta-no">{certificate_number}</span>
-        <div class="hdr-meta-form">Form AFSC-FT · Approved by: GM</div>
+        <span class="hdr-meta-label">DOC-ST No.</span>
+        <span class="hdr-meta-no"><span class="cert-field" data-field="certificate_number">GR/DOC/2026/A3A387B5</span></span>
+        <div class="hdr-meta-form">Form DOC-ST · Approved by: GM</div>
       </div>
 
     </div>
@@ -546,109 +498,96 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
 
   <!-- ═══ AUTHORITY BAND ═══ -->
   <div class="authority">
-    Issued under the authority of the Government of <strong>{flag_state}</strong><br>
+    Issued under the authority of the Government of <strong><span class="cert-field" data-field="flag_state">Vanuatu</span></strong><br>
     By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO) operating under IMO Framework
   </div>
 
   <!-- ═══ BODY ═══ -->
   <div class="body">
 
-    <!-- VESSEL PARTICULARS -->
-    <div class="sec-label">Vessel Particulars</div>
+    <!-- COMPANY PARTICULARS -->
+    <div class="sec-label">Company Particulars</div>
     <table class="vtable">
-      <tr>
-        <th style="width:25%">Name of Ship</th>
-        <th style="width:25%">Distinctive No. / Letters</th>
-        <th style="width:25%">Port of Registry</th>
-        <th style="width:25%">Gross Tonnage</th>
+      <tbody><tr>
+        <th style="width:50%">Name of the Company</th>
+        <th style="width:50%">Company Identification Number <sup>1</sup></th>
       </tr>
       <tr>
-        <td><span class="val">{vessel_name}</span></td>
-        <td><span class="val">{call_sign}</span></td>
-        <td><span class="val">{port_of_registry}</span></td>
-        <td><span class="val">{gross_tonnage}</span></td>
+        <td><span class="val">CASSINI SHIP MANAGEMENT PRIVATE LIMITED</span></td>
+        <td><span class="val">0394415</span></td>
       </tr>
       <tr>
-        <th>IMO Number <sup>1</sup></th>
-        <th>Ship Type</th>
-        <th>Net Tonnage</th>
-        <th>Deadweight</th>
+        <th colspan="2">Address of the Company</th>
       </tr>
       <tr>
-        <td><span class="val">{imo_number}</span></td>
-        <td><span class="val">{ship_type}</span></td>
-        <td><span class="val">{net_tonnage}</span></td>
-        <td><span class="val">{deadweight}</span></td>
+        <td colspan="2"><span class="val">Unit A-709, Rustomjee Central Park, Andheri-Kurla Road, Andheri (E), Mumbai, 400093, India.</span></td>
       </tr>
-    </table>
-
-    <!-- ANTI-FOULING SYSTEM STATUS -->
-    <div class="sec-label">Anti-Fouling System Status</div>
-    <div class="chk-list">
-
-      <div class="chk-item {afs_option_1_check}">
-        <div class="checkbox"></div>
-        <div class="chk-text">An anti-fouling system controlled under Annex 1 has <b>not been applied</b> during or after construction of this ship.</div>
-      </div>
-
-      <div class="chk-item {afs_option_2_check}">
-        <div class="checkbox"></div>
-        <div class="chk-text">
-          An anti-fouling system controlled under Annex 1 has been applied on this ship previously, but has been
-          <b>removed</b> by <span class="inline-val">{facility_name}</span> on <span class="inline-val">{facility_date}</span>
-        </div>
-      </div>
-
-      <div class="chk-item {afs_option_3_check}">
-        <div class="checkbox"></div>
-        <div class="chk-text">
-          An anti-fouling system controlled under Annex 1 has been applied on this ship previously, but has been
-          <b>covered with a sealer coat</b> applied by <span class="inline-val">{facility_name}</span> on <span class="inline-val">{facility_date}</span>
-        </div>
-      </div>
-
-      <div class="chk-item {afs_option_4_check}">
-        <div class="checkbox"></div>
-        <div class="chk-text">
-          An anti-fouling system controlled under Annex 1 was applied on this ship prior to
-          <span class="inline-val">{facility_date}</span>
-          but must be removed or covered with a sealer coat prior to
-          <span class="inline-val">{compliance_deadline}</span>
-        </div>
-      </div>
-
-    </div>
+    </tbody></table>
 
     <!-- CERTIFICATION -->
     <div class="sec-label">Certification</div>
-    <div class="certify">
-      <div class="certify-title">This is to certify that:</div>
-      <ul>
-        <li>The ship has been surveyed in accordance with the applicable rules and regulations;</li>
-        <li>The survey shows that the structure, equipment, and condition of the ship comply with the safety standards of GR CLASS.</li>
-      </ul>
+    <p class="cert-desc">THIS IS TO CERTIFY THAT the safety management system of the Company has been Recognized as meeting objectives of paragraph 1.2.3 of the International Management Code for the Safe Operation of Ships and for Pollution Prevention (ISM Code) for the type(s) of ships listed below:</p>
+    
+    <!-- CHECKBOX LIST -->
+    <div class="chk-list">
+      <div class="chk-item">
+        <div class="checkbox"></div>
+        <div class="chk-text">Passenger Ship</div>
+      </div>
+      <div class="chk-item">
+        <div class="checkbox"></div>
+        <div class="chk-text">Passenger High-speed Craft</div>
+      </div>
+      <div class="chk-item">
+        <div class="checkbox"></div>
+        <div class="chk-text">Cargo High-speed Craft</div>
+      </div>
+      <div class="chk-item checked">
+        <div class="checkbox"></div>
+        <div class="chk-text">Bulk Carrier</div>
+      </div>
+      <div class="chk-item">
+        <div class="checkbox"></div>
+        <div class="chk-text">Oil Tanker</div>
+      </div>
+      <div class="chk-item">
+        <div class="checkbox"></div>
+        <div class="chk-text">Chemical Tanker</div>
+      </div>
+      <div class="chk-item">
+        <div class="checkbox"></div>
+        <div class="chk-text">Gas Carrier</div>
+      </div>
+      <div class="chk-item">
+        <div class="checkbox"></div>
+        <div class="chk-text">Mobile Offshore Drilling Unit</div>
+      </div>
+      <div class="chk-item">
+        <div class="checkbox"></div>
+        <div class="chk-text">Other Cargo Ship</div>
+      </div>
     </div>
 
     <!-- DATES & VALIDITY -->
     <div class="sec-label">Dates &amp; Validity</div>
     <div class="vgrid">
       <div class="vcell">
-        <span class="vc-label">Survey Completion Date</span>
-        <div class="vc-val">{survey_completion_date}</div>
+        <span class="vc-label">Verification Completion Date</span>
+        <div class="vc-val">2026-06-17</div>
       </div>
       <div class="vcell">
         <span class="vc-label">Date of Issue</span>
-        <div class="vc-val">{issue_date}</div>
+        <div class="vc-val"><span class="cert-field" data-field="issue_date">2026-06-17</span></div>
       </div>
       <div class="vcell hi">
         <span class="vc-label">Valid Until</span>
-        <div class="vc-val">{expiry_date}</div>
+        <div class="vc-val"><span class="cert-field" data-field="expiry_date">2026-11-16</span></div>
       </div>
     </div>
     <div class="vgrid-2">
       <div class="vcell">
         <span class="vc-label">Place of Issue</span>
-        <div class="vc-val">{place_of_survey}</div>
+        <div class="vc-val">Ajman, UAE</div>
       </div>
       <div class="vcell">
         <span class="vc-label">Page</span>
@@ -658,10 +597,18 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
 
     <!-- FOOTNOTES -->
     <div class="footnotes">
-      <p><sup>1</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600(15).</p>
+      <p><sup>1</sup> "Company Identification Number" item is added by Res. MSC. 195 (80) and this enter into force on January 01st, 2009.</p>
     </div>
 
   </div><!-- /body -->
+
+  <!-- ═══ GENERATED NOTICE ═══ -->
+  <div class="generated-notice">
+    <span class="generated-notice-text">
+      This is a computer-generated certificate and does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
+      Verify authenticity at <strong>grclass.com</strong>
+    </span>
+  </div>
 
   <!-- ═══ FOOTER / SIGNATURE ═══ -->
   <div class="ftr">
@@ -669,13 +616,44 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
     <div class="ftr-inner">
 
       <div class="sig-area">
+        <div style="position: relative; height: 65px; margin-bottom: 5px; width: 240px;">
+          <!-- Signature Image -->
+          <div class="sig-img-wrap" style="position: absolute; left: 10px; bottom: 0; z-index: 2;">
+            <img src="{signature}" onerror="this.src='./src/modules/payments/Gr-class-sign.png'; this.onerror=null;" alt="Signature" style="max-height: 50px; max-width: 100px; object-fit: contain; display: block;">
+          </div>
+          <!-- Stamp Image -->
+          <div class="stamp-img-wrap" style="position: absolute; left: 110px; bottom: -15px; z-index: 1; opacity: 0.85;">
+            <img src="{stamp}" onerror="this.src='./src/modules/payments/Gr-class-stamp.png'; this.onerror=null;" alt="Official Stamp" style="max-height: 70px; max-width: 105px; object-fit: contain; display: block;">
+          </div>
+        </div>
         <div class="sig-line"></div>
         <div class="sig-label">GR CLASS Representative</div>
         <div class="sig-name">{surveyor_name}</div>
         <div class="sig-desig">GR CLASS Representative · Surveyor</div>
       </div>
 
-      <div class="ftr-contact">
+      <div class="ftr-contact" style="display: flex; gap: 15px; align-items: center; text-align: left; justify-content: flex-end;">
+
+
+        <div style="width: 70px; height: 70px; flex-shrink: 0; background: #fff; padding: 2px; border-radius: 2px; border: 1px solid var(--border);">
+
+
+          <style>
+
+
+            .qr-img-wrap img { width: 66px !important; height: 66px !important; display: block; }
+
+
+          </style>
+
+
+          <div class="qr-img-wrap"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAB4CAYAAAA5ZDbSAAAAAklEQVR4AewaftIAAAVPSURBVO3BUYpcu4IAwUxR+99yjn8EwpQup6vbfh6hCPuF61iD62iD62iD62gvfqPyJ1XsqEwVn1CZKlYqf0vFjsqfVDENrqMNrqO9+A8V36XyVMWkslOxUzGp7FSsVKaKv6XiJ6i8M7iONriONriO9uILVJ6oeELlqYonVD5RMak8UbGjsqp4QuWJiicG19EG19Fe/EMqJpWVylSxUzGprComlZ2KUwyuow2uow2uo734h6g8oTJVrFR2VKaKHZUnKnYq/gWD62iD62gvvqDib6l4QmVV8V0Vn1DZqXii4icNrqMNrqO9+A8qf1PFpLKqmFSmipXKVLFSmSpWKlPFpLKqmFRWFZPKEyp/0uA62uA62uA62ovfVPwLKj5R8YmKdypWKjsqT1T8LYPraIPraPYLC5WpYqXyXRU7KjsV76jsVOyorCreUVlVTCpPVUwq31XxxOA62uA62uA62ovfVEwq31XxE1S+S+UJlR2VJyo+UTGpPKUyVUyD62iD62j2CwuVqWKlMlU8obKqeEJlVTGpfFfFSmWqmFRWFU+oPFGxUpkqVio7Fe8MrqMNrqMNrqPZLyxUdiq+S2WqWKlMFU+orCqeUPmuiqdUpoodlScqVipTxTS4jja4jvbiNxWTykrliYpJZUdlVTGprComlalipbJT8VUVOypPVXxXxaSyqnhncB1tcB3NfmGhMlWsVKaKlco7FSuVqeJPUllV7Ki8U7FSmSp2VFYVk8pOxRMqOxXT4Dra4Dra4Draiz+gYlJZVeyoTBU7KlPFJ1SeUFlVfELlnYodlacq3hlcRxtcR3vxm4onVFYVk8pUsVKZKnZUVhXvqKwqnqhYqUwVOypPVKxUflLFE4PraIPraIPraC9+ozJV7FSsVKaKSeWpih2VJ1SeUFlVTCpTxariCZWdikllp+IplaliGlxHG1xHe/EfVHZUVhXvVKxUdlSmik9U7KhMFSuV71KZKnZUdiomlZ2KJwbX0QbX0QbX0ewXfoDKVDGpPFXxk1SeqnhHZVXxk1R2KlYqOxXvDK6jDa6jvfgClaniiYqVylSxUtmpmFSmipXKVLFSmSo+ofKJiq9S+a7BdbTBdbQXv1HZqZhUnlBZVUwqq4pJZadiUllV7FTsqLxTsVKZKp5S+a6KHZWpYhpcRxtcRxtcR3vxHypWKl9VsVPxJ6k8VfFExXdVfEJlqnhicB1tcB3txRdUfJXKTsVOxY7KVLFSeaJipfJOxY7KTsUTKquKSWVVMamsKt4ZXEcbXEcbXEezX1ioTBX/IpUnKlYqU8UnVKaKlcpXVeyofKJiGlxHG1xHe/EFKk9UTCpPVUwqOxWTyidUVhVPVEwq36WyU7Gjsqp4Z3AdbXAdbXAdzX7hf0Rlp2Kl8k7FSmWqeErlqyp2VFYVT6hMFSuVqWKlMlVMg+tog+toL36j8idVTBU7Kt+lslOxqnhHZUflEypTxSdUVhXvDK6jDa6jvfgPFd+lsqOyqpgqVipPVEwqq4pJ5X+l4gmVnYonBtfRBtfRBtfRXnyByhMVn1CZKlYV76jsVKxUvqpipbJTMamsVL6rYlJZVbwzuI42uI724h9SMal8omJSWVX8pIqdipXKVLGjMlWsVKaKlcpUMQ2uow2uow2uo734f6JiUtlRmSpWKjsVT1Q8obKjslMxqTxV8c7gOtrgOtqLL6j4SRUrlalipfKTKlYq71SsVHYqpopPqPykwXW0wXW0wXU0+4WFyp9UMamsKr5KZVUxqTxVMalMFTsqOxU7KjsVk8qqYlJZVbwzuI42uI5mv3Ada3AdbXAd7f8Aa6EN6NF1kpIAAAAASUVORK5CYII=" style="width:120px;height:120px;" alt="QR Code"></div>
+
+
+        </div>
+
+
+        <div style="text-align: right;">
         <strong>GR CLASS</strong>
         <a href="mailto:info@grclass.com">info@grclass.com</a><br>
         <a href="https://www.grclass.com">www.grclass.com</a><br>
@@ -683,11 +661,14 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
         Recognized Organization · Global Marine Services
       </div>
 
+
+      </div>
+
     </div>
   </div>
 
 </div><!-- /cert -->
 
-<!-- NEW TAGS USED: {afs_option_1_check}, {afs_option_2_check}, {afs_option_3_check}, {afs_option_4_check}, {facility_name}, {facility_date}, {compliance_deadline} -->
-</body>
-</html>
+
+
+</body></html>
