@@ -54,8 +54,7 @@ body {
   margin: 0 auto; box-shadow: 0 4px 32px rgba(0,0,0,.3);
   display: flex; flex-direction: column; position: relative;
   padding: 12mm 15mm; /* Global padding so nothing touches the edges */
-  border: 2px solid var(--primary); /* Outer classic border */
-  outline: 1px solid var(--primary); outline-offset: -4px; /* Inner thin border (Panama style) */
+  border: none;
 }
 .cert * { word-wrap: break-word; overflow-wrap: break-word; position: relative; z-index: 1; }
 
@@ -81,9 +80,9 @@ body {
   display: flex; align-items: flex-start; justify-content: space-between;
 }
 .logo-wrap {
-  width: 70px; flex-shrink: 0; text-align: left;
+  width: 100px; flex-shrink: 0; text-align: left;
 }
-.logo-wrap img { max-width: 45px; max-height: 45px; object-fit: contain; }
+.logo-wrap img { max-width: 85px; max-height: 85px; object-fit: contain; }
 
 .hdr-center { flex: 1; text-align: center; margin: 0 10px; }
 .hdr-flag-state {
@@ -281,8 +280,7 @@ sup { color: var(--primary); font-weight: 700; font-size: 5.5pt; }
   position: relative;
   display: flex; flex-direction: column;
   padding: 12mm 15mm;
-  border: 2px solid var(--primary);
-  outline: 1px solid var(--primary); outline-offset: -4px;
+  border: none;
 }
 .endorsement-page::after {
   content: 'GR CLASS';
