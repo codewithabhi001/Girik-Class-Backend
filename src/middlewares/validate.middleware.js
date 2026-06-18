@@ -339,6 +339,7 @@ export const schemas = {
     }),
     createCertificateType: Joi.object({
         name: Joi.string().required().trim(),
+        short_code: Joi.string().optional().allow('', null).max(50).trim(),
         issuing_authority: Joi.string().valid('CLASS', 'FLAG').required(),
         validity_years: Joi.number().integer().min(1).max(10).required(),
         status: Joi.string().valid('ACTIVE', 'INACTIVE').optional().default('ACTIVE'),
@@ -354,6 +355,7 @@ export const schemas = {
     }),
     updateCertificateType: Joi.object({
         name: Joi.string().optional().trim(),
+        short_code: Joi.string().optional().allow('', null).max(50).trim(),
         issuing_authority: Joi.string().valid('CLASS', 'FLAG').optional(),
         validity_years: Joi.number().integer().min(1).max(10).optional(),
         status: Joi.string().valid('ACTIVE', 'INACTIVE').optional(),
