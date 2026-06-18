@@ -23,7 +23,7 @@
 html { background: #6b6b6b; }
 body {
   font-family: 'Inter', sans-serif;
-  font-size: 8pt; /* Tighter layout */
+  font-size: 8pt;
   color: var(--text);
   background: #6b6b6b;
   padding: 16px 0 40px;
@@ -43,10 +43,10 @@ body {
 
 /* ═══ CERTIFICATE PAGE ═══ */
 .cert {
-  width: 210mm; min-height: 297mm; background: var(--card);
+  width: 210mm; height: 297mm; background: var(--card);
   margin: 0 auto; box-shadow: 0 4px 32px rgba(0,0,0,.3);
   display: flex; flex-direction: column; position: relative;
-  padding: 12mm 15mm; /* Global padding so nothing touches the edges */
+  padding: 12mm 15mm;
   border: none;
 }
 .cert * { word-wrap: break-word; overflow-wrap: break-word; position: relative; z-index: 1; }
@@ -68,35 +68,36 @@ body {
 }
 
 /* ═══ HEADER ═══ */
-.hdr { padding: 0 0 4mm 0; flex-shrink: 0; border-bottom: 3px double var(--primary); margin-bottom: 2mm; }
+.hdr { padding: 0 0 3mm 0; flex-shrink: 0; border-bottom: 3px double var(--primary); margin-bottom: 2mm; }
 .hdr-inner {
   display: flex; align-items: flex-start; justify-content: space-between;
 }
 .logo-wrap {
-  width: 100px; flex-shrink: 0; text-align: left;
+  width: 90px; flex-shrink: 0; text-align: left;
 }
-.logo-wrap img { max-width: 85px; max-height: 85px; object-fit: contain; }
+.logo-wrap img { max-width: 80px; max-height: 80px; object-fit: contain; }
 
 .hdr-center { flex: 1; text-align: center; margin: 0 10px; }
 .hdr-flag-state {
   font-family: 'EB Garamond', serif;
-  font-size: 16pt; font-weight: 700; color: var(--primary);
+  font-size: 14pt; font-weight: 700; color: var(--primary);
   text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;
 }
-.hdr-org {
-  font-size: 7.5pt; font-weight: 700; letter-spacing: 2.5px;
-  text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+.hdr-certname-es {
+  font-family: 'EB Garamond', serif;
+  font-size: 11pt; font-weight: 600; color: var(--primary);
+  line-height: 1.1; margin-bottom: 1px; text-transform: uppercase;
 }
 .hdr-certname {
   font-family: 'EB Garamond', serif;
-  font-size: 15pt; font-weight: 700; color: var(--primary);
-  line-height: 1.1; margin-bottom: 4px; text-transform: uppercase;
+  font-size: 13pt; font-weight: 700; color: var(--primary);
+  line-height: 1.1; margin-bottom: 3px; text-transform: uppercase;
 }
 .hdr-convention {
-  font-size: 7pt; color: var(--muted); line-height: 1.4; max-width: 460px; margin: 0 auto;
+  font-size: 6.5pt; color: var(--muted); line-height: 1.3; max-width: 480px; margin: 0 auto;
 }
 
-.hdr-meta { text-align: right; flex-shrink: 0; min-width: 150px; }
+.hdr-meta { text-align: right; flex-shrink: 0; min-width: 140px; }
 .hdr-meta-label {
   font-size: 5.5pt; letter-spacing: 1px; text-transform: uppercase;
   color: var(--muted); display: block;
@@ -112,27 +113,28 @@ body {
 /* ═══ AUTHORITY ═══ */
 .authority {
   background: transparent; border-bottom: 1px solid var(--border);
-  padding: 3mm 0; text-align: center;
-  font-size: 8pt; color: var(--text); line-height: 1.5;
+  padding: 2mm 0; text-align: center;
+  font-size: 7.5pt; color: var(--text); line-height: 1.4;
 }
 .authority strong { color: var(--primary); font-weight: 700; text-transform: uppercase; }
 
 /* ═══ BODY ═══ */
-.body { padding: 3mm 0; flex: 1; display: flex; flex-direction: column; }
+.body { padding: 2mm 0; flex: 1; display: flex; flex-direction: column; }
 
 .sec-label {
   font-size: 6.5pt; font-weight: 700; letter-spacing: 1.5px;
   text-transform: uppercase; color: var(--primary);
   padding-bottom: 2px; border-bottom: 1px solid var(--primary);
-  margin: 3mm 0 2mm;
+  margin: 2mm 0 1.5mm;
 }
 
 /* Vessel table */
-.vtable { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bottom: 1.5mm; }
+.vtable { width: 100%; border-collapse: collapse; font-size: 7.5pt; margin-bottom: 1mm; }
 .vtable th {
   background: var(--light); color: var(--text);
   font-size: 6pt; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
-  padding: 3px 6px; border: 1px solid var(--border); text-align: left;
+  padding: 4px 6px; border: 1px solid var(--border); text-align: left;
+  line-height: 1.2;
 }
 .vtable td {
   padding: 4px 6px; border: 1px solid var(--border); background: transparent;
@@ -144,87 +146,48 @@ body {
 }
 
 /* Data table */
-.mtable { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bottom: 1.5mm; }
+.mtable { width: 100%; border-collapse: collapse; font-size: 7.5pt; margin-bottom: 1.5mm; }
 .mtable th {
   background: var(--light); color: var(--text);
-  font-size: 6.5pt; font-weight: 700; text-transform: uppercase;
+  font-size: 6pt; font-weight: 700; text-transform: uppercase;
   padding: 4px 6px; border: 1px solid var(--border); text-align: left;
+  line-height: 1.2;
 }
 .mtable td { padding: 4px 6px; border: 1px solid var(--border); background: transparent; }
 .mtable .m-val {
   font-family: 'EB Garamond', serif; font-size: 10pt; font-weight: 600; color: var(--primary);
 }
 
-/* Checkbox items */
-.chk-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 1.5mm; }
-.chk-item {
-  display: flex; align-items: flex-start; gap: 6px;
-  padding: 3px 6px; border: 1px solid transparent;
-  font-size: 8pt; line-height: 1.4; color: var(--text);
-}
-.chk-item.checked { background: var(--light); border-color: var(--border); font-weight: 500; }
-.checkbox {
-  width: 10px; height: 10px; border: 1px solid var(--primary); flex-shrink: 0; margin-top: 2px;
-  background: #fff; position: relative;
-}
-.chk-item.checked .checkbox { background: var(--primary); }
-.chk-item.checked .checkbox::after {
-  content: ''; position: absolute; left: 2px; top: 0;
-  width: 4px; height: 6px;
-  border-right: 1.5px solid #fff; border-bottom: 1.5px solid #fff;
-  transform: rotate(38deg);
-}
-.chk-text b { color: var(--primary); }
-.inline-val {
-  display: inline-block; font-family: 'EB Garamond', serif;
-  font-size: 10pt; font-weight: 600; color: var(--primary);
-  border-bottom: 1px dashed var(--primary);
-  padding: 0 3px; min-width: 60px; line-height: 1.1; vertical-align: bottom;
-}
-
 /* Certify box */
 .certify {
   border: 1px solid var(--border); border-left: 4px solid var(--primary);
-  background: var(--light); padding: 5px 8px;
-  margin: 1.5mm 0 2mm; font-size: 8pt; line-height: 1.5;
+  background: var(--light); padding: 6px 8px;
+  margin: 1.5mm 0 2mm; font-size: 7.5pt; line-height: 1.4;
 }
-.certify-title {
-  font-weight: 700; color: var(--primary); font-size: 8pt;
-  margin-bottom: 2px; text-transform: uppercase; letter-spacing: .5px;
-}
-.certify ul { margin-left: 16px; color: var(--text); }
-.certify ul li { margin-bottom: 1px; }
-.certify ul ul { margin-left: 14px; }
-
-.cert-desc { font-size: 8pt; line-height: 1.5; color: var(--text); margin-bottom: 1.5mm; }
 
 /* Validity grid */
-.vgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5mm; margin-bottom: 1.5mm; }
 .vgrid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5mm; margin-bottom: 1.5mm; }
 .vcell { border: 1px solid var(--border); padding: 3px 6px; background: transparent; }
-.vcell.hi { border: 1px solid var(--primary); background: var(--light); }
 .vc-label {
   font-size: 5.5pt; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
   color: var(--muted); display: block; margin-bottom: 1px;
 }
 .vc-val {
-  font-family: 'EB Garamond', serif; font-size: 11pt; font-weight: 600;
+  font-family: 'EB Garamond', serif; font-size: 10.5pt; font-weight: 600;
   color: var(--primary); line-height: 1.2; text-transform: uppercase;
 }
-.vcell.hi .vc-val { color: var(--primary); }
 
 /* Footnotes */
 .footnotes {
-  border-top: 1px solid var(--border); padding: 1.5mm 0;
-  font-size: 6pt; color: var(--muted); line-height: 1.4;
+  border-top: 1px solid var(--border); padding: 1mm 0;
+  font-size: 5.5pt; color: var(--muted); line-height: 1.3;
 }
 .footnotes p { margin-bottom: 1px; }
-sup { color: var(--primary); font-weight: 700; font-size: 5.5pt; }
 
 /* Generated notice */
 .gen-notice {
   background: var(--light); border: 1px solid var(--border);
-  padding: 3mm 5mm; display: flex; align-items: center; justify-content: center;
+  padding: 2mm 4mm; display: flex; align-items: center; justify-content: center;
   gap: 6px; flex-shrink: 0; margin-top: auto; border-radius: 2px;
 }
 .gen-notice-text {
@@ -234,7 +197,7 @@ sup { color: var(--primary); font-weight: 700; font-size: 5.5pt; }
 .gen-notice-text strong { color: var(--primary); font-weight: 700; }
 
 /* ═══ FOOTER ═══ */
-.ftr { background: transparent; flex-shrink: 0; padding-top: 4mm; }
+.ftr { background: transparent; flex-shrink: 0; padding-top: 2mm; }
 .ftr-inner {
   display: grid;
   grid-template-columns: 1fr auto; gap: 6mm; align-items: end;
@@ -242,18 +205,16 @@ sup { color: var(--primary); font-weight: 700; font-size: 5.5pt; }
 .sig-area { color: var(--text); position: relative; min-width: 180px; }
 .sig-line { border-bottom: 1px solid var(--primary); height: 1px; margin-bottom: 4px; width: 100%; max-width: 200px; }
 .sig-label {
-  font-size: 6pt; font-weight: 700; letter-spacing: 1.5px;
+  font-size: 6pt; font-weight: 700; letter-spacing: 1px;
   text-transform: uppercase; color: var(--primary); margin-bottom: 2px;
 }
 .sig-name {
-  font-family: 'EB Garamond', serif; font-size: 11pt;
+  font-family: 'EB Garamond', serif; font-size: 10pt;
   color: var(--primary); font-style: italic; line-height: 1.2;
 }
-.sig-desig { font-size: 6.5pt; font-weight: 600; color: var(--muted); margin-top: 1px; text-transform: uppercase; }
-.ftr-contact { text-align: right; font-size: 6.5pt; color: var(--muted); line-height: 1.5; }
+.ftr-contact { text-align: right; font-size: 6.5pt; color: var(--muted); line-height: 1.4; }
 .ftr-contact strong {
   display: block; color: var(--primary); font-size: 8pt;
-
   font-weight: 700; letter-spacing: .4px; margin-bottom: 2px;
 }
 .ftr-contact a { color: var(--accent2); text-decoration: none; font-weight: 500; }
@@ -263,67 +224,9 @@ sup { color: var(--primary); font-weight: 700; font-size: 5.5pt; }
 @media print {
   html, body { background: none !important; padding: 0 !important; margin: 0 !important; }
   .no-print { display: none !important; }
-  .cert { margin: 0; box-shadow: none; width: 210mm; min-height: 297mm; overflow: hidden; page-break-inside: avoid; }
+  .cert { margin: 0; box-shadow: none; width: 210mm; height: 297mm; overflow: hidden; page-break-inside: avoid; }
   .page-break { page-break-before: always; }
 }
-
-/* ═══ ENDORSEMENTS (FT ONLY) ═══ */
-.endorsement-page {
-  width: 210mm; min-height: 297mm; background: var(--card);
-  margin: 10px auto 0; box-shadow: 0 4px 32px rgba(0,0,0,.3);
-  position: relative;
-  display: flex; flex-direction: column;
-  padding: 12mm 15mm;
-  border: none;
-}
-.endorsement-page::after {
-  content: 'GR CLASS';
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%) rotate(-45deg);
-  font-family: 'Inter', sans-serif;
-  font-size: 120pt;
-  font-weight: 800;
-  color: var(--primary);
-  opacity: 0.03;
-  pointer-events: none;
-  z-index: 0;
-  white-space: nowrap;
-}
-@media print {
-  .endorsement-page { margin: 0; box-shadow: none; page-break-before: always; }
-}
-
-.end-title {
-  font-family: 'EB Garamond', serif; font-size: 14pt; font-weight: 700;
-  color: var(--primary); text-align: center; margin: 8mm 0 4mm;
-}
-.end-subtitle {
-  font-size: 8.5pt; color: var(--muted); text-align: center; margin-bottom: 6mm;
-  padding: 0 12mm; line-height: 1.6;
-}
-.end-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 4mm 8mm;
-  padding: 0 10mm; margin-bottom: 6mm;
-}
-.end-box {
-  border: 1px solid var(--border); background: #fff; padding: 4mm;
-}
-.end-box-title {
-  font-size: 7.5pt; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 1px; color: var(--accent2); border-bottom: 1px solid var(--border);
-  padding-bottom: 3px; margin-bottom: 4mm;
-}
-.end-row {
-  display: flex; align-items: flex-end; margin-bottom: 3.5mm; font-size: 8pt;
-}
-.end-label { width: 80px; color: var(--muted); }
-.end-line { flex: 1; border-bottom: 1px dashed #ccc; height: 16px; position: relative; }
-.end-line span {
-  position: absolute; bottom: 1px; left: 5px; font-family: 'EB Garamond', serif;
-  font-size: 11pt; color: var(--primary);
-}
-.end-full { grid-column: 1 / -1; }
 </style>
 </head>
 <body>
@@ -333,119 +236,127 @@ sup { color: var(--primary); font-weight: 700; font-size: 5.5pt; }
   <span class="tag-hint">Tags like {tag} are replaced at generation time.</span>
 </div>
 
+<!-- PAGE 1 -->
 <div class="cert">
 
   <!-- HEADER -->
   <div class="hdr">
-    <div class="hdr-accent"></div>
-
     <div class="hdr-inner">
       <div class="logo-wrap">
         <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo">
       </div>
       <div class="hdr-center">
         <div class="hdr-flag-state">{flag_state}</div>
-        <div class="hdr-org">{certificate_term}</div>
-        <div class="hdr-certname">International Tonnage Certificate (1969)</div>
-        <div class="hdr-convention">Issued under the provisions of the International Convention on Tonnage Measurement of Ships, 1969</div>
+        <div class="hdr-certname-es">CERTIFICADO INTERNACIONAL DE ARQUEO PROVISORIO (1969)</div>
+        <div class="hdr-certname">INTERIM INTERNATIONAL TONNAGE CERTIFICATE (1969)</div>
+        <div class="hdr-convention">
+          Issued Under the Provisions of the International Convention on Tonnage Measurement of Ships, 1969 /<br>
+          Emitido bajo las Disposiciones del Convenio Internacional sobre Arqueo de Buques, 1969
+        </div>
       </div>
       <div class="hdr-meta">
-        <span class="hdr-meta-label">ITC No.</span>
+        <span class="hdr-meta-label">ITC-IC No.</span>
         <span class="hdr-meta-no">{certificate_number}</span>
-        <div class="hdr-meta-form">Form ITC · Approved by: GM</div>
+        <div class="hdr-meta-form">Form ITC-IC · Approved by: GM</div>
       </div>
     </div>
-    <div class="hdr-accent"></div>
   </div>
 
   <!-- AUTHORITY -->
   <div class="authority">
-    Issued under the authority of the Government of <strong>{flag_state}</strong><br>
-    By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO)
+    Issued under the authority of the Government of / Emitido bajo la autoridad del Gobierno de <strong>{flag_state}</strong><br>
+    By / Por <strong>GR CLASS – CLASSIFIED FOR STANDARD</strong>
   </div>
 
   <!-- BODY -->
   <div class="body">
 
-    <div class="sec-label">Vessel Particulars</div>
+    <div class="sec-label">Datos del Buque / Vessel Particulars</div>
     <table class="vtable">
-      <tr>
-        <th>Name of Ship</th>
-        <th>Distinctive No. / Letters</th>
-        <th>Port of Registry</th>
-        <th>Date of Keel Laying</th>
-      </tr>
-      <tr>
-        <td><span class="val">{vessel_name}</span></td>
-        <td><span class="val">{call_sign}</span></td>
-        <td><span class="val">{port_of_registry}</span></td>
-        <td><span class="val">{keel_date}</span></td>
-      </tr>
-      <tr>
-        <th>IMO Number</th>
-        <th>Gross Tonnage</th>
-        <th>Net Tonnage</th>
-        <th>Ship Type</th>
-      </tr>
-      <tr>
-        <td><span class="val">{imo_number}</span></td>
-        <td><span class="val">{gross_tonnage}</span></td>
-        <td><span class="val">{net_tonnage}</span></td>
-        <td><span class="val">{ship_type}</span></td>
-      </tr>
+      <thead>
+        <tr>
+          <th>NOMBRE DEL BUQUE<br>Name of Ship</th>
+          <th>DISTINTIVO DE LLAMADA<br>Call letters</th>
+          <th>NUMERO IMO<br>IMO number</th>
+          <th>PUERTO DE MATRICULA<br>Port of Registry</th>
+          <th>*FECHA<br>*Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="val">{vessel_name}</span></td>
+          <td><span class="val">{call_sign}</span></td>
+          <td><span class="val">{imo_number}</span></td>
+          <td><span class="val">{port_of_registry}</span></td>
+          <td><span class="val">{keel_date}</span></td>
+        </tr>
+      </tbody>
     </table>
 
+    <div class="footnotes" style="margin-top: 0; margin-bottom: 2mm; border-top: none; font-size: 6pt;">
+      <p>
+        *Fecha en la que se puso la quilla o en la que el buque estaba en un estado equivalente de adelanto en su construcción (Articulo 2(6)), o fecha en la que el buque sufrió transformaciones o modificaciones importantes (Articulo 3 (2) (b)), según proceda.<br>
+        *Date on which the keel was laid or the ship was at similar stage of construction (article 2 (6)), or date on which the ship underwent alterations or modifications of a major character (Article 3 (2) (b)), as appropriate.
+      </p>
+    </div>
 
-    <div class="sec-label">Tonnage Measurement Details</div>
+    <div class="sec-label">Dimensiones Principales / Main Dimensions</div>
     <table class="mtable">
-      <tr><th>Main Particulars</th><th>Value</th></tr>
-      <tr><td>Length Overall (m)</td><td><span class="m-val">{length_overall}</span></td></tr>
-      <tr><td>Breadth (m)</td><td><span class="m-val">{breadth}</span></td></tr>
-      <tr><td>Depth to Upper Deck (m)</td><td><span class="m-val">{depth}</span></td></tr>
-      <tr><td>Gross Tonnage</td><td><span class="m-val">{gross_tonnage}</span></td></tr>
-      <tr><td>Net Tonnage</td><td><span class="m-val">{net_tonnage}</span></td></tr>
+      <thead>
+        <tr>
+          <th>ESLORA (ARTICULO 2 (8))<br>Length (article 2 (8))</th>
+          <th>MANGA (REGLA 2 (3))<br>Breadth (regulation 2 (3))</th>
+          <th>PUNTAL DE TRAZADO HASTA LA CUBIERTA SUPERIOR EN EL CENTRO DEL BUQUE (Regla 2 (2))<br>Moulded depth amidships to upper deck (regulation 2 (2))</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="m-val">{length_overall}</span></td>
+          <td><span class="m-val">{breadth}</span></td>
+          <td><span class="m-val">{depth}</span></td>
+        </tr>
+      </tbody>
     </table>
-    <div class="sec-label">Certification</div>
+
+    <div class="sec-label">Los Arqueos del Buque Son / The Tonnages of the Ship Are</div>
+    <table class="vtable" style="margin-bottom: 3mm;">
+      <thead>
+        <tr>
+          <th style="width: 50%; text-align: center;">ARQUEO BRUTO / Gross Tonnage</th>
+          <th style="width: 50%; text-align: center;">ARQUEO NETO / Net Tonnage</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: center; padding: 6px;"><span class="val" style="font-size: 13pt;">{gross_tonnage}</span></td>
+          <td style="text-align: center; padding: 6px;"><span class="val" style="font-size: 13pt;">{net_tonnage}</span></td>
+        </tr>
+      </tbody>
+    </table>
+
     <div class="certify">
-      <div class="certify-title">This is to certify:</div>
-      <ul>
-        <li>That the ship has been measured in accordance with the provisions of the International Convention on Tonnage Measurement of Ships, 1969.</li>
-        <li>That the gross and net tonnages of the ship are as stated above.</li>
-      </ul>
+      <p style="margin-bottom: 3px; font-weight: 600;">
+        Se certifica que los arqueos de este buque han sido determinados de acuerdo con las disposiciones del Convenio Internacional sobre Arqueo de Buques, 1969.
+      </p>
+      <p style="font-style: italic; color: var(--muted);">
+        This is to certify that the tonnages of this ship have been determined in accordance with the provisions of the International Convention on Tonnage Measurement of Ships, 1969.
+      </p>
     </div>
 
-    <div class="sec-label">Dates &amp; Validity</div>
-    <div class="vgrid">
+    <div class="vgrid-2" style="margin-top: 2mm; margin-bottom: 2mm;">
       <div class="vcell">
-        <span class="vc-label">Survey Completion Date</span>
-        <div class="vc-val">{survey_completion_date}</div>
+        <span class="vc-label">Expedido en / Issued at</span>
+        <div class="vc-val">{place}</div>
+        <span style="font-size: 5.5pt; color: var(--muted);">(Place of issue of certificate)</span>
       </div>
       <div class="vcell">
-        <span class="vc-label">Date of Issue</span>
+        <span class="vc-label">el día / Date of Issue</span>
         <div class="vc-val">{issue_date}</div>
+        <span style="font-size: 5.5pt; color: var(--muted);">(DD-MM-YYYY)</span>
       </div>
-      <div class="vcell hi">
-        <span class="vc-label">Valid Until</span>
-        <div class="vc-val">{expiry_date}</div>
-      </div>
-    </div>
-    <div class="vgrid-2">
-      <div class="vcell">
-        <span class="vc-label">Place of Issue</span>
-        <div class="vc-val">{place_of_survey}</div>
-      </div>
-      <div class="vcell">
-        <span class="vc-label">Page</span>
-        <div class="vc-val">1 of 1</div>
-      </div>
-    </div>
-
-    <div class="footnotes">
-      <p><sup>1</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600(15).</p>
     </div>
 
   </div>
-
 
   <div class="gen-notice">
     <svg width="10" height="11" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.6; flex-shrink: 0; margin-right: 2px; vertical-align: middle;">
@@ -456,41 +367,246 @@ sup { color: var(--primary); font-weight: 700; font-size: 5.5pt; }
       Verify at <strong>grclass.com</strong>
     </span>
   </div>
+
   <div class="ftr">
-    <div class="ftr-accent"></div>
     <div class="ftr-inner">
       <div class="sig-area">
-        <div style="position: relative; height: 65px; margin-bottom: 5px; width: 240px;">
+        <div style="position: relative; height: 50px; margin-bottom: 5px; width: 200px;">
           <!-- Signature Image -->
           <div class="sig-img-wrap" style="position: absolute; left: 10px; bottom: 0; z-index: 2;">
-            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Signature" style="max-height: 50px; max-width: 100px; object-fit: contain; display: block;">
+            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Signature" style="max-height: 40px; max-width: 90px; object-fit: contain; display: block;">
           </div>
           <!-- Stamp Image -->
-          <div class="stamp-img-wrap" style="position: absolute; left: 110px; bottom: -15px; z-index: 1; opacity: 0.85;">
-            <img src="{stamp}" onerror="this.src='../../../src/modules/payments/Gr-class-stamp.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-stamp.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Official Stamp" style="max-height: 70px; max-width: 105px; object-fit: contain; display: block;">
+          <div class="stamp-img-wrap" style="position: absolute; left: 90px; bottom: -10px; z-index: 1; opacity: 0.85;">
+            <img src="{stamp}" onerror="this.src='../../../src/modules/payments/Gr-class-stamp.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-stamp.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Official Stamp" style="max-height: 60px; max-width: 95px; object-fit: contain; display: block;">
           </div>
         </div>
         <div class="sig-line"></div>
-        <div class="sig-label">GR CLASS Representative</div>
+        <div class="sig-label">GR CLASS REPRESENTATIVE</div>
         <div class="sig-name">{surveyor_name}</div>
-        <div class="sig-desig">GR CLASS Representative · Surveyor</div>
       </div>
       <div class="ftr-contact" style="display:flex;gap:12px;align-items:center;justify-content:flex-end">
-        <div style="width:64px;height:64px;flex-shrink:0;background:#fff;padding:2px;border:1px solid var(--border)">
-          <style>.qr-wrap img{width:60px!important;height:60px!important;display:block}</style>
+        <div style="width:54px;height:54px;flex-shrink:0;background:#fff;padding:2px;border:1px solid var(--border)">
           <div class="qr-wrap">{qr_code}</div>
         </div>
         <div style="text-align:right">
           <strong>GR CLASS</strong>
           <a href="mailto:info@grclass.com">info@grclass.com</a><br>
           <a href="https://www.grclass.com">www.grclass.com</a><br>
-          Classified for Standard (GR CLASS)<br>
-          Recognized Organization · Global Marine Services
+          Classified for Standard (GR CLASS)
         </div>
       </div>
+    </div>
+    <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 2px; margin-top: 2mm; font-size: 6pt; color: var(--muted);">
+      <div>ITC-IC</div>
+      <div>Page 1 of 2</div>
+      <div>Approved by: GM</div>
     </div>
   </div>
 
 </div>
+
+<!-- PAGE 2 -->
+<div class="cert page-break">
+
+  <!-- Page 2 Mini Header -->
+  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1.5mm; margin-bottom: 3mm;">
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" style="height: 20px; object-fit: contain;">
+      <span style="font-size: 6.5pt; font-weight: 700; color: var(--primary); letter-spacing: 0.5px;">GR CLASS</span>
+    </div>
+    <div style="font-size: 6.5pt; font-weight: 600; color: var(--muted);">
+      ITC-IC No. <span style="font-family: 'EB Garamond', serif; font-size: 9.5pt; font-weight: 700; color: var(--primary);">{certificate_number}</span>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <div class="sec-label" style="margin-top: 0;">ESPACIOS INCLUIDOS EN EL ARQUEO / Spaces included in tonnage</div>
+    <table class="tonnage-spaces-table" style="width: 100%; border-collapse: collapse; font-size: 7pt; margin-bottom: 2mm;">
+      <thead>
+        <tr style="background: var(--light);">
+          <th colspan="3" style="border: 1px solid var(--border); padding: 4px; text-align: center; font-weight: 700; text-transform: uppercase;">ARQUEO BRUTO / Gross tonnage</th>
+          <th colspan="3" style="border: 1px solid var(--border); padding: 4px; text-align: center; font-weight: 700; text-transform: uppercase;">ARQUEO NETO / Net tonnage</th>
+        </tr>
+        <tr style="background: var(--light); font-size: 6pt;">
+          <th style="border: 1px solid var(--border); padding: 4px;">NOMBRE DEL ESPACIO<br>Name of Space</th>
+          <th style="border: 1px solid var(--border); padding: 4px; width: 65px;">Situación<br>Location (M)</th>
+          <th style="border: 1px solid var(--border); padding: 4px; width: 65px;">Eslora<br>Length (M)</th>
+          <th style="border: 1px solid var(--border); padding: 4px;">NOMBRE DEL ESPACIO<br>Name of Space</th>
+          <th style="border: 1px solid var(--border); padding: 4px; width: 65px;">Situación<br>Location (M)</th>
+          <th style="border: 1px solid var(--border); padding: 4px; width: 65px;">Eslora<br>Length (M)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="border: 1px solid var(--border); padding: 4px; height: 18px;"><span class="m-val">{space_gt_name_1}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_gt_loc_1}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_gt_len_1}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_name_1}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_loc_1}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_len_1}</span></td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid var(--border); padding: 4px; height: 18px;"><span class="m-val">{space_gt_name_2}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_gt_loc_2}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_gt_len_2}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_name_2}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_loc_2}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_len_2}</span></td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid var(--border); padding: 4px; height: 18px;"><span class="m-val">{space_gt_name_3}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_gt_loc_3}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_gt_len_3}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_name_3}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_loc_3}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_len_3}</span></td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid var(--border); padding: 4px; height: 18px;"><span class="m-val">{space_gt_name_4}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_gt_loc_4}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_gt_len_4}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_name_4}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_loc_4}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_len_4}</span></td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid var(--border); padding: 4px; height: 18px;"><span class="m-val">{space_gt_name_5}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_gt_loc_5}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_gt_len_5}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_name_5}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_loc_5}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_len_5}</span></td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid var(--border); padding: 4px; height: 18px;"><span class="m-val">{space_gt_name_6}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_gt_loc_6}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_gt_len_6}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_name_6}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_loc_6}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_nt_len_6}</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="sec-label">ESPACIOS EXCLUIDOS (Regla 2(5)) / Excluded Spaces (Regulation 2 (5))</div>
+    <table class="excluded-spaces-table" style="width: 100%; border-collapse: collapse; font-size: 7pt; margin-bottom: 1.5mm;">
+      <thead>
+        <tr style="background: var(--light); font-size: 6pt;">
+          <th style="border: 1px solid var(--border); padding: 4px;">NOMBRE DEL ESPACIO<br>Name of Space</th>
+          <th style="border: 1px solid var(--border); padding: 4px; width: 120px;">Situación<br>Location (M)</th>
+          <th style="border: 1px solid var(--border); padding: 4px; width: 120px;">Eslora<br>Length (M)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="border: 1px solid var(--border); padding: 4px; height: 18px;"><span class="m-val">{space_ex_name_1}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_ex_loc_1}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_ex_len_1}</span></td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid var(--border); padding: 4px; height: 18px;"><span class="m-val">{space_ex_name_2}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_ex_loc_2}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-ex_len_2">{space_ex_len_2}</span></td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid var(--border); padding: 4px; height: 18px;"><span class="m-val">{space_ex_name_3}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_ex_loc_3}</span></td>
+          <td style="border: 1px solid var(--border); padding: 4px;"><span class="m-val">{space_ex_len_3}</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="footnotes" style="margin-top: 0; margin-bottom: 2mm; border-top: none; font-size: 5.5pt; line-height: 1.2;">
+      <p>
+        MARQUE CON UN ASTERISCO (*) LOS ESPACIOS ARRIBA CONSIGNADOS QUE COMPRENDEN SIMULTANEAMENTE ESPACIOS CERRADOS Y EXCLUIDOS.<br>
+        An asterisk (*) should be added to those spaces listed above which comprise both enclosed and excluded spaces.
+      </p>
+    </div>
+
+    <div class="sec-label">NUMERO DE PASAJEROS (Regla 4 (1)) / Number of Passengers (Regulation 4 (1))</div>
+    <table class="passengers-table" style="width: 100%; border-collapse: collapse; font-size: 7.5pt; margin-bottom: 2mm;">
+      <tbody>
+        <tr>
+          <td style="border: 1px solid var(--border); padding: 4px; line-height: 1.3;">
+            NUMERO DE PASAJEROS EN CAMAROTES DE NO MÁS DE 8 LITERAS<br>
+            Number of passengers in cabins with no more than 8 berths
+          </td>
+          <td style="border: 1px solid var(--border); padding: 4px; width: 120px; text-align: center; vertical-align: middle;"><span class="m-val">{passengers_cabins_8_berths}</span></td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid var(--border); padding: 4px; line-height: 1.3;">
+            NUMERO DE OTROS PASAJEROS<br>
+            Number of other passengers
+          </td>
+          <td style="border: 1px solid var(--border); padding: 4px; width: 120px; text-align: center; vertical-align: middle;"><span class="m-val">{passengers_other}</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="sec-label">CALADO DE TRAZADO (Regla 4 (2)) / Moulded Draught (Regulation 4 (2))</div>
+    <table class="draught-table" style="width: 100%; border-collapse: collapse; font-size: 7.5pt; margin-bottom: 2mm;">
+      <tbody>
+        <tr>
+          <td style="border: 1px solid var(--border); padding: 4px; line-height: 1.3;">
+            CALADO DE TRAZADO (Regla 4 (2))<br>
+            Moulded Draught (Regulation 4 (2))
+          </td>
+          <td style="border: 1px solid var(--border); padding: 4px; width: 120px; text-align: center; vertical-align: middle;"><span class="m-val">{moulded_draught}</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="sec-label">FECHA Y LUGAR DEL ARQUEO INICIAL / Date and place of original measurement</div>
+    <table class="measurements-table" style="width: 100%; border-collapse: collapse; font-size: 7.5pt; margin-bottom: 2mm;">
+      <tbody>
+        <tr>
+          <td style="border: 1px solid var(--border); padding: 4px; line-height: 1.3;">
+            FECHA Y LUGAR DEL ARQUEO INICIAL<br>
+            Date and place of original measurement
+          </td>
+          <td style="border: 1px solid var(--border); padding: 4px; width: 250px; text-align: center; vertical-align: middle;"><span class="m-val">{original_measurement_date_place}</span></td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid var(--border); padding: 4px; line-height: 1.3;">
+            FECHA Y LUGAR DE ÚLTIMO RE-ARQUEO<br>
+            Date and place of last previous re-measurement
+          </td>
+          <td style="border: 1px solid var(--border); padding: 4px; width: 250px; text-align: center; vertical-align: middle;"><span class="m-val">{last_previous_remeasurement_date_place}</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="remarks-box" style="border: 1px solid var(--border); padding: 5px; font-size: 7.5pt; margin-bottom: auto; border-radius: 2px;">
+      <div style="font-weight: 700; color: var(--primary); text-transform: uppercase; margin-bottom: 2px; font-size: 6.5pt;">OBSERVACIONES / Remarks:</div>
+      <div style="min-height: 35px; font-family: 'EB Garamond', serif; font-size: 9.5pt; color: var(--primary);">{remarks}</div>
+    </div>
+
+  </div>
+
+  <div class="ftr" style="margin-top: auto; padding-top: 2mm;">
+    <div class="ftr-inner">
+      <div><!-- Spacer --></div>
+      <div class="ftr-contact" style="display:flex;gap:12px;align-items:center;justify-content:flex-end">
+        <div style="width:54px;height:54px;flex-shrink:0;background:#fff;padding:2px;border:1px solid var(--border)">
+          <div class="qr-wrap">{qr_code}</div>
+        </div>
+        <div style="text-align:right">
+          <strong>GR CLASS</strong>
+          <a href="mailto:info@grclass.com">info@grclass.com</a>&nbsp;&nbsp;·&nbsp;&nbsp;<a href="https://www.grclass.com">www.grclass.com</a>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 2px; margin-top: 2mm; font-size: 6pt; color: var(--muted);">
+      <div>ITC-IC</div>
+      <div>Page 2 of 2</div>
+      <div>Approved by: GM</div>
+    </div>
+  </div>
+
+</div>
+
 </body>
 </html>
