@@ -92,7 +92,7 @@ export const buildTagValuesForJob = async (jobId) => {
 
         survey_commenced_date: formatDate(job.target_date || job.createdAt),
         survey_completed_date: formatDate(job.updatedAt), // Rough estimate if not finalized
-        place_of_survey: 'Ajman, UAE',
+        place_of_survey: job.target_port || 'Mumbai India',
         job_id: job.id || '',
         certificate_type: certType?.name || '',
         certificate_number: '', // Will be filled by certificate service if available

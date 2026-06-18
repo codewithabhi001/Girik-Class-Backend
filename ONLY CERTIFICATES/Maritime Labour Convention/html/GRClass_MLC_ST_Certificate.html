@@ -2,385 +2,468 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>GR Class – MLC - Short Term</title>
+<title>GR Class – MLC-ST Certificate</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --navy:    #0B2443;
-  --blue:    #005BAA;
-  --gold:    #B5891F;
-  --gold-lt: #D4A93A;
-  --cream:   #F9F6F0;
-  --light:   #EEF3F9;
-  --border:  #C8D8E8;
-  --rule:    #C4A84A;
-  --text:    #18181B;
-  --muted:   #52525B;
+  --primary: #122135; /* Dark, authoritative navy */
+  --accent:  #29405c; /* Secondary dark tone */
+  --accent2: #404040; /* Dark grey for secondary text */
+  --bg:      #f0f2f5;
+  --card:    #ffffff;
+  --border:  #a6a6a6; /* Clean grey borders */
+  --text:    #111111;
+  --muted:   #333333;
+  --light:   #f7f7f7;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { background: #8A8A8A; }
+html { background: #6b6b6b; }
 body {
-  font-family: 'Source Sans 3', sans-serif;
-  font-size: 10pt;
+  font-family: 'Inter', sans-serif;
+  font-size: 8pt; /* Tighter layout */
   color: var(--text);
-  background: #8A8A8A;
+  background: #6b6b6b;
   padding: 16px 0 40px;
 }
 
 .no-print {
-  width: 210mm;
-  margin: 0 auto 10px;
-  display: flex;
-  gap: 8px;
-  align-items: center;
+  width: 210mm; margin: 0 auto 10px;
+  display: flex; gap: 8px; align-items: center;
 }
 .btn-print {
-  background: var(--navy);
-  color: #fff;
-  border: none;
-  padding: 8px 20px;
-  font-size: 9pt;
-  font-weight: 600;
-  letter-spacing: .4px;
-  cursor: pointer;
-  border-radius: 3px;
+  background: var(--primary); color: #fff; border: none;
+  padding: 8px 18px; font-size: 9pt; font-weight: 600;
+  cursor: pointer; border-radius: 3px;
 }
-.btn-print:hover { background: var(--blue); }
+.btn-print:hover { opacity: .9; }
+.tag-hint { font-size: 7.5pt; color: #999; margin-left: 10px; }
 
+/* ═══ CERTIFICATE PAGE ═══ */
 .cert {
-  width: 210mm;
-  min-height: 297mm;
-  background: #fff;
-  margin: 0 auto;
-  box-shadow: 0 8px 48px rgba(0,0,0,.35);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
+  width: 210mm; min-height: 297mm; background: var(--card);
+  margin: 0 auto; box-shadow: 0 4px 32px rgba(0,0,0,.3);
+  display: flex; flex-direction: column; position: relative;
+  padding: 12mm 15mm; /* Global padding so nothing touches the edges */
+  border: none;
 }
+.cert * { word-wrap: break-word; overflow-wrap: break-word; position: relative; z-index: 1; }
 
-.cert * { word-wrap: break-word; overflow-wrap: break-word; }
-
-.cert::before {
-  content: '';
-  position: absolute;
-  inset: 5mm;
-  border: 1px solid var(--rule);
-  pointer-events: none;
-  z-index: 5;
-}
+/* GRCLASS Watermark */
 .cert::after {
-  content: '';
+  content: 'GR CLASS';
   position: absolute;
-  inset: 7mm;
-  border: .4px solid rgba(196,168,74,.4);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  font-family: 'Inter', sans-serif;
+  font-size: 120pt;
+  font-weight: 800;
+  color: var(--primary);
+  opacity: 0.03;
   pointer-events: none;
-  z-index: 5;
+  z-index: 0;
+  white-space: nowrap;
 }
 
-.hdr {
-  background: var(--navy);
-  padding: 0;
-  position: relative;
-  flex-shrink: 0;
-}
-.hdr-gold-top {
-  height: 4px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
-}
+/* ═══ HEADER ═══ */
+.hdr { padding: 0 0 4mm 0; flex-shrink: 0; border-bottom: 3px double var(--primary); margin-bottom: 2mm; }
 .hdr-inner {
-  padding: 8mm 12mm 7mm;
-  display: grid;
-  grid-template-columns: 60px 1fr auto;
-  gap: 12px;
-  align-items: center;
+  display: flex; align-items: flex-start; justify-content: space-between;
 }
-.hdr-gold-bottom {
-  height: 2.5px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
+.logo-wrap {
+  width: 100px; flex-shrink: 0; text-align: left;
 }
+.logo-wrap img { max-width: 85px; max-height: 85px; object-fit: contain; }
 
-.logo {
-  width: 60px; height: 60px;
-  background: #fff;
-  border-radius: 2px;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 2px;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 1px rgba(196,168,74,.6);
+.hdr-center { flex: 1; text-align: center; margin: 0 10px; }
+.hdr-flag-state {
+  font-family: 'EB Garamond', serif;
+  font-size: 16pt; font-weight: 700; color: var(--primary);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;
 }
-
-.hdr-eyebrow {
-  font-size: 7pt;
-  font-weight: 600;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--gold-lt);
-  margin-bottom: 4px;
+.hdr-org {
+  font-size: 7.5pt; font-weight: 700; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
 }
 .hdr-certname {
   font-family: 'EB Garamond', serif;
-  font-size: 14pt;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.15;
-  margin-bottom: 5px;
-  word-wrap: break-word;
+  font-size: 15pt; font-weight: 700; color: var(--primary);
+  line-height: 1.1; margin-bottom: 4px; text-transform: uppercase;
 }
 .hdr-convention {
-  font-size: 7.5pt;
-  color: rgba(255,255,255,.55);
-  line-height: 1.5;
-  max-width: 440px;
-  word-wrap: break-word;
+  font-size: 7pt; color: var(--muted); line-height: 1.4; max-width: 460px; margin: 0 auto;
 }
 
-.hdr-meta { text-align: right; word-wrap: break-word; }
+.hdr-meta { text-align: right; flex-shrink: 0; min-width: 150px; }
 .hdr-meta-label {
-  font-size: 6pt;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--gold-lt);
-  display: block;
+  font-size: 5.5pt; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted); display: block;
 }
 .hdr-meta-no {
   font-family: 'EB Garamond', serif;
-  font-size: 13pt;
-  font-weight: 700;
-  color: #fff;
-  display: block;
-  line-height: 1.15;
-  letter-spacing: .5px;
+  font-size: 11pt; font-weight: 700; color: var(--primary);
+  display: block; line-height: 1.2; margin-bottom: 2px;
   white-space: nowrap;
 }
-.hdr-meta-form {
-  font-size: 6.5pt;
-  color: rgba(255,255,255,.35);
-  margin-top: 4px;
-}
+.hdr-meta-form { font-size: 5.5pt; color: var(--muted); font-weight: 600; }
 
+/* ═══ AUTHORITY ═══ */
 .authority {
-  background: var(--light);
-  border-bottom: 1px solid var(--border);
-  padding: 3.5mm 12mm;
-  text-align: center;
-  font-size: 8.5pt;
-  color: var(--muted);
-  line-height: 1.6;
+  background: transparent; border-bottom: 1px solid var(--border);
+  padding: 3mm 0; text-align: center;
+  font-size: 8pt; color: var(--text); line-height: 1.5;
 }
-.authority strong { color: var(--navy); font-weight: 700; }
+.authority strong { color: var(--primary); font-weight: 700; text-transform: uppercase; }
 
-.body { padding: 8mm 12mm 8mm; flex: 1; }
+/* ═══ BODY ═══ */
+.body { padding: 3mm 0; flex: 1; display: flex; flex-direction: column; }
 
-.body p {
-  margin-bottom: 8px;
-  line-height: 1.5;
-  font-size: 9pt;
+.sec-label {
+  font-size: 6.5pt; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--primary);
+  padding-bottom: 2px; border-bottom: 1px solid var(--primary);
+  margin: 3mm 0 2mm;
 }
-.body table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 10px 0;
-  font-size: 8.5pt;
+
+/* Vessel table */
+.vtable { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bottom: 1.5mm; }
+.vtable th {
+  background: var(--light); color: var(--text);
+  font-size: 6pt; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+  padding: 3px 6px; border: 1px solid var(--border); text-align: left;
 }
-.body table td, .body table th {
-  border: 1px solid var(--border);
-  padding: 6px 8px;
+.vtable td {
+  padding: 4px 6px; border: 1px solid var(--border); background: transparent;
   vertical-align: middle;
 }
-.body table th {
-  background: var(--navy);
-  color: var(--gold-lt);
-  font-size: 6.5pt;
-  font-weight: 700;
-  letter-spacing: .8px;
-  text-transform: uppercase;
-  padding: 5px 9px;
-  border: 1px solid var(--navy);
-  text-align: left;
-}
-.body ul, .body ol {
-  margin-left: 20px;
-  margin-bottom: 10px;
-}
-.body li {
-  margin-bottom: 4px;
+.vtable .val {
+  font-family: 'EB Garamond', serif; font-size: 10.5pt; font-weight: 600;
+  color: var(--primary); line-height: 1.1; text-transform: uppercase;
 }
 
-.ftr {
-  background: var(--navy);
-  flex-shrink: 0;
-  position: relative;
+/* Data table */
+.mtable { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bottom: 1.5mm; }
+.mtable th {
+  background: var(--light); color: var(--text);
+  font-size: 6.5pt; font-weight: 700; text-transform: uppercase;
+  padding: 4px 6px; border: 1px solid var(--border); text-align: left;
 }
-.ftr-gold-top {
-  height: 2.5px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
+.mtable td { padding: 4px 6px; border: 1px solid var(--border); background: transparent; }
+.mtable .m-val {
+  font-family: 'EB Garamond', serif; font-size: 10pt; font-weight: 600; color: var(--primary);
 }
+
+/* Checkbox items */
+.chk-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 1.5mm; }
+.chk-item {
+  display: flex; align-items: flex-start; gap: 6px;
+  padding: 3px 6px; border: 1px solid transparent;
+  font-size: 8pt; line-height: 1.4; color: var(--text);
+}
+.chk-item.checked { background: var(--light); border-color: var(--border); font-weight: 500; }
+.checkbox {
+  width: 10px; height: 10px; border: 1px solid var(--primary); flex-shrink: 0; margin-top: 2px;
+  background: #fff; position: relative;
+}
+.chk-item.checked .checkbox { background: var(--primary); }
+.chk-item.checked .checkbox::after {
+  content: ''; position: absolute; left: 2px; top: 0;
+  width: 4px; height: 6px;
+  border-right: 1.5px solid #fff; border-bottom: 1.5px solid #fff;
+  transform: rotate(38deg);
+}
+.chk-text b { color: var(--primary); }
+.inline-val {
+  display: inline-block; font-family: 'EB Garamond', serif;
+  font-size: 10pt; font-weight: 600; color: var(--primary);
+  border-bottom: 1px dashed var(--primary);
+  padding: 0 3px; min-width: 60px; line-height: 1.1; vertical-align: bottom;
+}
+
+/* Certify box */
+.certify {
+  border: 1px solid var(--border); border-left: 4px solid var(--primary);
+  background: var(--light); padding: 5px 8px;
+  margin: 1.5mm 0 2mm; font-size: 8pt; line-height: 1.5;
+}
+.certify-title {
+  font-weight: 700; color: var(--primary); font-size: 8pt;
+  margin-bottom: 2px; text-transform: uppercase; letter-spacing: .5px;
+}
+.certify ul { margin-left: 16px; color: var(--text); }
+.certify ul li { margin-bottom: 1px; }
+.certify ul ul { margin-left: 14px; }
+
+.cert-desc { font-size: 8pt; line-height: 1.5; color: var(--text); margin-bottom: 1.5mm; }
+
+/* Validity grid */
+.vgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5mm; margin-bottom: 1.5mm; }
+.vgrid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5mm; margin-bottom: 1.5mm; }
+.vcell { border: 1px solid var(--border); padding: 3px 6px; background: transparent; }
+.vcell.hi { border: 1px solid var(--primary); background: var(--light); }
+.vc-label {
+  font-size: 5.5pt; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted); display: block; margin-bottom: 1px;
+}
+.vc-val {
+  font-family: 'EB Garamond', serif; font-size: 11pt; font-weight: 600;
+  color: var(--primary); line-height: 1.2; text-transform: uppercase;
+}
+.vcell.hi .vc-val { color: var(--primary); }
+
+/* Footnotes */
+.footnotes {
+  border-top: 1px solid var(--border); padding: 1.5mm 0;
+  font-size: 6pt; color: var(--muted); line-height: 1.4;
+}
+.footnotes p { margin-bottom: 1px; }
+sup { color: var(--primary); font-weight: 700; font-size: 5.5pt; }
+
+/* Generated notice */
+.gen-notice {
+  background: var(--light); border: 1px solid var(--border);
+  padding: 3mm 5mm; display: flex; align-items: center; justify-content: center;
+  gap: 6px; flex-shrink: 0; margin-top: auto; border-radius: 2px;
+}
+.gen-notice-text {
+  font-size: 6.5pt; color: var(--muted);
+  letter-spacing: .5px; line-height: 1.2; text-align: center; text-transform: uppercase;
+}
+.gen-notice-text strong { color: var(--primary); font-weight: 700; }
+
+/* ═══ FOOTER ═══ */
+.ftr { background: transparent; flex-shrink: 0; padding-top: 4mm; }
 .ftr-inner {
-  padding: 5.5mm 12mm 6mm;
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12mm;
-  align-items: end;
+  grid-template-columns: 1fr auto; gap: 6mm; align-items: end;
 }
-.sig-area { color: #fff; }
-.sig-line {
-  border-bottom: 1px solid rgba(255,255,255,.3);
-  height: 24px;
-  margin-bottom: 5px;
-  width: 160px;
-}
+.sig-area { color: var(--text); position: relative; min-width: 180px; }
+.sig-line { border-bottom: 1px solid var(--primary); height: 1px; margin-bottom: 4px; width: 100%; max-width: 200px; }
 .sig-label {
-  font-size: 6pt;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.45);
-  margin-bottom: 2px;
+  font-size: 6pt; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--primary); margin-bottom: 2px;
 }
 .sig-name {
-  font-family: 'EB Garamond', serif;
-  font-size: 12pt;
-  color: rgba(255,255,255,.9);
-  font-style: italic;
-  line-height: 1.2;
+  font-family: 'EB Garamond', serif; font-size: 11pt;
+  color: var(--primary); font-style: italic; line-height: 1.2;
 }
-.sig-desig {
-  font-size: 7.5pt;
-  font-weight: 600;
-  color: var(--gold-lt);
-  letter-spacing: .3px;
-  margin-top: 1px;
-}
-.ftr-contact {
-  text-align: right;
-  font-size: 7pt;
-  color: rgba(255,255,255,.45);
-  line-height: 1.8;
-}
+.sig-desig { font-size: 6.5pt; font-weight: 600; color: var(--muted); margin-top: 1px; text-transform: uppercase; }
+.ftr-contact { text-align: right; font-size: 6.5pt; color: var(--muted); line-height: 1.5; }
 .ftr-contact strong {
-  display: block;
-  color: var(--gold-lt);
-  font-size: 8.5pt;
-  font-weight: 700;
-  letter-spacing: .5px;
-  margin-bottom: 2px;
-}
-.ftr-contact a { color: rgba(255,255,255,.55); text-decoration: none; }
+  display: block; color: var(--primary); font-size: 8pt;
 
+  font-weight: 700; letter-spacing: .4px; margin-bottom: 2px;
+}
+.ftr-contact a { color: var(--accent2); text-decoration: none; font-weight: 500; }
+
+/* ═══ PRINT ═══ */
 @page { size: A4; margin: 0; }
 @media print {
   html, body { background: none !important; padding: 0 !important; margin: 0 !important; }
   .no-print { display: none !important; }
-  .cert {
-    margin: 0;
-    box-shadow: none;
-    width: 210mm;
-    min-height: 297mm;
-    overflow: hidden;
-    page-break-inside: avoid;
-  }
+  .cert { margin: 0; box-shadow: none; width: 210mm; min-height: 297mm; overflow: hidden; page-break-inside: avoid; }
+  .page-break { page-break-before: always; }
 }
 
-/* ── GENERATED NOTICE BAR ── */
-.generated-notice {
-  background: linear-gradient(135deg, #f0f5fb 0%, #e8f0f8 100%);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 3mm 12mm;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex-shrink: 0;
+/* ═══ ENDORSEMENTS (FT ONLY) ═══ */
+.endorsement-page {
+  width: 210mm; min-height: 297mm; background: var(--card);
+  margin: 10px auto 0; box-shadow: 0 4px 32px rgba(0,0,0,.3);
+  position: relative;
+  display: flex; flex-direction: column;
+  padding: 12mm 15mm;
+  border: none;
 }
-.generated-notice-icon {
-  font-size: 9pt;
-  opacity: 0.65;
-  flex-shrink: 0;
+.endorsement-page::after {
+  content: 'GR CLASS';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  font-family: 'Inter', sans-serif;
+  font-size: 120pt;
+  font-weight: 800;
+  color: var(--primary);
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+  white-space: nowrap;
 }
-.generated-notice-text {
-  font-size: 6.8pt;
-  font-style: italic;
-  color: var(--muted);
-  letter-spacing: 0.15px;
-  line-height: 1.5;
-  text-align: center;
-}
-.generated-notice-text strong {
-  font-style: normal;
-  color: var(--blue);
-  font-weight: 600;
+@media print {
+  .endorsement-page { margin: 0; box-shadow: none; page-break-before: always; }
 }
 
+.end-title {
+  font-family: 'EB Garamond', serif; font-size: 14pt; font-weight: 700;
+  color: var(--primary); text-align: center; margin: 8mm 0 4mm;
+}
+.end-subtitle {
+  font-size: 8.5pt; color: var(--muted); text-align: center; margin-bottom: 6mm;
+  padding: 0 12mm; line-height: 1.6;
+}
+.end-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4mm 8mm;
+  padding: 0 10mm; margin-bottom: 6mm;
+}
+.end-box {
+  border: 1px solid var(--border); background: #fff; padding: 4mm;
+}
+.end-box-title {
+  font-size: 7.5pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--accent2); border-bottom: 1px solid var(--border);
+  padding-bottom: 3px; margin-bottom: 4mm;
+}
+.end-row {
+  display: flex; align-items: flex-end; margin-bottom: 3.5mm; font-size: 8pt;
+}
+.end-label { width: 80px; color: var(--muted); }
+.end-line { flex: 1; border-bottom: 1px dashed #ccc; height: 16px; position: relative; }
+.end-line span {
+  position: absolute; bottom: 1px; left: 5px; font-family: 'EB Garamond', serif;
+  font-size: 11pt; color: var(--primary);
+}
+.end-full { grid-column: 1 / -1; }
 </style>
 </head>
 <body>
 
 <div class="no-print">
-  <button class="btn-print" onclick="window.print()">🖨&nbsp; Print / Save as PDF</button>
+  <button class="btn-print" onclick="window.print()">🖨&nbsp; Print / Save PDF</button>
+  <span class="tag-hint">Tags like {tag} are replaced at generation time.</span>
 </div>
 
 <div class="cert">
 
-  <!-- ═══ HEADER ═══ -->
+  <!-- HEADER -->
   <div class="hdr">
-    <div class="hdr-gold-top"></div>
+    <div class="hdr-accent"></div>
+
     <div class="hdr-inner">
-      <div class="logo">
-        <img src="https://grclass.com/grclass-logo.webp" alt="GR Glass Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+      <div class="logo-wrap">
+        <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo">
       </div>
-      <div class="hdr-title">
-        <div class="hdr-eyebrow">Short Term</div>
-        <div class="hdr-certname">MLC</div>
-        <div class="hdr-convention">Issued under the provisions of the Maritime Labour Convention (MLC), 2006</div>
+      <div class="hdr-center">
+        <div class="hdr-flag-state">{flag_state}</div>
+        <div class="hdr-org">{certificate_term}</div>
+        <div class="hdr-certname">Maritime Labour Certificate</div>
+        <div class="hdr-convention">Issued under provision of Article V and Title 5 of the Maritime Labour Convention, 2006. This Certificate shall have a Declaration of Maritime Labour Compliance attached</div>
       </div>
       <div class="hdr-meta">
-        <span class="hdr-meta-label">MLC-ST No.</span>
-        <span class="hdr-meta-no"><span class="cert-field" data-field="certificate_number">{certificate_number}</span></span>
-        <div class="hdr-meta-form">Form MLC-ST · Approved by: GM</div>
+        <span class="hdr-meta-label">MLC No.</span>
+        <span class="hdr-meta-no">{certificate_number}</span>
+        <div class="hdr-meta-form">Form MLC · Approved by: GM</div>
       </div>
     </div>
-    <div class="hdr-gold-bottom"></div>
+    <div class="hdr-accent"></div>
   </div>
 
-  <!-- ═══ AUTHORITY BAND ═══ -->
+  <!-- AUTHORITY -->
   <div class="authority">
-    Issued under the authority of the Government of <strong><span class="cert-field" data-field="flag_state">{flag_state}</span></strong><br>
-    By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO) operating under IMO Framework
+    Issued under the authority of the Government of <strong>{flag_state}</strong><br>
+    By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO)
   </div>
 
-  <!-- ═══ BODY ═══ -->
+  <!-- BODY -->
   <div class="body">
-    <p><a id="SHORT_TERM_MARITIME_LABOUR_CERTIFICATE"></a><strong>SHORT TERM MARITIME LABOUR CERTIFICATE</strong></p><h1><img src="data:image/jpeg;base64,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" />(Note: This Certificate shall have a Declaration of Maritime Labour Compliance attached)</h1><p>Issued under provision of Article V and Title 5 of the Maritime Labour Convention, 2006 (Referred to below as “The Convention”), under the authority of The Government of:</p><p><strong> THE MERCHANT MARINE HONDURAS</strong></p><p><strong>          By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><p><strong>MLC No.</strong></p><table><tr><td><p><strong>Name of ship</strong></p></td><td colspan="2"><p><strong>Distinctive number or letters</strong></p></td><td><p><strong>Port of Registry</strong></p></td><td><p><strong>Type of Ship</strong></p></td><td rowspan="2"><p><strong>Gross Tonnage1</strong></p></td></tr><tr><td rowspan="3"><p>{vessel_name}</p></td><td><p>{call_sign}</p></td><td><p>{port_of_registry}</p></td><td><p>{ship_type}</p></td><td rowspan="3"><p>{gross_tonnage}</p></td></tr><tr><td colspan="2"><p><strong>IMO number</strong></p></td><td rowspan="2"><p><strong>Date of registry</strong></p></td></tr><tr><td><p>{imo_number}</p></td><td></td></tr><tr><td colspan="6"><p><strong>Name and Address of the ship owner2</strong></p></td></tr><tr><td colspan="6"></td></tr><tr><td colspan="2"><p><strong>IMO Company No.</strong></p></td><td colspan="4"></td></tr></table><p>This is to certify:</p><ol><li>That this ship has been inspected, and verified to be in compliance with the requirements of the Convention, and provisions of the attached Declaration of Maritime Labour Compliance.</li><li>That the seafarers’ working and living conditions specified in Appendix A5-I of the Convention were found to correspond to the abovementioned country’s national requirement implementing the Convention. These national requirements are summarized in the Declaration of Maritime Labour Compliance, Part I.</li></ol><p>This certificate is valid until		Subject to the inspections In accordance with Standards A5.1.3 and A5.1.4. Convention.{expiry_date}</p><p>This Certificate is valid only when the Declaration of Maritime Labour Compliance issued at: On:	is attached.</p><p>Completion date of the inspection on which this Certificate is based was	 	</p><p>(DD-MM-YYYY)</p><table><tr><td><p>Issued at</p></td><td><p> 	</p></td><td><p>Date of issue   	</p></td></tr><tr><td><p>{place_of_survey}</p></td><td><p>(Place of issue of certificate)</p></td><td><p>{issue_date}</p></td></tr></table><p>{surveyor_name}GR CLASS REPRESENTATIVE</p><p>1 For ships covered by the Tonnage measurement interim scheme adopted by the IMO, the gross Tonnage is that which is included in the REMARKS column of the International Tonnage Certificate (1969).</p><p>2 Shipowner means the owner of the ship or another organization or person, such as the manager, agento r bareboat charterer, who has asumed the responsability for the operation of the ship owner and who, on assuming such responsability, has agreed to take over the duties and responsabilities imposed on shipowners in accordance with this Convention, regardless of whether any other organizations or person fulfil certain of the duties or responsabilities on behalf of the shipowner.</p><p><a id="_Hlk213083592"></a>GR CLASS – CLASSIFIED FOR STANDARD (GR CLASS)</p><p>E-mail: info@grclass.com Web: www.grclass.com</p><p>Form MLC-ST	                                                        Approved by: GM	 	                                     Page 1 of 1</p>
+
+    <div class="sec-label">Vessel Particulars</div>
+    <table class="vtable">
+      <tr>
+        <th>Name of Ship</th>
+        <th>Distinctive No. / Letters</th>
+        <th>Port of Registry</th>
+        <th>Gross Tonnage <sup>1</sup></th>
+      </tr>
+      <tr>
+        <td><span class="val">{vessel_name}</span></td>
+        <td><span class="val">{call_sign}</span></td>
+        <td><span class="val">{port_of_registry}</span></td>
+        <td><span class="val">{gross_tonnage}</span></td>
+      </tr>
+      <tr>
+        <th>IMO Number</th>
+        <th>Ship Type</th>
+        <th>Date of Registry</th>
+        <th>Ship Owner & Address <sup>2</sup></th>
+      </tr>
+      <tr>
+        <td><span class="val">{imo_number}</span></td>
+        <td><span class="val">{ship_type}</span></td>
+        <td><span class="val">{registry_date}</span></td>
+        <td><span class="val">{ship_owner}</span></td>
+      </tr>
+    </table>
+
+
+    <div class="sec-label">Company Information</div>
+    <div class="vgrid-2">
+      <div class="vcell"><span class="vc-label">IMO Company No.</span><div class="vc-val">{company_imo_no}</div></div>
+      <div class="vcell"><span class="vc-label">Name & Address of Ship Owner</span><div class="vc-val">{ship_owner}</div></div>
+    </div>
+    <div class="sec-label">Certification</div>
+    <div class="certify">
+      <div class="certify-title">This is to certify:</div>
+      <ul>
+        <li>That this ship has been inspected, and verified to be in compliance with the requirements of the Convention, and provisions of the attached Declaration of Maritime Labour Compliance.</li>
+        <li>That the seafarers' working and living conditions specified in Appendix A5-I of the Convention were found to correspond to the abovementioned country's national requirements implementing the Convention.</li>
+      </ul>
+    </div>
+    <p class="cert-desc">This Certificate is valid only when the Declaration of Maritime Labour Compliance is attached.</p>
+
+    <div class="sec-label">Dates &amp; Validity</div>
+    <div class="vgrid">
+      <div class="vcell">
+        <span class="vc-label">Survey Completion Date</span>
+        <div class="vc-val">{survey_completion_date}</div>
+      </div>
+      <div class="vcell">
+        <span class="vc-label">Date of Issue</span>
+        <div class="vc-val">{issue_date}</div>
+      </div>
+      <div class="vcell hi">
+        <span class="vc-label">Valid Until</span>
+        <div class="vc-val">{expiry_date}</div>
+      </div>
+    </div>
+    <div class="vgrid-2">
+      <div class="vcell">
+        <span class="vc-label">Place of Issue</span>
+        <div class="vc-val">{place_of_survey}</div>
+      </div>
+      <div class="vcell">
+        <span class="vc-label">Page</span>
+        <div class="vc-val">1 of 1</div>
+      </div>
+    </div>
+
+    <div class="footnotes">
+      <p><sup>1</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600(15).</p>
+      <p><sup>2</sup> Shipowner means the owner of the ship or another organization or person, such as the manager, agent or bareboat charterer, who has assumed the responsibility for the operation of the ship.</p>
+    </div>
+
   </div>
 
 
-  <!-- ═══ GENERATED NOTICE ═══ -->
-  <div class="generated-notice">
-    <span class="generated-notice-icon">🔒</span>
-    <span class="generated-notice-text">
-      This is a computer-generated certificate and does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
-      Verify authenticity at <strong>grclass.com</strong>
+  <div class="gen-notice">
+    <span style="font-size:8pt;opacity:.6">🔒</span>
+    <span class="gen-notice-text">
+      Computer-generated certificate — does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
+      Verify at <strong>grclass.com</strong>
     </span>
   </div>
-
-  <!-- ═══ FOOTER / SIGNATURE ═══ -->
   <div class="ftr">
-    <div class="ftr-gold-top"></div>
+    <div class="ftr-accent"></div>
     <div class="ftr-inner">
       <div class="sig-area">
         <div style="position: relative; height: 65px; margin-bottom: 5px; width: 240px;">
           <!-- Signature Image -->
           <div class="sig-img-wrap" style="position: absolute; left: 10px; bottom: 0; z-index: 2;">
-            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=null;" alt="Signature" style="max-height: 50px; max-width: 100px; object-fit: contain; display: block;">
+            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Signature" style="max-height: 50px; max-width: 100px; object-fit: contain; display: block;">
           </div>
           <!-- Stamp Image -->
           <div class="stamp-img-wrap" style="position: absolute; left: 110px; bottom: -15px; z-index: 1; opacity: 0.85;">
-            <img src="{stamp}" onerror="this.src='../../../src/modules/payments/Gr-class-stamp.png'; this.onerror=null;" alt="Official Stamp" style="max-height: 70px; max-width: 105px; object-fit: contain; display: block;">
+            <img src="{stamp}" onerror="this.src='../../../src/modules/payments/Gr-class-stamp.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-stamp.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Official Stamp" style="max-height: 70px; max-width: 105px; object-fit: contain; display: block;">
           </div>
         </div>
         <div class="sig-line"></div>
@@ -388,33 +471,22 @@ body {
         <div class="sig-name">{surveyor_name}</div>
         <div class="sig-desig">GR CLASS Representative · Surveyor</div>
       </div>
-      <div class="ftr-contact" style="display: flex; gap: 15px; align-items: center; text-align: left; justify-content: flex-end;">
-
-        <div style="width: 70px; height: 70px; flex-shrink: 0; background: #fff; padding: 2px; border-radius: 2px; border: 1px solid var(--border);">
-
-          <style>
-
-            .qr-img-wrap img { width: 66px !important; height: 66px !important; display: block; }
-
-          </style>
-
-          <div class="qr-img-wrap">{qr_code}</div>
-
+      <div class="ftr-contact" style="display:flex;gap:12px;align-items:center;justify-content:flex-end">
+        <div style="width:64px;height:64px;flex-shrink:0;background:#fff;padding:2px;border:1px solid var(--border)">
+          <style>.qr-wrap img{width:60px!important;height:60px!important;display:block}</style>
+          <div class="qr-wrap">{qr_code}</div>
         </div>
-
-        <div style="text-align: right;">
-        <strong>GR CLASS</strong>
-        <a href="mailto:info@grclass.com">info@grclass.com</a><br>
-        <a href="https://www.grclass.com">www.grclass.com</a><br>
-        Classified for Standard (GR CLASS)<br>
-        Recognized Organization · Global Marine Services
-      </div>
-
+        <div style="text-align:right">
+          <strong>GR CLASS</strong>
+          <a href="mailto:info@grclass.com">info@grclass.com</a><br>
+          <a href="https://www.grclass.com">www.grclass.com</a><br>
+          Classified for Standard (GR CLASS)<br>
+          Recognized Organization · Global Marine Services
+        </div>
       </div>
     </div>
   </div>
 
 </div>
-
 </body>
 </html>

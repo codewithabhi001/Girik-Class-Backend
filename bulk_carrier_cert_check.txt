@@ -1,0 +1,48 @@
+
+BULK CARRIER INTERIM CERTIFICATION — SYSTEM CHECK REPORT
+=========================================================
+Generated: 17/6/2026, 4:15:23 pm
+Excel File: INTERIM CERTIFICATION FOR BULK CARRIER copy.xlsx
+
+SUMMARY
+-------
+Total Certificates in Excel        : 15
+Found in System (DB)               : 13
+NOT Found in System (DB)           : 2
+
+  Of the 13 found:
+    - With Full Term Template  : 10
+    - With Short Term Template : 10
+    - With Checklist           : 12
+    - Missing Full Term        : 3
+    - Missing Short Term       : 3
+    - Missing Checklist        : 1
+
+CERTIFICATES FOUND IN SYSTEM
+-----------------------------
++-----+------------------------------------------------------+---------+-----------+------------+-----------+----------+
+| Sr. | Certificate Type Name (in DB)                        | Code    | Full Term | Short Term | Checklist | Status   |
++-----+------------------------------------------------------+---------+-----------+------------+-----------+----------+
+|   1 | Anti-fouling System Certificate                      | AFS     | ✔ (1)     | ✔ (1)      | ✔ (1)     | ACTIVE   |
+|   2 | Cargo Ship Safety Equipment Certificate              | CSSEC   | ✔ (1)     | ✔ (1)      | ✔ (1)     | ACTIVE   |
+|   3 | Cargo Ship Safety Radio Certificate                  | CSSRC   | ✔ (1)     | ✔ (1)      | ✔ (1)     | ACTIVE   |
+|   4 | International Oil Pollution Prevention Certificate   | IOPPC   | ✔ (1)     | ✔ (1)      | ✔ (1)     | ACTIVE   |
+|   5 | International Sewage Pollution Prevention Certificate | ISPPC   | ✔ (1)     | ✔ (1)      | ✔ (1)     | ACTIVE   |
+|   6 | International Air Pollution Prevention Certificate   | IAPP    | ✔ (1)     | ✔ (1)      | ✔ (1)     | ACTIVE   |
+|   7 | International Energy Efficiency (iee) Certificate    | IEE     | ✘ None    | ✘ None     | ✘ None    | ACTIVE   |
+|   8 | International Ship Security Certificate              | ISSC    | ✔ (1)     | ✔ (1)      | ✔ (1)     | ACTIVE   |
+|   9 | International Load Line Certificate                  | LL      | ✔ (1)     | ✔ (1)      | ✔ (1)     | ACTIVE   |
+|  10 | Maritime Labour Convention                           | MLC     | ✔ (1)     | ✔ (1)      | ✔ (1)     | ACTIVE   |
+|  11 | IBWMC                                                | IBWMC   | ✘ None    | ✘ None     | ✔ (1)     | ACTIVE   |
+|  12 | International Tonnage Certificate                    | ITC     | ✘ None    | ✘ None     | ✔ (1)     | ACTIVE   |
+|  13 | Document Of Compliance                               | DOC     | ✔ (1)     | ✔ (1)      | ✔ (1)     | ACTIVE   |
++-----+------------------------------------------------------+---------+-----------+------------+-----------+----------+
+
+CERTIFICATES MISSING FROM SYSTEM (Need to be Added)
+----------------------------------------------------
++-----+----------------------------------------------------------+---------+
+| Sr. | Certificate Name (from Excel)                            | Code    |
++-----+----------------------------------------------------------+---------+
+|  14 | INTERNATIONAL SAFETY MANAGEMENT                          | ISM     |
+|  15 | CLASS ENTRY CERTIFICATE                                  | CEC     |
++-----+----------------------------------------------------------+---------+

@@ -16,6 +16,9 @@ export default {
         replicaHost: process.env.DB_REPLICA_HOST || null,
         replicaUsername: process.env.DB_REPLICA_USER || process.env.DB_USER || 'root',
         replicaPassword: process.env.DB_REPLICA_PASS || process.env.DB_PASS || '',
+        poolMax: parseInt(process.env.DB_POOL_MAX) || 5,
+        poolMin: parseInt(process.env.DB_POOL_MIN) || 0,
+        poolIdle: parseInt(process.env.DB_POOL_IDLE) || 10000,
     },
     jwt: {
         get accessSecret() {

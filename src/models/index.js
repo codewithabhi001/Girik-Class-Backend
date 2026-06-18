@@ -28,7 +28,7 @@ const commonConfig = {
 
 let sequelize;
 
-if (dbConfig.replicaHost) {
+if (dbConfig.replicaHost && dbConfig.replicaHost !== dbConfig.host) {
     sequelize = new Sequelize(dbConfig.name, null, null, {
         ...commonConfig,
         replication: {
@@ -48,9 +48,9 @@ if (dbConfig.replicaHost) {
             ]
         },
         pool: {
-            max: 20,
-            min: 2,
-            idle: 300000,   // Wait 5 minutes before closing idle connections
+            max: dbConfig.poolMax,
+            min: dbConfig.poolMin,
+            idle: dbConfig.poolIdle,
             acquire: 60000,
         },
     });
@@ -60,9 +60,9 @@ if (dbConfig.replicaHost) {
         host: dbConfig.host,
         port: dbConfig.port,
         pool: {
-            max: 20,
-            min: 2,
-            idle: 300000,   // Wait 5 minutes before closing idle connections
+            max: dbConfig.poolMax,
+            min: dbConfig.poolMin,
+            idle: dbConfig.poolIdle,
             acquire: 60000,
         },
     });

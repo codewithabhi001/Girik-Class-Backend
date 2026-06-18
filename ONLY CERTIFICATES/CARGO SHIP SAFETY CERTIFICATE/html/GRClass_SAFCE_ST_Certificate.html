@@ -4,636 +4,418 @@
 <meta charset="UTF-8">
 <title>GR Class – SAFCE-ST Certificate</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --navy:    #0B2443;
-  --blue:    #005BAA;
-  --gold:    #B5891F;
-  --gold-lt: #D4A93A;
-  --cream:   #F9F6F0;
-  --light:   #EEF3F9;
-  --border:  #C8D8E8;
-  --rule:    #C4A84A;
-  --text:    #18181B;
-  --muted:   #52525B;
+  --primary: #122135; /* Dark, authoritative navy */
+  --accent:  #29405c; /* Secondary dark tone */
+  --accent2: #404040; /* Dark grey for secondary text */
+  --bg:      #f0f2f5;
+  --card:    #ffffff;
+  --border:  #a6a6a6; /* Clean grey borders */
+  --text:    #111111;
+  --muted:   #333333;
+  --light:   #f7f7f7;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { background: #8A8A8A; }
+html { background: #6b6b6b; }
 body {
-  font-family: 'Source Sans 3', sans-serif;
-  font-size: 10pt;
+  font-family: 'Inter', sans-serif;
+  font-size: 8pt; /* Tighter layout */
   color: var(--text);
-  background: #8A8A8A;
+  background: #6b6b6b;
   padding: 16px 0 40px;
 }
 
-/* ── PRINT BUTTON ── */
 .no-print {
-  width: 210mm;
-  margin: 0 auto 10px;
-  display: flex;
-  gap: 8px;
-  align-items: center;
+  width: 210mm; margin: 0 auto 10px;
+  display: flex; gap: 8px; align-items: center;
 }
 .btn-print {
-  background: var(--navy);
-  color: #fff;
-  border: none;
-  padding: 8px 20px;
-  font-size: 9pt;
-  font-weight: 600;
-  letter-spacing: .4px;
-  cursor: pointer;
-  border-radius: 3px;
+  background: var(--primary); color: #fff; border: none;
+  padding: 8px 18px; font-size: 9pt; font-weight: 600;
+  cursor: pointer; border-radius: 3px;
 }
-.btn-print:hover { background: var(--blue); }
-.tag-hint {
-  font-size: 8pt;
-  color: #aaa;
-  margin-left: 12px;
-}
+.btn-print:hover { opacity: .9; }
+.tag-hint { font-size: 7.5pt; color: #999; margin-left: 10px; }
 
-/* ── CERTIFICATE PAGE ── */
+/* ═══ CERTIFICATE PAGE ═══ */
 .cert {
-  width: 210mm;
-  min-height: 297mm;
-  background: #fff;
-  margin: 0 auto;
-  box-shadow: 0 8px 48px rgba(0,0,0,.35);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
+  width: 210mm; min-height: 297mm; background: var(--card);
+  margin: 0 auto; box-shadow: 0 4px 32px rgba(0,0,0,.3);
+  display: flex; flex-direction: column; position: relative;
+  padding: 12mm 15mm; /* Global padding so nothing touches the edges */
+  border: none;
 }
+.cert * { word-wrap: break-word; overflow-wrap: break-word; position: relative; z-index: 1; }
 
-/* prevent any text from overflowing */
-.cert * { word-wrap: break-word; overflow-wrap: break-word; }
-
-/* outer decorative frame */
-.cert::before {
-  content: '';
-  position: absolute;
-  inset: 5mm;
-  border: 1px solid var(--rule);
-  pointer-events: none;
-  z-index: 5;
-}
+/* GRCLASS Watermark */
 .cert::after {
-  content: '';
+  content: 'GR CLASS';
   position: absolute;
-  inset: 7mm;
-  border: .4px solid rgba(196,168,74,.4);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  font-family: 'Inter', sans-serif;
+  font-size: 120pt;
+  font-weight: 800;
+  color: var(--primary);
+  opacity: 0.03;
   pointer-events: none;
-  z-index: 5;
+  z-index: 0;
+  white-space: nowrap;
 }
 
-/* ══════════════ HEADER ══════════════ */
-.hdr {
-  background: var(--navy);
-  padding: 0;
-  position: relative;
-  flex-shrink: 0;
-}
-.hdr-gold-top {
-  height: 4px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
-}
+/* ═══ HEADER ═══ */
+.hdr { padding: 0 0 4mm 0; flex-shrink: 0; border-bottom: 3px double var(--primary); margin-bottom: 2mm; }
 .hdr-inner {
-  padding: 8mm 12mm 7mm;
-  display: grid;
-  grid-template-columns: 60px 1fr auto;
-  gap: 12px;
-  align-items: center;
+  display: flex; align-items: flex-start; justify-content: space-between;
 }
-.hdr-gold-bottom {
-  height: 2.5px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
+.logo-wrap {
+  width: 100px; flex-shrink: 0; text-align: left;
 }
+.logo-wrap img { max-width: 85px; max-height: 85px; object-fit: contain; }
 
-/* logo */
-.logo {
-  width: 60px; height: 60px;
-  background: #fff;
-  border-radius: 2px;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 2px;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 1px rgba(196,168,74,.6);
-}
-.logo-gr {
+.hdr-center { flex: 1; text-align: center; margin: 0 10px; }
+.hdr-flag-state {
   font-family: 'EB Garamond', serif;
-  font-weight: 700;
-  font-size: 18pt;
-  color: var(--navy);
-  line-height: 1;
-  letter-spacing: 1px;
+  font-size: 16pt; font-weight: 700; color: var(--primary);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;
 }
-.logo-word {
-  font-size: 5.5pt;
-  font-weight: 700;
-  color: var(--blue);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
-
-/* centre title */
-.hdr-title {}
-.hdr-eyebrow {
-  font-size: 7pt;
-  font-weight: 600;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--gold-lt);
-  margin-bottom: 4px;
+.hdr-org {
+  font-size: 7.5pt; font-weight: 700; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
 }
 .hdr-certname {
   font-family: 'EB Garamond', serif;
-  font-size: 14pt;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.15;
-  margin-bottom: 5px;
-  word-wrap: break-word;
+  font-size: 15pt; font-weight: 700; color: var(--primary);
+  line-height: 1.1; margin-bottom: 4px; text-transform: uppercase;
 }
 .hdr-convention {
-  font-size: 7.5pt;
-  color: rgba(255,255,255,.55);
-  line-height: 1.5;
-  max-width: 440px;
-  word-wrap: break-word;
+  font-size: 7pt; color: var(--muted); line-height: 1.4; max-width: 460px; margin: 0 auto;
 }
 
-/* right meta */
-.hdr-meta { text-align: right; word-wrap: break-word; }
+.hdr-meta { text-align: right; flex-shrink: 0; min-width: 150px; }
 .hdr-meta-label {
-  font-size: 6pt;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--gold-lt);
-  display: block;
+  font-size: 5.5pt; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted); display: block;
 }
 .hdr-meta-no {
   font-family: 'EB Garamond', serif;
-  font-size: 13pt;
-  font-weight: 700;
-  color: #fff;
-  display: block;
-  line-height: 1.15;
-  letter-spacing: .5px;
-  
-  
+  font-size: 11pt; font-weight: 700; color: var(--primary);
+  display: block; line-height: 1.2; margin-bottom: 2px;
   white-space: nowrap;
 }
-.hdr-meta-form {
-  font-size: 6.5pt;
-  color: rgba(255,255,255,.35);
-  margin-top: 4px;
-}
+.hdr-meta-form { font-size: 5.5pt; color: var(--muted); font-weight: 600; }
 
-/* ══════════════ AUTHORITY BAND ══════════════ */
+/* ═══ AUTHORITY ═══ */
 .authority {
-  background: var(--light);
-  border-bottom: 1px solid var(--border);
-  padding: 3.5mm 12mm;
-  text-align: center;
-  font-size: 8.5pt;
-  color: var(--muted);
-  line-height: 1.6;
+  background: transparent; border-bottom: 1px solid var(--border);
+  padding: 3mm 0; text-align: center;
+  font-size: 8pt; color: var(--text); line-height: 1.5;
 }
-.authority strong { color: var(--navy); font-weight: 700; }
+.authority strong { color: var(--primary); font-weight: 700; text-transform: uppercase; }
 
-/* ══════════════ BODY ══════════════ */
-.body { padding: 4mm 12mm 4mm; flex: 1; }
+/* ═══ BODY ═══ */
+.body { padding: 3mm 0; flex: 1; display: flex; flex-direction: column; }
 
-/* section label */
 .sec-label {
-  font-size: 6.5pt;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--blue);
-  padding-bottom: 2.5px;
-  border-bottom: 1.5px solid var(--rule);
-  margin: 4mm 0 2.5mm;
+  font-size: 6.5pt; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--primary);
+  padding-bottom: 2px; border-bottom: 1px solid var(--primary);
+  margin: 3mm 0 2mm;
 }
 
-/* ── VESSEL TABLE ── */
-.vtable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 9pt;
-  margin-bottom: 1mm;
-  table-layout: fixed;
-}
+/* Vessel table */
+.vtable { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bottom: 1.5mm; }
 .vtable th {
-  background: var(--navy);
-  color: var(--gold-lt);
-  font-size: 6.5pt;
-  font-weight: 700;
-  letter-spacing: .8px;
-  text-transform: uppercase;
-  padding: 5px 9px;
-  border: 1px solid var(--navy);
-  text-align: left;
-  overflow: hidden;
+  background: var(--light); color: var(--text);
+  font-size: 6pt; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+  padding: 3px 6px; border: 1px solid var(--border); text-align: left;
 }
 .vtable td {
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  background: #fff;
+  padding: 4px 6px; border: 1px solid var(--border); background: transparent;
   vertical-align: middle;
-  overflow: hidden;
 }
 .vtable .val {
-  font-family: 'EB Garamond', serif;
-  font-size: 12pt;
-  font-weight: 600;
-  color: var(--navy);
-  line-height: 1.2;
-  word-break: break-word;
+  font-family: 'EB Garamond', serif; font-size: 10.5pt; font-weight: 600;
+  color: var(--primary); line-height: 1.1; text-transform: uppercase;
 }
-.vtable .sub {
-  font-size: 7pt;
-  color: var(--muted);
-  font-family: 'Source Sans 3', sans-serif;
-  font-weight: 400;
-  display: block;
-  margin-top: 1px;
-}
-.vtable tr:nth-child(even) td { background: #FAFCFF; }
 
-/* ── EXTRA DATA TABLE ── */
-.mtable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 9pt;
-  margin-bottom: 1mm;
-}
+/* Data table */
+.mtable { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bottom: 1.5mm; }
 .mtable th {
-  background: var(--light);
-  color: var(--navy);
-  font-size: 7pt;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  text-align: left;
+  background: var(--light); color: var(--text);
+  font-size: 6.5pt; font-weight: 700; text-transform: uppercase;
+  padding: 4px 6px; border: 1px solid var(--border); text-align: left;
 }
-.mtable td {
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  background: #fff;
-}
+.mtable td { padding: 4px 6px; border: 1px solid var(--border); background: transparent; }
 .mtable .m-val {
-  font-family: 'EB Garamond', serif;
-  font-size: 11pt;
-  font-weight: 600;
-  color: var(--text);
+  font-family: 'EB Garamond', serif; font-size: 10pt; font-weight: 600; color: var(--primary);
 }
 
-/* ── CHECKBOX LIST ── */
-.chk-list { display: flex; flex-direction: column; gap: 2.5px; margin-bottom: 2mm; }
+/* Checkbox items */
+.chk-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 1.5mm; }
 .chk-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  padding: 5.5px 9px;
-  border: 1px solid var(--border);
-  border-radius: 1px;
-  font-size: 9pt;
-  line-height: 1.5;
-  background: #fff;
-  color: var(--muted);
+  display: flex; align-items: flex-start; gap: 6px;
+  padding: 3px 6px; border: 1px solid transparent;
+  font-size: 8pt; line-height: 1.4; color: var(--text);
 }
-.chk-item.checked {
-  border-color: var(--blue);
-  background: var(--light);
-  color: var(--text);
-}
-.chk-item.checked .chk-text { color: var(--text); }
+.chk-item.checked { background: var(--light); border-color: var(--border); font-weight: 500; }
 .checkbox {
-  width: 13px; height: 13px;
-  border: 1.5px solid #aaa;
-  border-radius: 1px;
-  flex-shrink: 0;
-  margin-top: 1.5px;
-  background: #fff;
-  position: relative;
+  width: 10px; height: 10px; border: 1px solid var(--primary); flex-shrink: 0; margin-top: 2px;
+  background: #fff; position: relative;
 }
-.chk-item.checked .checkbox {
-  background: var(--blue);
-  border-color: var(--blue);
-}
+.chk-item.checked .checkbox { background: var(--primary); }
 .chk-item.checked .checkbox::after {
-  content: '';
-  position: absolute;
-  left: 2.5px; top: .5px;
-  width: 5px; height: 9px;
-  border-right: 2px solid #fff;
-  border-bottom: 2px solid #fff;
+  content: ''; position: absolute; left: 2px; top: 0;
+  width: 4px; height: 6px;
+  border-right: 1.5px solid #fff; border-bottom: 1.5px solid #fff;
   transform: rotate(38deg);
 }
-.chk-text b { color: var(--navy); }
+.chk-text b { color: var(--primary); }
 .inline-val {
-  display: inline-block;
-  font-family: 'EB Garamond', serif;
-  font-size: 10.5pt;
-  font-weight: 600;
-  color: var(--navy);
-  border-bottom: 1px solid var(--navy);
-  padding: 0 4px;
-  min-width: 100px;
-  line-height: 1.2;
-  vertical-align: bottom;
+  display: inline-block; font-family: 'EB Garamond', serif;
+  font-size: 10pt; font-weight: 600; color: var(--primary);
+  border-bottom: 1px dashed var(--primary);
+  padding: 0 3px; min-width: 60px; line-height: 1.1; vertical-align: bottom;
 }
 
-/* ── CERTIFY BOX ── */
+/* Certify box */
 .certify {
-  border-left: 3.5px solid var(--gold);
-  background: var(--light);
-  padding: 5px 11px 6px;
-  margin: 1mm 0 3mm;
-  font-size: 9pt;
-  line-height: 1.6;
+  border: 1px solid var(--border); border-left: 4px solid var(--primary);
+  background: var(--light); padding: 5px 8px;
+  margin: 1.5mm 0 2mm; font-size: 8pt; line-height: 1.5;
 }
 .certify-title {
-  font-weight: 700;
-  color: var(--navy);
-  font-size: 9pt;
-  margin-bottom: 3px;
-  text-transform: uppercase;
-  letter-spacing: .5px;
+  font-weight: 700; color: var(--primary); font-size: 8pt;
+  margin-bottom: 2px; text-transform: uppercase; letter-spacing: .5px;
 }
-.certify ul { margin-left: 16px; color: var(--muted); }
+.certify ul { margin-left: 16px; color: var(--text); }
 .certify ul li { margin-bottom: 1px; }
+.certify ul ul { margin-left: 14px; }
 
-/* description text */
-.cert-desc {
-  font-size: 9pt;
-  line-height: 1.6;
-  color: var(--muted);
-  margin-bottom: 2mm;
-}
+.cert-desc { font-size: 8pt; line-height: 1.5; color: var(--text); margin-bottom: 1.5mm; }
 
-/* ── VALIDITY GRID ── */
-.vgrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 2.5mm;
-  margin-bottom: 2.5mm;
-}
-.vgrid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2.5mm;
-  margin-bottom: 2mm;
-}
-.vcell {
-  border: 1px solid var(--border);
-  padding: 5.5px 9px;
-  background: #fff;
-}
-.vcell.hi {
-  border-color: var(--blue);
-  background: var(--light);
-}
+/* Validity grid */
+.vgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5mm; margin-bottom: 1.5mm; }
+.vgrid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5mm; margin-bottom: 1.5mm; }
+.vcell { border: 1px solid var(--border); padding: 3px 6px; background: transparent; }
+.vcell.hi { border: 1px solid var(--primary); background: var(--light); }
 .vc-label {
-  font-size: 6pt;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--muted);
-  display: block;
-  margin-bottom: 3px;
+  font-size: 5.5pt; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted); display: block; margin-bottom: 1px;
 }
 .vc-val {
-  font-family: 'EB Garamond', serif;
-  font-size: 12.5pt;
-  font-weight: 600;
-  color: var(--navy);
-  line-height: 1.2;
+  font-family: 'EB Garamond', serif; font-size: 11pt; font-weight: 600;
+  color: var(--primary); line-height: 1.2; text-transform: uppercase;
 }
-.vcell.hi .vc-val { color: var(--blue); }
+.vcell.hi .vc-val { color: var(--primary); }
 
-/* ── FOOTNOTES ── */
+/* Footnotes */
 .footnotes {
-  border-top: 1px solid var(--border);
-  padding: 3mm 0 2mm;
-  font-size: 7pt;
-  color: var(--muted);
-  line-height: 1.65;
+  border-top: 1px solid var(--border); padding: 1.5mm 0;
+  font-size: 6pt; color: var(--muted); line-height: 1.4;
 }
-.footnotes p { margin-bottom: 1.5px; }
-sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
+.footnotes p { margin-bottom: 1px; }
+sup { color: var(--primary); font-weight: 700; font-size: 5.5pt; }
 
+/* Generated notice */
+.gen-notice {
+  background: var(--light); border: 1px solid var(--border);
+  padding: 3mm 5mm; display: flex; align-items: center; justify-content: center;
+  gap: 6px; flex-shrink: 0; margin-top: auto; border-radius: 2px;
+}
+.gen-notice-text {
+  font-size: 6.5pt; color: var(--muted);
+  letter-spacing: .5px; line-height: 1.2; text-align: center; text-transform: uppercase;
+}
+.gen-notice-text strong { color: var(--primary); font-weight: 700; }
 
-/* ── GENERATED NOTICE BAR ── */
-.generated-notice {
-  background: linear-gradient(135deg, #f0f5fb 0%, #e8f0f8 100%);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 3mm 12mm;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-.generated-notice-icon {
-  font-size: 9pt;
-  opacity: 0.65;
-  flex-shrink: 0;
-}
-.generated-notice-text {
-  font-size: 6.8pt;
-  font-style: italic;
-  color: var(--muted);
-  letter-spacing: 0.15px;
-  line-height: 1.5;
-  text-align: center;
-}
-.generated-notice-text strong {
-  font-style: normal;
-  color: var(--blue);
-  font-weight: 600;
-}
-
-/* ══════════════ FOOTER ══════════════ */
-.ftr {
-  background: #fff;
-  flex-shrink: 0;
-  position: relative;
-}
-.ftr-gold-top {
-  height: 2.5px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
-}
+/* ═══ FOOTER ═══ */
+.ftr { background: transparent; flex-shrink: 0; padding-top: 4mm; }
 .ftr-inner {
-  padding: 5.5mm 12mm 6mm;
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12mm;
-  align-items: end;
+  grid-template-columns: 1fr auto; gap: 6mm; align-items: end;
 }
-.sig-area {
-  color: var(--text);
-  position: relative;
-  min-width: 200px;
-}
-.sig-line {
-  border-bottom: 1.5px solid var(--navy);
-  height: 1px;
-  margin-top: 0;
-  margin-bottom: 6px;
-  width: 180px;
-}
+.sig-area { color: var(--text); position: relative; min-width: 180px; }
+.sig-line { border-bottom: 1px solid var(--primary); height: 1px; margin-bottom: 4px; width: 100%; max-width: 200px; }
 .sig-label {
-  font-size: 6.5pt;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 3px;
+  font-size: 6pt; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--primary); margin-bottom: 2px;
 }
 .sig-name {
-  font-family: 'EB Garamond', serif;
-  font-size: 12pt;
-  color: var(--navy);
-  font-style: italic;
-  line-height: 1.2;
+  font-family: 'EB Garamond', serif; font-size: 11pt;
+  color: var(--primary); font-style: italic; line-height: 1.2;
 }
-.sig-desig {
-  font-size: 7.5pt;
-  font-weight: 600;
-  color: var(--gold);
-  letter-spacing: .3px;
-  margin-top: 2px;
-}
-.ftr-contact {
-  text-align: right;
-  font-size: 7.5pt;
-  color: var(--muted);
-  line-height: 1.8;
-}
+.sig-desig { font-size: 6.5pt; font-weight: 600; color: var(--muted); margin-top: 1px; text-transform: uppercase; }
+.ftr-contact { text-align: right; font-size: 6.5pt; color: var(--muted); line-height: 1.5; }
 .ftr-contact strong {
-  display: block;
-  color: var(--navy);
-  font-size: 9pt;
-  font-weight: 700;
-  letter-spacing: .5px;
-  margin-bottom: 3px;
-}
-.ftr-contact a { color: var(--blue); text-decoration: none; font-weight: 500; }
-.ftr-contact a:hover { text-decoration: underline; }
+  display: block; color: var(--primary); font-size: 8pt;
 
-/* ══════════════ PRINT ══════════════ */
+  font-weight: 700; letter-spacing: .4px; margin-bottom: 2px;
+}
+.ftr-contact a { color: var(--accent2); text-decoration: none; font-weight: 500; }
+
+/* ═══ PRINT ═══ */
 @page { size: A4; margin: 0; }
 @media print {
   html, body { background: none !important; padding: 0 !important; margin: 0 !important; }
   .no-print { display: none !important; }
-  .cert {
-    margin: 0;
-    box-shadow: none;
-    width: 210mm;
-    min-height: 297mm;
-    overflow: hidden;
-    page-break-inside: avoid;
-  }
+  .cert { margin: 0; box-shadow: none; width: 210mm; min-height: 297mm; overflow: hidden; page-break-inside: avoid; }
+  .page-break { page-break-before: always; }
 }
+
+/* ═══ ENDORSEMENTS (FT ONLY) ═══ */
+.endorsement-page {
+  width: 210mm; min-height: 297mm; background: var(--card);
+  margin: 10px auto 0; box-shadow: 0 4px 32px rgba(0,0,0,.3);
+  position: relative;
+  display: flex; flex-direction: column;
+  padding: 12mm 15mm;
+  border: none;
+}
+.endorsement-page::after {
+  content: 'GR CLASS';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  font-family: 'Inter', sans-serif;
+  font-size: 120pt;
+  font-weight: 800;
+  color: var(--primary);
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+  white-space: nowrap;
+}
+@media print {
+  .endorsement-page { margin: 0; box-shadow: none; page-break-before: always; }
+}
+
+.end-title {
+  font-family: 'EB Garamond', serif; font-size: 14pt; font-weight: 700;
+  color: var(--primary); text-align: center; margin: 8mm 0 4mm;
+}
+.end-subtitle {
+  font-size: 8.5pt; color: var(--muted); text-align: center; margin-bottom: 6mm;
+  padding: 0 12mm; line-height: 1.6;
+}
+.end-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4mm 8mm;
+  padding: 0 10mm; margin-bottom: 6mm;
+}
+.end-box {
+  border: 1px solid var(--border); background: #fff; padding: 4mm;
+}
+.end-box-title {
+  font-size: 7.5pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--accent2); border-bottom: 1px solid var(--border);
+  padding-bottom: 3px; margin-bottom: 4mm;
+}
+.end-row {
+  display: flex; align-items: flex-end; margin-bottom: 3.5mm; font-size: 8pt;
+}
+.end-label { width: 80px; color: var(--muted); }
+.end-line { flex: 1; border-bottom: 1px dashed #ccc; height: 16px; position: relative; }
+.end-line span {
+  position: absolute; bottom: 1px; left: 5px; font-family: 'EB Garamond', serif;
+  font-size: 11pt; color: var(--primary);
+}
+.end-full { grid-column: 1 / -1; }
 </style>
 </head>
 <body>
 
 <div class="no-print">
-  <button class="btn-print" onclick="window.print()">🖨&nbsp; Print / Save as PDF</button>
-  <span class="tag-hint">Tags like {tag} are replaced by software at generation time.</span>
+  <button class="btn-print" onclick="window.print()">🖨&nbsp; Print / Save PDF</button>
+  <span class="tag-hint">Tags like {tag} are replaced at generation time.</span>
 </div>
 
 <div class="cert">
 
-  <!-- ═══ HEADER ═══ -->
+  <!-- HEADER -->
   <div class="hdr">
-    <div class="hdr-gold-top"></div>
+    <div class="hdr-accent"></div>
+
     <div class="hdr-inner">
-
-      <div class="logo">
-        <img src="https://grclass.com/grclass-logo.webp" alt="GR Glass Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+      <div class="logo-wrap">
+        <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo">
       </div>
-
-      <div class="hdr-title">
-        <div class="hdr-eyebrow">{certificate_term}</div>
-        <div class="hdr-certname">Cargo Ship Safety Certificate</div>
-        <div class="hdr-convention">
-          Issued under the provisions of the International Convention for the Safety of Life at Sea (SOLAS), 1974, as amended
-        </div>
+      <div class="hdr-center">
+        <div class="hdr-flag-state">{flag_state}</div>
+        <div class="hdr-org">{certificate_term}</div>
+        <div class="hdr-certname">Cargo Ship Safety Certificate (Vessels Under 500 GRT)</div>
+        <div class="hdr-convention"></div>
       </div>
-
       <div class="hdr-meta">
-        <span class="hdr-meta-label">SAFCE-ST No.</span>
+        <span class="hdr-meta-label">SAFCE No.</span>
         <span class="hdr-meta-no">{certificate_number}</span>
-        <div class="hdr-meta-form">Form CSSC-ST · Approved by: GM</div>
+        <div class="hdr-meta-form">Form SAFCE · Approved by: GM</div>
       </div>
-
     </div>
-    <div class="hdr-gold-bottom"></div>
+    <div class="hdr-accent"></div>
   </div>
 
-  <!-- ═══ AUTHORITY BAND ═══ -->
+  <!-- AUTHORITY -->
   <div class="authority">
     Issued under the authority of the Government of <strong>{flag_state}</strong><br>
-    By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO) operating under IMO Framework
+    By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO)
   </div>
 
-  <!-- ═══ BODY ═══ -->
+  <!-- BODY -->
   <div class="body">
 
-    <!-- VESSEL PARTICULARS -->
     <div class="sec-label">Vessel Particulars</div>
     <table class="vtable">
       <tr>
-        <th style="width:25%">Name of Ship</th>
-        <th style="width:25%">Distinctive No. / Letters</th>
-        <th style="width:25%">Port of Registry</th>
-        <th style="width:25%">Gross Tonnage</th>
+        <th>Name of Ship</th>
+        <th>Type</th>
+        <th>Distinctive No. / Letters</th>
+        <th>Port of Registry</th>
       </tr>
       <tr>
         <td><span class="val">{vessel_name}</span></td>
+        <td><span class="val">{ship_type}</span></td>
         <td><span class="val">{call_sign}</span></td>
         <td><span class="val">{port_of_registry}</span></td>
+      </tr>
+      <tr>
+        <th>Gross Tonnage</th>
+        <th>Keel Laid</th>
+        <th>IMO Number</th>
+        <th>Authorized Voyages (Miles)</th>
+      </tr>
+      <tr>
         <td><span class="val">{gross_tonnage}</span></td>
-      </tr>
-      <tr>
-        <th>IMO Number <sup>1</sup></th>
-        <th>Ship Type</th>
-        <th>Net Tonnage</th>
-        <th>Deadweight</th>
-      </tr>
-      <tr>
+        <td><span class="val">{keel_date}</span></td>
         <td><span class="val">{imo_number}</span></td>
-        <td><span class="val">{ship_type}</span></td>
-        <td><span class="val">{net_tonnage}</span></td>
-        <td><span class="val">{deadweight}</span></td>
+        <td><span class="val">{authorized_miles}</span></td>
       </tr>
     </table>
 
 
-    <!-- CERTIFICATION -->
+    <div class="sec-label">Life-Saving Appliances</div>
+    <p class="cert-desc">The survey has shown that the life-saving appliances provided for a total number of <strong>{total_persons}</strong> persons and no more, viz:</p>
+    <table class="mtable">
+      <tr><th>Appliance Type</th><th>Accommodating Persons / Quantity</th></tr>
+      <tr><td>Lifeboats or rescue boats<sup>1</sup></td><td><span class="m-val">{lifeboats_persons}</span></td></tr>
+      <tr><td>Motor boats (included in the total shown above)</td><td><span class="m-val">{motorboats_count}</span></td></tr>
+      <tr><td>Liferafts, for which approved launching devices are not required</td><td><span class="m-val">{liferafts_no_launch_persons}</span></td></tr>
+      <tr><td>Liferafts, for which approved launching devices are required</td><td><span class="m-val">{liferafts_launch_persons}</span></td></tr>
+      <tr><td>Lifebuoys</td><td><span class="m-val">{lifebuoys_count}</span></td></tr>
+      <tr><td>Lifejackets</td><td><span class="m-val">{lifejackets_count}</span></td></tr>
+    </table>
     <div class="sec-label">Certification</div>
-    <p class="cert-desc">This is to certify that the vessel has been surveyed and found in compliance with the relevant safety and technical standards for the issuance of the CARGO SHIP SAFETY CERTIFICATE.</p>
     <div class="certify">
-      <div class="certify-title">This is to certify that:</div>
+      <div class="certify-title">This is to certify:</div>
       <ul>
-        <li>The ship has been surveyed in accordance with the applicable rules and regulations;</li>
-        <li>The survey shows that the structure, equipment, and condition of the ship comply with the safety standards of GR CLASS.</li>
+        <li>That the survey has shown the vessel complies with the safety requirements for its type and size.</li>
+        <li>That a Full Term Certificate will be issued accordingly at a later stage.</li>
       </ul>
     </div>
 
-    <!-- DATES & VALIDITY -->
     <div class="sec-label">Dates &amp; Validity</div>
     <div class="vgrid">
       <div class="vcell">
@@ -660,37 +442,32 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
       </div>
     </div>
 
-    <!-- FOOTNOTES -->
     <div class="footnotes">
-      <p><sup>1</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600(15).</p>
+      <p><sup>1</sup> Delete as appropriate</p>
     </div>
 
-  </div><!-- /body -->
-
-
-  <!-- ═══ GENERATED NOTICE ═══ -->
-  <div class="generated-notice">
-    <span class="generated-notice-icon">🔒</span>
-    <span class="generated-notice-text">
-      This is a computer-generated certificate and does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
-      Verify authenticity at <strong>grclass.com</strong>
-    </span>
   </div>
 
-  <!-- ═══ FOOTER / SIGNATURE ═══ -->
-  <div class="ftr">
-    <div class="ftr-gold-top"></div>
-    <div class="ftr-inner">
 
+  <div class="gen-notice">
+    <span style="font-size:8pt;opacity:.6">🔒</span>
+    <span class="gen-notice-text">
+      Computer-generated certificate — does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
+      Verify at <strong>grclass.com</strong>
+    </span>
+  </div>
+  <div class="ftr">
+    <div class="ftr-accent"></div>
+    <div class="ftr-inner">
       <div class="sig-area">
         <div style="position: relative; height: 65px; margin-bottom: 5px; width: 240px;">
           <!-- Signature Image -->
           <div class="sig-img-wrap" style="position: absolute; left: 10px; bottom: 0; z-index: 2;">
-            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=null;" alt="Signature" style="max-height: 50px; max-width: 100px; object-fit: contain; display: block;">
+            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Signature" style="max-height: 50px; max-width: 100px; object-fit: contain; display: block;">
           </div>
           <!-- Stamp Image -->
           <div class="stamp-img-wrap" style="position: absolute; left: 110px; bottom: -15px; z-index: 1; opacity: 0.85;">
-            <img src="{stamp}" onerror="this.src='../../../src/modules/payments/Gr-class-stamp.png'; this.onerror=null;" alt="Official Stamp" style="max-height: 70px; max-width: 105px; object-fit: contain; display: block;">
+            <img src="{stamp}" onerror="this.src='../../../src/modules/payments/Gr-class-stamp.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-stamp.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Official Stamp" style="max-height: 70px; max-width: 105px; object-fit: contain; display: block;">
           </div>
         </div>
         <div class="sig-line"></div>
@@ -698,43 +475,22 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
         <div class="sig-name">{surveyor_name}</div>
         <div class="sig-desig">GR CLASS Representative · Surveyor</div>
       </div>
-
-      <div class="ftr-contact" style="display: flex; gap: 15px; align-items: center; text-align: left; justify-content: flex-end;">
-
-
-        <div style="width: 70px; height: 70px; flex-shrink: 0; background: #fff; padding: 2px; border-radius: 2px; border: 1px solid var(--border);">
-
-
-          <style>
-
-
-            .qr-img-wrap img { width: 66px !important; height: 66px !important; display: block; }
-
-
-          </style>
-
-
-          <div class="qr-img-wrap">{qr_code}</div>
-
-
+      <div class="ftr-contact" style="display:flex;gap:12px;align-items:center;justify-content:flex-end">
+        <div style="width:64px;height:64px;flex-shrink:0;background:#fff;padding:2px;border:1px solid var(--border)">
+          <style>.qr-wrap img{width:60px!important;height:60px!important;display:block}</style>
+          <div class="qr-wrap">{qr_code}</div>
         </div>
-
-
-        <div style="text-align: right;">
-        <strong>GR CLASS</strong>
-        <a href="mailto:info@grclass.com">info@grclass.com</a><br>
-        <a href="https://www.grclass.com">www.grclass.com</a><br>
-        Classified for Standard (GR CLASS)<br>
-        Recognized Organization · Global Marine Services
+        <div style="text-align:right">
+          <strong>GR CLASS</strong>
+          <a href="mailto:info@grclass.com">info@grclass.com</a><br>
+          <a href="https://www.grclass.com">www.grclass.com</a><br>
+          Classified for Standard (GR CLASS)<br>
+          Recognized Organization · Global Marine Services
+        </div>
       </div>
-
-
-      </div>
-
     </div>
   </div>
 
-</div><!-- /cert -->
-
+</div>
 </body>
 </html>
