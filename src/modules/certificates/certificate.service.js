@@ -562,6 +562,12 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
             // 2. Build dynamic tags
             const dynamicTags = jobId ? await buildTagValuesForJob(jobId) : {};
 
+            const certType = cert.CertificateType;
+            const term = cert.certificate_term || 'FULL_TERM';
+            const isSurveyReq = certType 
+                ? (term === 'SHORT_TERM' ? certType.requires_survey_short_term : certType.requires_survey_full_term)
+                : false;
+
             const formatDate = (v) => {
                 if (!v) return '';
                 try {
@@ -594,7 +600,9 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
                 certificate_type: cert.CertificateType?.name || '',
                 issue_date: formatDate(cert.issue_date),
                 expiry_date: formatDate(cert.expiry_date),
-                survey_completion_date: dynamicTags.survey_completed_date || formatDate(cert.issue_date),
+                survey_completion_date: isSurveyReq
+                    ? (dynamicTags.survey_completed_date || formatDate(cert.issue_date))
+                    : 'Remotely Surveyed',
                 certificate_term: cert.certificate_term || '',
                 issuing_authority: issuingAuthority,
                 flag_state: cert.FlagState?.flag_state_name || '',

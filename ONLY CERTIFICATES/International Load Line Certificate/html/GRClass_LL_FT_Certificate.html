@@ -23,7 +23,7 @@
 html { background: #6b6b6b; }
 body {
   font-family: 'Inter', sans-serif;
-  font-size: 8pt; /* Tighter layout */
+  font-size: 7.5pt; /* Tighter layout */
   color: var(--text);
   background: #6b6b6b;
   padding: 16px 0 40px;
@@ -46,7 +46,7 @@ body {
   width: 210mm; min-height: 297mm; background: var(--card);
   margin: 0 auto; box-shadow: 0 4px 32px rgba(0,0,0,.3);
   display: flex; flex-direction: column; position: relative;
-  padding: 12mm 15mm; /* Global padding so nothing touches the edges */
+  padding: 8mm 12mm; /* Global padding so nothing touches the edges */
   border: none;
 }
 .cert * { word-wrap: break-word; overflow-wrap: break-word; position: relative; z-index: 1; }
@@ -68,7 +68,7 @@ body {
 }
 
 /* ═══ HEADER ═══ */
-.hdr { padding: 0 0 4mm 0; flex-shrink: 0; border-bottom: 3px double var(--primary); margin-bottom: 2mm; }
+.hdr { padding: 0 0 2mm 0; flex-shrink: 0; border-bottom: 3px double var(--primary); margin-bottom: 1.5mm; }
 .hdr-inner {
   display: flex; align-items: flex-start; justify-content: space-between;
 }
@@ -112,19 +112,19 @@ body {
 /* ═══ AUTHORITY ═══ */
 .authority {
   background: transparent; border-bottom: 1px solid var(--border);
-  padding: 3mm 0; text-align: center;
+  padding: 2mm 0; text-align: center;
   font-size: 8pt; color: var(--text); line-height: 1.5;
 }
 .authority strong { color: var(--primary); font-weight: 700; text-transform: uppercase; }
 
 /* ═══ BODY ═══ */
-.body { padding: 3mm 0; flex: 1; display: flex; flex-direction: column; }
+.body { padding: 2mm 0; flex: 1; display: flex; flex-direction: column; }
 
 .sec-label {
   font-size: 6.5pt; font-weight: 700; letter-spacing: 1.5px;
   text-transform: uppercase; color: var(--primary);
   padding-bottom: 2px; border-bottom: 1px solid var(--primary);
-  margin: 3mm 0 2mm;
+  margin: 2mm 0 1.5mm;
 }
 
 /* Vessel table */
@@ -132,10 +132,10 @@ body {
 .vtable th {
   background: var(--light); color: var(--text);
   font-size: 6pt; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
-  padding: 3px 6px; border: 1px solid var(--border); text-align: left;
+  padding: 2px 5px; border: 1px solid var(--border); text-align: left;
 }
 .vtable td {
-  padding: 4px 6px; border: 1px solid var(--border); background: transparent;
+  padding: 2.5px 5px; border: 1px solid var(--border); background: transparent;
   vertical-align: middle;
 }
 .vtable .val {
@@ -148,9 +148,9 @@ body {
 .mtable th {
   background: var(--light); color: var(--text);
   font-size: 6.5pt; font-weight: 700; text-transform: uppercase;
-  padding: 4px 6px; border: 1px solid var(--border); text-align: left;
+  padding: 2.5px 5px; border: 1px solid var(--border); text-align: left;
 }
-.mtable td { padding: 4px 6px; border: 1px solid var(--border); background: transparent; }
+.mtable td { padding: 2.5px 5px; border: 1px solid var(--border); background: transparent; }
 .mtable .m-val {
   font-family: 'EB Garamond', serif; font-size: 10pt; font-weight: 600; color: var(--primary);
 }
@@ -159,7 +159,7 @@ body {
 .chk-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 1.5mm; }
 .chk-item {
   display: flex; align-items: flex-start; gap: 6px;
-  padding: 3px 6px; border: 1px solid transparent;
+  padding: 2px 5px; border: 1px solid transparent;
   font-size: 8pt; line-height: 1.4; color: var(--text);
 }
 .chk-item.checked { background: var(--light); border-color: var(--border); font-weight: 500; }
@@ -185,8 +185,7 @@ body {
 /* Certify box */
 .certify {
   border: 1px solid var(--border); border-left: 4px solid var(--primary);
-  background: var(--light); padding: 5px 8px;
-  margin: 1.5mm 0 2mm; font-size: 8pt; line-height: 1.5;
+  background: var(--light); padding: 2px 5px; margin: 1mm 0 1.5mm; font-size: 8pt; line-height: 1.5;
 }
 .certify-title {
   font-weight: 700; color: var(--primary); font-size: 8pt;
@@ -199,9 +198,9 @@ body {
 .cert-desc { font-size: 8pt; line-height: 1.5; color: var(--text); margin-bottom: 1.5mm; }
 
 /* Validity grid */
-.vgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5mm; margin-bottom: 1.5mm; }
-.vgrid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5mm; margin-bottom: 1.5mm; }
-.vcell { border: 1px solid var(--border); padding: 3px 6px; background: transparent; }
+.vgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1mm; margin-bottom: 1mm; }
+.vgrid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1mm; margin-bottom: 1mm; }
+.vcell { border: 1px solid var(--border); padding: 2px 5px; background: transparent; }
 .vcell.hi { border: 1px solid var(--primary); background: var(--light); }
 .vc-label {
   font-size: 5.5pt; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
@@ -215,7 +214,7 @@ body {
 
 /* Footnotes */
 .footnotes {
-  border-top: 1px solid var(--border); padding: 1.5mm 0;
+  border-top: 1px solid var(--border); padding: 1mm 0;
   font-size: 6pt; color: var(--muted); line-height: 1.4;
 }
 .footnotes p { margin-bottom: 1px; }
@@ -234,7 +233,7 @@ sup { color: var(--primary); font-weight: 700; font-size: 5.5pt; }
 .gen-notice-text strong { color: var(--primary); font-weight: 700; }
 
 /* ═══ FOOTER ═══ */
-.ftr { background: transparent; flex-shrink: 0; padding-top: 4mm; }
+.ftr { background: transparent; flex-shrink: 0; padding-top: 2mm; }
 .ftr-inner {
   display: grid;
   grid-template-columns: 1fr auto; gap: 6mm; align-items: end;
@@ -273,7 +272,7 @@ sup { color: var(--primary); font-weight: 700; font-size: 5.5pt; }
   margin: 10px auto 0; box-shadow: 0 4px 32px rgba(0,0,0,.3);
   position: relative;
   display: flex; flex-direction: column;
-  padding: 12mm 15mm;
+  padding: 8mm 12mm;
   border: none;
 }
 .endorsement-page::after {
@@ -397,17 +396,24 @@ sup { color: var(--primary); font-weight: 700; font-size: 5.5pt; }
 
 
     <div class="sec-label">Freeboard from Deck Line <sup>3</sup></div>
-    <table class="mtable">
-      <tr><th>Load Line</th><th>Freeboard (mm)</th><th>Mark</th><th>Above/Below (S)</th></tr>
-      <tr><td>Tropical</td><td><span class="m-val">{tropical_fb}</span></td><td>(T)</td><td>above (S)</td></tr>
-      <tr><td>Summer</td><td><span class="m-val">{summer_fb}</span></td><td>(S)</td><td>Upper edge of line</td></tr>
-      <tr><td>Winter</td><td><span class="m-val">{winter_fb}</span></td><td>(W)</td><td>below (S)</td></tr>
-      <tr><td>Winter North Atlantic</td><td><span class="m-val">{wna_fb}</span></td><td>(WNA)</td><td>below (S)</td></tr>
-      <tr><td>Timber Tropical</td><td><span class="m-val">{timber_tropical_fb}</span></td><td>(LT)</td><td>above (LS)</td></tr>
-      <tr><td>Timber Summer</td><td><span class="m-val">{timber_summer_fb}</span></td><td>(LS)</td><td>above (S)</td></tr>
-      <tr><td>Timber Winter</td><td><span class="m-val">{timber_winter_fb}</span></td><td>(LW)</td><td>below (LS)</td></tr>
-      <tr><td>Timber Winter North Atlantic</td><td><span class="m-val">{timber_wna_fb}</span></td><td>(LWNA)</td><td>below (LS)</td></tr>
-    </table>
+    <div style="display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; margin-bottom: 1.5mm;">
+      <div style="flex: 1;">
+        <table class="mtable">
+          <tr><th>Load Line</th><th>Freeboard (mm)</th><th>Mark</th><th>Above/Below (S)</th></tr>
+          <tr><td>Tropical</td><td><span class="m-val">{tropical_fb}</span></td><td>(T)</td><td>above (S)</td></tr>
+          <tr><td>Summer</td><td><span class="m-val">{summer_fb}</span></td><td>(S)</td><td>Upper edge of line</td></tr>
+          <tr><td>Winter</td><td><span class="m-val">{winter_fb}</span></td><td>(W)</td><td>below (S)</td></tr>
+          <tr><td>Winter North Atlantic</td><td><span class="m-val">{wna_fb}</span></td><td>(WNA)</td><td>below (S)</td></tr>
+          <tr><td>Timber Tropical</td><td><span class="m-val">{timber_tropical_fb}</span></td><td>(LT)</td><td>above (LS)</td></tr>
+          <tr><td>Timber Summer</td><td><span class="m-val">{timber_summer_fb}</span></td><td>(LS)</td><td>above (S)</td></tr>
+          <tr><td>Timber Winter</td><td><span class="m-val">{timber_winter_fb}</span></td><td>(LW)</td><td>below (LS)</td></tr>
+          <tr><td>Timber Winter North Atlantic</td><td><span class="m-val">{timber_wna_fb}</span></td><td>(LWNA)</td><td>below (LS)</td></tr>
+        </table>
+      </div>
+      <div style="width: 200px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); padding: 6px; background: #fff; height: 110px;">
+        <img src="data:image/png;base64,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" alt="Load Line Diagram" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+      </div>
+    </div>
     <p class="cert-desc">Allowance for fresh water for all freeboards other than timber: <strong>{freshwater_allowance}</strong> mm. For timber freeboards: <strong>{timber_freshwater_allowance}</strong> mm</p>
     <p class="cert-desc">The upper edge of the deck line from which these freeboards are measured is <strong>{deck_line_measurement}</strong> mm deck at side.</p>
     <div class="sec-label">Certification</div>
@@ -470,14 +476,14 @@ sup { color: var(--primary); font-weight: 700; font-size: 5.5pt; }
     <div class="ftr-accent"></div>
     <div class="ftr-inner">
       <div class="sig-area">
-        <div style="position: relative; height: 65px; margin-bottom: 5px; width: 240px;">
+        <div style="position: relative; height: 50px; margin-bottom: 3px; width: 240px;">
           <!-- Signature Image -->
           <div class="sig-img-wrap" style="position: absolute; left: 10px; bottom: 0; z-index: 2;">
-            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Signature" style="max-height: 50px; max-width: 100px; object-fit: contain; display: block;">
+            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Signature" style="max-height: 40px; max-width: 100px; object-fit: contain; display: block;">
           </div>
           <!-- Stamp Image -->
           <div class="stamp-img-wrap" style="position: absolute; left: 110px; bottom: -15px; z-index: 1; opacity: 0.85;">
-            <img src="{stamp}" onerror="this.src='../../../src/modules/payments/Gr-class-stamp.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-stamp.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Official Stamp" style="max-height: 70px; max-width: 105px; object-fit: contain; display: block;">
+            <img src="{stamp}" onerror="this.src='../../../src/modules/payments/Gr-class-stamp.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-stamp.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Official Stamp" style="max-height: 55px; max-width: 90px; object-fit: contain; display: block;">
           </div>
         </div>
         <div class="sig-line"></div>

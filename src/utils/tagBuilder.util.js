@@ -33,12 +33,12 @@ try {
 export const buildTagValuesForJob = async (jobId) => {
     const job = await db.JobRequest.findByPk(jobId, {
         include: [
-            { 
-                model: db.Vessel, 
+            {
+                model: db.Vessel,
                 include: [
-                    { model: db.Client, as: 'Client' }, 
+                    { model: db.Client, as: 'Client' },
                     { model: db.FlagAdministration, as: 'FlagAdministration' }
-                ] 
+                ]
             },
             {
                 model: db.Client,
