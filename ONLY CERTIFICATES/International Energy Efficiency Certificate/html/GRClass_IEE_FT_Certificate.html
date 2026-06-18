@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GR Class – IEE-ST Certificate</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary: #122135; /* Dark, authoritative navy */
+  --accent:  #29405c; /* Secondary dark tone */
+  --accent2: #404040; /* Dark grey for secondary text */
+  --bg:      #f0f2f5;
+  --card:    #ffffff;
+  --border:  #a6a6a6; /* Clean grey borders */
+  --text:    #111111;
+  --muted:   #333333;
+  --light:   #f7f7f7;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { background: #6b6b6b; }
+body {
+  font-family: 'Inter', sans-serif;
+  font-size: 8pt; /* Tighter layout */
+  color: var(--text);
+  background: #6b6b6b;
+  padding: 16px 0 40px;
+}
+
+.no-print {
+  width: 210mm; margin: 0 auto 10px;
+  display: flex; gap: 8px; align-items: center;
+}
+.btn-print {
+  background: var(--primary); color: #fff; border: none;
+  padding: 8px 18px; font-size: 9pt; font-weight: 600;
+  cursor: pointer; border-radius: 3px;
+}
+.btn-print:hover { opacity: .9; }
+.tag-hint { font-size: 7.5pt; color: #999; margin-left: 10px; }
+
+/* ═══ CERTIFICATE PAGE ═══ */
+.cert {
+  width: 210mm; min-height: 297mm; background: var(--card);
+  margin: 0 auto; box-shadow: 0 4px 32px rgba(0,0,0,.3);
+  display: flex; flex-direction: column; position: relative;
+  padding: 12mm 15mm; /* Global padding so nothing touches the edges */
+  border: 2px solid var(--primary); /* Outer classic border */
+  outline: 1px solid var(--primary); outline-offset: -4px; /* Inner thin border (Panama style) */
+}
+.cert * { word-wrap: break-word; overflow-wrap: break-word; position: relative; z-index: 1; }
+
+/* GRCLASS Watermark */
+.cert::after {
+  content: 'GR CLASS';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  font-family: 'Inter', sans-serif;
+  font-size: 120pt;
+  font-weight: 800;
+  color: var(--primary);
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+  white-space: nowrap;
+}
+
+/* ═══ HEADER ═══ */
+.hdr { padding: 0 0 4mm 0; flex-shrink: 0; border-bottom: 3px double var(--primary); margin-bottom: 2mm; }
+.hdr-inner {
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+.logo-wrap {
+  width: 70px; flex-shrink: 0; text-align: left;
+}
+.logo-wrap img { max-width: 45px; max-height: 45px; object-fit: contain; }
+
+.hdr-center { flex: 1; text-align: center; margin: 0 10px; }
+.hdr-flag-state {
+  font-family: 'EB Garamond', serif;
+  font-size: 16pt; font-weight: 700; color: var(--primary);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;
+}
+.hdr-org {
+  font-size: 7.5pt; font-weight: 700; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+}
+.hdr-certname {
+  font-family: 'EB Garamond', serif;
+  font-size: 15pt; font-weight: 700; color: var(--primary);
+  line-height: 1.1; margin-bottom: 4px; text-transform: uppercase;
+}
+.hdr-convention {
+  font-size: 7pt; color: var(--muted); line-height: 1.4; max-width: 460px; margin: 0 auto;
+}
+
+.hdr-meta { width: 70px; text-align: right; flex-shrink: 0; }
+.hdr-meta-label {
+  font-size: 5.5pt; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted); display: block;
+}
+.hdr-meta-no {
+  font-family: 'EB Garamond', serif;
+  font-size: 11pt; font-weight: 700; color: var(--primary);
+  display: block; line-height: 1.2; margin-bottom: 2px;
+}
+.hdr-meta-form { font-size: 5.5pt; color: var(--muted); font-weight: 600; }
+
+/* ═══ AUTHORITY ═══ */
+.authority {
+  background: transparent; border-bottom: 1px solid var(--border);
+  padding: 3mm 0; text-align: center;
+  font-size: 8pt; color: var(--text); line-height: 1.5;
+}
+.authority strong { color: var(--primary); font-weight: 700; text-transform: uppercase; }
+
+/* ═══ BODY ═══ */
+.body { padding: 3mm 0; flex: 1; display: flex; flex-direction: column; }
+
+.sec-label {
+  font-size: 6.5pt; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--primary);
+  padding-bottom: 2px; border-bottom: 1px solid var(--primary);
+  margin: 3mm 0 2mm;
+}
+
+/* Vessel table */
+.vtable { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bottom: 1.5mm; }
+.vtable th {
+  background: var(--light); color: var(--text);
+  font-size: 6pt; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+  padding: 3px 6px; border: 1px solid var(--border); text-align: left;
+}
+.vtable td {
+  padding: 4px 6px; border: 1px solid var(--border); background: transparent;
+  vertical-align: middle;
+}
+.vtable .val {
+  font-family: 'EB Garamond', serif; font-size: 10.5pt; font-weight: 600;
+  color: var(--primary); line-height: 1.1; text-transform: uppercase;
+}
+
+/* Data table */
+.mtable { width: 100%; border-collapse: collapse; font-size: 8pt; margin-bottom: 1.5mm; }
+.mtable th {
+  background: var(--light); color: var(--text);
+  font-size: 6.5pt; font-weight: 700; text-transform: uppercase;
+  padding: 4px 6px; border: 1px solid var(--border); text-align: left;
+}
+.mtable td { padding: 4px 6px; border: 1px solid var(--border); background: transparent; }
+.mtable .m-val {
+  font-family: 'EB Garamond', serif; font-size: 10pt; font-weight: 600; color: var(--primary);
+}
+
+/* Checkbox items */
+.chk-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 1.5mm; }
+.chk-item {
+  display: flex; align-items: flex-start; gap: 6px;
+  padding: 3px 6px; border: 1px solid transparent;
+  font-size: 8pt; line-height: 1.4; color: var(--text);
+}
+.chk-item.checked { background: var(--light); border-color: var(--border); font-weight: 500; }
+.checkbox {
+  width: 10px; height: 10px; border: 1px solid var(--primary); flex-shrink: 0; margin-top: 2px;
+  background: #fff; position: relative;
+}
+.chk-item.checked .checkbox { background: var(--primary); }
+.chk-item.checked .checkbox::after {
+  content: ''; position: absolute; left: 2px; top: 0;
+  width: 4px; height: 6px;
+  border-right: 1.5px solid #fff; border-bottom: 1.5px solid #fff;
+  transform: rotate(38deg);
+}
+.chk-text b { color: var(--primary); }
+.inline-val {
+  display: inline-block; font-family: 'EB Garamond', serif;
+  font-size: 10pt; font-weight: 600; color: var(--primary);
+  border-bottom: 1px dashed var(--primary);
+  padding: 0 3px; min-width: 60px; line-height: 1.1; vertical-align: bottom;
+}
+
+/* Certify box */
+.certify {
+  border: 1px solid var(--border); border-left: 4px solid var(--primary);
+  background: var(--light); padding: 5px 8px;
+  margin: 1.5mm 0 2mm; font-size: 8pt; line-height: 1.5;
+}
+.certify-title {
+  font-weight: 700; color: var(--primary); font-size: 8pt;
+  margin-bottom: 2px; text-transform: uppercase; letter-spacing: .5px;
+}
+.certify ul { margin-left: 16px; color: var(--text); }
+.certify ul li { margin-bottom: 1px; }
+.certify ul ul { margin-left: 14px; }
+
+.cert-desc { font-size: 8pt; line-height: 1.5; color: var(--text); margin-bottom: 1.5mm; }
+
+/* Validity grid */
+.vgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5mm; margin-bottom: 1.5mm; }
+.vgrid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5mm; margin-bottom: 1.5mm; }
+.vcell { border: 1px solid var(--border); padding: 3px 6px; background: transparent; }
+.vcell.hi { border: 1px solid var(--primary); background: var(--light); }
+.vc-label {
+  font-size: 5.5pt; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted); display: block; margin-bottom: 1px;
+}
+.vc-val {
+  font-family: 'EB Garamond', serif; font-size: 11pt; font-weight: 600;
+  color: var(--primary); line-height: 1.2; text-transform: uppercase;
+}
+.vcell.hi .vc-val { color: var(--primary); }
+
+/* Footnotes */
+.footnotes {
+  border-top: 1px solid var(--border); padding: 1.5mm 0;
+  font-size: 6pt; color: var(--muted); line-height: 1.4;
+}
+.footnotes p { margin-bottom: 1px; }
+sup { color: var(--primary); font-weight: 700; font-size: 5.5pt; }
+
+/* Generated notice */
+.gen-notice {
+  background: var(--light); border: 1px solid var(--border);
+  padding: 3mm 5mm; display: flex; align-items: center; justify-content: center;
+  gap: 6px; flex-shrink: 0; margin-top: auto; border-radius: 2px;
+}
+.gen-notice-text {
+  font-size: 6.5pt; color: var(--muted);
+  letter-spacing: .5px; line-height: 1.2; text-align: center; text-transform: uppercase;
+}
+.gen-notice-text strong { color: var(--primary); font-weight: 700; }
+
+/* ═══ FOOTER ═══ */
+.ftr { background: transparent; flex-shrink: 0; padding-top: 4mm; }
+.ftr-inner {
+  display: grid;
+  grid-template-columns: 1fr auto; gap: 6mm; align-items: end;
+}
+.sig-area { color: var(--text); position: relative; min-width: 180px; }
+.sig-line { border-bottom: 1px solid var(--primary); height: 1px; margin-bottom: 4px; width: 100%; max-width: 200px; }
+.sig-label {
+  font-size: 6pt; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--primary); margin-bottom: 2px;
+}
+.sig-name {
+  font-family: 'EB Garamond', serif; font-size: 11pt;
+  color: var(--primary); font-style: italic; line-height: 1.2;
+}
+.sig-desig { font-size: 6.5pt; font-weight: 600; color: var(--muted); margin-top: 1px; text-transform: uppercase; }
+.ftr-contact { text-align: right; font-size: 6.5pt; color: var(--muted); line-height: 1.5; }
+.ftr-contact strong {
+  display: block; color: var(--primary); font-size: 8pt;
+
+  font-weight: 700; letter-spacing: .4px; margin-bottom: 2px;
+}
+.ftr-contact a { color: var(--accent2); text-decoration: none; font-weight: 500; }
+
+/* ═══ PRINT ═══ */
+@page { size: A4; margin: 0; }
+@media print {
+  html, body { background: none !important; padding: 0 !important; margin: 0 !important; }
+  .no-print { display: none !important; }
+  .cert { margin: 0; box-shadow: none; width: 210mm; min-height: 297mm; overflow: hidden; page-break-inside: avoid; }
+  .page-break { page-break-before: always; }
+}
+
+/* ═══ ENDORSEMENTS (FT ONLY) ═══ */
+.endorsement-page {
+  width: 210mm; min-height: 297mm; background: var(--card);
+  margin: 10px auto 0; box-shadow: 0 4px 32px rgba(0,0,0,.3);
+  position: relative;
+  display: flex; flex-direction: column;
+  padding: 12mm 15mm;
+  border: 2px solid var(--primary);
+  outline: 1px solid var(--primary); outline-offset: -4px;
+}
+.endorsement-page::after {
+  content: 'GR CLASS';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  font-family: 'Inter', sans-serif;
+  font-size: 120pt;
+  font-weight: 800;
+  color: var(--primary);
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+  white-space: nowrap;
+}
+@media print {
+  .endorsement-page { margin: 0; box-shadow: none; page-break-before: always; }
+}
+
+.end-title {
+  font-family: 'EB Garamond', serif; font-size: 14pt; font-weight: 700;
+  color: var(--primary); text-align: center; margin: 8mm 0 4mm;
+}
+.end-subtitle {
+  font-size: 8.5pt; color: var(--muted); text-align: center; margin-bottom: 6mm;
+  padding: 0 12mm; line-height: 1.6;
+}
+.end-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4mm 8mm;
+  padding: 0 10mm; margin-bottom: 6mm;
+}
+.end-box {
+  border: 1px solid var(--border); background: #fff; padding: 4mm;
+}
+.end-box-title {
+  font-size: 7.5pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--accent2); border-bottom: 1px solid var(--border);
+  padding-bottom: 3px; margin-bottom: 4mm;
+}
+.end-row {
+  display: flex; align-items: flex-end; margin-bottom: 3.5mm; font-size: 8pt;
+}
+.end-label { width: 80px; color: var(--muted); }
+.end-line { flex: 1; border-bottom: 1px dashed #ccc; height: 16px; position: relative; }
+.end-line span {
+  position: absolute; bottom: 1px; left: 5px; font-family: 'EB Garamond', serif;
+  font-size: 11pt; color: var(--primary);
+}
+.end-full { grid-column: 1 / -1; }
+</style>
+</head>
+<body>
+
+<div class="no-print">
+  <button class="btn-print" onclick="window.print()">🖨&nbsp; Print / Save PDF</button>
+  <span class="tag-hint">Tags like {tag} are replaced at generation time.</span>
+</div>
+
+<div class="cert">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-accent"></div>
+
+    <div class="hdr-inner">
+      <div class="logo-wrap">
+        <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo">
+      </div>
+      <div class="hdr-center">
+        <div class="hdr-flag-state">{flag_state}</div>
+        <div class="hdr-org">{certificate_term}</div>
+        <div class="hdr-certname">International Energy Efficiency Certificate</div>
+        <div class="hdr-convention">Issued under the provisions of Annex VI, Chapter 4 of the International Convention for the Prevention of Pollution from Ships (MARPOL), as amended by resolution MEPC.203(62)</div>
+      </div>
+      <div class="hdr-meta">
+        <span class="hdr-meta-label">IEE No.</span>
+        <span class="hdr-meta-no">{certificate_number}</span>
+        <div class="hdr-meta-form">Form IEE · Approved by: GM</div>
+      </div>
+    </div>
+    <div class="hdr-accent"></div>
+  </div>
+
+  <!-- AUTHORITY -->
+  <div class="authority">
+    Issued under the authority of the Government of <strong>{flag_state}</strong><br>
+    By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO)
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <div class="sec-label">Vessel Particulars</div>
+    <table class="vtable">
+      <tr>
+        <th>Name of Ship</th>
+        <th>Distinctive No. / Letters</th>
+        <th>Port of Registry</th>
+        <th>Gross Tonnage</th>
+      </tr>
+      <tr>
+        <td><span class="val">{vessel_name}</span></td>
+        <td><span class="val">{call_sign}</span></td>
+        <td><span class="val">{port_of_registry}</span></td>
+        <td><span class="val">{gross_tonnage}</span></td>
+      </tr>
+      <tr>
+        <th>IMO Number <sup>1</sup></th>
+        <th>Ship Type</th>
+        <th>Net Tonnage</th>
+        <th>Deadweight</th>
+      </tr>
+      <tr>
+        <td><span class="val">{imo_number}</span></td>
+        <td><span class="val">{ship_type}</span></td>
+        <td><span class="val">{net_tonnage}</span></td>
+        <td><span class="val">{deadweight}</span></td>
+      </tr>
+    </table>
+
+
+    <div class="sec-label">Energy Efficiency Details</div>
+    <table class="mtable">
+      <tr><th>Attained EEDI (g CO₂ / tonne·nm)</th><th>Required EEDI</th><th>EEDI Phase</th></tr>
+      <tr><td><span class="m-val">{attained_eedi}</span></td><td><span class="m-val">{required_eedi}</span></td><td><span class="m-val">{eedi_phase}</span></td></tr>
+    </table>
+    <div class="sec-label">Certification</div>
+    <div class="certify">
+      <div class="certify-title">This is to certify:</div>
+      <ul>
+        <li>That the ship has been surveyed in accordance with regulation 5 of Annex VI of the Convention; and</li>
+        <li>That the ship has an approved Ship Energy Efficiency Management Plan (SEEMP) on board as required by regulation 22 of Annex VI of the Convention.</li>
+        <li>That the attained Energy Efficiency Design Index (EEDI) of the ship is as stated above.</li>
+      </ul>
+    </div>
+
+    <div class="sec-label">Dates &amp; Validity</div>
+    <div class="vgrid">
+      <div class="vcell">
+        <span class="vc-label">Survey Completion Date</span>
+        <div class="vc-val">{survey_completion_date}</div>
+      </div>
+      <div class="vcell">
+        <span class="vc-label">Date of Issue</span>
+        <div class="vc-val">{issue_date}</div>
+      </div>
+      <div class="vcell hi">
+        <span class="vc-label">Valid Until</span>
+        <div class="vc-val">{expiry_date}</div>
+      </div>
+    </div>
+    <div class="vgrid-2">
+      <div class="vcell">
+        <span class="vc-label">Place of Issue</span>
+        <div class="vc-val">{place_of_survey}</div>
+      </div>
+      <div class="vcell">
+        <span class="vc-label">Page</span>
+        <div class="vc-val">1 of 1</div>
+      </div>
+    </div>
+
+    <div class="footnotes">
+      <p><sup>1</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600(15).</p>
+    </div>
+
+  </div>
+
+
+  <div class="gen-notice">
+    <span style="font-size:8pt;opacity:.6">🔒</span>
+    <span class="gen-notice-text">
+      Computer-generated certificate — does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
+      Verify at <strong>grclass.com</strong>
+    </span>
+  </div>
+  <div class="ftr">
+    <div class="ftr-accent"></div>
+    <div class="ftr-inner">
+      <div class="sig-area">
+        <div style="position:relative;height:70px;margin-bottom:4px;width:100%">
+          <div style="position:absolute;left:0;bottom:5px;z-index:2">
+            <img src="{signature}" onerror="this.style.display='none'" alt="Signature" style="max-height:55px;max-width:100px;object-fit:contain;display:block">
+          </div>
+          <div style="position:absolute;left:80px;bottom:0px;z-index:1;opacity:.85">
+            <img src="{stamp}" onerror="this.style.display='none'" alt="Stamp" style="max-height:70px;max-width:100px;object-fit:contain;display:block">
+          </div>
+        </div>
+        <div class="sig-line"></div>
+        <div class="sig-label">GR CLASS Representative</div>
+        <div class="sig-name">{surveyor_name}</div>
+        <div class="sig-desig">GR CLASS Representative · Surveyor</div>
+      </div>
+      <div class="ftr-contact" style="display:flex;gap:12px;align-items:center;justify-content:flex-end">
+        <div style="width:64px;height:64px;flex-shrink:0;background:#fff;padding:2px;border:1px solid var(--border)">
+          <style>.qr-wrap img{width:60px!important;height:60px!important;display:block}</style>
+          <div class="qr-wrap">{qr_code}</div>
+        </div>
+        <div style="text-align:right">
+          <strong>GR CLASS</strong>
+          <a href="mailto:info@grclass.com">info@grclass.com</a><br>
+          <a href="https://www.grclass.com">www.grclass.com</a><br>
+          Classified for Standard (GR CLASS)<br>
+          Recognized Organization · Global Marine Services
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="endorsement-page">
+  <div class="end-title">Endorsement for Annual and Intermediate Surveys</div>
+  <div class="end-subtitle">THIS IS TO CERTIFY that at a survey required by the Convention the ship was found to comply with the relevant provisions of the Convention:</div>
+  
+  <div class="end-grid">
+    <div class="end-box">
+      <div class="end-box-title">Annual Survey</div>
+      <div class="end-row"><div class="end-label">Signed</div><div class="end-line"><span>{surveyor_annual}</span></div></div>
+      <div class="end-row"><div class="end-label">Place</div><div class="end-line"><span>{place_annual}</span></div></div>
+      <div class="end-row"><div class="end-label">Date</div><div class="end-line"><span>{date_annual}</span></div></div>
+      <div class="end-row"><div class="end-label">Stamp</div><div style="flex:1;height:40px;border:1px dashed #ccc"></div></div>
+    </div>
+    
+    <div class="end-box">
+      <div class="end-box-title">Annual / Intermediate Survey</div>
+      <div class="end-row"><div class="end-label">Signed</div><div class="end-line"><span>{surveyor_int1}</span></div></div>
+      <div class="end-row"><div class="end-label">Place</div><div class="end-line"><span>{place_int1}</span></div></div>
+      <div class="end-row"><div class="end-label">Date</div><div class="end-line"><span>{date_int1}</span></div></div>
+      <div class="end-row"><div class="end-label">Stamp</div><div style="flex:1;height:40px;border:1px dashed #ccc"></div></div>
+    </div>
+
+    <div class="end-box">
+      <div class="end-box-title">Annual / Intermediate Survey</div>
+      <div class="end-row"><div class="end-label">Signed</div><div class="end-line"><span>{surveyor_int2}</span></div></div>
+      <div class="end-row"><div class="end-label">Place</div><div class="end-line"><span>{place_int2}</span></div></div>
+      <div class="end-row"><div class="end-label">Date</div><div class="end-line"><span>{date_int2}</span></div></div>
+      <div class="end-row"><div class="end-label">Stamp</div><div style="flex:1;height:40px;border:1px dashed #ccc"></div></div>
+    </div>
+
+    <div class="end-box">
+      <div class="end-box-title">Annual Survey</div>
+      <div class="end-row"><div class="end-label">Signed</div><div class="end-line"><span>{surveyor_annual2}</span></div></div>
+      <div class="end-row"><div class="end-label">Place</div><div class="end-line"><span>{place_annual2}</span></div></div>
+      <div class="end-row"><div class="end-label">Date</div><div class="end-line"><span>{date_annual2}</span></div></div>
+      <div class="end-row"><div class="end-label">Stamp</div><div style="flex:1;height:40px;border:1px dashed #ccc"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="endorsement-page">
+  <div class="end-title">Additional Endorsements</div>
+  
+  <div class="end-grid">
+    <div class="end-box end-full">
+      <div class="end-box-title">Endorsement to extend the Certificate if valid for less than 5 years</div>
+      <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:2mm">The ship complies with the relevant provisions of the Convention, and this Certificate shall be accepted as valid until <strong>{extension_date_1}</strong></div>
+      <div style="display:flex;gap:4mm">
+        <div style="flex:1">
+          <div class="end-row"><div class="end-label">Signed</div><div class="end-line"></div></div>
+          <div class="end-row"><div class="end-label">Place</div><div class="end-line"></div></div>
+          <div class="end-row"><div class="end-label">Date</div><div class="end-line"></div></div>
+        </div>
+        <div style="flex:1;height:70px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:8pt">Stamp</div>
+      </div>
+    </div>
+
+    <div class="end-box end-full">
+      <div class="end-box-title">Endorsement where the renewal survey has been completed</div>
+      <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:2mm">The ship complies with the relevant provisions of the Convention, and this Certificate shall be accepted as valid until <strong>{extension_date_2}</strong></div>
+      <div style="display:flex;gap:4mm">
+        <div style="flex:1">
+          <div class="end-row"><div class="end-label">Signed</div><div class="end-line"></div></div>
+          <div class="end-row"><div class="end-label">Place</div><div class="end-line"></div></div>
+          <div class="end-row"><div class="end-label">Date</div><div class="end-line"></div></div>
+        </div>
+        <div style="flex:1;height:70px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:8pt">Stamp</div>
+      </div>
+    </div>
+    
+    <div class="end-box end-full">
+      <div class="end-box-title">Endorsement for advancement of anniversary date</div>
+      <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:2mm">In accordance with the Convention, the new anniversary date is <strong>{new_anniversary_date}</strong></div>
+      <div style="display:flex;gap:4mm">
+        <div style="flex:1">
+          <div class="end-row"><div class="end-label">Signed</div><div class="end-line"></div></div>
+          <div class="end-row"><div class="end-label">Place</div><div class="end-line"></div></div>
+          <div class="end-row"><div class="end-label">Date</div><div class="end-line"></div></div>
+        </div>
+        <div style="flex:1;height:70px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:8pt">Stamp</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
