@@ -1,420 +1,567 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>GR Class – Document of Authorization for the Carriage of Grain - Full Term</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+    <meta charset="UTF-8">
+    <title>GR Class – Document of Authorization for the Carriage of Grain - Full Term</title>
+    
+    <style>
+        /* ── OPTIMIZED CSS (SYSTEM FONTS FOR INSTANT LOAD) ── */
+        :root {
+            --navy-blue: #0b2545;
+            --navy-light: #133c6d;
+            --gold-primary: #b08d57;
+            --text-dark: #1a1a1a;
+            --text-muted: #444444;
+            --paper: #ffffff;
+            --stamp-color: #E65100; /* Bhagwa Color */
+            --bg-light: #f4f6f8;
+            --primary: #0b2545;
+            --border: #ccc;
+            --light: #f4f6f8;
+        }
 
-:root {
-  --navy:    #0B2443;
-  --blue:    #005BAA;
-  --gold:    #B5891F;
-  --gold-lt: #D4A93A;
-  --cream:   #F9F6F0;
-  --light:   #EEF3F9;
-  --border:  #C8D8E8;
-  --rule:    #C4A84A;
-  --text:    #18181B;
-  --muted:   #52525B;
-}
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 7.8pt; /* Compact font size to prevent overflow */
+            background: #222;
+            padding: 20px 0 40px;
+            color: var(--text-dark);
+            line-height: 1.3;
+        }
 
-html { background: #8A8A8A; }
-body {
-  font-family: 'Source Sans 3', sans-serif;
-  font-size: 10pt;
-  color: var(--text);
-  background: #8A8A8A;
-  padding: 16px 0 40px;
-}
+        .no-print {
+            width: 210mm;
+            margin: 0 auto 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
 
-.no-print {
-  width: 210mm;
-  margin: 0 auto 10px;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.btn-print {
-  background: var(--navy);
-  color: #fff;
-  border: none;
-  padding: 8px 20px;
-  font-size: 9pt;
-  font-weight: 600;
-  letter-spacing: .4px;
-  cursor: pointer;
-  border-radius: 3px;
-}
-.btn-print:hover { background: var(--blue); }
+        .btn-print {
+            background: var(--gold-primary);
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            font-size: 8.5pt;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+        .btn-print:hover { background: #967645; }
+        .tag-hint { font-size: 7.5pt; color: #666; font-style: italic; }
 
-.cert {
-  width: 210mm;
-  min-height: 297mm;
-  background: #fff;
-  margin: 0 auto;
-  box-shadow: 0 8px 48px rgba(0,0,0,.35);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-}
+        /* ── CERTIFICATE DESIGN (A4) ── */
+        .cert-page {
+            width: 210mm;
+            height: 297mm;
+            background-color: var(--paper);
+            margin: 0 auto 15mm auto;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 8mm; /* Margins slightly reduced for extra height room */
+            display: flex;
+            flex-direction: column;
+        }
 
-.cert * { word-wrap: break-word; overflow-wrap: break-word; }
+        /* Double Border System */
+        .border-outer {
+            border: 2.5px solid var(--navy-blue);
+            height: 100%;
+            padding: 3px;
+            position: relative;
+        }
+        .border-inner {
+            border: 1px solid var(--gold-primary);
+            height: 100%;
+            padding: 7mm; /* Inner padding slightly reduced */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
 
-.cert::before {
-  content: '';
-  position: absolute;
-  inset: 5mm;
-  border: 1px solid var(--rule);
-  pointer-events: none;
-  z-index: 5;
-}
-.cert::after {
-  content: '';
-  position: absolute;
-  inset: 7mm;
-  border: .4px solid rgba(196,168,74,.4);
-  pointer-events: none;
-  z-index: 5;
-}
+        /* Background Watermark */
+        .watermark {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-family: 'Georgia', serif;
+            font-size: 80pt;
+            color: var(--navy-blue);
+            opacity: 0.025;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 0;
+        }
 
-.hdr {
-  background: var(--navy);
-  padding: 0;
-  position: relative;
-  flex-shrink: 0;
-}
-.hdr-gold-top {
-  height: 4px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
-}
-.hdr-inner {
-  padding: 8mm 12mm 7mm;
-  display: grid;
-  grid-template-columns: 60px 1fr auto;
-  gap: 12px;
-  align-items: center;
-}
-.hdr-gold-bottom {
-  height: 2.5px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
-}
+        /* ── HEADER ── */
+        .cert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid var(--gold-primary);
+            padding-bottom: 2mm;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+        }
+        
+        .hdr-left { flex: 0 0 85px; text-align: left; }
+        .hdr-left img { max-width: 80px; height: auto; object-fit: contain; }
+        .logo-fallback {
+            width: 65px; height: 65px;
+            border: 2px solid var(--navy-blue); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Times New Roman', serif; font-weight: bold; font-size: 16pt; color: var(--navy-blue);
+        }
 
-.logo {
-  width: 60px; height: 60px;
-  background: #fff;
-  border-radius: 2px;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 2px;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 1px rgba(196,168,74,.6);
-}
+        .hdr-center { flex: 1; text-align: center; padding: 0 10px; }
+        .hdr-flag {
+            font-family: 'Times New Roman', serif;
+            font-size: 12.5pt;
+            font-weight: bold;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 3px;
+        }
+        .hdr-title-es {
+            font-family: 'Georgia', serif;
+            font-size: 9.5pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+            margin-bottom: 1px;
+            text-transform: uppercase;
+        }
+        .hdr-title-en {
+            font-family: 'Georgia', serif;
+            font-size: 11.5pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+        .hdr-convention {
+            font-family: 'Times New Roman', serif;
+            font-size: 7.2pt;
+            color: var(--text-muted);
+            line-height: 1.25;
+            font-style: italic;
+        }
 
-.hdr-eyebrow {
-  font-size: 7pt;
-  font-weight: 600;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--gold-lt);
-  margin-bottom: 4px;
-}
-.hdr-certname {
-  font-family: 'EB Garamond', serif;
-  font-size: 14pt;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.15;
-  margin-bottom: 5px;
-  word-wrap: break-word;
-}
-.hdr-convention {
-  font-size: 7.5pt;
-  color: rgba(255,255,255,.55);
-  line-height: 1.5;
-  max-width: 440px;
-  word-wrap: break-word;
-}
+        .hdr-right { flex: 0 0 auto; text-align: right; min-width: 120px; }
+        .hdr-meta-label { font-size: 6pt; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .hdr-meta-no {
+            font-family: 'Courier New', monospace;
+            font-size: 10pt;
+            font-weight: bold;
+            color: var(--stamp-color);
+            margin-top: 1px;
+            display: block;
+        }
+        .hdr-meta-form { font-size: 6pt; color: var(--navy-blue); margin-top: 2px; font-weight: bold; }
 
-.hdr-meta { text-align: right; word-wrap: break-word; }
-.hdr-meta-label {
-  font-size: 6pt;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--gold-lt);
-  display: block;
-}
-.hdr-meta-no {
-  font-family: 'EB Garamond', serif;
-  font-size: 13pt;
-  font-weight: 700;
-  color: #fff;
-  display: block;
-  line-height: 1.15;
-  letter-spacing: .5px;
-  white-space: nowrap;
-}
-.hdr-meta-form {
-  font-size: 6.5pt;
-  color: rgba(255,255,255,.35);
-  margin-top: 4px;
-}
+        /* ── AUTHORITY ── */
+        .authority {
+            text-align: center;
+            font-family: 'Times New Roman', serif;
+            font-size: 8.5pt;
+            color: var(--text-dark);
+            line-height: 1.35;
+            padding-bottom: 2mm;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+        }
+        .authority strong { color: var(--navy-blue); text-transform: uppercase; }
 
-.authority {
-  background: var(--light);
-  border-bottom: 1px solid var(--border);
-  padding: 3.5mm 12mm;
-  text-align: center;
-  font-size: 8.5pt;
-  color: var(--muted);
-  line-height: 1.6;
-}
-.authority strong { color: var(--navy); font-weight: 700; }
+        /* ── SECTIONS & TABLES ── */
+        .sec-label {
+            font-family: 'Arial', sans-serif;
+            font-size: 7.2pt;
+            font-weight: bold;
+            color: var(--navy-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 2mm 0 1mm 0;
+            border-left: 3px solid var(--gold-primary);
+            padding-left: 5px;
+            z-index: 1;
+        }
 
-.body { padding: 8mm 12mm 8mm; flex: 1; }
+        /* Data table & Vessel table styling combined */
+        .data-table, .vtable, .mtable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2mm;
+            table-layout: fixed; /* Fixes horizontal overflow */
+            z-index: 1;
+        }
+        .data-table th, .data-table td, .vtable th, .vtable td, .mtable th, .mtable td {
+            border: 1px solid #ccc;
+            padding: 2px 4px; /* Compact padding */
+            text-align: left;
+            word-wrap: break-word; /* Wraps long content */
+            overflow-wrap: break-word;
+        }
+        .data-table th, .vtable th, .mtable th {
+            background: var(--bg-light);
+            font-size: 6pt;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            line-height: 1.2;
+        }
+        .data-table td, .vtable td, .mtable td {
+            font-family: 'Times New Roman', serif;
+            font-size: 8pt; /* Compact font size */
+            font-weight: bold;
+            color: var(--navy-blue);
+            vertical-align: middle;
+        }
+        
+        .val, .m-val {
+            font-family: 'Times New Roman', serif;
+            font-size: 8.5pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+        }
+        
+        .val-large {
+            font-size: 13pt !important;
+            text-align: center;
+            padding: 6px !important;
+        }
 
-.body p {
-  margin-bottom: 8px;
-  line-height: 1.5;
-  font-size: 9pt;
-}
-.body table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 10px 0;
-  font-size: 8.5pt;
-}
-.body table td, .body table th {
-  border: 1px solid var(--border);
-  padding: 6px 8px;
-  vertical-align: middle;
-}
-.body table th {
-  background: var(--navy);
-  color: var(--gold-lt);
-  font-size: 6.5pt;
-  font-weight: 700;
-  letter-spacing: .8px;
-  text-transform: uppercase;
-  padding: 5px 9px;
-  border: 1px solid var(--navy);
-  text-align: left;
-}
-.body ul, .body ol {
-  margin-left: 20px;
-  margin-bottom: 10px;
-}
-.body li {
-  margin-bottom: 4px;
-}
+        /* Checkbox items */
+        .chk-list { display: flex; flex-direction: column; gap: 1.5px; margin-bottom: 1.5mm; z-index: 1; }
+        .chk-item {
+            display: flex; align-items: flex-start; gap: 5px;
+            padding: 1px 3px; border: 1px solid transparent;
+            font-size: 7.2pt; line-height: 1.3; color: var(--text-dark);
+        }
+        .chk-item.checked { background: var(--bg-light); border-color: var(--border); font-weight: 500; }
+        .checkbox {
+            width: 9px; height: 9px; border: 1px solid var(--navy-blue); flex-shrink: 0; margin-top: 1.5px;
+            background: #fff; position: relative;
+        }
+        .chk-item.checked .checkbox { background: var(--navy-blue); }
+        .chk-item.checked .checkbox::after {
+            content: ''; position: absolute; left: 1.5px; top: 0;
+            width: 3.5px; height: 5px;
+            border-right: 1.2px solid #fff; border-bottom: 1.2px solid #fff;
+            transform: rotate(38deg);
+        }
+        .chk-text b { color: var(--navy-blue); }
+        .inline-val {
+            display: inline-block; font-family: 'Times New Roman', serif;
+            font-size: 9pt; font-weight: bold; color: var(--navy-blue);
+            border-bottom: 1px dashed var(--navy-blue);
+            padding: 0 2px; min-width: 50px; line-height: 1.1; vertical-align: bottom;
+        }
 
-.ftr {
-  background: var(--navy);
-  flex-shrink: 0;
-  position: relative;
-}
-.ftr-gold-top {
-  height: 2.5px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
-}
-.ftr-inner {
-  padding: 5.5mm 12mm 6mm;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12mm;
-  align-items: end;
-}
-.sig-area { color: #fff; }
-.sig-line {
-  border-bottom: 1px solid rgba(255,255,255,.3);
-  height: 24px;
-  margin-bottom: 5px;
-  width: 160px;
-}
-.sig-label {
-  font-size: 6pt;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.45);
-  margin-bottom: 2px;
-}
-.sig-name {
-  font-family: 'EB Garamond', serif;
-  font-size: 12pt;
-  color: rgba(255,255,255,.9);
-  font-style: italic;
-  line-height: 1.2;
-}
-.sig-desig {
-  font-size: 7.5pt;
-  font-weight: 600;
-  color: var(--gold-lt);
-  letter-spacing: .3px;
-  margin-top: 1px;
-}
-.ftr-contact {
-  text-align: right;
-  font-size: 7pt;
-  color: rgba(255,255,255,.45);
-  line-height: 1.8;
-}
-.ftr-contact strong {
-  display: block;
-  color: var(--gold-lt);
-  font-size: 8.5pt;
-  font-weight: 700;
-  letter-spacing: .5px;
-  margin-bottom: 2px;
-}
-.ftr-contact a { color: rgba(255,255,255,.55); text-decoration: none; }
+        /* ── FOOTNOTES & PARAGRAPHS ── */
+        .footnotes {
+            font-family: 'Arial', sans-serif;
+            font-size: 6pt;
+            color: #666;
+            line-height: 1.25;
+            margin-bottom: 2mm;
+            z-index: 1;
+        }
+        .footnotes p { margin-bottom: 1px; }
+        sup { color: var(--navy-blue); font-weight: bold; font-size: 5.5pt; }
 
-@page { size: A4; margin: 0; }
-@media print {
-  html, body { background: none !important; padding: 0 !important; margin: 0 !important; }
-  .no-print { display: none !important; }
-  .cert {
-    margin: 0;
-    box-shadow: none;
-    width: 210mm;
-    min-height: 297mm;
-    overflow: hidden;
-    page-break-inside: avoid;
-  }
-}
+        .certify-box, .certify {
+            border: 1px solid #ccc;
+            border-left: 4.5px solid var(--navy-blue);
+            background: var(--bg-light);
+            padding: 5px 8px;
+            font-family: 'Times New Roman', serif;
+            font-size: 8.5pt;
+            line-height: 1.35;
+            margin-bottom: 2.5mm;
+            text-align: justify;
+            z-index: 1;
+        }
+        .certify-box i { color: var(--text-muted); font-size: 8pt; display: block; margin-top: 2px; }
+        .certify-title {
+            font-weight: bold; color: var(--navy-blue); font-size: 8.5pt;
+            margin-bottom: 2px; text-transform: uppercase; letter-spacing: .5px;
+        }
+        .certify ul { margin-left: 14px; }
+        .certify ul li { margin-bottom: 1.5px; }
 
-/* ── GENERATED NOTICE BAR ── */
-.generated-notice {
-  background: linear-gradient(135deg, #f0f5fb 0%, #e8f0f8 100%);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 3mm 12mm;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-.generated-notice-icon {
-  font-size: 9pt;
-  opacity: 0.65;
-  flex-shrink: 0;
-}
-.generated-notice-text {
-  font-size: 6.8pt;
-  font-style: italic;
-  color: var(--muted);
-  letter-spacing: 0.15px;
-  line-height: 1.5;
-  text-align: center;
-}
-.generated-notice-text strong {
-  font-style: normal;
-  color: var(--blue);
-  font-weight: 600;
-}
+        /* ── VALIDITY GRID ── */
+        .vgrid {
+            display: flex;
+            justify-content: space-between;
+            border: 1px solid var(--gold-primary);
+            background: #fdfbf7;
+            padding: 5px 10px;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+        }
+        .vgrid-2 {
+            display: flex;
+            justify-content: space-between;
+            border: 1px solid var(--border);
+            background: #ffffff;
+            padding: 4px 10px;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+        }
+        .vcell { text-align: left; }
+        .vcell-label, .vc-label { font-size: 6pt; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1px; display: block; }
+        .vcell-val, .vc-val { font-family: 'Courier New', monospace; font-size: 9pt; font-weight: bold; color: var(--navy-blue); }
 
-</style>
+        /* ── FOOTER AREA ── */
+        .footer-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: auto;
+            padding-top: 1mm;
+            z-index: 1;
+        }
+
+        /* DIAMOND STAMP (BHAGWA) */
+        .stamp-container {
+            position: relative;
+            width: 28mm;
+            height: 28mm;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: rotate(-10deg);
+        }
+        .diamond-stamp {
+            width: 20mm;
+            height: 20mm;
+            border: 1.8px solid var(--stamp-color);
+            transform: rotate(45deg);
+            position: absolute;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 60%), rgba(230, 81, 0, 0.05);
+            box-shadow: inset 0 0 3px rgba(230, 81, 0, 0.2);
+        }
+        .diamond-stamp::before {
+            content: '';
+            position: absolute;
+            inset: 1.5px;
+            border: 1px dashed rgba(230, 81, 0, 0.5);
+        }
+        .stamp-text-wrapper {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 26mm;
+        }
+        .st-top { font-size: 4pt; font-weight: bold; color: var(--stamp-color); letter-spacing: 0.5px; }
+        .st-mid { font-family: 'Georgia', serif; font-size: 7.5pt; font-weight: bold; color: var(--stamp-color); border-top: 1px solid var(--stamp-color); border-bottom: 1px solid var(--stamp-color); margin: 1px 0; padding: 0.5px 0; width: 100%; text-align: center; }
+        .st-bot { font-size: 5pt; font-weight: bold; color: var(--stamp-color); letter-spacing: 0.5px; }
+
+        .signature-area { width: 50mm; text-align: center; }
+        .sig-line { border-bottom: 1px solid var(--text-dark); height: 18px; margin-bottom: 3px; position: relative; }
+        .sig-line img { max-height: 25px; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%); }
+        .sig-name { font-family: 'Times New Roman', serif; font-size: 9pt; font-weight: bold; color: var(--navy-blue); }
+        .sig-title, .sig-desig { font-size: 6pt; color: var(--text-muted); text-transform: uppercase; }
+
+        .qr-section { display: flex; align-items: center; gap: 4px; text-align: right; font-size: 5.5pt; color: var(--text-muted); line-height: 1.2; }
+        .qr-box, .qr-wrap { width: 38px; height: 38px; border: 1px solid #ccc; padding: 2px; }
+        .qr-box img, .qr-wrap img { width: 100% !important; height: 100% !important; display: block; }
+        .qr-section strong { color: var(--navy-blue); font-size: 7pt; display: block; margin-bottom: 1px; }
+
+        .page-indicator {
+            display: flex; justify-content: space-between;
+            border-top: 1px solid #eee; padding-top: 1px; margin-top: 2.5mm;
+            font-size: 5.5pt; color: #888;
+            z-index: 1;
+        }
+
+        /* ── PAGE 2 SPECIFIC / ENDORSEMENTS ── */
+        .mini-hdr {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #ccc; padding-bottom: 1.5mm; margin-bottom: 3mm;
+            z-index: 1;
+        }
+        .mini-hdr-left { display: flex; align-items: center; gap: 6px; font-size: 7pt; font-weight: bold; color: var(--navy-blue); }
+        .mini-hdr-left img { height: 18px; object-fit: contain; }
+        .mini-hdr-right { font-size: 7pt; color: var(--text-muted); }
+        .mini-hdr-right span { font-family: 'Courier New', monospace; font-weight: bold; color: var(--navy-blue); }
+
+        .end-title {
+            font-family: 'Georgia', serif; font-size: 11pt; font-weight: bold;
+            color: var(--navy-blue); text-align: center; margin: 3mm 0 1.5mm;
+            z-index: 1;
+        }
+        .end-subtitle {
+            font-size: 7.5pt; color: var(--text-muted); text-align: center; margin-bottom: 3mm;
+            padding: 0 8mm; line-height: 1.4;
+            z-index: 1;
+        }
+        .end-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 3mm 5mm;
+            margin-bottom: 3mm;
+            z-index: 1;
+        }
+        .end-box {
+            border: 1px solid var(--border); background: #fff; padding: 2.5mm;
+        }
+        .end-box-title {
+            font-size: 7pt; font-weight: bold; text-transform: uppercase;
+            letter-spacing: 0.5px; color: var(--navy-light); border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5px; margin-bottom: 2.5mm;
+        }
+        .end-row {
+            display: flex; align-items: flex-end; margin-bottom: 2.5mm; font-size: 7.2pt;
+        }
+        .end-label { width: 60px; color: var(--text-muted); }
+        .end-line { flex: 1; border-bottom: 1px dashed #ccc; height: 12px; position: relative; }
+        .end-line span {
+            position: absolute; bottom: 1px; left: 4px; font-family: 'Times New Roman', serif;
+            font-size: 9.5pt; font-weight: bold; color: var(--navy-blue);
+        }
+        .end-full { grid-column: 1 / -1; }
+
+        .gen-notice {
+            background: var(--bg-light); border: 1px solid var(--border);
+            padding: 2mm 3.5mm; display: flex; align-items: center; justify-content: center;
+            gap: 5px; flex-shrink: 0; margin-top: auto; border-radius: 2px;
+            z-index: 1;
+        }
+        .gen-notice-text {
+            font-size: 6pt; color: var(--text-muted);
+            letter-spacing: .5px; line-height: 1.15; text-align: center; text-transform: uppercase;
+        }
+        .gen-notice-text strong { color: var(--navy-blue); font-weight: bold; }
+
+        /* 🔹 FIXED PRINT RULES FOR BLANK PDF 🔹 */
+        @page { size: A4; margin: 0; }
+        @media print {
+            html, body {font-size: 7.8pt; 
+                background: #fff !important; 
+                padding: 0 !important; 
+                margin: 0 !important; 
+                width: auto !important; 
+                height: auto !important;
+            }
+            .no-print { display: none !important; }
+            .cert-page {
+                box-shadow: none !important; 
+                margin: 0 !important;
+                width: 210mm !important; 
+                height: 296.5mm !important; /* Slightly below 297 to avoid 1px extra blank page */
+                page-break-after: always; 
+                page-break-inside: avoid;
+                background: white !important;
+                position: relative !important;
+            }
+            .cert-page:last-child { page-break-after: auto; }
+        }
+    </style>
+
 </head>
 <body>
 
-<div class="no-print">
-  <button class="btn-print" onclick="window.print()">🖨&nbsp; Print / Save as PDF</button>
-</div>
-
-<div class="cert">
-
-  <!-- ═══ HEADER ═══ -->
-  <div class="hdr">
-    <div class="hdr-gold-top"></div>
-    <div class="hdr-inner">
-      <div class="logo">
-        <img src="https://grclass.com/grclass-logo.webp" alt="GR Glass Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-      </div>
-      <div class="hdr-title">
-        <div class="hdr-eyebrow">Full Term</div>
-        <div class="hdr-certname">Document of Authorization for the Carriage of Grain</div>
-        <div class="hdr-convention">Issued under the provisions of the relevant international conventions</div>
-      </div>
-      <div class="hdr-meta">
-        <span class="hdr-meta-label">GRALO-FT No.</span>
-        <span class="hdr-meta-no"><span class="cert-field" data-field="certificate_number">{certificate_number}</span></span>
-        <div class="hdr-meta-form">Form GRALO-FT · Approved by: GM</div>
-      </div>
+    <div class="no-print">
+        <div>
+            <button class="btn-print" onclick="window.print()">🖨 Print / Save PDF</button>
+            <span class="tag-hint">Note: Replace {tags} with actual backend data before printing.</span>
+        </div>
     </div>
-    <div class="hdr-gold-bottom"></div>
-  </div>
 
-  <!-- ═══ AUTHORITY BAND ═══ -->
-  <div class="authority">
-    Issued under the authority of the Government of <strong><span class="cert-field" data-field="flag_state">{flag_state}</span></strong><br>
+    <div class="cert-page">
+        <div class="border-outer">
+            <div class="border-inner">
+                
+                <div class="watermark">GR CLASS</div>
+
+                <div class="cert-header">
+                    <div class="hdr-left">
+                        <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" onerror="this.style.display='none'; document.getElementById('logo-fb1').style.display='flex';">
+                        <div class="logo-fallback" id="logo-fb1" style="display:none;"><span>GR</span></div>
+                    </div>
+                    <div class="hdr-center">
+                        <div class="hdr-flag">{flag_state}</div>
+                        <div class="hdr-title-en">Document of Authorization for the Carriage of Grain</div>
+                        <div class="hdr-convention">Issued under the provisions of the relevant international conventions</div>
+                    </div>
+                    <div class="hdr-right">
+                        <span class="hdr-meta-label">GRALO-FT No.</span>
+                        <span class="hdr-meta-no">{certificate_number}</span>
+                        <div class="hdr-meta-form">Form GRALO-FT · Approved by: GM</div>
+                    </div>
+                </div>
+
+                <div class="authority">
+                    Issued under the authority of the Government of <strong><span class="cert-field" data-field="flag_state">{flag_state}</span></strong><br>
     By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO) operating under IMO Framework
-  </div>
+                </div>
 
-  <!-- ═══ BODY ═══ -->
-  <div class="body">
-    <p><strong><img src="data:image/jpeg;base64,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" />APPROVAL OF SHIP`S PLANS FOR THE CARRIAGE OF BULK GRAIN</strong></p><p>Issued under the Provisions of THE INTERNATIONAL CONVENTION FOR THE SAFETY OF LIFE AT SEA,</p><p>1974, Chapter VI under the authority of the Government of</p><p><strong>      THE MERCHANT MARINE HONDURAS</strong></p><p><strong>By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><p><strong>GRALO NO.</strong></p><table><tr><td><p><strong>Name of ship</strong></p></td><td><p><strong>Type</strong></p></td><td><p><strong>Distinctive number or letters</strong></p></td><td><p><strong>Port of registry</strong></p></td><td><p><strong>Gross tonnage</strong></p></td><td><p><strong>Keel laid</strong></p></td></tr><tr><td rowspan="3"><p>{vessel_name}</p></td><td rowspan="3"></td><td><p>{call_sign}</p></td><td rowspan="3"><p>{port_of_registry}</p></td><td rowspan="3"><p>{gross_tonnage}</p></td><td rowspan="3"><p>{year_built}</p></td></tr><tr><td><p><strong>IMO number1</strong></p></td></tr><tr><td><p>{imo_number}</p></td></tr></table><table><tr><td><p><strong>Former names, if any, or hull number</strong></p></td><td><p><strong>Approved at request of</strong></p></td></tr><tr><td></td><td></td></tr></table><p>The plans of the above mentioned ship have been examined and found in accordance with the provisions of the Convention referred to above.</p><p>Drawing, documents or plan number and description</p><p><a id="CONDITIONS_OF_APPROVAL_ARE_SET_FORTH_ON_"></a>CONDITIONS OF APPROVAL ARE SET FORTH ON THE REVERSE SIDE</p><table><tr><td><p>Issued at</p></td><td><p> 	</p></td><td><p>Date of issue</p></td><td><p> 	</p></td></tr><tr><td><p>{place_of_survey}</p></td><td><p>(Place of issue of certificate)</p></td><td><p>{issue_date}</p></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p> </p><p>{surveyor_name}GR CLASS REPRESENTATIVE</p><p><strong>1 In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A. 600 (15).</strong></p><p><a id="CONDITIONS_OF_APPROVAL"></a><strong>CONDITIONS OF APPROVAL</strong></p><ol><li>The Master shall be guided by the instructions and arrangements set forth in “GRAIN LOADING MANUAL”.</li><li>The above manual contains data for full holds FULLY TRIMMED only and this approval applies only in respect of loadings with full holds so trimmed.</li><li>The Master shall satisfy himself by calculations prior to going to sea and by using the data contained in the above Manual that the vessel at any stage in the proposed voyage complies with the requirements of Chapter VI of the International Convention for the Safety of Life at Sea 1974.</li><li>This Certificate and the GRAIN LOADING MANUAL are to be kept on board the vessel and, if so required, shall be presented for the inspection by the appropriate Authority at ports of loading together with any calculations required by Item 3 above.</li></ol>
-  </div>
+                <div class="body" style="flex: 1; display: flex; flex-direction: column;">
+                    <p><strong>APPROVAL OF SHIP`S PLANS FOR THE CARRIAGE OF BULK GRAIN</strong></p><p>Issued under the Provisions of THE INTERNATIONAL CONVENTION FOR THE SAFETY OF LIFE AT SEA,</p><p>1974, Chapter VI under the authority of the Government of</p><p><strong>      THE MERCHANT MARINE HONDURAS</strong></p><p><strong>By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><p><strong>GRALO NO.</strong></p><table><tr><td><p><strong>Name of ship</strong></p></td><td><p><strong>Type</strong></p></td><td><p><strong>Distinctive number or letters</strong></p></td><td><p><strong>Port of registry</strong></p></td><td><p><strong>Gross tonnage</strong></p></td><td><p><strong>Keel laid</strong></p></td></tr><tr><td rowspan="3"><p>{vessel_name}</p></td><td rowspan="3"></td><td><p>{call_sign}</p></td><td rowspan="3"><p>{port_of_registry}</p></td><td rowspan="3"><p>{gross_tonnage}</p></td><td rowspan="3"><p>{year_built}</p></td></tr><tr><td><p><strong>IMO number1</strong></p></td></tr><tr><td><p>{imo_number}</p></td></tr></table><table><tr><td><p><strong>Former names, if any, or hull number</strong></p></td><td><p><strong>Approved at request of</strong></p></td></tr><tr><td></td><td></td></tr></table><p>The plans of the above mentioned ship have been examined and found in accordance with the provisions of the Convention referred to above.</p><p>Drawing, documents or plan number and description</p><p><a id="CONDITIONS_OF_APPROVAL_ARE_SET_FORTH_ON_"></a>CONDITIONS OF APPROVAL ARE SET FORTH ON THE REVERSE SIDE</p><table><tr><td><p>Issued at</p></td><td><p> 	</p></td><td><p>Date of issue</p></td><td><p> 	</p></td></tr><tr><td><p>{place_of_survey}</p></td><td><p>(Place of issue of certificate)</p></td><td><p>{issue_date}</p></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p> </p><p>{surveyor_name}GR CLASS REPRESENTATIVE</p><p><strong>1 In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A. 600 (15).</strong></p><p><a id="CONDITIONS_OF_APPROVAL"></a><strong>CONDITIONS OF APPROVAL</strong></p><ol><li>The Master shall be guided by the instructions and arrangements set forth in “GRAIN LOADING MANUAL”.</li><li>The above manual contains data for full holds FULLY TRIMMED only and this approval applies only in respect of loadings with full holds so trimmed.</li><li>The Master shall satisfy himself by calculations prior to going to sea and by using the data contained in the above Manual that the vessel at any stage in the proposed voyage complies with the requirements of Chapter VI of the International Convention for the Safety of Life at Sea 1974.</li><li>This Certificate and the GRAIN LOADING MANUAL are to be kept on board the vessel and, if so required, shall be presented for the inspection by the appropriate Authority at ports of loading together with any calculations required by Item 3 above.</li></ol>
+                </div>
 
+                {remarks}
+                <div class="gen-notice">
+                    <svg width="10" height="11" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.6; flex-shrink: 0; margin-right: 2px; vertical-align: middle;">
+                        <path d="M10.5 5H9.5V3.5C9.5 1.57 7.93 0 6 0C4.07 0 2.5 1.57 2.5 3.5V5H1.5C0.67 5 0 5.67 0 6.5V12.5C0 13.33 0.67 14 1.5 14H10.5C11.33 14 12 13.33 12 12.5V6.5C12 5.67 11.33 5 10.5 5ZM3.8 3.5C3.8 2.29 4.79 1.3 6 1.3C7.21 1.3 8.2 2.29 8.2 3.5V5H3.8V3.5ZM6.75 9.85V11.5H5.25V9.85C4.8 9.57 4.5 9.07 4.5 8.5C4.5 7.67 5.17 7 6 7C6.83 7 7.5 7.67 7.5 8.5C7.5 9.07 7.2 9.57 6.75 9.85Z" fill="#1b365d"/>
+                    </svg>
+                    <span class="gen-notice-text">
+                        Computer-generated certificate — does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
+                        Verify at <strong>grclass.com</strong>
+                    </span>
+                </div>
 
-  <!-- ═══ GENERATED NOTICE ═══ -->
-  <div class="generated-notice">
-    <span class="generated-notice-icon">🔒</span>
-    <span class="generated-notice-text">
-      This is a computer-generated certificate and does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
-      Verify authenticity at <strong>grclass.com</strong>
-    </span>
-  </div>
+                <div class="footer-area">
+                    <div class="stamp-container">
+                        <div class="diamond-stamp"></div>
+                        <div class="stamp-text-wrapper">
+                            <div class="st-top">ISSUING AUTHORITY</div>
+                            <div class="st-mid">APPROVED</div>
+                            <div class="st-bot">GR CLASS</div>
+                        </div>
+                    </div>
 
-  <!-- ═══ FOOTER / SIGNATURE ═══ -->
-  <div class="ftr">
-    <div class="ftr-gold-top"></div>
-    <div class="ftr-inner">
-      <div class="sig-area">
-        <div style="position: relative; height: 65px; margin-bottom: 5px; width: 240px;">
-          <!-- Signature Image -->
-          <div class="sig-img-wrap" style="position: absolute; left: 10px; bottom: 0; z-index: 2;">
-            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=null;" alt="Signature" style="max-height: 50px; max-width: 100px; object-fit: contain; display: block;">
-          </div>
-          <!-- Stamp Image -->
-          <div class="stamp-img-wrap" style="position: absolute; left: 110px; bottom: -15px; z-index: 1; opacity: 0.85;">
-            <img src="{stamp}" onerror="this.src='../../../src/modules/payments/Gr-class-stamp.png'; this.onerror=null;" alt="Official Stamp" style="max-height: 70px; max-width: 105px; object-fit: contain; display: block;">
-          </div>
+                    <div class="signature-area">
+                        <div class="sig-line">
+                            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Signature" style="max-height: 28px; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%);">
+                        </div>
+                        <div class="sig-name">GR CLASS Representative</div>
+                        <div class="sig-title">GR CLASS</div>
+                    </div>
+
+                    <div class="qr-section">
+                        <div>
+                            <strong>GR CLASS</strong>
+                            Classified for Standard
+                        </div>
+                        <div class="qr-box">
+                            {qr_code}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="page-indicator">
+                <span>GRALO-FT</span>
+                <span>Page 1 of 1</span>
+            </div>
         </div>
-        <div class="sig-line"></div>
-        <div class="sig-label">GR CLASS Representative</div>
-        <div class="sig-name">{surveyor_name}</div>
-        <div class="sig-desig">GR CLASS Representative · Surveyor</div>
-      </div>
-      <div class="ftr-contact" style="display: flex; gap: 15px; align-items: center; text-align: left; justify-content: flex-end;">
-
-        <div style="width: 70px; height: 70px; flex-shrink: 0; background: #fff; padding: 2px; border-radius: 2px; border: 1px solid var(--border);">
-
-          <style>
-
-            .qr-img-wrap img { width: 66px !important; height: 66px !important; display: block; }
-
-          </style>
-
-          <div class="qr-img-wrap">{qr_code}</div>
-
-        </div>
-
-        <div style="text-align: right;">
-        <strong>GR CLASS</strong>
-        <a href="mailto:info@grclass.com">info@grclass.com</a><br>
-        <a href="https://www.grclass.com">www.grclass.com</a><br>
-        Classified for Standard (GR CLASS)<br>
-        Recognized Organization · Global Marine Services
-      </div>
-
-      </div>
     </div>
-  </div>
-
-</div>
 
 </body>
 </html>

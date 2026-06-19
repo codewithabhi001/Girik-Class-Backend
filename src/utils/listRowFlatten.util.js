@@ -36,6 +36,7 @@ export const shapeCertificateTypeDetail = (row) => {
         requires_survey: t.requires_survey,
         requires_survey_short_term: t.requires_survey_short_term,
         requires_survey_full_term: t.requires_survey_full_term,
+        signature_url: t.signature_url ?? null,
         required_documents: docs.map((d) => ({
             id: d.id,
             document_name: d.document_name,

@@ -1,420 +1,567 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>GR Class – High Speed Craft Safety Certificate - Short Term</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+    <meta charset="UTF-8">
+    <title>GR Class – High Speed Craft Safety Certificate - Short Term</title>
+    
+    <style>
+        /* ── OPTIMIZED CSS (SYSTEM FONTS FOR INSTANT LOAD) ── */
+        :root {
+            --navy-blue: #0b2545;
+            --navy-light: #133c6d;
+            --gold-primary: #b08d57;
+            --text-dark: #1a1a1a;
+            --text-muted: #444444;
+            --paper: #ffffff;
+            --stamp-color: #E65100; /* Bhagwa Color */
+            --bg-light: #f4f6f8;
+            --primary: #0b2545;
+            --border: #ccc;
+            --light: #f4f6f8;
+        }
 
-:root {
-  --navy:    #0B2443;
-  --blue:    #005BAA;
-  --gold:    #B5891F;
-  --gold-lt: #D4A93A;
-  --cream:   #F9F6F0;
-  --light:   #EEF3F9;
-  --border:  #C8D8E8;
-  --rule:    #C4A84A;
-  --text:    #18181B;
-  --muted:   #52525B;
-}
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 7.8pt; /* Compact font size to prevent overflow */
+            background: #222;
+            padding: 20px 0 40px;
+            color: var(--text-dark);
+            line-height: 1.3;
+        }
 
-html { background: #8A8A8A; }
-body {
-  font-family: 'Source Sans 3', sans-serif;
-  font-size: 10pt;
-  color: var(--text);
-  background: #8A8A8A;
-  padding: 16px 0 40px;
-}
+        .no-print {
+            width: 210mm;
+            margin: 0 auto 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
 
-.no-print {
-  width: 210mm;
-  margin: 0 auto 10px;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.btn-print {
-  background: var(--navy);
-  color: #fff;
-  border: none;
-  padding: 8px 20px;
-  font-size: 9pt;
-  font-weight: 600;
-  letter-spacing: .4px;
-  cursor: pointer;
-  border-radius: 3px;
-}
-.btn-print:hover { background: var(--blue); }
+        .btn-print {
+            background: var(--gold-primary);
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            font-size: 8.5pt;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+        .btn-print:hover { background: #967645; }
+        .tag-hint { font-size: 7.5pt; color: #666; font-style: italic; }
 
-.cert {
-  width: 210mm;
-  min-height: 297mm;
-  background: #fff;
-  margin: 0 auto;
-  box-shadow: 0 8px 48px rgba(0,0,0,.35);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-}
+        /* ── CERTIFICATE DESIGN (A4) ── */
+        .cert-page {
+            width: 210mm;
+            height: 297mm;
+            background-color: var(--paper);
+            margin: 0 auto 15mm auto;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 8mm; /* Margins slightly reduced for extra height room */
+            display: flex;
+            flex-direction: column;
+        }
 
-.cert * { word-wrap: break-word; overflow-wrap: break-word; }
+        /* Double Border System */
+        .border-outer {
+            border: 2.5px solid var(--navy-blue);
+            height: 100%;
+            padding: 3px;
+            position: relative;
+        }
+        .border-inner {
+            border: 1px solid var(--gold-primary);
+            height: 100%;
+            padding: 7mm; /* Inner padding slightly reduced */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
 
-.cert::before {
-  content: '';
-  position: absolute;
-  inset: 5mm;
-  border: 1px solid var(--rule);
-  pointer-events: none;
-  z-index: 5;
-}
-.cert::after {
-  content: '';
-  position: absolute;
-  inset: 7mm;
-  border: .4px solid rgba(196,168,74,.4);
-  pointer-events: none;
-  z-index: 5;
-}
+        /* Background Watermark */
+        .watermark {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-family: 'Georgia', serif;
+            font-size: 80pt;
+            color: var(--navy-blue);
+            opacity: 0.025;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 0;
+        }
 
-.hdr {
-  background: var(--navy);
-  padding: 0;
-  position: relative;
-  flex-shrink: 0;
-}
-.hdr-gold-top {
-  height: 4px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
-}
-.hdr-inner {
-  padding: 8mm 12mm 7mm;
-  display: grid;
-  grid-template-columns: 60px 1fr auto;
-  gap: 12px;
-  align-items: center;
-}
-.hdr-gold-bottom {
-  height: 2.5px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
-}
+        /* ── HEADER ── */
+        .cert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid var(--gold-primary);
+            padding-bottom: 2mm;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+        }
+        
+        .hdr-left { flex: 0 0 85px; text-align: left; }
+        .hdr-left img { max-width: 80px; height: auto; object-fit: contain; }
+        .logo-fallback {
+            width: 65px; height: 65px;
+            border: 2px solid var(--navy-blue); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Times New Roman', serif; font-weight: bold; font-size: 16pt; color: var(--navy-blue);
+        }
 
-.logo {
-  width: 60px; height: 60px;
-  background: #fff;
-  border-radius: 2px;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 2px;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 1px rgba(196,168,74,.6);
-}
+        .hdr-center { flex: 1; text-align: center; padding: 0 10px; }
+        .hdr-flag {
+            font-family: 'Times New Roman', serif;
+            font-size: 12.5pt;
+            font-weight: bold;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 3px;
+        }
+        .hdr-title-es {
+            font-family: 'Georgia', serif;
+            font-size: 9.5pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+            margin-bottom: 1px;
+            text-transform: uppercase;
+        }
+        .hdr-title-en {
+            font-family: 'Georgia', serif;
+            font-size: 11.5pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+        .hdr-convention {
+            font-family: 'Times New Roman', serif;
+            font-size: 7.2pt;
+            color: var(--text-muted);
+            line-height: 1.25;
+            font-style: italic;
+        }
 
-.hdr-eyebrow {
-  font-size: 7pt;
-  font-weight: 600;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--gold-lt);
-  margin-bottom: 4px;
-}
-.hdr-certname {
-  font-family: 'EB Garamond', serif;
-  font-size: 14pt;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.15;
-  margin-bottom: 5px;
-  word-wrap: break-word;
-}
-.hdr-convention {
-  font-size: 7.5pt;
-  color: rgba(255,255,255,.55);
-  line-height: 1.5;
-  max-width: 440px;
-  word-wrap: break-word;
-}
+        .hdr-right { flex: 0 0 auto; text-align: right; min-width: 120px; }
+        .hdr-meta-label { font-size: 6pt; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .hdr-meta-no {
+            font-family: 'Courier New', monospace;
+            font-size: 10pt;
+            font-weight: bold;
+            color: var(--stamp-color);
+            margin-top: 1px;
+            display: block;
+        }
+        .hdr-meta-form { font-size: 6pt; color: var(--navy-blue); margin-top: 2px; font-weight: bold; }
 
-.hdr-meta { text-align: right; word-wrap: break-word; }
-.hdr-meta-label {
-  font-size: 6pt;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--gold-lt);
-  display: block;
-}
-.hdr-meta-no {
-  font-family: 'EB Garamond', serif;
-  font-size: 13pt;
-  font-weight: 700;
-  color: #fff;
-  display: block;
-  line-height: 1.15;
-  letter-spacing: .5px;
-  white-space: nowrap;
-}
-.hdr-meta-form {
-  font-size: 6.5pt;
-  color: rgba(255,255,255,.35);
-  margin-top: 4px;
-}
+        /* ── AUTHORITY ── */
+        .authority {
+            text-align: center;
+            font-family: 'Times New Roman', serif;
+            font-size: 8.5pt;
+            color: var(--text-dark);
+            line-height: 1.35;
+            padding-bottom: 2mm;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+        }
+        .authority strong { color: var(--navy-blue); text-transform: uppercase; }
 
-.authority {
-  background: var(--light);
-  border-bottom: 1px solid var(--border);
-  padding: 3.5mm 12mm;
-  text-align: center;
-  font-size: 8.5pt;
-  color: var(--muted);
-  line-height: 1.6;
-}
-.authority strong { color: var(--navy); font-weight: 700; }
+        /* ── SECTIONS & TABLES ── */
+        .sec-label {
+            font-family: 'Arial', sans-serif;
+            font-size: 7.2pt;
+            font-weight: bold;
+            color: var(--navy-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 2mm 0 1mm 0;
+            border-left: 3px solid var(--gold-primary);
+            padding-left: 5px;
+            z-index: 1;
+        }
 
-.body { padding: 8mm 12mm 8mm; flex: 1; }
+        /* Data table & Vessel table styling combined */
+        .data-table, .vtable, .mtable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2mm;
+            table-layout: fixed; /* Fixes horizontal overflow */
+            z-index: 1;
+        }
+        .data-table th, .data-table td, .vtable th, .vtable td, .mtable th, .mtable td {
+            border: 1px solid #ccc;
+            padding: 2px 4px; /* Compact padding */
+            text-align: left;
+            word-wrap: break-word; /* Wraps long content */
+            overflow-wrap: break-word;
+        }
+        .data-table th, .vtable th, .mtable th {
+            background: var(--bg-light);
+            font-size: 6pt;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            line-height: 1.2;
+        }
+        .data-table td, .vtable td, .mtable td {
+            font-family: 'Times New Roman', serif;
+            font-size: 8pt; /* Compact font size */
+            font-weight: bold;
+            color: var(--navy-blue);
+            vertical-align: middle;
+        }
+        
+        .val, .m-val {
+            font-family: 'Times New Roman', serif;
+            font-size: 8.5pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+        }
+        
+        .val-large {
+            font-size: 13pt !important;
+            text-align: center;
+            padding: 6px !important;
+        }
 
-.body p {
-  margin-bottom: 8px;
-  line-height: 1.5;
-  font-size: 9pt;
-}
-.body table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 10px 0;
-  font-size: 8.5pt;
-}
-.body table td, .body table th {
-  border: 1px solid var(--border);
-  padding: 6px 8px;
-  vertical-align: middle;
-}
-.body table th {
-  background: var(--navy);
-  color: var(--gold-lt);
-  font-size: 6.5pt;
-  font-weight: 700;
-  letter-spacing: .8px;
-  text-transform: uppercase;
-  padding: 5px 9px;
-  border: 1px solid var(--navy);
-  text-align: left;
-}
-.body ul, .body ol {
-  margin-left: 20px;
-  margin-bottom: 10px;
-}
-.body li {
-  margin-bottom: 4px;
-}
+        /* Checkbox items */
+        .chk-list { display: flex; flex-direction: column; gap: 1.5px; margin-bottom: 1.5mm; z-index: 1; }
+        .chk-item {
+            display: flex; align-items: flex-start; gap: 5px;
+            padding: 1px 3px; border: 1px solid transparent;
+            font-size: 7.2pt; line-height: 1.3; color: var(--text-dark);
+        }
+        .chk-item.checked { background: var(--bg-light); border-color: var(--border); font-weight: 500; }
+        .checkbox {
+            width: 9px; height: 9px; border: 1px solid var(--navy-blue); flex-shrink: 0; margin-top: 1.5px;
+            background: #fff; position: relative;
+        }
+        .chk-item.checked .checkbox { background: var(--navy-blue); }
+        .chk-item.checked .checkbox::after {
+            content: ''; position: absolute; left: 1.5px; top: 0;
+            width: 3.5px; height: 5px;
+            border-right: 1.2px solid #fff; border-bottom: 1.2px solid #fff;
+            transform: rotate(38deg);
+        }
+        .chk-text b { color: var(--navy-blue); }
+        .inline-val {
+            display: inline-block; font-family: 'Times New Roman', serif;
+            font-size: 9pt; font-weight: bold; color: var(--navy-blue);
+            border-bottom: 1px dashed var(--navy-blue);
+            padding: 0 2px; min-width: 50px; line-height: 1.1; vertical-align: bottom;
+        }
 
-.ftr {
-  background: var(--navy);
-  flex-shrink: 0;
-  position: relative;
-}
-.ftr-gold-top {
-  height: 2.5px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
-}
-.ftr-inner {
-  padding: 5.5mm 12mm 6mm;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12mm;
-  align-items: end;
-}
-.sig-area { color: #fff; }
-.sig-line {
-  border-bottom: 1px solid rgba(255,255,255,.3);
-  height: 24px;
-  margin-bottom: 5px;
-  width: 160px;
-}
-.sig-label {
-  font-size: 6pt;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.45);
-  margin-bottom: 2px;
-}
-.sig-name {
-  font-family: 'EB Garamond', serif;
-  font-size: 12pt;
-  color: rgba(255,255,255,.9);
-  font-style: italic;
-  line-height: 1.2;
-}
-.sig-desig {
-  font-size: 7.5pt;
-  font-weight: 600;
-  color: var(--gold-lt);
-  letter-spacing: .3px;
-  margin-top: 1px;
-}
-.ftr-contact {
-  text-align: right;
-  font-size: 7pt;
-  color: rgba(255,255,255,.45);
-  line-height: 1.8;
-}
-.ftr-contact strong {
-  display: block;
-  color: var(--gold-lt);
-  font-size: 8.5pt;
-  font-weight: 700;
-  letter-spacing: .5px;
-  margin-bottom: 2px;
-}
-.ftr-contact a { color: rgba(255,255,255,.55); text-decoration: none; }
+        /* ── FOOTNOTES & PARAGRAPHS ── */
+        .footnotes {
+            font-family: 'Arial', sans-serif;
+            font-size: 6pt;
+            color: #666;
+            line-height: 1.25;
+            margin-bottom: 2mm;
+            z-index: 1;
+        }
+        .footnotes p { margin-bottom: 1px; }
+        sup { color: var(--navy-blue); font-weight: bold; font-size: 5.5pt; }
 
-@page { size: A4; margin: 0; }
-@media print {
-  html, body { background: none !important; padding: 0 !important; margin: 0 !important; }
-  .no-print { display: none !important; }
-  .cert {
-    margin: 0;
-    box-shadow: none;
-    width: 210mm;
-    min-height: 297mm;
-    overflow: hidden;
-    page-break-inside: avoid;
-  }
-}
+        .certify-box, .certify {
+            border: 1px solid #ccc;
+            border-left: 4.5px solid var(--navy-blue);
+            background: var(--bg-light);
+            padding: 5px 8px;
+            font-family: 'Times New Roman', serif;
+            font-size: 8.5pt;
+            line-height: 1.35;
+            margin-bottom: 2.5mm;
+            text-align: justify;
+            z-index: 1;
+        }
+        .certify-box i { color: var(--text-muted); font-size: 8pt; display: block; margin-top: 2px; }
+        .certify-title {
+            font-weight: bold; color: var(--navy-blue); font-size: 8.5pt;
+            margin-bottom: 2px; text-transform: uppercase; letter-spacing: .5px;
+        }
+        .certify ul { margin-left: 14px; }
+        .certify ul li { margin-bottom: 1.5px; }
 
-/* ── GENERATED NOTICE BAR ── */
-.generated-notice {
-  background: linear-gradient(135deg, #f0f5fb 0%, #e8f0f8 100%);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 3mm 12mm;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-.generated-notice-icon {
-  font-size: 9pt;
-  opacity: 0.65;
-  flex-shrink: 0;
-}
-.generated-notice-text {
-  font-size: 6.8pt;
-  font-style: italic;
-  color: var(--muted);
-  letter-spacing: 0.15px;
-  line-height: 1.5;
-  text-align: center;
-}
-.generated-notice-text strong {
-  font-style: normal;
-  color: var(--blue);
-  font-weight: 600;
-}
+        /* ── VALIDITY GRID ── */
+        .vgrid {
+            display: flex;
+            justify-content: space-between;
+            border: 1px solid var(--gold-primary);
+            background: #fdfbf7;
+            padding: 5px 10px;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+        }
+        .vgrid-2 {
+            display: flex;
+            justify-content: space-between;
+            border: 1px solid var(--border);
+            background: #ffffff;
+            padding: 4px 10px;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+        }
+        .vcell { text-align: left; }
+        .vcell-label, .vc-label { font-size: 6pt; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1px; display: block; }
+        .vcell-val, .vc-val { font-family: 'Courier New', monospace; font-size: 9pt; font-weight: bold; color: var(--navy-blue); }
 
-</style>
+        /* ── FOOTER AREA ── */
+        .footer-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: auto;
+            padding-top: 1mm;
+            z-index: 1;
+        }
+
+        /* DIAMOND STAMP (BHAGWA) */
+        .stamp-container {
+            position: relative;
+            width: 28mm;
+            height: 28mm;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: rotate(-10deg);
+        }
+        .diamond-stamp {
+            width: 20mm;
+            height: 20mm;
+            border: 1.8px solid var(--stamp-color);
+            transform: rotate(45deg);
+            position: absolute;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 60%), rgba(230, 81, 0, 0.05);
+            box-shadow: inset 0 0 3px rgba(230, 81, 0, 0.2);
+        }
+        .diamond-stamp::before {
+            content: '';
+            position: absolute;
+            inset: 1.5px;
+            border: 1px dashed rgba(230, 81, 0, 0.5);
+        }
+        .stamp-text-wrapper {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 26mm;
+        }
+        .st-top { font-size: 4pt; font-weight: bold; color: var(--stamp-color); letter-spacing: 0.5px; }
+        .st-mid { font-family: 'Georgia', serif; font-size: 7.5pt; font-weight: bold; color: var(--stamp-color); border-top: 1px solid var(--stamp-color); border-bottom: 1px solid var(--stamp-color); margin: 1px 0; padding: 0.5px 0; width: 100%; text-align: center; }
+        .st-bot { font-size: 5pt; font-weight: bold; color: var(--stamp-color); letter-spacing: 0.5px; }
+
+        .signature-area { width: 50mm; text-align: center; }
+        .sig-line { border-bottom: 1px solid var(--text-dark); height: 18px; margin-bottom: 3px; position: relative; }
+        .sig-line img { max-height: 25px; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%); }
+        .sig-name { font-family: 'Times New Roman', serif; font-size: 9pt; font-weight: bold; color: var(--navy-blue); }
+        .sig-title, .sig-desig { font-size: 6pt; color: var(--text-muted); text-transform: uppercase; }
+
+        .qr-section { display: flex; align-items: center; gap: 4px; text-align: right; font-size: 5.5pt; color: var(--text-muted); line-height: 1.2; }
+        .qr-box, .qr-wrap { width: 38px; height: 38px; border: 1px solid #ccc; padding: 2px; }
+        .qr-box img, .qr-wrap img { width: 100% !important; height: 100% !important; display: block; }
+        .qr-section strong { color: var(--navy-blue); font-size: 7pt; display: block; margin-bottom: 1px; }
+
+        .page-indicator {
+            display: flex; justify-content: space-between;
+            border-top: 1px solid #eee; padding-top: 1px; margin-top: 2.5mm;
+            font-size: 5.5pt; color: #888;
+            z-index: 1;
+        }
+
+        /* ── PAGE 2 SPECIFIC / ENDORSEMENTS ── */
+        .mini-hdr {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #ccc; padding-bottom: 1.5mm; margin-bottom: 3mm;
+            z-index: 1;
+        }
+        .mini-hdr-left { display: flex; align-items: center; gap: 6px; font-size: 7pt; font-weight: bold; color: var(--navy-blue); }
+        .mini-hdr-left img { height: 18px; object-fit: contain; }
+        .mini-hdr-right { font-size: 7pt; color: var(--text-muted); }
+        .mini-hdr-right span { font-family: 'Courier New', monospace; font-weight: bold; color: var(--navy-blue); }
+
+        .end-title {
+            font-family: 'Georgia', serif; font-size: 11pt; font-weight: bold;
+            color: var(--navy-blue); text-align: center; margin: 3mm 0 1.5mm;
+            z-index: 1;
+        }
+        .end-subtitle {
+            font-size: 7.5pt; color: var(--text-muted); text-align: center; margin-bottom: 3mm;
+            padding: 0 8mm; line-height: 1.4;
+            z-index: 1;
+        }
+        .end-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 3mm 5mm;
+            margin-bottom: 3mm;
+            z-index: 1;
+        }
+        .end-box {
+            border: 1px solid var(--border); background: #fff; padding: 2.5mm;
+        }
+        .end-box-title {
+            font-size: 7pt; font-weight: bold; text-transform: uppercase;
+            letter-spacing: 0.5px; color: var(--navy-light); border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5px; margin-bottom: 2.5mm;
+        }
+        .end-row {
+            display: flex; align-items: flex-end; margin-bottom: 2.5mm; font-size: 7.2pt;
+        }
+        .end-label { width: 60px; color: var(--text-muted); }
+        .end-line { flex: 1; border-bottom: 1px dashed #ccc; height: 12px; position: relative; }
+        .end-line span {
+            position: absolute; bottom: 1px; left: 4px; font-family: 'Times New Roman', serif;
+            font-size: 9.5pt; font-weight: bold; color: var(--navy-blue);
+        }
+        .end-full { grid-column: 1 / -1; }
+
+        .gen-notice {
+            background: var(--bg-light); border: 1px solid var(--border);
+            padding: 2mm 3.5mm; display: flex; align-items: center; justify-content: center;
+            gap: 5px; flex-shrink: 0; margin-top: auto; border-radius: 2px;
+            z-index: 1;
+        }
+        .gen-notice-text {
+            font-size: 6pt; color: var(--text-muted);
+            letter-spacing: .5px; line-height: 1.15; text-align: center; text-transform: uppercase;
+        }
+        .gen-notice-text strong { color: var(--navy-blue); font-weight: bold; }
+
+        /* 🔹 FIXED PRINT RULES FOR BLANK PDF 🔹 */
+        @page { size: A4; margin: 0; }
+        @media print {
+            html, body {font-size: 7.8pt; 
+                background: #fff !important; 
+                padding: 0 !important; 
+                margin: 0 !important; 
+                width: auto !important; 
+                height: auto !important;
+            }
+            .no-print { display: none !important; }
+            .cert-page {
+                box-shadow: none !important; 
+                margin: 0 !important;
+                width: 210mm !important; 
+                height: 296.5mm !important; /* Slightly below 297 to avoid 1px extra blank page */
+                page-break-after: always; 
+                page-break-inside: avoid;
+                background: white !important;
+                position: relative !important;
+            }
+            .cert-page:last-child { page-break-after: auto; }
+        }
+    </style>
+
 </head>
 <body>
 
-<div class="no-print">
-  <button class="btn-print" onclick="window.print()">🖨&nbsp; Print / Save as PDF</button>
-</div>
-
-<div class="cert">
-
-  <!-- ═══ HEADER ═══ -->
-  <div class="hdr">
-    <div class="hdr-gold-top"></div>
-    <div class="hdr-inner">
-      <div class="logo">
-        <img src="https://grclass.com/grclass-logo.webp" alt="GR Glass Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-      </div>
-      <div class="hdr-title">
-        <div class="hdr-eyebrow">Short Term</div>
-        <div class="hdr-certname">High Speed Craft Safety Certificate</div>
-        <div class="hdr-convention">Issued under the provisions of the relevant international conventions</div>
-      </div>
-      <div class="hdr-meta">
-        <span class="hdr-meta-label">HSCSC-ST No.</span>
-        <span class="hdr-meta-no"><span class="cert-field" data-field="certificate_number">{certificate_number}</span></span>
-        <div class="hdr-meta-form">Form HSCSC-ST · Approved by: GM</div>
-      </div>
+    <div class="no-print">
+        <div>
+            <button class="btn-print" onclick="window.print()">🖨 Print / Save PDF</button>
+            <span class="tag-hint">Note: Replace {tags} with actual backend data before printing.</span>
+        </div>
     </div>
-    <div class="hdr-gold-bottom"></div>
-  </div>
 
-  <!-- ═══ AUTHORITY BAND ═══ -->
-  <div class="authority">
-    Issued under the authority of the Government of <strong><span class="cert-field" data-field="flag_state">{flag_state}</span></strong><br>
+    <div class="cert-page">
+        <div class="border-outer">
+            <div class="border-inner">
+                
+                <div class="watermark">GR CLASS</div>
+
+                <div class="cert-header">
+                    <div class="hdr-left">
+                        <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" onerror="this.style.display='none'; document.getElementById('logo-fb1').style.display='flex';">
+                        <div class="logo-fallback" id="logo-fb1" style="display:none;"><span>GR</span></div>
+                    </div>
+                    <div class="hdr-center">
+                        <div class="hdr-flag">{flag_state}</div>
+                        <div class="hdr-title-en">High Speed Craft Safety Certificate</div>
+                        <div class="hdr-convention">Issued under the provisions of the relevant international conventions</div>
+                    </div>
+                    <div class="hdr-right">
+                        <span class="hdr-meta-label">HSCSC-ST No.</span>
+                        <span class="hdr-meta-no">{certificate_number}</span>
+                        <div class="hdr-meta-form">Form HSCSC-ST · Approved by: GM</div>
+                    </div>
+                </div>
+
+                <div class="authority">
+                    Issued under the authority of the Government of <strong><span class="cert-field" data-field="flag_state">{flag_state}</span></strong><br>
     By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO) operating under IMO Framework
-  </div>
+                </div>
 
-  <!-- ═══ BODY ═══ -->
-  <div class="body">
-    <p><strong>HIGH-SPEED CRAFT SAFETY CERTIFICATE</strong></p><p><em><img src="data:image/jpeg;base64,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oooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACv2Ir8d6/Yivz7iz/lx/wBvf+2n33Cv/L//ALd/9uPzZ/a8/wCTiPFn/bp/6SQ147XsX7Xn/JxHiz/t0/8ASSGvHa+xy7/cqP8Ahj+SPkcw/wB8rf4pfmwooor0DzwooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACv2Ir8d6/Yivz7iz/lx/wBvf+2n33Cv/L//ALd/9uPzZ/a8/wCTiPFn/bp/6SQ147XsX7Xn/JxHiz/t0/8ASSGvHa+xy7/cqP8Ahj+SPkcw/wB8rf4pfmwooor0DzwooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACv2Ir8d6/Yivz7iz/lx/wBvf+2n33Cv/L//ALd/9uPzZ/a8/wCTiPFn/bp/6SQ147XsX7Xn/JxHiz/t0/8ASSGvHa+xy7/cqP8Ahj+SPkcw/wB8rf4pfmwooor0DzwooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACv2Ir8d6/Yivz7iz/lx/wBvf+2n33Cv/L//ALd/9uPzZ/a8/wCTiPFn/bp/6SQ147XsX7Xn/JxHiz/t0/8ASSGvHa+xy7/cqP8Ahj+SPkcw/wB8rf4pfmwooor0DzwooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACv2Ir8d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" />This certificate shall be supplemented by a Record of Equipment</em></p><p>Issued under the provisions of the INTERNATIONAL CODE OF SAFETY FOR HIGH-SPEED CRAFT, 2000</p><p>(Resolution MSC.97(73))</p><p>Under the authority of the Government of</p><img src="data:image/png;base64,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" /><p><strong>  THE MERCHANT MARINE HONDURAS</strong></p><p><strong>                                                            By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><p><strong>HSC ST No.:   </strong></p><table><tr><td><p><strong>NAME OF CRAFT</strong></p></td><td colspan="2"><p><strong>MANUFACTURER’S MODEL AND HULL NUMBER</strong></p></td><td><p><strong>DISTINCTIVE NUMBER OR LETTERS</strong></p></td></tr><tr><td></td><td colspan="2"></td><td><p>{call_sign}</p></td></tr><tr><td><p><strong>IMO NO.</strong></p></td><td colspan="2"><p><strong>PORT OF REGISTRY</strong></p></td><td><p><strong>GROSS TONNAGE</strong></p></td></tr><tr><td><p>{imo_number}</p></td><td><p>{port_of_registry}</p></td><td><p>{gross_tonnage}</p></td></tr><tr><td colspan="2"><p><strong>Sea areas in which the craft is certified to operate (paragraph 14.2.1)</strong></p></td><td colspan="2"></td></tr></table><p>Design waterline corresponding to a height of		below the reference line at the longitudinal centre of flotation, and draughts at the draught marks of	forward and	aft.</p><p>The upper edge of the reference line is	at	<strong>Choose an item. </strong>at longitudinal centre of flotation.</p><ul><li>Category:	<strong>Choose an item.</strong></li><li>Craft type:	<strong>Choose an item.</strong></li></ul><p>Date on which keel was laid or craft was at a similar stage of construction or on which a major conversion was commenced:</p><p><strong>(DD/MM/YYYY)</strong></p><p><strong>THIS IS TO CERTIFY</strong></p><p>That the above-mentioned craft has been duly surveyed in accordance with the applicable provisions of the International Code of Safety for High-Speed Craft, 2000.</p><p>That the survey showed that the structure, equipment, fittings, radio station arrangements and materials of the craft and the condition thereof are in all respects satisfactory and that the craft complies with the relevant provisions of the Code.</p><p>That the life-saving appliances are provided for a total number of	persons and no more as follows:</p><p>That, in accordance with 1.11 of the Code, the following equivalents have been granted in respect of the craft:</p><p>Paragraph	equivalent arrangement	.</p><p>This certificate is valid until		{expiry_date}</p><p> </p><table><tr><td><p>Issued at</p></td><td><p> 	</p></td><td><p>Date of Issue</p></td><td><p> 	</p></td></tr><tr><td><p>{place_of_survey}</p></td><td><p>(Place of issue of certificate)</p></td><td><p>{issue_date}</p></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p>{surveyor_name}GR CLASS REPRESENTATIVE</p><p><img src="data:image/jpeg;base64,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" /></p><p><a id="_Hlk213083592"></a>GR CLASS – CLASSIFIED FOR STANDARD (GR CLASS)</p><p>E-mail: info@grclass.com Web: www.grclass.com</p><p>Form: HSC ST	                                                                                           Approved by: GM	 	Page <strong>1 </strong>of <strong>1</strong></p>
-  </div>
+                <div class="body" style="flex: 1; display: flex; flex-direction: column;">
+                    <p><strong>HIGH-SPEED CRAFT SAFETY CERTIFICATE</strong></p><p><em>This certificate shall be supplemented by a Record of Equipment</em></p><p>Issued under the provisions of the INTERNATIONAL CODE OF SAFETY FOR HIGH-SPEED CRAFT, 2000</p><p>(Resolution MSC.97(73))</p><p>Under the authority of the Government of</p><p><strong>  THE MERCHANT MARINE HONDURAS</strong></p><p><strong>                                                            By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><p><strong>HSC ST No.:   </strong></p><table><tr><td><p><strong>NAME OF CRAFT</strong></p></td><td colspan="2"><p><strong>MANUFACTURER’S MODEL AND HULL NUMBER</strong></p></td><td><p><strong>DISTINCTIVE NUMBER OR LETTERS</strong></p></td></tr><tr><td></td><td colspan="2"></td><td><p>{call_sign}</p></td></tr><tr><td><p><strong>IMO NO.</strong></p></td><td colspan="2"><p><strong>PORT OF REGISTRY</strong></p></td><td><p><strong>GROSS TONNAGE</strong></p></td></tr><tr><td><p>{imo_number}</p></td><td><p>{port_of_registry}</p></td><td><p>{gross_tonnage}</p></td></tr><tr><td colspan="2"><p><strong>Sea areas in which the craft is certified to operate (paragraph 14.2.1)</strong></p></td><td colspan="2"></td></tr></table><p>Design waterline corresponding to a height of		below the reference line at the longitudinal centre of flotation, and draughts at the draught marks of	forward and	aft.</p><p>The upper edge of the reference line is	at	<strong>Choose an item. </strong>at longitudinal centre of flotation.</p><ul><li>Category:	<strong>Choose an item.</strong></li><li>Craft type:	<strong>Choose an item.</strong></li></ul><p>Date on which keel was laid or craft was at a similar stage of construction or on which a major conversion was commenced:</p><p><strong>(DD/MM/YYYY)</strong></p><p><strong>THIS IS TO CERTIFY</strong></p><p>That the above-mentioned craft has been duly surveyed in accordance with the applicable provisions of the International Code of Safety for High-Speed Craft, 2000.</p><p>That the survey showed that the structure, equipment, fittings, radio station arrangements and materials of the craft and the condition thereof are in all respects satisfactory and that the craft complies with the relevant provisions of the Code.</p><p>That the life-saving appliances are provided for a total number of	persons and no more as follows:</p><p>That, in accordance with 1.11 of the Code, the following equivalents have been granted in respect of the craft:</p><p>Paragraph	equivalent arrangement	.</p><p>This certificate is valid until		{expiry_date}</p><p> </p><table><tr><td><p>Issued at</p></td><td><p> 	</p></td><td><p>Date of Issue</p></td><td><p> 	</p></td></tr><tr><td><p>{place_of_survey}</p></td><td><p>(Place of issue of certificate)</p></td><td><p>{issue_date}</p></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p>{surveyor_name}GR CLASS REPRESENTATIVE</p><p></p><p><a id="_Hlk213083592"></a>GR CLASS – CLASSIFIED FOR STANDARD (GR CLASS)</p><p>E-mail: info@grclass.com Web: www.grclass.com</p><p>Form: HSC ST	                                                                                           Approved by: GM	 	Page <strong>1 </strong>of <strong>1</strong></p>
+                </div>
 
+                {remarks}
+                <div class="gen-notice">
+                    <svg width="10" height="11" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.6; flex-shrink: 0; margin-right: 2px; vertical-align: middle;">
+                        <path d="M10.5 5H9.5V3.5C9.5 1.57 7.93 0 6 0C4.07 0 2.5 1.57 2.5 3.5V5H1.5C0.67 5 0 5.67 0 6.5V12.5C0 13.33 0.67 14 1.5 14H10.5C11.33 14 12 13.33 12 12.5V6.5C12 5.67 11.33 5 10.5 5ZM3.8 3.5C3.8 2.29 4.79 1.3 6 1.3C7.21 1.3 8.2 2.29 8.2 3.5V5H3.8V3.5ZM6.75 9.85V11.5H5.25V9.85C4.8 9.57 4.5 9.07 4.5 8.5C4.5 7.67 5.17 7 6 7C6.83 7 7.5 7.67 7.5 8.5C7.5 9.07 7.2 9.57 6.75 9.85Z" fill="#1b365d"/>
+                    </svg>
+                    <span class="gen-notice-text">
+                        Computer-generated certificate — does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
+                        Verify at <strong>grclass.com</strong>
+                    </span>
+                </div>
 
-  <!-- ═══ GENERATED NOTICE ═══ -->
-  <div class="generated-notice">
-    <span class="generated-notice-icon">🔒</span>
-    <span class="generated-notice-text">
-      This is a computer-generated certificate and does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
-      Verify authenticity at <strong>grclass.com</strong>
-    </span>
-  </div>
+                <div class="footer-area">
+                    <div class="stamp-container">
+                        <div class="diamond-stamp"></div>
+                        <div class="stamp-text-wrapper">
+                            <div class="st-top">ISSUING AUTHORITY</div>
+                            <div class="st-mid">APPROVED</div>
+                            <div class="st-bot">GR CLASS</div>
+                        </div>
+                    </div>
 
-  <!-- ═══ FOOTER / SIGNATURE ═══ -->
-  <div class="ftr">
-    <div class="ftr-gold-top"></div>
-    <div class="ftr-inner">
-      <div class="sig-area">
-        <div style="position: relative; height: 65px; margin-bottom: 5px; width: 240px;">
-          <!-- Signature Image -->
-          <div class="sig-img-wrap" style="position: absolute; left: 10px; bottom: 0; z-index: 2;">
-            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=null;" alt="Signature" style="max-height: 50px; max-width: 100px; object-fit: contain; display: block;">
-          </div>
-          <!-- Stamp Image -->
-          <div class="stamp-img-wrap" style="position: absolute; left: 110px; bottom: -15px; z-index: 1; opacity: 0.85;">
-            <img src="{stamp}" onerror="this.src='../../../src/modules/payments/Gr-class-stamp.png'; this.onerror=null;" alt="Official Stamp" style="max-height: 70px; max-width: 105px; object-fit: contain; display: block;">
-          </div>
+                    <div class="signature-area">
+                        <div class="sig-line">
+                            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Signature" style="max-height: 28px; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%);">
+                        </div>
+                        <div class="sig-name">GR CLASS Representative</div>
+                        <div class="sig-title">GR CLASS</div>
+                    </div>
+
+                    <div class="qr-section">
+                        <div>
+                            <strong>GR CLASS</strong>
+                            Classified for Standard
+                        </div>
+                        <div class="qr-box">
+                            {qr_code}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="page-indicator">
+                <span>HSCSC-ST</span>
+                <span>Page 1 of 1</span>
+            </div>
         </div>
-        <div class="sig-line"></div>
-        <div class="sig-label">GR CLASS Representative</div>
-        <div class="sig-name">{surveyor_name}</div>
-        <div class="sig-desig">GR CLASS Representative · Surveyor</div>
-      </div>
-      <div class="ftr-contact" style="display: flex; gap: 15px; align-items: center; text-align: left; justify-content: flex-end;">
-
-        <div style="width: 70px; height: 70px; flex-shrink: 0; background: #fff; padding: 2px; border-radius: 2px; border: 1px solid var(--border);">
-
-          <style>
-
-            .qr-img-wrap img { width: 66px !important; height: 66px !important; display: block; }
-
-          </style>
-
-          <div class="qr-img-wrap">{qr_code}</div>
-
-        </div>
-
-        <div style="text-align: right;">
-        <strong>GR CLASS</strong>
-        <a href="mailto:info@grclass.com">info@grclass.com</a><br>
-        <a href="https://www.grclass.com">www.grclass.com</a><br>
-        Classified for Standard (GR CLASS)<br>
-        Recognized Organization · Global Marine Services
-      </div>
-
-      </div>
     </div>
-  </div>
-
-</div>
 
 </body>
 </html>

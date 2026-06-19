@@ -54,6 +54,11 @@ export default (sequelize, DataTypes) => {
         },
         issued_at: DataTypes.DATE,
         issued_by_user_id: DataTypes.UUID,
+        signature_url: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            comment: 'Custom signature S3 URL override for this specific certificate instance'
+        },
     }, {
         tableName: 'certificates',
         underscored: true,

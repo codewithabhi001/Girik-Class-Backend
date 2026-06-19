@@ -10,6 +10,11 @@ export default (sequelize, DataTypes) => {
         requires_survey: { type: DataTypes.BOOLEAN, defaultValue: true },
         requires_survey_short_term: { type: DataTypes.BOOLEAN, defaultValue: false },
         requires_survey_full_term: { type: DataTypes.BOOLEAN, defaultValue: true },
+        signature_url: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            comment: 'Default signature S3 URL override for this certificate type'
+        },
     }, {
         tableName: 'certificate_types',
         underscored: true,

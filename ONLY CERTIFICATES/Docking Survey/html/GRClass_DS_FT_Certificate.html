@@ -1,598 +1,518 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>GR Class – DS-FT Certificate</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+    <meta charset="UTF-8">
+    <title>GR Class – DS-FT Certificate</title>
+    
+    <style>
+        /* ── OPTIMIZED CSS (SYSTEM FONTS FOR INSTANT LOAD) ── */
+        :root {
+            --navy-blue: #0b2545;
+            --navy-light: #133c6d;
+            --gold-primary: #b08d57;
+            --text-dark: #1a1a1a;
+            --text-muted: #444444;
+            --paper: #ffffff;
+            --stamp-color: #E65100; /* Bhagwa Color */
+            --bg-light: #f4f6f8;
+            --primary: #0b2545;
+            --border: #ccc;
+            --light: #f4f6f8;
+        }
 
-:root {
-  --navy:    #0B2443;
-  --blue:    #005BAA;
-  --gold:    #B5891F;
-  --gold-lt: #D4A93A;
-  --cream:   #F9F6F0;
-  --light:   #EEF3F9;
-  --border:  #C8D8E8;
-  --rule:    #C4A84A;
-  --text:    #18181B;
-  --muted:   #52525B;
-}
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 7.8pt; /* Compact font size to prevent overflow */
+            background: #222;
+            padding: 20px 0 40px;
+            color: var(--text-dark);
+            line-height: 1.3;
+        }
 
-html { background: #8A8A8A; }
-body {
-  font-family: 'Source Sans 3', sans-serif;
-  font-size: 10pt;
-  color: var(--text);
-  background: #8A8A8A;
-  padding: 16px 0 40px;
-}
+        .no-print {
+            width: 210mm;
+            margin: 0 auto 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
 
-/* ── PRINT BUTTON ── */
-.no-print {
-  width: 210mm;
-  margin: 0 auto 10px;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.btn-print {
-  background: var(--navy);
-  color: #fff;
-  border: none;
-  padding: 8px 20px;
-  font-size: 9pt;
-  font-weight: 600;
-  letter-spacing: .4px;
-  cursor: pointer;
-  border-radius: 3px;
-}
-.btn-print:hover { background: var(--blue); }
-.tag-hint {
-  font-size: 8pt;
-  color: #aaa;
-  margin-left: 12px;
-}
+        .btn-print {
+            background: var(--gold-primary);
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            font-size: 8.5pt;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+        .btn-print:hover { background: #967645; }
+        .tag-hint { font-size: 7.5pt; color: #666; font-style: italic; }
 
-/* ── CERTIFICATE PAGE ── */
-.cert {
-  width: 210mm;
-  min-height: 297mm;
-  background: #fff;
-  margin: 0 auto;
-  box-shadow: 0 8px 48px rgba(0,0,0,.35);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-}
+        /* ── CERTIFICATE DESIGN (A4) ── */
+        .cert-page {
+            width: 210mm;
+            height: 297mm;
+            background-color: var(--paper);
+            margin: 0 auto 15mm auto;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 8mm; /* Margins slightly reduced for extra height room */
+            display: flex;
+            flex-direction: column;
+        }
 
-/* prevent any text from overflowing */
-.cert * { word-wrap: break-word; overflow-wrap: break-word; }
+        /* Double Border System */
+        .border-outer {
+            border: 2.5px solid var(--navy-blue);
+            height: 100%;
+            padding: 3px;
+            position: relative;
+        }
+        .border-inner {
+            border: 1px solid var(--gold-primary);
+            height: 100%;
+            padding: 7mm; /* Inner padding slightly reduced */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
 
-/* outer decorative frame */
-.cert::before {
-  content: '';
-  position: absolute;
-  inset: 5mm;
-  border: 1px solid var(--rule);
-  pointer-events: none;
-  z-index: 5;
-}
-.cert::after {
-  content: '';
-  position: absolute;
-  inset: 7mm;
-  border: .4px solid rgba(196,168,74,.4);
-  pointer-events: none;
-  z-index: 5;
-}
+        /* Background Watermark */
+        .watermark {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-family: 'Georgia', serif;
+            font-size: 80pt;
+            color: var(--navy-blue);
+            opacity: 0.025;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 0;
+        }
 
-/* ══════════════ HEADER ══════════════ */
-.hdr {
-  background: var(--navy);
-  padding: 0;
-  position: relative;
-  flex-shrink: 0;
-}
-.hdr-gold-top {
-  height: 4px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
-}
-.hdr-inner {
-  padding: 8mm 12mm 7mm;
-  display: grid;
-  grid-template-columns: 60px 1fr auto;
-  gap: 12px;
-  align-items: center;
-}
-.hdr-gold-bottom {
-  height: 2.5px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
-}
+        /* ── HEADER ── */
+        .cert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid var(--gold-primary);
+            padding-bottom: 2mm;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+        }
+        
+        .hdr-left { flex: 0 0 85px; text-align: left; }
+        .hdr-left img { max-width: 80px; height: auto; object-fit: contain; }
+        .logo-fallback {
+            width: 65px; height: 65px;
+            border: 2px solid var(--navy-blue); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Times New Roman', serif; font-weight: bold; font-size: 16pt; color: var(--navy-blue);
+        }
 
-/* logo */
-.logo {
-  width: 60px; height: 60px;
-  background: #fff;
-  border-radius: 2px;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 2px;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 1px rgba(196,168,74,.6);
-}
-.logo-gr {
-  font-family: 'EB Garamond', serif;
-  font-weight: 700;
-  font-size: 18pt;
-  color: var(--navy);
-  line-height: 1;
-  letter-spacing: 1px;
-}
-.logo-word {
-  font-size: 5.5pt;
-  font-weight: 700;
-  color: var(--blue);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
+        .hdr-center { flex: 1; text-align: center; padding: 0 10px; }
+        .hdr-flag {
+            font-family: 'Times New Roman', serif;
+            font-size: 12.5pt;
+            font-weight: bold;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 3px;
+        }
+        .hdr-title-es {
+            font-family: 'Georgia', serif;
+            font-size: 9.5pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+            margin-bottom: 1px;
+            text-transform: uppercase;
+        }
+        .hdr-title-en {
+            font-family: 'Georgia', serif;
+            font-size: 11.5pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+        .hdr-convention {
+            font-family: 'Times New Roman', serif;
+            font-size: 7.2pt;
+            color: var(--text-muted);
+            line-height: 1.25;
+            font-style: italic;
+        }
 
-/* centre title */
-.hdr-title {}
-.hdr-eyebrow {
-  font-size: 7pt;
-  font-weight: 600;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--gold-lt);
-  margin-bottom: 4px;
-}
-.hdr-certname {
-  font-family: 'EB Garamond', serif;
-  font-size: 14pt;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.15;
-  margin-bottom: 5px;
-  word-wrap: break-word;
-}
-.hdr-convention {
-  font-size: 7.5pt;
-  color: rgba(255,255,255,.55);
-  line-height: 1.5;
-  max-width: 440px;
-  word-wrap: break-word;
-}
+        .hdr-right { flex: 0 0 auto; text-align: right; min-width: 120px; }
+        .hdr-meta-label { font-size: 6pt; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .hdr-meta-no {
+            font-family: 'Courier New', monospace;
+            font-size: 10pt;
+            font-weight: bold;
+            color: var(--stamp-color);
+            margin-top: 1px;
+            display: block;
+        }
+        .hdr-meta-form { font-size: 6pt; color: var(--navy-blue); margin-top: 2px; font-weight: bold; }
 
-/* right meta */
-.hdr-meta { text-align: right; word-wrap: break-word; }
-.hdr-meta-label {
-  font-size: 6pt;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--gold-lt);
-  display: block;
-}
-.hdr-meta-no {
-  font-family: 'EB Garamond', serif;
-  font-size: 13pt;
-  font-weight: 700;
-  color: #fff;
-  display: block;
-  line-height: 1.15;
-  letter-spacing: .5px;
-  
-  
-  white-space: nowrap;
-}
-.hdr-meta-form {
-  font-size: 6.5pt;
-  color: rgba(255,255,255,.35);
-  margin-top: 4px;
-}
+        /* ── AUTHORITY ── */
+        .authority {
+            text-align: center;
+            font-family: 'Times New Roman', serif;
+            font-size: 8.5pt;
+            color: var(--text-dark);
+            line-height: 1.35;
+            padding-bottom: 2mm;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+        }
+        .authority strong { color: var(--navy-blue); text-transform: uppercase; }
 
-/* ══════════════ AUTHORITY BAND ══════════════ */
-.authority {
-  background: var(--light);
-  border-bottom: 1px solid var(--border);
-  padding: 3.5mm 12mm;
-  text-align: center;
-  font-size: 8.5pt;
-  color: var(--muted);
-  line-height: 1.6;
-}
-.authority strong { color: var(--navy); font-weight: 700; }
+        /* ── SECTIONS & TABLES ── */
+        .sec-label {
+            font-family: 'Arial', sans-serif;
+            font-size: 7.2pt;
+            font-weight: bold;
+            color: var(--navy-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 2mm 0 1mm 0;
+            border-left: 3px solid var(--gold-primary);
+            padding-left: 5px;
+            z-index: 1;
+        }
 
-/* ══════════════ BODY ══════════════ */
-.body { padding: 4mm 12mm 4mm; flex: 1; }
+        /* Data table & Vessel table styling combined */
+        .data-table, .vtable, .mtable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2mm;
+            table-layout: fixed; /* Fixes horizontal overflow */
+            z-index: 1;
+        }
+        .data-table th, .data-table td, .vtable th, .vtable td, .mtable th, .mtable td {
+            border: 1px solid #ccc;
+            padding: 2px 4px; /* Compact padding */
+            text-align: left;
+            word-wrap: break-word; /* Wraps long content */
+            overflow-wrap: break-word;
+        }
+        .data-table th, .vtable th, .mtable th {
+            background: var(--bg-light);
+            font-size: 6pt;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            line-height: 1.2;
+        }
+        .data-table td, .vtable td, .mtable td {
+            font-family: 'Times New Roman', serif;
+            font-size: 8pt; /* Compact font size */
+            font-weight: bold;
+            color: var(--navy-blue);
+            vertical-align: middle;
+        }
+        
+        .val, .m-val {
+            font-family: 'Times New Roman', serif;
+            font-size: 8.5pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+        }
+        
+        .val-large {
+            font-size: 13pt !important;
+            text-align: center;
+            padding: 6px !important;
+        }
 
-/* section label */
-.sec-label {
-  font-size: 6.5pt;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--blue);
-  padding-bottom: 2.5px;
-  border-bottom: 1.5px solid var(--rule);
-  margin: 4mm 0 2.5mm;
-}
+        /* Checkbox items */
+        .chk-list { display: flex; flex-direction: column; gap: 1.5px; margin-bottom: 1.5mm; z-index: 1; }
+        .chk-item {
+            display: flex; align-items: flex-start; gap: 5px;
+            padding: 1px 3px; border: 1px solid transparent;
+            font-size: 7.2pt; line-height: 1.3; color: var(--text-dark);
+        }
+        .chk-item.checked { background: var(--bg-light); border-color: var(--border); font-weight: 500; }
+        .checkbox {
+            width: 9px; height: 9px; border: 1px solid var(--navy-blue); flex-shrink: 0; margin-top: 1.5px;
+            background: #fff; position: relative;
+        }
+        .chk-item.checked .checkbox { background: var(--navy-blue); }
+        .chk-item.checked .checkbox::after {
+            content: ''; position: absolute; left: 1.5px; top: 0;
+            width: 3.5px; height: 5px;
+            border-right: 1.2px solid #fff; border-bottom: 1.2px solid #fff;
+            transform: rotate(38deg);
+        }
+        .chk-text b { color: var(--navy-blue); }
+        .inline-val {
+            display: inline-block; font-family: 'Times New Roman', serif;
+            font-size: 9pt; font-weight: bold; color: var(--navy-blue);
+            border-bottom: 1px dashed var(--navy-blue);
+            padding: 0 2px; min-width: 50px; line-height: 1.1; vertical-align: bottom;
+        }
 
-/* ── VESSEL TABLE ── */
-.vtable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 9pt;
-  margin-bottom: 1mm;
-  table-layout: fixed;
-}
-.vtable th {
-  background: var(--navy);
-  color: var(--gold-lt);
-  font-size: 6.5pt;
-  font-weight: 700;
-  letter-spacing: .8px;
-  text-transform: uppercase;
-  padding: 5px 9px;
-  border: 1px solid var(--navy);
-  text-align: left;
-  overflow: hidden;
-}
-.vtable td {
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  background: #fff;
-  vertical-align: middle;
-  overflow: hidden;
-}
-.vtable .val {
-  font-family: 'EB Garamond', serif;
-  font-size: 12pt;
-  font-weight: 600;
-  color: var(--navy);
-  line-height: 1.2;
-  word-break: break-word;
-}
-.vtable .sub {
-  font-size: 7pt;
-  color: var(--muted);
-  font-family: 'Source Sans 3', sans-serif;
-  font-weight: 400;
-  display: block;
-  margin-top: 1px;
-}
-.vtable tr:nth-child(even) td { background: #FAFCFF; }
+        /* ── FOOTNOTES & PARAGRAPHS ── */
+        .footnotes {
+            font-family: 'Arial', sans-serif;
+            font-size: 6pt;
+            color: #666;
+            line-height: 1.25;
+            margin-bottom: 2mm;
+            z-index: 1;
+        }
+        .footnotes p { margin-bottom: 1px; }
+        sup { color: var(--navy-blue); font-weight: bold; font-size: 5.5pt; }
 
-/* ── EXTRA DATA TABLE ── */
-.mtable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 9pt;
-  margin-bottom: 1mm;
-}
-.mtable th {
-  background: var(--light);
-  color: var(--navy);
-  font-size: 7pt;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  text-align: left;
-}
-.mtable td {
-  padding: 6px 9px;
-  border: 1px solid var(--border);
-  background: #fff;
-}
-.mtable .m-val {
-  font-family: 'EB Garamond', serif;
-  font-size: 11pt;
-  font-weight: 600;
-  color: var(--text);
-}
+        .certify-box, .certify {
+            border: 1px solid #ccc;
+            border-left: 4.5px solid var(--navy-blue);
+            background: var(--bg-light);
+            padding: 5px 8px;
+            font-family: 'Times New Roman', serif;
+            font-size: 8.5pt;
+            line-height: 1.35;
+            margin-bottom: 2.5mm;
+            text-align: justify;
+            z-index: 1;
+        }
+        .certify-box i { color: var(--text-muted); font-size: 8pt; display: block; margin-top: 2px; }
+        .certify-title {
+            font-weight: bold; color: var(--navy-blue); font-size: 8.5pt;
+            margin-bottom: 2px; text-transform: uppercase; letter-spacing: .5px;
+        }
+        .certify ul { margin-left: 14px; }
+        .certify ul li { margin-bottom: 1.5px; }
 
-/* ── CHECKBOX LIST ── */
-.chk-list { display: flex; flex-direction: column; gap: 2.5px; margin-bottom: 2mm; }
-.chk-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  padding: 5.5px 9px;
-  border: 1px solid var(--border);
-  border-radius: 1px;
-  font-size: 9pt;
-  line-height: 1.5;
-  background: #fff;
-  color: var(--muted);
-}
-.chk-item.checked {
-  border-color: var(--blue);
-  background: var(--light);
-  color: var(--text);
-}
-.chk-item.checked .chk-text { color: var(--text); }
-.checkbox {
-  width: 13px; height: 13px;
-  border: 1.5px solid #aaa;
-  border-radius: 1px;
-  flex-shrink: 0;
-  margin-top: 1.5px;
-  background: #fff;
-  position: relative;
-}
-.chk-item.checked .checkbox {
-  background: var(--blue);
-  border-color: var(--blue);
-}
-.chk-item.checked .checkbox::after {
-  content: '';
-  position: absolute;
-  left: 2.5px; top: .5px;
-  width: 5px; height: 9px;
-  border-right: 2px solid #fff;
-  border-bottom: 2px solid #fff;
-  transform: rotate(38deg);
-}
-.chk-text b { color: var(--navy); }
-.inline-val {
-  display: inline-block;
-  font-family: 'EB Garamond', serif;
-  font-size: 10.5pt;
-  font-weight: 600;
-  color: var(--navy);
-  border-bottom: 1px solid var(--navy);
-  padding: 0 4px;
-  min-width: 100px;
-  line-height: 1.2;
-  vertical-align: bottom;
-}
+        /* ── VALIDITY GRID ── */
+        .vgrid {
+            display: flex;
+            justify-content: space-between;
+            border: 1px solid var(--gold-primary);
+            background: #fdfbf7;
+            padding: 5px 10px;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+        }
+        .vgrid-2 {
+            display: flex;
+            justify-content: space-between;
+            border: 1px solid var(--border);
+            background: #ffffff;
+            padding: 4px 10px;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+        }
+        .vcell { text-align: left; }
+        .vcell-label, .vc-label { font-size: 6pt; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1px; display: block; }
+        .vcell-val, .vc-val { font-family: 'Courier New', monospace; font-size: 9pt; font-weight: bold; color: var(--navy-blue); }
 
-/* ── CERTIFY BOX ── */
-.certify {
-  border-left: 3.5px solid var(--gold);
-  background: var(--light);
-  padding: 5px 11px 6px;
-  margin: 1mm 0 3mm;
-  font-size: 9pt;
-  line-height: 1.6;
-}
-.certify-title {
-  font-weight: 700;
-  color: var(--navy);
-  font-size: 9pt;
-  margin-bottom: 3px;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-}
-.certify ul { margin-left: 16px; color: var(--muted); }
-.certify ul li { margin-bottom: 1px; }
+        /* ── FOOTER AREA ── */
+        .footer-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: auto;
+            padding-top: 1mm;
+            z-index: 1;
+        }
 
-/* description text */
-.cert-desc {
-  font-size: 9pt;
-  line-height: 1.6;
-  color: var(--muted);
-  margin-bottom: 2mm;
-}
+        /* DIAMOND STAMP (BHAGWA) */
+        .stamp-container {
+            position: relative;
+            width: 28mm;
+            height: 28mm;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: rotate(-10deg);
+        }
+        .diamond-stamp {
+            width: 20mm;
+            height: 20mm;
+            border: 1.8px solid var(--stamp-color);
+            transform: rotate(45deg);
+            position: absolute;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 60%), rgba(230, 81, 0, 0.05);
+            box-shadow: inset 0 0 3px rgba(230, 81, 0, 0.2);
+        }
+        .diamond-stamp::before {
+            content: '';
+            position: absolute;
+            inset: 1.5px;
+            border: 1px dashed rgba(230, 81, 0, 0.5);
+        }
+        .stamp-text-wrapper {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 26mm;
+        }
+        .st-top { font-size: 4pt; font-weight: bold; color: var(--stamp-color); letter-spacing: 0.5px; }
+        .st-mid { font-family: 'Georgia', serif; font-size: 7.5pt; font-weight: bold; color: var(--stamp-color); border-top: 1px solid var(--stamp-color); border-bottom: 1px solid var(--stamp-color); margin: 1px 0; padding: 0.5px 0; width: 100%; text-align: center; }
+        .st-bot { font-size: 5pt; font-weight: bold; color: var(--stamp-color); letter-spacing: 0.5px; }
 
-/* ── VALIDITY GRID ── */
-.vgrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 2.5mm;
-  margin-bottom: 2.5mm;
-}
-.vgrid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2.5mm;
-  margin-bottom: 2mm;
-}
-.vcell {
-  border: 1px solid var(--border);
-  padding: 5.5px 9px;
-  background: #fff;
-}
-.vcell.hi {
-  border-color: var(--blue);
-  background: var(--light);
-}
-.vc-label {
-  font-size: 6pt;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--muted);
-  display: block;
-  margin-bottom: 3px;
-}
-.vc-val {
-  font-family: 'EB Garamond', serif;
-  font-size: 12.5pt;
-  font-weight: 600;
-  color: var(--navy);
-  line-height: 1.2;
-}
-.vcell.hi .vc-val { color: var(--blue); }
+        .signature-area { width: 50mm; text-align: center; }
+        .sig-line { border-bottom: 1px solid var(--text-dark); height: 18px; margin-bottom: 3px; position: relative; }
+        .sig-line img { max-height: 25px; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%); }
+        .sig-name { font-family: 'Times New Roman', serif; font-size: 9pt; font-weight: bold; color: var(--navy-blue); }
+        .sig-title, .sig-desig { font-size: 6pt; color: var(--text-muted); text-transform: uppercase; }
 
-/* ── FOOTNOTES ── */
-.footnotes {
-  border-top: 1px solid var(--border);
-  padding: 3mm 0 2mm;
-  font-size: 7pt;
-  color: var(--muted);
-  line-height: 1.65;
-}
-.footnotes p { margin-bottom: 1.5px; }
-sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
+        .qr-section { display: flex; align-items: center; gap: 4px; text-align: right; font-size: 5.5pt; color: var(--text-muted); line-height: 1.2; }
+        .qr-box, .qr-wrap { width: 38px; height: 38px; border: 1px solid #ccc; padding: 2px; }
+        .qr-box img, .qr-wrap img { width: 100% !important; height: 100% !important; display: block; }
+        .qr-section strong { color: var(--navy-blue); font-size: 7pt; display: block; margin-bottom: 1px; }
 
+        .page-indicator {
+            display: flex; justify-content: space-between;
+            border-top: 1px solid #eee; padding-top: 1px; margin-top: 2.5mm;
+            font-size: 5.5pt; color: #888;
+            z-index: 1;
+        }
 
-/* ── GENERATED NOTICE BAR ── */
-.generated-notice {
-  background: linear-gradient(135deg, #f0f5fb 0%, #e8f0f8 100%);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 3mm 12mm;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-.generated-notice-icon {
-  font-size: 9pt;
-  opacity: 0.65;
-  flex-shrink: 0;
-}
-.generated-notice-text {
-  font-size: 6.8pt;
-  font-style: italic;
-  color: var(--muted);
-  letter-spacing: 0.15px;
-  line-height: 1.5;
-  text-align: center;
-}
-.generated-notice-text strong {
-  font-style: normal;
-  color: var(--blue);
-  font-weight: 600;
-}
+        /* ── PAGE 2 SPECIFIC / ENDORSEMENTS ── */
+        .mini-hdr {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #ccc; padding-bottom: 1.5mm; margin-bottom: 3mm;
+            z-index: 1;
+        }
+        .mini-hdr-left { display: flex; align-items: center; gap: 6px; font-size: 7pt; font-weight: bold; color: var(--navy-blue); }
+        .mini-hdr-left img { height: 18px; object-fit: contain; }
+        .mini-hdr-right { font-size: 7pt; color: var(--text-muted); }
+        .mini-hdr-right span { font-family: 'Courier New', monospace; font-weight: bold; color: var(--navy-blue); }
 
-/* ══════════════ FOOTER ══════════════ */
-.ftr {
-  background: #fff;
-  flex-shrink: 0;
-  position: relative;
-}
-.ftr-gold-top {
-  height: 2.5px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
-}
-.ftr-inner {
-  padding: 5.5mm 12mm 6mm;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12mm;
-  align-items: end;
-}
-.sig-area {
-  color: var(--text);
-  position: relative;
-  min-width: 200px;
-}
-.sig-line {
-  border-bottom: 1.5px solid var(--navy);
-  height: 1px;
-  margin-top: 0;
-  margin-bottom: 6px;
-  width: 180px;
-}
-.sig-label {
-  font-size: 6.5pt;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 3px;
-}
-.sig-name {
-  font-family: 'EB Garamond', serif;
-  font-size: 12pt;
-  color: var(--navy);
-  font-style: italic;
-  line-height: 1.2;
-}
-.sig-desig {
-  font-size: 7.5pt;
-  font-weight: 600;
-  color: var(--gold);
-  letter-spacing: .3px;
-  margin-top: 2px;
-}
-.ftr-contact {
-  text-align: right;
-  font-size: 7.5pt;
-  color: var(--muted);
-  line-height: 1.8;
-}
-.ftr-contact strong {
-  display: block;
-  color: var(--navy);
-  font-size: 9pt;
-  font-weight: 700;
-  letter-spacing: .5px;
-  margin-bottom: 3px;
-}
-.ftr-contact a { color: var(--blue); text-decoration: none; font-weight: 500; }
-.ftr-contact a:hover { text-decoration: underline; }
+        .end-title {
+            font-family: 'Georgia', serif; font-size: 11pt; font-weight: bold;
+            color: var(--navy-blue); text-align: center; margin: 3mm 0 1.5mm;
+            z-index: 1;
+        }
+        .end-subtitle {
+            font-size: 7.5pt; color: var(--text-muted); text-align: center; margin-bottom: 3mm;
+            padding: 0 8mm; line-height: 1.4;
+            z-index: 1;
+        }
+        .end-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 3mm 5mm;
+            margin-bottom: 3mm;
+            z-index: 1;
+        }
+        .end-box {
+            border: 1px solid var(--border); background: #fff; padding: 2.5mm;
+        }
+        .end-box-title {
+            font-size: 7pt; font-weight: bold; text-transform: uppercase;
+            letter-spacing: 0.5px; color: var(--navy-light); border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5px; margin-bottom: 2.5mm;
+        }
+        .end-row {
+            display: flex; align-items: flex-end; margin-bottom: 2.5mm; font-size: 7.2pt;
+        }
+        .end-label { width: 60px; color: var(--text-muted); }
+        .end-line { flex: 1; border-bottom: 1px dashed #ccc; height: 12px; position: relative; }
+        .end-line span {
+            position: absolute; bottom: 1px; left: 4px; font-family: 'Times New Roman', serif;
+            font-size: 9.5pt; font-weight: bold; color: var(--navy-blue);
+        }
+        .end-full { grid-column: 1 / -1; }
 
-/* ══════════════ PRINT ══════════════ */
-@page { size: A4; margin: 0; }
-@media print {
-  html, body { background: none !important; padding: 0 !important; margin: 0 !important; }
-  .no-print { display: none !important; }
-  .cert {
-    margin: 0;
-    box-shadow: none;
-    width: 210mm;
-    min-height: 297mm;
-    overflow: hidden;
-    page-break-inside: avoid;
-  }
-}
-</style>
+        .gen-notice {
+            background: var(--bg-light); border: 1px solid var(--border);
+            padding: 2mm 3.5mm; display: flex; align-items: center; justify-content: center;
+            gap: 5px; flex-shrink: 0; margin-top: auto; border-radius: 2px;
+            z-index: 1;
+        }
+        .gen-notice-text {
+            font-size: 6pt; color: var(--text-muted);
+            letter-spacing: .5px; line-height: 1.15; text-align: center; text-transform: uppercase;
+        }
+        .gen-notice-text strong { color: var(--navy-blue); font-weight: bold; }
+
+        /* 🔹 FIXED PRINT RULES FOR BLANK PDF 🔹 */
+        @page { size: A4; margin: 0; }
+        @media print {
+            html, body {font-size: 7.8pt; 
+                background: #fff !important; 
+                padding: 0 !important; 
+                margin: 0 !important; 
+                width: auto !important; 
+                height: auto !important;
+            }
+            .no-print { display: none !important; }
+            .cert-page {
+                box-shadow: none !important; 
+                margin: 0 !important;
+                width: 210mm !important; 
+                height: 296.5mm !important; /* Slightly below 297 to avoid 1px extra blank page */
+                page-break-after: always; 
+                page-break-inside: avoid;
+                background: white !important;
+                position: relative !important;
+            }
+            .cert-page:last-child { page-break-after: auto; }
+        }
+    </style>
+
 </head>
 <body>
 
-<div class="no-print">
-  <button class="btn-print" onclick="window.print()">🖨&nbsp; Print / Save as PDF</button>
-  <span class="tag-hint">Tags like {tag} are replaced by software at generation time.</span>
-</div>
-
-<div class="cert">
-
-  <!-- ═══ HEADER ═══ -->
-  <div class="hdr">
-    <div class="hdr-gold-top"></div>
-    <div class="hdr-inner">
-
-      <div class="logo">
-        <img src="https://grclass.com/grclass-logo.webp" alt="GR Glass Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-      </div>
-
-      <div class="hdr-title">
-        <div class="hdr-eyebrow">{certificate_term}</div>
-        <div class="hdr-certname">Docking Survey Certificate</div>
-        <div class="hdr-convention">
-          Issued under the provisions of the relevant international conventions and GR CLASS survey requirements
+    <div class="no-print">
+        <div>
+            <button class="btn-print" onclick="window.print()">🖨 Print / Save PDF</button>
+            <span class="tag-hint">Note: Replace {tags} with actual backend data before printing.</span>
         </div>
-      </div>
-
-      <div class="hdr-meta">
-        <span class="hdr-meta-label">DS-FT No.</span>
-        <span class="hdr-meta-no">{certificate_number}</span>
-        <div class="hdr-meta-form">Form DS-FT · Approved by: GM</div>
-      </div>
-
     </div>
-    <div class="hdr-gold-bottom"></div>
-  </div>
 
-  <!-- ═══ AUTHORITY BAND ═══ -->
-  <div class="authority">
-    Issued under the authority of the Government of <strong>{flag_state}</strong><br>
+    <div class="cert-page">
+        <div class="border-outer">
+            <div class="border-inner">
+                
+                <div class="watermark">GR CLASS</div>
+
+                <div class="cert-header">
+                    <div class="hdr-left">
+                        <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" onerror="this.style.display='none'; document.getElementById('logo-fb1').style.display='flex';">
+                        <div class="logo-fallback" id="logo-fb1" style="display:none;"><span>GR</span></div>
+                    </div>
+                    <div class="hdr-center">
+                        <div class="hdr-flag">{flag_state}</div>
+                        <div class="hdr-title-en">Docking Survey Certificate</div>
+                        <div class="hdr-convention">Issued under the provisions of the relevant international conventions and GR CLASS survey requirements</div>
+                    </div>
+                    <div class="hdr-right">
+                        <span class="hdr-meta-label">DS-FT No.</span>
+                        <span class="hdr-meta-no">{certificate_number}</span>
+                        <div class="hdr-meta-form">Form DS-FT · Approved by: GM</div>
+                    </div>
+                </div>
+
+                <div class="authority">
+                    Issued under the authority of the Government of <strong>{flag_state}</strong><br>
     By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO) operating under IMO Framework
-  </div>
+                </div>
 
-  <!-- ═══ BODY ═══ -->
-  <div class="body">
-
-    <!-- VESSEL PARTICULARS -->
+                <div class="body" style="flex: 1; display: flex; flex-direction: column;">
+                    <!-- VESSEL PARTICULARS -->
     <div class="sec-label">Vessel Particulars</div>
     <table class="vtable">
       <tr>
@@ -631,110 +551,55 @@ sup { color: var(--blue); font-weight: 700; font-size: 6.5pt; }
         <li>The ship has been surveyed in accordance with the applicable rules and regulations;</li>
         <li>The survey shows that the structure, equipment, and condition of the ship comply with the safety standards of GR CLASS.</li>
       </ul>
-    </div>
+                </div>
 
-    <!-- DATES & VALIDITY -->
-    <div class="sec-label">Dates &amp; Validity</div>
-    <div class="vgrid">
-      <div class="vcell">
-        <span class="vc-label">Survey Completion Date</span>
-        <div class="vc-val">{survey_completion_date}</div>
-      </div>
-      <div class="vcell">
-        <span class="vc-label">Date of Issue</span>
-        <div class="vc-val">{issue_date}</div>
-      </div>
-      <div class="vcell hi">
-        <span class="vc-label">Valid Until</span>
-        <div class="vc-val">{expiry_date}</div>
-      </div>
-    </div>
-    <div class="vgrid-2">
-      <div class="vcell">
-        <span class="vc-label">Place of Issue</span>
-        <div class="vc-val">{place_of_survey}</div>
-      </div>
-      <div class="vcell">
-        <span class="vc-label">Page</span>
-        <div class="vc-val">1 of 1</div>
-      </div>
-    </div>
+                {remarks}
+                <div class="gen-notice">
+                    <svg width="10" height="11" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.6; flex-shrink: 0; margin-right: 2px; vertical-align: middle;">
+                        <path d="M10.5 5H9.5V3.5C9.5 1.57 7.93 0 6 0C4.07 0 2.5 1.57 2.5 3.5V5H1.5C0.67 5 0 5.67 0 6.5V12.5C0 13.33 0.67 14 1.5 14H10.5C11.33 14 12 13.33 12 12.5V6.5C12 5.67 11.33 5 10.5 5ZM3.8 3.5C3.8 2.29 4.79 1.3 6 1.3C7.21 1.3 8.2 2.29 8.2 3.5V5H3.8V3.5ZM6.75 9.85V11.5H5.25V9.85C4.8 9.57 4.5 9.07 4.5 8.5C4.5 7.67 5.17 7 6 7C6.83 7 7.5 7.67 7.5 8.5C7.5 9.07 7.2 9.57 6.75 9.85Z" fill="#1b365d"/>
+                    </svg>
+                    <span class="gen-notice-text">
+                        Computer-generated certificate — does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
+                        Verify at <strong>grclass.com</strong>
+                    </span>
+                </div>
 
-    <!-- FOOTNOTES -->
-    <div class="footnotes">
-      <p><sup>1</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600(15).</p>
-    </div>
+                <div class="footer-area">
+                    <div class="stamp-container">
+                        <div class="diamond-stamp"></div>
+                        <div class="stamp-text-wrapper">
+                            <div class="st-top">ISSUING AUTHORITY</div>
+                            <div class="st-mid">APPROVED</div>
+                            <div class="st-bot">GR CLASS</div>
+                        </div>
+                    </div>
 
-  </div><!-- /body -->
+                    <div class="signature-area">
+                        <div class="sig-line">
+                            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Signature" style="max-height: 28px; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%);">
+                        </div>
+                        <div class="sig-name">GR CLASS Representative</div>
+                        <div class="sig-title">GR CLASS</div>
+                    </div>
 
+                    <div class="qr-section">
+                        <div>
+                            <strong>GR CLASS</strong>
+                            Classified for Standard
+                        </div>
+                        <div class="qr-box">
+                            {qr_code}
+                        </div>
+                    </div>
+                </div>
 
-  <!-- ═══ GENERATED NOTICE ═══ -->
-  <div class="generated-notice">
-    <span class="generated-notice-icon">🔒</span>
-    <span class="generated-notice-text">
-      This is a computer-generated certificate and does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
-      Verify authenticity at <strong>grclass.com</strong>
-    </span>
-  </div>
-
-  <!-- ═══ FOOTER / SIGNATURE ═══ -->
-  <div class="ftr">
-    <div class="ftr-gold-top"></div>
-    <div class="ftr-inner">
-
-      <div class="sig-area">
-        <div style="position: relative; height: 65px; margin-bottom: 5px; width: 240px;">
-          <!-- Signature Image -->
-          <div class="sig-img-wrap" style="position: absolute; left: 10px; bottom: 0; z-index: 2;">
-            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=null;" alt="Signature" style="max-height: 50px; max-width: 100px; object-fit: contain; display: block;">
-          </div>
-          <!-- Stamp Image -->
-          <div class="stamp-img-wrap" style="position: absolute; left: 110px; bottom: -15px; z-index: 1; opacity: 0.85;">
-            <img src="{stamp}" onerror="this.src='../../../src/modules/payments/Gr-class-stamp.png'; this.onerror=null;" alt="Official Stamp" style="max-height: 70px; max-width: 105px; object-fit: contain; display: block;">
-          </div>
+            </div>
+            <div class="page-indicator">
+                <span>DS-FT</span>
+                <span>Page 1 of 1</span>
+            </div>
         </div>
-        <div class="sig-line"></div>
-        <div class="sig-label">GR CLASS Representative</div>
-        <div class="sig-name">{surveyor_name}</div>
-        <div class="sig-desig">GR CLASS Representative · Surveyor</div>
-      </div>
-
-      <div class="ftr-contact" style="display: flex; gap: 15px; align-items: center; text-align: left; justify-content: flex-end;">
-
-
-        <div style="width: 70px; height: 70px; flex-shrink: 0; background: #fff; padding: 2px; border-radius: 2px; border: 1px solid var(--border);">
-
-
-          <style>
-
-
-            .qr-img-wrap img { width: 66px !important; height: 66px !important; display: block; }
-
-
-          </style>
-
-
-          <div class="qr-img-wrap">{qr_code}</div>
-
-
-        </div>
-
-
-        <div style="text-align: right;">
-        <strong>GR CLASS</strong>
-        <a href="mailto:info@grclass.com">info@grclass.com</a><br>
-        <a href="https://www.grclass.com">www.grclass.com</a><br>
-        Classified for Standard (GR CLASS)<br>
-        Recognized Organization · Global Marine Services
-      </div>
-
-
-      </div>
-
     </div>
-  </div>
-
-</div><!-- /cert -->
 
 </body>
 </html>

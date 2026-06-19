@@ -1,420 +1,567 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>GR Class – Document of Compliance with the Special Requirements for Ships Carrying Dangerous Goods - Short Term</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+    <meta charset="UTF-8">
+    <title>GR Class – Document of Compliance with the Special Requirements for Ships Carrying Dangerous Goods - Short Term</title>
+    
+    <style>
+        /* ── OPTIMIZED CSS (SYSTEM FONTS FOR INSTANT LOAD) ── */
+        :root {
+            --navy-blue: #0b2545;
+            --navy-light: #133c6d;
+            --gold-primary: #b08d57;
+            --text-dark: #1a1a1a;
+            --text-muted: #444444;
+            --paper: #ffffff;
+            --stamp-color: #E65100; /* Bhagwa Color */
+            --bg-light: #f4f6f8;
+            --primary: #0b2545;
+            --border: #ccc;
+            --light: #f4f6f8;
+        }
 
-:root {
-  --navy:    #0B2443;
-  --blue:    #005BAA;
-  --gold:    #B5891F;
-  --gold-lt: #D4A93A;
-  --cream:   #F9F6F0;
-  --light:   #EEF3F9;
-  --border:  #C8D8E8;
-  --rule:    #C4A84A;
-  --text:    #18181B;
-  --muted:   #52525B;
-}
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 7.8pt; /* Compact font size to prevent overflow */
+            background: #222;
+            padding: 20px 0 40px;
+            color: var(--text-dark);
+            line-height: 1.3;
+        }
 
-html { background: #8A8A8A; }
-body {
-  font-family: 'Source Sans 3', sans-serif;
-  font-size: 10pt;
-  color: var(--text);
-  background: #8A8A8A;
-  padding: 16px 0 40px;
-}
+        .no-print {
+            width: 210mm;
+            margin: 0 auto 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
 
-.no-print {
-  width: 210mm;
-  margin: 0 auto 10px;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.btn-print {
-  background: var(--navy);
-  color: #fff;
-  border: none;
-  padding: 8px 20px;
-  font-size: 9pt;
-  font-weight: 600;
-  letter-spacing: .4px;
-  cursor: pointer;
-  border-radius: 3px;
-}
-.btn-print:hover { background: var(--blue); }
+        .btn-print {
+            background: var(--gold-primary);
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            font-size: 8.5pt;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+        .btn-print:hover { background: #967645; }
+        .tag-hint { font-size: 7.5pt; color: #666; font-style: italic; }
 
-.cert {
-  width: 210mm;
-  min-height: 297mm;
-  background: #fff;
-  margin: 0 auto;
-  box-shadow: 0 8px 48px rgba(0,0,0,.35);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-}
+        /* ── CERTIFICATE DESIGN (A4) ── */
+        .cert-page {
+            width: 210mm;
+            height: 297mm;
+            background-color: var(--paper);
+            margin: 0 auto 15mm auto;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 8mm; /* Margins slightly reduced for extra height room */
+            display: flex;
+            flex-direction: column;
+        }
 
-.cert * { word-wrap: break-word; overflow-wrap: break-word; }
+        /* Double Border System */
+        .border-outer {
+            border: 2.5px solid var(--navy-blue);
+            height: 100%;
+            padding: 3px;
+            position: relative;
+        }
+        .border-inner {
+            border: 1px solid var(--gold-primary);
+            height: 100%;
+            padding: 7mm; /* Inner padding slightly reduced */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
 
-.cert::before {
-  content: '';
-  position: absolute;
-  inset: 5mm;
-  border: 1px solid var(--rule);
-  pointer-events: none;
-  z-index: 5;
-}
-.cert::after {
-  content: '';
-  position: absolute;
-  inset: 7mm;
-  border: .4px solid rgba(196,168,74,.4);
-  pointer-events: none;
-  z-index: 5;
-}
+        /* Background Watermark */
+        .watermark {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-family: 'Georgia', serif;
+            font-size: 80pt;
+            color: var(--navy-blue);
+            opacity: 0.025;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 0;
+        }
 
-.hdr {
-  background: var(--navy);
-  padding: 0;
-  position: relative;
-  flex-shrink: 0;
-}
-.hdr-gold-top {
-  height: 4px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
-}
-.hdr-inner {
-  padding: 8mm 12mm 7mm;
-  display: grid;
-  grid-template-columns: 60px 1fr auto;
-  gap: 12px;
-  align-items: center;
-}
-.hdr-gold-bottom {
-  height: 2.5px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
-}
+        /* ── HEADER ── */
+        .cert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid var(--gold-primary);
+            padding-bottom: 2mm;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+        }
+        
+        .hdr-left { flex: 0 0 85px; text-align: left; }
+        .hdr-left img { max-width: 80px; height: auto; object-fit: contain; }
+        .logo-fallback {
+            width: 65px; height: 65px;
+            border: 2px solid var(--navy-blue); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Times New Roman', serif; font-weight: bold; font-size: 16pt; color: var(--navy-blue);
+        }
 
-.logo {
-  width: 60px; height: 60px;
-  background: #fff;
-  border-radius: 2px;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 2px;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 1px rgba(196,168,74,.6);
-}
+        .hdr-center { flex: 1; text-align: center; padding: 0 10px; }
+        .hdr-flag {
+            font-family: 'Times New Roman', serif;
+            font-size: 12.5pt;
+            font-weight: bold;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 3px;
+        }
+        .hdr-title-es {
+            font-family: 'Georgia', serif;
+            font-size: 9.5pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+            margin-bottom: 1px;
+            text-transform: uppercase;
+        }
+        .hdr-title-en {
+            font-family: 'Georgia', serif;
+            font-size: 11.5pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+        .hdr-convention {
+            font-family: 'Times New Roman', serif;
+            font-size: 7.2pt;
+            color: var(--text-muted);
+            line-height: 1.25;
+            font-style: italic;
+        }
 
-.hdr-eyebrow {
-  font-size: 7pt;
-  font-weight: 600;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--gold-lt);
-  margin-bottom: 4px;
-}
-.hdr-certname {
-  font-family: 'EB Garamond', serif;
-  font-size: 14pt;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.15;
-  margin-bottom: 5px;
-  word-wrap: break-word;
-}
-.hdr-convention {
-  font-size: 7.5pt;
-  color: rgba(255,255,255,.55);
-  line-height: 1.5;
-  max-width: 440px;
-  word-wrap: break-word;
-}
+        .hdr-right { flex: 0 0 auto; text-align: right; min-width: 120px; }
+        .hdr-meta-label { font-size: 6pt; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .hdr-meta-no {
+            font-family: 'Courier New', monospace;
+            font-size: 10pt;
+            font-weight: bold;
+            color: var(--stamp-color);
+            margin-top: 1px;
+            display: block;
+        }
+        .hdr-meta-form { font-size: 6pt; color: var(--navy-blue); margin-top: 2px; font-weight: bold; }
 
-.hdr-meta { text-align: right; word-wrap: break-word; }
-.hdr-meta-label {
-  font-size: 6pt;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--gold-lt);
-  display: block;
-}
-.hdr-meta-no {
-  font-family: 'EB Garamond', serif;
-  font-size: 13pt;
-  font-weight: 700;
-  color: #fff;
-  display: block;
-  line-height: 1.15;
-  letter-spacing: .5px;
-  white-space: nowrap;
-}
-.hdr-meta-form {
-  font-size: 6.5pt;
-  color: rgba(255,255,255,.35);
-  margin-top: 4px;
-}
+        /* ── AUTHORITY ── */
+        .authority {
+            text-align: center;
+            font-family: 'Times New Roman', serif;
+            font-size: 8.5pt;
+            color: var(--text-dark);
+            line-height: 1.35;
+            padding-bottom: 2mm;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+        }
+        .authority strong { color: var(--navy-blue); text-transform: uppercase; }
 
-.authority {
-  background: var(--light);
-  border-bottom: 1px solid var(--border);
-  padding: 3.5mm 12mm;
-  text-align: center;
-  font-size: 8.5pt;
-  color: var(--muted);
-  line-height: 1.6;
-}
-.authority strong { color: var(--navy); font-weight: 700; }
+        /* ── SECTIONS & TABLES ── */
+        .sec-label {
+            font-family: 'Arial', sans-serif;
+            font-size: 7.2pt;
+            font-weight: bold;
+            color: var(--navy-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 2mm 0 1mm 0;
+            border-left: 3px solid var(--gold-primary);
+            padding-left: 5px;
+            z-index: 1;
+        }
 
-.body { padding: 8mm 12mm 8mm; flex: 1; }
+        /* Data table & Vessel table styling combined */
+        .data-table, .vtable, .mtable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2mm;
+            table-layout: fixed; /* Fixes horizontal overflow */
+            z-index: 1;
+        }
+        .data-table th, .data-table td, .vtable th, .vtable td, .mtable th, .mtable td {
+            border: 1px solid #ccc;
+            padding: 2px 4px; /* Compact padding */
+            text-align: left;
+            word-wrap: break-word; /* Wraps long content */
+            overflow-wrap: break-word;
+        }
+        .data-table th, .vtable th, .mtable th {
+            background: var(--bg-light);
+            font-size: 6pt;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            line-height: 1.2;
+        }
+        .data-table td, .vtable td, .mtable td {
+            font-family: 'Times New Roman', serif;
+            font-size: 8pt; /* Compact font size */
+            font-weight: bold;
+            color: var(--navy-blue);
+            vertical-align: middle;
+        }
+        
+        .val, .m-val {
+            font-family: 'Times New Roman', serif;
+            font-size: 8.5pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+        }
+        
+        .val-large {
+            font-size: 13pt !important;
+            text-align: center;
+            padding: 6px !important;
+        }
 
-.body p {
-  margin-bottom: 8px;
-  line-height: 1.5;
-  font-size: 9pt;
-}
-.body table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 10px 0;
-  font-size: 8.5pt;
-}
-.body table td, .body table th {
-  border: 1px solid var(--border);
-  padding: 6px 8px;
-  vertical-align: middle;
-}
-.body table th {
-  background: var(--navy);
-  color: var(--gold-lt);
-  font-size: 6.5pt;
-  font-weight: 700;
-  letter-spacing: .8px;
-  text-transform: uppercase;
-  padding: 5px 9px;
-  border: 1px solid var(--navy);
-  text-align: left;
-}
-.body ul, .body ol {
-  margin-left: 20px;
-  margin-bottom: 10px;
-}
-.body li {
-  margin-bottom: 4px;
-}
+        /* Checkbox items */
+        .chk-list { display: flex; flex-direction: column; gap: 1.5px; margin-bottom: 1.5mm; z-index: 1; }
+        .chk-item {
+            display: flex; align-items: flex-start; gap: 5px;
+            padding: 1px 3px; border: 1px solid transparent;
+            font-size: 7.2pt; line-height: 1.3; color: var(--text-dark);
+        }
+        .chk-item.checked { background: var(--bg-light); border-color: var(--border); font-weight: 500; }
+        .checkbox {
+            width: 9px; height: 9px; border: 1px solid var(--navy-blue); flex-shrink: 0; margin-top: 1.5px;
+            background: #fff; position: relative;
+        }
+        .chk-item.checked .checkbox { background: var(--navy-blue); }
+        .chk-item.checked .checkbox::after {
+            content: ''; position: absolute; left: 1.5px; top: 0;
+            width: 3.5px; height: 5px;
+            border-right: 1.2px solid #fff; border-bottom: 1.2px solid #fff;
+            transform: rotate(38deg);
+        }
+        .chk-text b { color: var(--navy-blue); }
+        .inline-val {
+            display: inline-block; font-family: 'Times New Roman', serif;
+            font-size: 9pt; font-weight: bold; color: var(--navy-blue);
+            border-bottom: 1px dashed var(--navy-blue);
+            padding: 0 2px; min-width: 50px; line-height: 1.1; vertical-align: bottom;
+        }
 
-.ftr {
-  background: var(--navy);
-  flex-shrink: 0;
-  position: relative;
-}
-.ftr-gold-top {
-  height: 2.5px;
-  background: linear-gradient(90deg, #7A5C0F 0%, var(--gold-lt) 35%, #F0C84A 50%, var(--gold-lt) 65%, #7A5C0F 100%);
-}
-.ftr-inner {
-  padding: 5.5mm 12mm 6mm;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12mm;
-  align-items: end;
-}
-.sig-area { color: #fff; }
-.sig-line {
-  border-bottom: 1px solid rgba(255,255,255,.3);
-  height: 24px;
-  margin-bottom: 5px;
-  width: 160px;
-}
-.sig-label {
-  font-size: 6pt;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,.45);
-  margin-bottom: 2px;
-}
-.sig-name {
-  font-family: 'EB Garamond', serif;
-  font-size: 12pt;
-  color: rgba(255,255,255,.9);
-  font-style: italic;
-  line-height: 1.2;
-}
-.sig-desig {
-  font-size: 7.5pt;
-  font-weight: 600;
-  color: var(--gold-lt);
-  letter-spacing: .3px;
-  margin-top: 1px;
-}
-.ftr-contact {
-  text-align: right;
-  font-size: 7pt;
-  color: rgba(255,255,255,.45);
-  line-height: 1.8;
-}
-.ftr-contact strong {
-  display: block;
-  color: var(--gold-lt);
-  font-size: 8.5pt;
-  font-weight: 700;
-  letter-spacing: .5px;
-  margin-bottom: 2px;
-}
-.ftr-contact a { color: rgba(255,255,255,.55); text-decoration: none; }
+        /* ── FOOTNOTES & PARAGRAPHS ── */
+        .footnotes {
+            font-family: 'Arial', sans-serif;
+            font-size: 6pt;
+            color: #666;
+            line-height: 1.25;
+            margin-bottom: 2mm;
+            z-index: 1;
+        }
+        .footnotes p { margin-bottom: 1px; }
+        sup { color: var(--navy-blue); font-weight: bold; font-size: 5.5pt; }
 
-@page { size: A4; margin: 0; }
-@media print {
-  html, body { background: none !important; padding: 0 !important; margin: 0 !important; }
-  .no-print { display: none !important; }
-  .cert {
-    margin: 0;
-    box-shadow: none;
-    width: 210mm;
-    min-height: 297mm;
-    overflow: hidden;
-    page-break-inside: avoid;
-  }
-}
+        .certify-box, .certify {
+            border: 1px solid #ccc;
+            border-left: 4.5px solid var(--navy-blue);
+            background: var(--bg-light);
+            padding: 5px 8px;
+            font-family: 'Times New Roman', serif;
+            font-size: 8.5pt;
+            line-height: 1.35;
+            margin-bottom: 2.5mm;
+            text-align: justify;
+            z-index: 1;
+        }
+        .certify-box i { color: var(--text-muted); font-size: 8pt; display: block; margin-top: 2px; }
+        .certify-title {
+            font-weight: bold; color: var(--navy-blue); font-size: 8.5pt;
+            margin-bottom: 2px; text-transform: uppercase; letter-spacing: .5px;
+        }
+        .certify ul { margin-left: 14px; }
+        .certify ul li { margin-bottom: 1.5px; }
 
-/* ── GENERATED NOTICE BAR ── */
-.generated-notice {
-  background: linear-gradient(135deg, #f0f5fb 0%, #e8f0f8 100%);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 3mm 12mm;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-.generated-notice-icon {
-  font-size: 9pt;
-  opacity: 0.65;
-  flex-shrink: 0;
-}
-.generated-notice-text {
-  font-size: 6.8pt;
-  font-style: italic;
-  color: var(--muted);
-  letter-spacing: 0.15px;
-  line-height: 1.5;
-  text-align: center;
-}
-.generated-notice-text strong {
-  font-style: normal;
-  color: var(--blue);
-  font-weight: 600;
-}
+        /* ── VALIDITY GRID ── */
+        .vgrid {
+            display: flex;
+            justify-content: space-between;
+            border: 1px solid var(--gold-primary);
+            background: #fdfbf7;
+            padding: 5px 10px;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+        }
+        .vgrid-2 {
+            display: flex;
+            justify-content: space-between;
+            border: 1px solid var(--border);
+            background: #ffffff;
+            padding: 4px 10px;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+        }
+        .vcell { text-align: left; }
+        .vcell-label, .vc-label { font-size: 6pt; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1px; display: block; }
+        .vcell-val, .vc-val { font-family: 'Courier New', monospace; font-size: 9pt; font-weight: bold; color: var(--navy-blue); }
 
-</style>
+        /* ── FOOTER AREA ── */
+        .footer-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: auto;
+            padding-top: 1mm;
+            z-index: 1;
+        }
+
+        /* DIAMOND STAMP (BHAGWA) */
+        .stamp-container {
+            position: relative;
+            width: 28mm;
+            height: 28mm;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: rotate(-10deg);
+        }
+        .diamond-stamp {
+            width: 20mm;
+            height: 20mm;
+            border: 1.8px solid var(--stamp-color);
+            transform: rotate(45deg);
+            position: absolute;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 60%), rgba(230, 81, 0, 0.05);
+            box-shadow: inset 0 0 3px rgba(230, 81, 0, 0.2);
+        }
+        .diamond-stamp::before {
+            content: '';
+            position: absolute;
+            inset: 1.5px;
+            border: 1px dashed rgba(230, 81, 0, 0.5);
+        }
+        .stamp-text-wrapper {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 26mm;
+        }
+        .st-top { font-size: 4pt; font-weight: bold; color: var(--stamp-color); letter-spacing: 0.5px; }
+        .st-mid { font-family: 'Georgia', serif; font-size: 7.5pt; font-weight: bold; color: var(--stamp-color); border-top: 1px solid var(--stamp-color); border-bottom: 1px solid var(--stamp-color); margin: 1px 0; padding: 0.5px 0; width: 100%; text-align: center; }
+        .st-bot { font-size: 5pt; font-weight: bold; color: var(--stamp-color); letter-spacing: 0.5px; }
+
+        .signature-area { width: 50mm; text-align: center; }
+        .sig-line { border-bottom: 1px solid var(--text-dark); height: 18px; margin-bottom: 3px; position: relative; }
+        .sig-line img { max-height: 25px; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%); }
+        .sig-name { font-family: 'Times New Roman', serif; font-size: 9pt; font-weight: bold; color: var(--navy-blue); }
+        .sig-title, .sig-desig { font-size: 6pt; color: var(--text-muted); text-transform: uppercase; }
+
+        .qr-section { display: flex; align-items: center; gap: 4px; text-align: right; font-size: 5.5pt; color: var(--text-muted); line-height: 1.2; }
+        .qr-box, .qr-wrap { width: 38px; height: 38px; border: 1px solid #ccc; padding: 2px; }
+        .qr-box img, .qr-wrap img { width: 100% !important; height: 100% !important; display: block; }
+        .qr-section strong { color: var(--navy-blue); font-size: 7pt; display: block; margin-bottom: 1px; }
+
+        .page-indicator {
+            display: flex; justify-content: space-between;
+            border-top: 1px solid #eee; padding-top: 1px; margin-top: 2.5mm;
+            font-size: 5.5pt; color: #888;
+            z-index: 1;
+        }
+
+        /* ── PAGE 2 SPECIFIC / ENDORSEMENTS ── */
+        .mini-hdr {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #ccc; padding-bottom: 1.5mm; margin-bottom: 3mm;
+            z-index: 1;
+        }
+        .mini-hdr-left { display: flex; align-items: center; gap: 6px; font-size: 7pt; font-weight: bold; color: var(--navy-blue); }
+        .mini-hdr-left img { height: 18px; object-fit: contain; }
+        .mini-hdr-right { font-size: 7pt; color: var(--text-muted); }
+        .mini-hdr-right span { font-family: 'Courier New', monospace; font-weight: bold; color: var(--navy-blue); }
+
+        .end-title {
+            font-family: 'Georgia', serif; font-size: 11pt; font-weight: bold;
+            color: var(--navy-blue); text-align: center; margin: 3mm 0 1.5mm;
+            z-index: 1;
+        }
+        .end-subtitle {
+            font-size: 7.5pt; color: var(--text-muted); text-align: center; margin-bottom: 3mm;
+            padding: 0 8mm; line-height: 1.4;
+            z-index: 1;
+        }
+        .end-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 3mm 5mm;
+            margin-bottom: 3mm;
+            z-index: 1;
+        }
+        .end-box {
+            border: 1px solid var(--border); background: #fff; padding: 2.5mm;
+        }
+        .end-box-title {
+            font-size: 7pt; font-weight: bold; text-transform: uppercase;
+            letter-spacing: 0.5px; color: var(--navy-light); border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5px; margin-bottom: 2.5mm;
+        }
+        .end-row {
+            display: flex; align-items: flex-end; margin-bottom: 2.5mm; font-size: 7.2pt;
+        }
+        .end-label { width: 60px; color: var(--text-muted); }
+        .end-line { flex: 1; border-bottom: 1px dashed #ccc; height: 12px; position: relative; }
+        .end-line span {
+            position: absolute; bottom: 1px; left: 4px; font-family: 'Times New Roman', serif;
+            font-size: 9.5pt; font-weight: bold; color: var(--navy-blue);
+        }
+        .end-full { grid-column: 1 / -1; }
+
+        .gen-notice {
+            background: var(--bg-light); border: 1px solid var(--border);
+            padding: 2mm 3.5mm; display: flex; align-items: center; justify-content: center;
+            gap: 5px; flex-shrink: 0; margin-top: auto; border-radius: 2px;
+            z-index: 1;
+        }
+        .gen-notice-text {
+            font-size: 6pt; color: var(--text-muted);
+            letter-spacing: .5px; line-height: 1.15; text-align: center; text-transform: uppercase;
+        }
+        .gen-notice-text strong { color: var(--navy-blue); font-weight: bold; }
+
+        /* 🔹 FIXED PRINT RULES FOR BLANK PDF 🔹 */
+        @page { size: A4; margin: 0; }
+        @media print {
+            html, body {font-size: 7.8pt; 
+                background: #fff !important; 
+                padding: 0 !important; 
+                margin: 0 !important; 
+                width: auto !important; 
+                height: auto !important;
+            }
+            .no-print { display: none !important; }
+            .cert-page {
+                box-shadow: none !important; 
+                margin: 0 !important;
+                width: 210mm !important; 
+                height: 296.5mm !important; /* Slightly below 297 to avoid 1px extra blank page */
+                page-break-after: always; 
+                page-break-inside: avoid;
+                background: white !important;
+                position: relative !important;
+            }
+            .cert-page:last-child { page-break-after: auto; }
+        }
+    </style>
+
 </head>
 <body>
 
-<div class="no-print">
-  <button class="btn-print" onclick="window.print()">🖨&nbsp; Print / Save as PDF</button>
-</div>
-
-<div class="cert">
-
-  <!-- ═══ HEADER ═══ -->
-  <div class="hdr">
-    <div class="hdr-gold-top"></div>
-    <div class="hdr-inner">
-      <div class="logo">
-        <img src="https://grclass.com/grclass-logo.webp" alt="GR Glass Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-      </div>
-      <div class="hdr-title">
-        <div class="hdr-eyebrow">Short Term</div>
-        <div class="hdr-certname">Document of Compliance with the Special Requirements for Ships Carrying Dangerous Goods</div>
-        <div class="hdr-convention">Issued under the provisions of the relevant international conventions</div>
-      </div>
-      <div class="hdr-meta">
-        <span class="hdr-meta-label">CDG-ST No.</span>
-        <span class="hdr-meta-no"><span class="cert-field" data-field="certificate_number">{certificate_number}</span></span>
-        <div class="hdr-meta-form">Form CDG-ST · Approved by: GM</div>
-      </div>
+    <div class="no-print">
+        <div>
+            <button class="btn-print" onclick="window.print()">🖨 Print / Save PDF</button>
+            <span class="tag-hint">Note: Replace {tags} with actual backend data before printing.</span>
+        </div>
     </div>
-    <div class="hdr-gold-bottom"></div>
-  </div>
 
-  <!-- ═══ AUTHORITY BAND ═══ -->
-  <div class="authority">
-    Issued under the authority of the Government of <strong><span class="cert-field" data-field="flag_state">{flag_state}</span></strong><br>
+    <div class="cert-page">
+        <div class="border-outer">
+            <div class="border-inner">
+                
+                <div class="watermark">GR CLASS</div>
+
+                <div class="cert-header">
+                    <div class="hdr-left">
+                        <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" onerror="this.style.display='none'; document.getElementById('logo-fb1').style.display='flex';">
+                        <div class="logo-fallback" id="logo-fb1" style="display:none;"><span>GR</span></div>
+                    </div>
+                    <div class="hdr-center">
+                        <div class="hdr-flag">{flag_state}</div>
+                        <div class="hdr-title-en">Document of Compliance with the Special Requirements for Ships Carrying Dangerous Goods</div>
+                        <div class="hdr-convention">Issued under the provisions of the relevant international conventions</div>
+                    </div>
+                    <div class="hdr-right">
+                        <span class="hdr-meta-label">CDG-ST No.</span>
+                        <span class="hdr-meta-no">{certificate_number}</span>
+                        <div class="hdr-meta-form">Form CDG-ST · Approved by: GM</div>
+                    </div>
+                </div>
+
+                <div class="authority">
+                    Issued under the authority of the Government of <strong><span class="cert-field" data-field="flag_state">{flag_state}</span></strong><br>
     By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO) operating under IMO Framework
-  </div>
+                </div>
 
-  <!-- ═══ BODY ═══ -->
-  <div class="body">
-    <p><strong>SHORT TERM DOCUMENT OF COMPLIANCE</strong></p><p><a id="SPECIAL_REQUIREMENTS_FOR_SHIPS_CARRYING_"></a><strong>SPECIAL REQUIREMENTS FOR SHIPS CARRYING DANGEROUS GOODS</strong></p><h3><img src="data:image/jpeg;base64,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" /><a id="SHORT_TERM_DOCUMENT_OF_COMPLIANCE"></a>Issued in pursuance of the requirement of regulation II-2/19.4 of The International Convention for the Safety of Life at Sea, 1974,</h3><p><strong>B</strong></p><p><strong>As amended, under the authority of the Government of</strong></p><p><strong>        THE MERCHANT MARINE HONDURAS</strong></p><p><strong>                                                     By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><p><strong>CDG No.</strong></p><table><tr><td><p><strong>Name of ship</strong></p></td><td><p><strong>Distinctive number or letters</strong></p></td><td><p><strong>Port of registry</strong></p></td><td><p><strong>Ship Type</strong></p></td></tr><tr><td rowspan="3"><p>{vessel_name}</p></td><td><p>{call_sign}</p></td><td rowspan="3"><p>{port_of_registry}</p></td><td rowspan="3"><p>{ship_type}</p></td></tr><tr><td><p><strong>IMO number1</strong></p></td></tr><tr><td><p>{imo_number}</p></td></tr></table><p>This is to certify:</p><ol><li>That the construction and equipment of the above-mentioned ship has been found to comply with the provisions of Regulation II-2 /19 of the International Convention for the Safety of Life at Sea, 1974, as amended; and</li><li>That the ship is suitable for the carriage of those classes of dangerous goods as specified in the appendix hereto, subject to any provisions in the International Maritime Dangerous Goods (IMDG) Code and the International Maritime Solid Bulk Cargoes (IMSBC) Code for individual substances, materials or articles also being complied with.</li></ol><p>This document is valid until   	{expiry_date}</p><p>Issued at		Date of issue    	</p><p>                                                      (Place of issue of certificate)	(YYYY-MM-DD)</p><p>{surveyor_name}GR CLASS REPRESENTATIVE</p><h4><strong>Note: </strong>There are no special requirements in the above-mentioned Regulation II-2/19 for the carriage of dangerous goods of classes 6.2 and 7, and for the carriage of dangerous goods in limited quantities, as required in chapter 3.4 of the IMDG code, and except quantities, as required in chapter 3.5 of the IMDG code.</h4><p><strong>1 In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A. 600 (15).</strong></p><p><strong>Ship Name		CDG No</strong></p><p><strong>IMO No 	</strong></p><p><strong>APPENDIX I</strong></p><p><strong>CARGO SPACES CARRYING SOLID DANGEROUS GOODS IN BULK</strong></p><p>Cargo spaces indicated in the plan are corresponding with the table below.</p><p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAIAAAAiOjnJAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAABrCAAAKTgEWho3GAAACKklEQVR4nO3SsQ3CMAAAQeIFXHr/7aCDAcAskVek6G6CL/7Ye78+vwecZ81xPN/fqzO4oXF1APdkLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiYSwSxiJhLBLGImEsEsYiMdb0Fidbc/wBhm8KsWMXTTYAAAAASUVORK5CYII=" /></p><table><tr><td colspan="9"><p><strong>CARGO SPACES CARRYING SOLID DANGEROUS GOODS IN BULK</strong></p></td></tr><tr><td rowspan="3"><p><strong>Name of the Cargo Space</strong></p></td><td rowspan="3"><p><strong>Type of the Cargo Space Reg. 19.2.2</strong></p></td><td colspan="7"><p><strong>CLASSES OF DANGEROUS GOODS PERMITTED TO BE CARRIED</strong></p></td></tr><tr><td><p><strong>4.1</strong></p></td><td><p><strong>4.2</strong></p></td><td><p><strong>4.3</strong></p></td><td><p><strong>5.1</strong></p></td><td><p><strong>6</strong></p></td><td><p><strong>8</strong></p></td><td><p><strong>9</strong></p></td></tr><tr><td><p><strong>Flammable Solid</strong></p></td><td><p><strong>Flammable Solids (substances liable to spontaneous combustion)</strong></p></td><td><p><strong>Flammable Solids (substances which in contact with water, emit flammable gases)</strong></p></td><td><p><strong>Oxidizing Substances</strong></p></td><td><p><strong>Poisonous (toxic) Substances)</strong></p></td><td><p><strong>Corrosives</strong></p></td><td><p><strong>Miscellaneous Dangerous Substances</strong></p></td></tr><tr><td><p><strong>Under Deck</strong></p></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>On Deck</strong></p></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table><p><strong>Note: From Column Named 4.1 to 9, please answer “yes” or “No” in space provided for classes of dangerous goods permitted to be carried Remarks related to the information in the table above as applicable (attach additional pages if necessary)</strong></p><p><strong>Ship Name 	</strong></p><p><strong>CDG No 	 IMO No 	</strong></p><p><strong>APPENDIX II</strong></p><table><tr><td colspan="23"><p><strong>CARGO SPACES CARRYING DANGEROUS GOODS EXCEPT SOLID DANGEROUS GOODS IN BULK</strong></p></td></tr><tr><td colspan="23"><p><strong>CLASSES OF DANGEROUS GOODS PERMITTED TO BE CARRIED</strong></p></td></tr><tr><td rowspan="2"><p><strong>Name of Cargo Space</strong></p></td><td rowspan="2"><p><strong>Type of Cargo Space (Reg. 19.2.2)</strong></p></td><td><p><strong>1.1-</strong></p><p><strong>1.6</strong></p></td><td><p><strong>1.4.S</strong></p></td><td><p><strong>2.1</strong></p></td><td><p><strong>2.2</strong></p></td><td><p><strong>2.3</strong></p></td><td><p><strong>3</strong></p></td><td><p><strong>3</strong></p></td><td><p><strong>4.1</strong></p></td><td><p><strong>4.2</strong></p></td><td><p><strong>4.3</strong></p></td><td><p><strong>5.1</strong></p></td><td><p><strong>5.2*</strong></p></td><td><p><strong>6.1</strong></p></td><td><p><strong>6.1</strong></p></td><td><p><strong>6.1</strong></p></td><td><p><strong>6.1</strong></p></td><td><p><strong>8</strong></p></td><td><p><strong>8</strong></p></td><td><p><strong>8</strong></p></td><td><p><strong>8</strong></p></td><td><p><strong>9</strong></p></td></tr><tr><td><p><strong>Explosives (Division 1.1 - 1.6)</strong></p></td><td><p><strong>Explosives (Division 1.4 Compatibility “  Group S”  )</strong></p></td><td><p><strong>Flammable gases (compressed, liquefied, dissolved under pressure)</strong></p></td><td><p><strong>Non-flammable, non-poisonous gases (compressed, liquefied, dissolved under pressure)</strong></p></td><td><p><strong>Poisonous Gases (compressed, liquefied, dissolved under pressure)</strong></p></td><td><p><strong>Flammable Liquids (flashpoint =&lt;23°C)</strong></p></td><td><p><strong>Flammable liquids (Flashpoint&gt;=23°C and =&lt;60°C)</strong></p></td><td><p><strong>Flammable solids (self-reactive substances and solid desensitized explosives)</strong></p></td><td><p><strong>Flammable Solids (Substances liable to spontaneous combustion)</strong></p></td><td><p><strong>Flammable Solids (Substances which, in contact with water , emit flammable gases)</strong></p></td><td><p><strong>Oxidizing Substances</strong></p></td><td><p><strong>Organic Peroxides</strong></p></td><td><p><strong>Toxic (or poisonous) and infectious substances - Liquids</strong></p></td><td><p><strong>Toxic (or poisonous) and infectious substances (flashpoint &lt; 23°C) - Liquids</strong></p></td><td><p><strong>Toxic (or poisonous) and infectious substances (Flashpoint&gt;=23°C and =&lt;60°C) - Liquids</strong></p></td><td><p><strong>Toxic (or poisonous) and infectious substances - Solids</strong></p></td><td><p><strong>Corrosive Substances- Liquids</strong></p></td><td><p><strong>Corrosive Substances (Flashpoint &lt;23°C) - Liquids</strong></p></td><td><p><strong>Corrosive Substances (Flashpoint&gt;=23°C and =&lt;60°C) - Liquids</strong></p></td><td><p><strong>Corrosive Substances - Solids</strong></p></td><td><p><strong>Miscellaneous Dangerous Substances and articles and environmentally hazardous substances</strong></p></td></tr><tr><td><p><strong>Under Deck</strong></p></td><td colspan="22"></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>On weather Deck</strong></p></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table><p><strong>Notes:</strong></p><ul><li><ol><li>Dangerous Goods of classes 1.1 through 1.6 except class 1 in division 1.4 compatibility group S are to be stowed at least 3 m horizontally away from the bulkheads forming boundary between cargo space and machinery space of Category A, Besides, class 1 dangerous goods except class 1.4S are not to carry on the weather deck above the machinery space category A.</li><li>Carriage of Dangerous goods are defined in Regulation VII/A of SOLAS 1974, as amended, Shall be in compliance with the relevant provisions of the IMDG Code, and supplemental requirements that may be imposed by the Administration. There are no special requirements in the above mentioned regulation II-2/19 for the carriage of dangerous goods of class 6.2 and 7, and for the carriage of dangerous goods in the limited quantities, as required in Chap. 3.4 of the IMDG Code.</li></ol></li></ul><p><strong>Please answer “yes” or “No” in space provided for classes of dangerous goods permitted to be carried Remarks related to the information in the table above as applicable (attach additional pages if necessary)</strong></p><p><strong>*Stowage of class 5.2 dangerous goods under deck or in enclosed Ro-Ro spaces is prohibited.</strong></p><p><strong>** Stowage of class 2.3 dangerous goods having subsidiary risk class 2.1 under deck or in enclosed Ro-Ro spaces is prohibited.</strong></p><p><strong>*** Stowage of Class 4.3 liquids dangerous goods having a flashpoint &lt;23°C under deck or in enclosed Ro-Ro spaces is prohibited.</strong></p><p><strong>IMO No.</strong></p><p><strong>APPENDIX III LIST OF EQUIPMENT</strong></p><p><strong>According to the provisions of regulation II-2/19.</strong></p><table><tr><td><p><strong>PARA.</strong></p></td><td><p><strong>REQUIREMENT</strong></p></td><td><p><strong>EQUIPMENT PROVIDED</strong></p></td></tr><tr><td><p><strong>.1.1</strong></p></td><td><p><strong>Compliance with Reg. 10.7.2</strong></p></td><td></td></tr><tr><td><p><strong>.3.1.1</strong></p></td><td><p><strong>Immediate supply of water</strong></p></td><td></td></tr><tr><td><p><strong>.3.1.2</strong></p></td><td><p><strong>Quantity of water and arrangement of hydrants</strong></p></td><td></td></tr><tr><td><p><strong>.3.1.3</strong></p></td><td><p><strong>Water cooling</strong></p></td><td></td></tr><tr><td><p><strong>.3.1.4</strong></p></td><td><p><strong>Cargo hold flooding</strong></p></td><td></td></tr><tr><td><p><strong>.3.2</strong></p></td><td><p><strong>Sources of ignition</strong></p></td><td></td></tr><tr><td><p><strong>.3.3</strong></p></td><td><p><strong>Detection system</strong></p></td><td></td></tr><tr><td><p><strong>.3.4.1</strong></p></td><td><p><strong>Mechanical ventilation</strong></p></td><td></td></tr><tr><td><p><strong>.3.4.2.1</strong></p></td><td><p><strong>Safety of fans</strong></p></td><td></td></tr><tr><td><p><strong>.3.4.2.2</strong></p></td><td><p><strong>Wire mesh guards</strong></p></td><td></td></tr><tr><td><p><strong>.3.4.3</strong></p></td><td><p><strong>Natural ventilation</strong></p></td><td></td></tr><tr><td><p><strong>.3.5</strong></p></td><td><p><strong>Bilge pumping</strong></p></td><td></td></tr><tr><td><p><strong>.3.6.1</strong></p></td><td><p><strong>Full protective clothing</strong></p></td><td></td></tr><tr><td><p><strong>.3.6.2</strong></p></td><td><p><strong>Additional self-contained breathing apparatuses</strong></p></td><td></td></tr><tr><td><p><strong>.3.7</strong></p></td><td><p><strong>Portable fire extinguishers</strong></p></td><td></td></tr><tr><td><p><strong>.3.8</strong></p></td><td><p><strong>Insulation of machinery space boundaries</strong></p></td><td></td></tr><tr><td><p><strong>.3.9</strong></p></td><td><p><strong>Water-spray system</strong></p></td><td></td></tr><tr><td><p><strong>.3.10</strong></p></td><td><p><strong>Separation of ro-ro spaces</strong></p></td><td></td></tr></table><p>GR CLASS – CLASSIFIED FOR STANDARD (GR CLASS)</p><p>E-mail: info@grclass.com Web: www.grclass.com</p><p><strong>Form: CDG-ST	                                                                               Approved by: GM		Page 6 of 1</strong></p>
-  </div>
+                <div class="body" style="flex: 1; display: flex; flex-direction: column;">
+                    <p><strong>SHORT TERM DOCUMENT OF COMPLIANCE</strong></p><p><a id="SPECIAL_REQUIREMENTS_FOR_SHIPS_CARRYING_"></a><strong>SPECIAL REQUIREMENTS FOR SHIPS CARRYING DANGEROUS GOODS</strong></p><h3><a id="SHORT_TERM_DOCUMENT_OF_COMPLIANCE"></a>Issued in pursuance of the requirement of regulation II-2/19.4 of The International Convention for the Safety of Life at Sea, 1974,</h3><p><strong>B</strong></p><p><strong>As amended, under the authority of the Government of</strong></p><p><strong>        THE MERCHANT MARINE HONDURAS</strong></p><p><strong>                                                     By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><p><strong>CDG No.</strong></p><table><tr><td><p><strong>Name of ship</strong></p></td><td><p><strong>Distinctive number or letters</strong></p></td><td><p><strong>Port of registry</strong></p></td><td><p><strong>Ship Type</strong></p></td></tr><tr><td rowspan="3"><p>{vessel_name}</p></td><td><p>{call_sign}</p></td><td rowspan="3"><p>{port_of_registry}</p></td><td rowspan="3"><p>{ship_type}</p></td></tr><tr><td><p><strong>IMO number1</strong></p></td></tr><tr><td><p>{imo_number}</p></td></tr></table><p>This is to certify:</p><ol><li>That the construction and equipment of the above-mentioned ship has been found to comply with the provisions of Regulation II-2 /19 of the International Convention for the Safety of Life at Sea, 1974, as amended; and</li><li>That the ship is suitable for the carriage of those classes of dangerous goods as specified in the appendix hereto, subject to any provisions in the International Maritime Dangerous Goods (IMDG) Code and the International Maritime Solid Bulk Cargoes (IMSBC) Code for individual substances, materials or articles also being complied with.</li></ol><p>This document is valid until   	{expiry_date}</p><p>Issued at		Date of issue    	</p><p>                                                      (Place of issue of certificate)	(YYYY-MM-DD)</p><p>{surveyor_name}GR CLASS REPRESENTATIVE</p><h4><strong>Note: </strong>There are no special requirements in the above-mentioned Regulation II-2/19 for the carriage of dangerous goods of classes 6.2 and 7, and for the carriage of dangerous goods in limited quantities, as required in chapter 3.4 of the IMDG code, and except quantities, as required in chapter 3.5 of the IMDG code.</h4><p><strong>1 In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A. 600 (15).</strong></p><p><strong>Ship Name		CDG No</strong></p><p><strong>IMO No 	</strong></p><p><strong>APPENDIX I</strong></p><p><strong>CARGO SPACES CARRYING SOLID DANGEROUS GOODS IN BULK</strong></p><p>Cargo spaces indicated in the plan are corresponding with the table below.</p><p></p><table><tr><td colspan="9"><p><strong>CARGO SPACES CARRYING SOLID DANGEROUS GOODS IN BULK</strong></p></td></tr><tr><td rowspan="3"><p><strong>Name of the Cargo Space</strong></p></td><td rowspan="3"><p><strong>Type of the Cargo Space Reg. 19.2.2</strong></p></td><td colspan="7"><p><strong>CLASSES OF DANGEROUS GOODS PERMITTED TO BE CARRIED</strong></p></td></tr><tr><td><p><strong>4.1</strong></p></td><td><p><strong>4.2</strong></p></td><td><p><strong>4.3</strong></p></td><td><p><strong>5.1</strong></p></td><td><p><strong>6</strong></p></td><td><p><strong>8</strong></p></td><td><p><strong>9</strong></p></td></tr><tr><td><p><strong>Flammable Solid</strong></p></td><td><p><strong>Flammable Solids (substances liable to spontaneous combustion)</strong></p></td><td><p><strong>Flammable Solids (substances which in contact with water, emit flammable gases)</strong></p></td><td><p><strong>Oxidizing Substances</strong></p></td><td><p><strong>Poisonous (toxic) Substances)</strong></p></td><td><p><strong>Corrosives</strong></p></td><td><p><strong>Miscellaneous Dangerous Substances</strong></p></td></tr><tr><td><p><strong>Under Deck</strong></p></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>On Deck</strong></p></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table><p><strong>Note: From Column Named 4.1 to 9, please answer “yes” or “No” in space provided for classes of dangerous goods permitted to be carried Remarks related to the information in the table above as applicable (attach additional pages if necessary)</strong></p><p><strong>Ship Name 	</strong></p><p><strong>CDG No 	 IMO No 	</strong></p><p><strong>APPENDIX II</strong></p><table><tr><td colspan="23"><p><strong>CARGO SPACES CARRYING DANGEROUS GOODS EXCEPT SOLID DANGEROUS GOODS IN BULK</strong></p></td></tr><tr><td colspan="23"><p><strong>CLASSES OF DANGEROUS GOODS PERMITTED TO BE CARRIED</strong></p></td></tr><tr><td rowspan="2"><p><strong>Name of Cargo Space</strong></p></td><td rowspan="2"><p><strong>Type of Cargo Space (Reg. 19.2.2)</strong></p></td><td><p><strong>1.1-</strong></p><p><strong>1.6</strong></p></td><td><p><strong>1.4.S</strong></p></td><td><p><strong>2.1</strong></p></td><td><p><strong>2.2</strong></p></td><td><p><strong>2.3</strong></p></td><td><p><strong>3</strong></p></td><td><p><strong>3</strong></p></td><td><p><strong>4.1</strong></p></td><td><p><strong>4.2</strong></p></td><td><p><strong>4.3</strong></p></td><td><p><strong>5.1</strong></p></td><td><p><strong>5.2*</strong></p></td><td><p><strong>6.1</strong></p></td><td><p><strong>6.1</strong></p></td><td><p><strong>6.1</strong></p></td><td><p><strong>6.1</strong></p></td><td><p><strong>8</strong></p></td><td><p><strong>8</strong></p></td><td><p><strong>8</strong></p></td><td><p><strong>8</strong></p></td><td><p><strong>9</strong></p></td></tr><tr><td><p><strong>Explosives (Division 1.1 - 1.6)</strong></p></td><td><p><strong>Explosives (Division 1.4 Compatibility “  Group S”  )</strong></p></td><td><p><strong>Flammable gases (compressed, liquefied, dissolved under pressure)</strong></p></td><td><p><strong>Non-flammable, non-poisonous gases (compressed, liquefied, dissolved under pressure)</strong></p></td><td><p><strong>Poisonous Gases (compressed, liquefied, dissolved under pressure)</strong></p></td><td><p><strong>Flammable Liquids (flashpoint =&lt;23°C)</strong></p></td><td><p><strong>Flammable liquids (Flashpoint&gt;=23°C and =&lt;60°C)</strong></p></td><td><p><strong>Flammable solids (self-reactive substances and solid desensitized explosives)</strong></p></td><td><p><strong>Flammable Solids (Substances liable to spontaneous combustion)</strong></p></td><td><p><strong>Flammable Solids (Substances which, in contact with water , emit flammable gases)</strong></p></td><td><p><strong>Oxidizing Substances</strong></p></td><td><p><strong>Organic Peroxides</strong></p></td><td><p><strong>Toxic (or poisonous) and infectious substances - Liquids</strong></p></td><td><p><strong>Toxic (or poisonous) and infectious substances (flashpoint &lt; 23°C) - Liquids</strong></p></td><td><p><strong>Toxic (or poisonous) and infectious substances (Flashpoint&gt;=23°C and =&lt;60°C) - Liquids</strong></p></td><td><p><strong>Toxic (or poisonous) and infectious substances - Solids</strong></p></td><td><p><strong>Corrosive Substances- Liquids</strong></p></td><td><p><strong>Corrosive Substances (Flashpoint &lt;23°C) - Liquids</strong></p></td><td><p><strong>Corrosive Substances (Flashpoint&gt;=23°C and =&lt;60°C) - Liquids</strong></p></td><td><p><strong>Corrosive Substances - Solids</strong></p></td><td><p><strong>Miscellaneous Dangerous Substances and articles and environmentally hazardous substances</strong></p></td></tr><tr><td><p><strong>Under Deck</strong></p></td><td colspan="22"></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>On weather Deck</strong></p></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table><p><strong>Notes:</strong></p><ul><li><ol><li>Dangerous Goods of classes 1.1 through 1.6 except class 1 in division 1.4 compatibility group S are to be stowed at least 3 m horizontally away from the bulkheads forming boundary between cargo space and machinery space of Category A, Besides, class 1 dangerous goods except class 1.4S are not to carry on the weather deck above the machinery space category A.</li><li>Carriage of Dangerous goods are defined in Regulation VII/A of SOLAS 1974, as amended, Shall be in compliance with the relevant provisions of the IMDG Code, and supplemental requirements that may be imposed by the Administration. There are no special requirements in the above mentioned regulation II-2/19 for the carriage of dangerous goods of class 6.2 and 7, and for the carriage of dangerous goods in the limited quantities, as required in Chap. 3.4 of the IMDG Code.</li></ol></li></ul><p><strong>Please answer “yes” or “No” in space provided for classes of dangerous goods permitted to be carried Remarks related to the information in the table above as applicable (attach additional pages if necessary)</strong></p><p><strong>*Stowage of class 5.2 dangerous goods under deck or in enclosed Ro-Ro spaces is prohibited.</strong></p><p><strong>** Stowage of class 2.3 dangerous goods having subsidiary risk class 2.1 under deck or in enclosed Ro-Ro spaces is prohibited.</strong></p><p><strong>*** Stowage of Class 4.3 liquids dangerous goods having a flashpoint &lt;23°C under deck or in enclosed Ro-Ro spaces is prohibited.</strong></p><p><strong>IMO No.</strong></p><p><strong>APPENDIX III LIST OF EQUIPMENT</strong></p><p><strong>According to the provisions of regulation II-2/19.</strong></p><table><tr><td><p><strong>PARA.</strong></p></td><td><p><strong>REQUIREMENT</strong></p></td><td><p><strong>EQUIPMENT PROVIDED</strong></p></td></tr><tr><td><p><strong>.1.1</strong></p></td><td><p><strong>Compliance with Reg. 10.7.2</strong></p></td><td></td></tr><tr><td><p><strong>.3.1.1</strong></p></td><td><p><strong>Immediate supply of water</strong></p></td><td></td></tr><tr><td><p><strong>.3.1.2</strong></p></td><td><p><strong>Quantity of water and arrangement of hydrants</strong></p></td><td></td></tr><tr><td><p><strong>.3.1.3</strong></p></td><td><p><strong>Water cooling</strong></p></td><td></td></tr><tr><td><p><strong>.3.1.4</strong></p></td><td><p><strong>Cargo hold flooding</strong></p></td><td></td></tr><tr><td><p><strong>.3.2</strong></p></td><td><p><strong>Sources of ignition</strong></p></td><td></td></tr><tr><td><p><strong>.3.3</strong></p></td><td><p><strong>Detection system</strong></p></td><td></td></tr><tr><td><p><strong>.3.4.1</strong></p></td><td><p><strong>Mechanical ventilation</strong></p></td><td></td></tr><tr><td><p><strong>.3.4.2.1</strong></p></td><td><p><strong>Safety of fans</strong></p></td><td></td></tr><tr><td><p><strong>.3.4.2.2</strong></p></td><td><p><strong>Wire mesh guards</strong></p></td><td></td></tr><tr><td><p><strong>.3.4.3</strong></p></td><td><p><strong>Natural ventilation</strong></p></td><td></td></tr><tr><td><p><strong>.3.5</strong></p></td><td><p><strong>Bilge pumping</strong></p></td><td></td></tr><tr><td><p><strong>.3.6.1</strong></p></td><td><p><strong>Full protective clothing</strong></p></td><td></td></tr><tr><td><p><strong>.3.6.2</strong></p></td><td><p><strong>Additional self-contained breathing apparatuses</strong></p></td><td></td></tr><tr><td><p><strong>.3.7</strong></p></td><td><p><strong>Portable fire extinguishers</strong></p></td><td></td></tr><tr><td><p><strong>.3.8</strong></p></td><td><p><strong>Insulation of machinery space boundaries</strong></p></td><td></td></tr><tr><td><p><strong>.3.9</strong></p></td><td><p><strong>Water-spray system</strong></p></td><td></td></tr><tr><td><p><strong>.3.10</strong></p></td><td><p><strong>Separation of ro-ro spaces</strong></p></td><td></td></tr></table><p>GR CLASS – CLASSIFIED FOR STANDARD (GR CLASS)</p><p>E-mail: info@grclass.com Web: www.grclass.com</p><p><strong>Form: CDG-ST	                                                                               Approved by: GM		Page 6 of 1</strong></p>
+                </div>
 
+                {remarks}
+                <div class="gen-notice">
+                    <svg width="10" height="11" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.6; flex-shrink: 0; margin-right: 2px; vertical-align: middle;">
+                        <path d="M10.5 5H9.5V3.5C9.5 1.57 7.93 0 6 0C4.07 0 2.5 1.57 2.5 3.5V5H1.5C0.67 5 0 5.67 0 6.5V12.5C0 13.33 0.67 14 1.5 14H10.5C11.33 14 12 13.33 12 12.5V6.5C12 5.67 11.33 5 10.5 5ZM3.8 3.5C3.8 2.29 4.79 1.3 6 1.3C7.21 1.3 8.2 2.29 8.2 3.5V5H3.8V3.5ZM6.75 9.85V11.5H5.25V9.85C4.8 9.57 4.5 9.07 4.5 8.5C4.5 7.67 5.17 7 6 7C6.83 7 7.5 7.67 7.5 8.5C7.5 9.07 7.2 9.57 6.75 9.85Z" fill="#1b365d"/>
+                    </svg>
+                    <span class="gen-notice-text">
+                        Computer-generated certificate — does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
+                        Verify at <strong>grclass.com</strong>
+                    </span>
+                </div>
 
-  <!-- ═══ GENERATED NOTICE ═══ -->
-  <div class="generated-notice">
-    <span class="generated-notice-icon">🔒</span>
-    <span class="generated-notice-text">
-      This is a computer-generated certificate and does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
-      Verify authenticity at <strong>grclass.com</strong>
-    </span>
-  </div>
+                <div class="footer-area">
+                    <div class="stamp-container">
+                        <div class="diamond-stamp"></div>
+                        <div class="stamp-text-wrapper">
+                            <div class="st-top">ISSUING AUTHORITY</div>
+                            <div class="st-mid">APPROVED</div>
+                            <div class="st-bot">GR CLASS</div>
+                        </div>
+                    </div>
 
-  <!-- ═══ FOOTER / SIGNATURE ═══ -->
-  <div class="ftr">
-    <div class="ftr-gold-top"></div>
-    <div class="ftr-inner">
-      <div class="sig-area">
-        <div style="position: relative; height: 65px; margin-bottom: 5px; width: 240px;">
-          <!-- Signature Image -->
-          <div class="sig-img-wrap" style="position: absolute; left: 10px; bottom: 0; z-index: 2;">
-            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=null;" alt="Signature" style="max-height: 50px; max-width: 100px; object-fit: contain; display: block;">
-          </div>
-          <!-- Stamp Image -->
-          <div class="stamp-img-wrap" style="position: absolute; left: 110px; bottom: -15px; z-index: 1; opacity: 0.85;">
-            <img src="{stamp}" onerror="this.src='../../../src/modules/payments/Gr-class-stamp.png'; this.onerror=null;" alt="Official Stamp" style="max-height: 70px; max-width: 105px; object-fit: contain; display: block;">
-          </div>
+                    <div class="signature-area">
+                        <div class="sig-line">
+                            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Signature" style="max-height: 28px; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%);">
+                        </div>
+                        <div class="sig-name">GR CLASS Representative</div>
+                        <div class="sig-title">GR CLASS</div>
+                    </div>
+
+                    <div class="qr-section">
+                        <div>
+                            <strong>GR CLASS</strong>
+                            Classified for Standard
+                        </div>
+                        <div class="qr-box">
+                            {qr_code}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="page-indicator">
+                <span>CDG-ST</span>
+                <span>Page 1 of 1</span>
+            </div>
         </div>
-        <div class="sig-line"></div>
-        <div class="sig-label">GR CLASS Representative</div>
-        <div class="sig-name">{surveyor_name}</div>
-        <div class="sig-desig">GR CLASS Representative · Surveyor</div>
-      </div>
-      <div class="ftr-contact" style="display: flex; gap: 15px; align-items: center; text-align: left; justify-content: flex-end;">
-
-        <div style="width: 70px; height: 70px; flex-shrink: 0; background: #fff; padding: 2px; border-radius: 2px; border: 1px solid var(--border);">
-
-          <style>
-
-            .qr-img-wrap img { width: 66px !important; height: 66px !important; display: block; }
-
-          </style>
-
-          <div class="qr-img-wrap">{qr_code}</div>
-
-        </div>
-
-        <div style="text-align: right;">
-        <strong>GR CLASS</strong>
-        <a href="mailto:info@grclass.com">info@grclass.com</a><br>
-        <a href="https://www.grclass.com">www.grclass.com</a><br>
-        Classified for Standard (GR CLASS)<br>
-        Recognized Organization · Global Marine Services
-      </div>
-
-      </div>
     </div>
-  </div>
-
-</div>
 
 </body>
 </html>

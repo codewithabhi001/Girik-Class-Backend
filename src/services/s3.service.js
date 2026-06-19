@@ -110,9 +110,19 @@ export const getFileContent = async (keyOrUrl) => {
         Bucket: env.aws.bucketName,
         Key: key,
     });
-    const response = await s3Client.send(command);
-    // Convert stream to buffer
-    const byteArray = await response.Body.transformToByteArray();
-    return Buffer.from(byteArray);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds timeout
+
+    try {
+        const response = await s3Client.send(command, { abortSignal: controller.signal });
+        clearTimeout(timeoutId);
+        // Convert stream to buffer
+        const byteArray = await response.Body.transformToByteArray();
+        return Buffer.from(byteArray);
+    } catch (err) {
+        clearTimeout(timeoutId);
+        throw err;
+    }
 };
 

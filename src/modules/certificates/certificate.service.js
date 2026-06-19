@@ -29,6 +29,20 @@ const JobStatusHistory = db.JobStatusHistory;
 const AuditLog = db.AuditLog;
 const { Op } = db.Sequelize;
 
+const cleanCustomHtml = (html) => {
+    if (!html) return html;
+    let cleaned = html;
+    cleaned = cleaned.replace(/<img\s+([^>]*?)>/gi, (match) => {
+        const hasSigAlt = /alt\s*=\s*["']signature["']/i.test(match);
+        const hasSigSrc = /src\s*=\s*["'][^"']*Gr-class-sign[^"']*["']/i.test(match);
+        if (hasSigAlt || hasSigSrc) {
+            return match.replace(/(src\s*=\s*["'])[^"']*?(['"])/i, `$1{signature}$2`);
+        }
+        return match;
+    });
+    return cleaned;
+};
+
 /** Reusable scope filter for certificate list/get by role. Used in getCertificates, getCertificateById, preview, getHistory, download. */
 export const getCertificateScopeFilter = async (user) => {
     return buildCertificateScopeWhere(user, { JobRequest, Vessel });
@@ -105,7 +119,19 @@ export const getCertificateTypes = async (options = {}) => {
 /** Get a single certificate type by ID with full detail including description and required documents. */
 export const getCertificateTypeById = async (id) => {
     const type = await CertificateType.findByPk(id, {
-        attributes: ['id', 'name', 'short_code', 'issuing_authority', 'validity_years', 'status', 'description', 'requires_survey'],
+        attributes: [
+            'id',
+            'name',
+            'short_code',
+            'issuing_authority',
+            'validity_years',
+            'status',
+            'description',
+            'requires_survey',
+            'requires_survey_short_term',
+            'requires_survey_full_term',
+            'signature_url'
+        ],
         include: [{
             model: db.CertificateRequiredDocument,
             attributes: ['id', 'document_name', 'is_mandatory'],
@@ -115,7 +141,7 @@ export const getCertificateTypeById = async (id) => {
     const plain = type.get({ plain: true });
     plain.CertificateRequiredDocuments = (plain.CertificateRequiredDocuments || [])
         .sort((a, b) => (a.document_name || '').localeCompare(b.document_name || ''));
-    return shapeCertificateTypeDetail(plain);
+    return await fileAccessService.resolveEntity(shapeCertificateTypeDetail(plain));
 };
 
 const normalizeCertificateName = (name) => {
@@ -149,6 +175,7 @@ export const createCertificateType = async (data) => {
             requires_survey: requiresSurvey,
             requires_survey_short_term: requiresSurveyShortTerm,
             requires_survey_full_term: requiresSurveyFullTerm,
+            signature_url: certData.signature_url ?? null,
         }, { transaction: txn });
 
         if (required_documents && required_documents.length > 0) {
@@ -600,6 +627,11 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
                 certificate_type: cert.CertificateType?.name || '',
                 issue_date: formatDate(cert.issue_date),
                 expiry_date: formatDate(cert.expiry_date),
+                remarks: cert.remarks && cert.remarks.trim() ? `
+                <div class="sec-label">OBSERVACIONES / REMARKS</div>
+                <div class="certify-box" style="background: #ffffff; border-left: 4.5px solid var(--navy-blue); padding: 8px 12px; font-family: 'Times New Roman', serif; font-size: 8.5pt; font-weight: bold; color: var(--navy-blue); margin-bottom: 2.5mm; text-align: left;">
+                    ${cert.remarks.trim()}
+                </div>` : '',
                 survey_completion_date: isSurveyReq
                     ? (dynamicTags.survey_completed_date || formatDate(cert.issue_date))
                     : 'Remotely Surveyed',
@@ -670,13 +702,12 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
         let stampBase64 = '';
         try {
             const dynamicTags = jobId ? await buildTagValuesForJob(jobId) : {};
-            signatureBase64 = dynamicTags.signature || '';
             stampBase64 = dynamicTags.stamp || '';
         } catch (err) {
-            logger.error('Error fetching dynamic tags for PDF signature/stamp:', err);
+            logger.error('Error fetching dynamic tags for PDF stamp:', err);
         }
 
-        // Fallback to reading from local filesystem if not resolved from job
+        // Fallback to reading from local filesystem or S3 based on priority
         try {
             const fs = await import('fs');
             const path = await import('path');
@@ -684,12 +715,65 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
             const __filename = fileURLToPath(import.meta.url);
             const __dirname = path.dirname(__filename);
 
+            const convertToDataUri = async (urlOrPathOrKey) => {
+                if (!urlOrPathOrKey) return '';
+                if (urlOrPathOrKey.startsWith('data:')) {
+                    return urlOrPathOrKey;
+                }
+                try {
+                    if (fs.existsSync(urlOrPathOrKey)) {
+                        const buffer = fs.readFileSync(urlOrPathOrKey);
+                        return `data:image/png;base64,${buffer.toString('base64')}`;
+                    }
+                } catch (err) {
+                    // Ignore and proceed to S3 check
+                }
+                try {
+                    const fileContent = await s3Service.getFileContent(urlOrPathOrKey);
+                    let mime = 'image/png';
+                    const lowerKey = urlOrPathOrKey.toLowerCase();
+                    if (lowerKey.endsWith('.jpg') || lowerKey.endsWith('.jpeg')) mime = 'image/jpeg';
+                    if (lowerKey.endsWith('.svg')) mime = 'image/svg+xml';
+                    if (lowerKey.endsWith('.webp')) mime = 'image/webp';
+                    return `data:${mime};base64,${fileContent.toString('base64')}`;
+                } catch (e) {
+                    logger.error('Error fetching S3 content for signature:', e);
+                    return '';
+                }
+            };
+
+            // Tier 1: Specific Certificate signature_url override
+            if (cert.signature_url) {
+                signatureBase64 = await convertToDataUri(cert.signature_url);
+            }
+
+            // Tier 2: Certificate Type signature_url default
+            if (!signatureBase64) {
+                let certType = cert.CertificateType;
+                if (!certType && cert.certificate_type_id) {
+                    certType = await db.CertificateType.findByPk(cert.certificate_type_id, { transaction });
+                }
+                if (certType?.signature_url) {
+                    signatureBase64 = await convertToDataUri(certType.signature_url);
+                }
+            }
+
+            // Tier 3: Global Representative Signature Setting
+            if (!signatureBase64) {
+                const setting = await db.SystemSetting.findByPk('GR_CLASS_REPRESENTATIVE_SIGNATURE', { transaction });
+                if (setting?.value) {
+                    signatureBase64 = await convertToDataUri(setting.value);
+                }
+            }
+
+            // Default Fallback signature
             if (!signatureBase64) {
                 const sigPath = path.join(__dirname, '..', 'payments', 'Gr-class-sign.png');
                 if (fs.existsSync(sigPath)) {
                     signatureBase64 = `data:image/png;base64,${fs.readFileSync(sigPath).toString('base64')}`;
                 }
             }
+
             if (!stampBase64) {
                 const stampPath = path.join(__dirname, '..', 'payments', 'Gr-class-stamp.png');
                 if (fs.existsSync(stampPath)) {
@@ -1202,6 +1286,9 @@ export const getCertificateById = async (id, user) => {
         ],
     });
     if (cert) {
+        if (cert.status === 'DRAFT' && !cert.custom_html) {
+            await _generateCertificateFile(cert, user);
+        }
         if (cert.pdf_file_url) {
             const key = fileAccessService.getKeyFromUrl(cert.pdf_file_url);
             let pdfUrl = fileAccessService.generatePublicCdnUrl(key);
@@ -1221,7 +1308,7 @@ export const getCertificateById = async (id, user) => {
             cert.setDataValue('generated_pdf_signed_url', genPdfUrl);
         }
 
-        return cert;
+        return await fileAccessService.resolveEntity(cert, user);
     }
     const exists = await Certificate.findByPk(id);
     if (exists) {
@@ -1301,7 +1388,7 @@ export const updateDraft = async (id, data, user) => {
     if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
     if (cert.status !== 'DRAFT') throw { statusCode: 400, message: 'Only draft certificates can be updated' };
 
-    const { flag_administration_id, certificate_term, remarks, issue_date, expiry_date } = data;
+    const { flag_administration_id, certificate_term, remarks, issue_date, expiry_date, signature_url } = data;
     
     if (certificate_term !== undefined) {
         await verifyTemplateExists(cert.certificate_type_id, certificate_term);
@@ -1336,7 +1423,8 @@ export const updateDraft = async (id, data, user) => {
         remarks,
         issue_date,
         expiry_date,
-        custom_html: updatedHtml,
+        signature_url: fileAccessService.getKeyFromUrl(signature_url),
+        custom_html: cleanCustomHtml(updatedHtml),
         ...(certificate_term && certificate_term !== cert.certificate_term ? { custom_html: null } : {})
     });
 
@@ -1348,22 +1436,16 @@ export const updateDraft = async (id, data, user) => {
         changed_at: new Date()
     });
 
-    // Regenerate PDF file on draft update
-    const freshCert = await Certificate.findByPk(cert.id, {
-        useMaster: true,
-        include: [
-            { model: db.Vessel, include: [{ model: db.Client, as: 'Client', attributes: ['company_name', 'address', 'company_id_number'] }] },
-            { model: db.CertificateType },
-            { model: db.FlagAdministration, as: 'FlagState' }
-        ]
-    });
-    await _generateCertificateFile(freshCert, user);
+    // No PDF regeneration here – {signature}, {stamp} etc. are resolved at runtime
+    // when the certificate is actually issued or PDF is explicitly generated.
+    // This keeps draft updates instant (just a DB write).
 
     const finalCert = await Certificate.findByPk(cert.id, {
         useMaster: true,
         include: [
             { model: db.Vessel, attributes: ['vessel_name', 'imo_number'] },
-            { model: db.CertificateType, attributes: ['name'] }
+            { model: db.CertificateType, attributes: ['name'] },
+            { model: db.FlagAdministration, as: 'FlagState', attributes: ['id', 'flag_state_name', 'logo_url'] }
         ]
     });
     if (finalCert && finalCert.pdf_file_url) {
@@ -1372,7 +1454,7 @@ export const updateDraft = async (id, data, user) => {
         finalCert.setDataValue('pdf_url', signedUrl);
     }
 
-    return finalCert;
+    return await fileAccessService.resolveEntity(finalCert, user);
 };
 
 export const updateDraftLayout = async (id, data, user) => {
@@ -1383,7 +1465,7 @@ export const updateDraftLayout = async (id, data, user) => {
     const { custom_html } = data;
     
     const extractedData = certificatePdfService.extractFieldsFromHtml(custom_html);
-    const updates = { custom_html };
+    const updates = { custom_html: cleanCustomHtml(custom_html) };
     
     if (extractedData.certificate_number !== undefined) {
         updates.certificate_number = extractedData.certificate_number;

@@ -347,6 +347,7 @@ export const schemas = {
         requires_survey: Joi.boolean().optional().default(true),
         requires_survey_short_term: Joi.boolean().optional(),
         requires_survey_full_term: Joi.boolean().optional(),
+        signature_url: Joi.string().optional().allow('', null),
         required_documents: Joi.array().items(Joi.object({
             document_name: Joi.string().required(),
             is_mandatory: Joi.boolean().optional().default(true),
@@ -363,6 +364,7 @@ export const schemas = {
         requires_survey: Joi.boolean().optional(),
         requires_survey_short_term: Joi.boolean().optional(),
         requires_survey_full_term: Joi.boolean().optional(),
+        signature_url: Joi.string().optional().allow('', null),
         required_documents: Joi.array().items(Joi.object({
             document_name: Joi.string().required(),
             is_mandatory: Joi.boolean().optional().default(true),
@@ -615,6 +617,7 @@ export const schemas = {
         remarks: Joi.string().allow('', null).optional(),
         issue_date: Joi.date().iso().optional(),
         expiry_date: Joi.date().iso().optional(),
+        signature_url: Joi.string().optional().allow('', null),
     }),
     updateCertificateLayout: Joi.object({
         custom_html: Joi.string().required(),
