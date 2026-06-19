@@ -41,7 +41,7 @@ export const getCertificateById = async (req, res, next) => {
 
 export const downloadCertificate = async (req, res, next) => {
     try {
-        const cert = await certService.getCertificateById(req.params.id, req.user);
+        const cert = await certService.prepareCertificateDownload(req.params.id, req.user);
         if (cert.pdf_file_url) {
             let filename = 'certificate.pdf';
             if (cert.certificate_number) {
@@ -49,11 +49,10 @@ export const downloadCertificate = async (req, res, next) => {
                 filename = `certificate_${cleanNumber}.pdf`;
             }
             const options = {
-                ResponseContentDisposition: `attachment; filename="${filename}"`
+                ResponseContentDisposition: `attachment; filename="${filename}"`,
             };
             const process = await fileAccessService.processFileAccess({ file_url: cert.pdf_file_url }, req.user, options);
             if (process.signedUrl) {
-                // Return JSON if requested via AJAX/API (e.g. has Authorization header, expects json, or has json parameter)
                 if (req.headers.authorization || (req.headers.accept && req.headers.accept.includes('application/json')) || req.query.json === 'true') {
                     return res.json({ success: true, downloadUrl: process.signedUrl, pdf_file_url: process.signedUrl });
                 }
@@ -169,6 +168,13 @@ export const previewCertificate = async (req, res, next) => {
     try {
         const result = await certService.previewCertificate(req.params.id, req.user);
         res.json({ success: true, message: 'Certificate preview data fetched', data: result });
+    } catch (error) { next(error); }
+};
+
+export const previewCertificateHtml = async (req, res, next) => {
+    try {
+        const result = await certService.getCertificatePreviewHtml(req.params.id, req.user);
+        res.json({ success: true, message: 'Certificate preview HTML fetched', data: result });
     } catch (error) { next(error); }
 };
 

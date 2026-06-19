@@ -55,6 +55,8 @@ export default {
         region: process.env.AWS_REGION,
         bucketName: process.env.AWS_BUCKET_NAME,
         cloudfrontDomain: process.env.AWS_CLOUDFRONT_DOMAIN,
+        /** SQS queue URL for async certificate PDF jobs (optional — unset = EC2 fallback). */
+        pdfQueueUrl: process.env.PDF_QUEUE_URL || null,
         ses: {
             accessKeyId: process.env.AWS_SES_ACCESS_KEY_ID,
             secretAccessKey: process.env.AWS_SES_SECRET_ACCESS_KEY,

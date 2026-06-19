@@ -74,6 +74,7 @@ router.post('/bulk-renew', authorizeRoles('ADMIN', 'TM'), certController.bulkRen
 router.post('/:id/reissue', authorizeRoles('ADMIN', 'TM'), certController.reissueCertificate);
 
 // Preview
+router.get('/:id/preview-html', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), certController.previewCertificateHtml);
 router.get('/:id/preview', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'TO'), certController.previewCertificate);
 
 // History

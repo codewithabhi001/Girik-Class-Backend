@@ -80,6 +80,64 @@ const loadAssetAsDataUri = async (urlOrPathOrKey) => {
     }
 };
 
+const _readLocalPaymentsAssetBase64 = async (filename) => {
+    try {
+        const fs = await import('fs');
+        const path = await import('path');
+        const { fileURLToPath } = await import('url');
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
+        const assetPath = path.join(__dirname, '..', 'payments', filename);
+        if (fs.existsSync(assetPath)) {
+            return `data:image/png;base64,${fs.readFileSync(assetPath).toString('base64')}`;
+        }
+    } catch {
+        // ignore
+    }
+    return '';
+};
+
+const resolveAssetUrlForPreview = async (urlOrKey, user) => {
+    if (!urlOrKey) return null;
+    if (urlOrKey.startsWith('data:') || urlOrKey.startsWith('http://') || urlOrKey.startsWith('https://')) {
+        return urlOrKey;
+    }
+    const cdnUrl = fileAccessService.generatePublicCdnUrl(urlOrKey);
+    if (cdnUrl) return cdnUrl;
+    return fileAccessService.resolveUrl(urlOrKey, user, true);
+};
+
+/** CDN/signed URL for browser preview — avoids slow S3 download + base64 embed. */
+const resolveCertificateSignatureForPreview = async (cert, user, transaction = null) => {
+    if (cert.signature_url) {
+        const url = await resolveAssetUrlForPreview(cert.signature_url, user);
+        if (url) return url;
+    }
+
+    let certType = cert.CertificateType;
+    if (!certType && cert.certificate_type_id) {
+        certType = await db.CertificateType.findByPk(cert.certificate_type_id, {
+            transaction,
+            attributes: ['signature_url'],
+        });
+    }
+    if (certType?.signature_url) {
+        const url = await resolveAssetUrlForPreview(certType.signature_url, user);
+        if (url) return url;
+    }
+
+    const setting = await db.SystemSetting.findByPk('GR_CLASS_REPRESENTATIVE_SIGNATURE', {
+        transaction,
+        attributes: ['value'],
+    });
+    if (setting?.value) {
+        const url = await resolveAssetUrlForPreview(setting.value, user);
+        if (url) return url;
+    }
+
+    return _readLocalPaymentsAssetBase64('Gr-class-sign.png');
+};
+
 /**
  * Resolve signature image for certificate PDF generation.
  * Priority: certificate override → certificate type default → global setting → local fallback file.
@@ -624,192 +682,241 @@ const generateUniqueCertificateNumber = async (typeCode = null) => {
     return certNumber;
 };
 
-export const _generateCertificateFile = async (cert, user, transaction = null) => {
-    let template = null;
+const _loadStampBase64 = async () => _readLocalPaymentsAssetBase64('Gr-class-stamp.png');
+
+const _applySignatureAndStampToHtml = async (html, cert, transaction = null, { forPreview = false, user = null } = {}) => {
+    if (!html) return html;
+    let out = html;
     try {
-        const jobId = cert.job_id;
-        const certificateNumber = cert.certificate_number;
-        
-        let finalHtml;
-        if (cert.custom_html) {
-            let flagStateName = '';
-            let flagLogo = null;
-            if (cert.flag_administration_id || cert.FlagState) {
-                const flag = cert.FlagState || await db.FlagAdministration.findByPk(cert.flag_administration_id, { transaction });
-                if (flag) {
-                    flagStateName = flag.flag_state_name || '';
-                    if (flag.logo_url) {
-                        flagLogo = await fileAccessService.resolveUrl(flag.logo_url, user, true);
-                    }
-                }
+        if (forPreview) {
+            const [signatureSrc, stampBase64] = await Promise.all([
+                resolveCertificateSignatureForPreview(cert, user, transaction),
+                _loadStampBase64(),
+            ]);
+            if (signatureSrc) {
+                out = out.replaceAll('{signature}', signatureSrc);
             }
-            finalHtml = certificatePdfService.updateFieldsInHtml(cert.custom_html, {
-                certificate_number: certificateNumber,
-                issue_date: cert.issue_date,
-                expiry_date: cert.expiry_date,
-                flag_state: flagStateName,
-                flag_logo: flagLogo
-            });
-            finalHtml = certificatePdfService.updateRemarksInHtml(finalHtml, cert.remarks);
-            finalHtml = cleanCustomHtml(finalHtml);
-            if (finalHtml !== cert.custom_html) {
-                await cert.update({ custom_html: finalHtml }, { transaction });
+            if (stampBase64) {
+                out = out.replaceAll('{stamp}', stampBase64);
             }
         } else {
-            // 1. Resolve logos and basic info
-            const grClassLogo = 'https://grclass.com/grclass-logo.webp';
-            let flagLogo = null;
-            if (cert.flag_administration_id || cert.FlagState) {
-                const flag = cert.FlagState || await db.FlagAdministration.findByPk(cert.flag_administration_id, { transaction });
-                if (flag?.logo_url) {
+            const [signatureBase64, stampBase64] = await Promise.all([
+                resolveCertificateSignatureBase64(cert, transaction),
+                _loadStampBase64(),
+            ]);
+            if (signatureBase64) {
+                out = out.replaceAll('{signature}', signatureBase64);
+            }
+            if (stampBase64) {
+                out = out.replaceAll('{stamp}', stampBase64);
+            }
+        }
+    } catch (err) {
+        logger.error('Error applying signature/stamp to certificate HTML:', err);
+    }
+    return out;
+};
+
+/** Resolve S3 keys and non-absolute img src values to CDN or signed URLs for browser preview. */
+const _resolveHtmlAssetUrls = async (html, user) => {
+    if (!html || typeof html !== 'string') return html;
+
+    const resolveSrc = async (src) => {
+        const trimmed = (src || '').trim();
+        if (
+            !trimmed ||
+            trimmed.startsWith('data:') ||
+            trimmed.startsWith('http://') ||
+            trimmed.startsWith('https://') ||
+            trimmed.startsWith('//') ||
+            trimmed.startsWith('{')
+        ) {
+            return trimmed;
+        }
+        try {
+            const cdnUrl = fileAccessService.generatePublicCdnUrl(trimmed);
+            if (cdnUrl) return cdnUrl;
+            const resolved = await fileAccessService.resolveUrl(trimmed, user, true);
+            return resolved || trimmed;
+        } catch {
+            return trimmed;
+        }
+    };
+
+    let out = html;
+    const imgTagRegex = /<img([^>]*?)src=["']([^"']+)["']([^>]*)>/gi;
+    const matches = [...html.matchAll(imgTagRegex)];
+    const replacements = await Promise.all(
+        matches.map(async (match) => {
+            const [fullTag, before, src, after] = match;
+            const resolvedSrc = await resolveSrc(src);
+            if (resolvedSrc && resolvedSrc !== src) {
+                return { fullTag, replacement: `<img${before}src="${resolvedSrc}"${after}>` };
+            }
+            return null;
+        }),
+    );
+    for (const item of replacements) {
+        if (item) {
+            out = out.replace(item.fullTag, item.replacement);
+        }
+    }
+    return out;
+};
+
+const _assembleCertificateHtml = async (cert, user, transaction = null, { persistUpdates = true } = {}) => {
+    const jobId = cert.job_id;
+    const certificateNumber = cert.certificate_number;
+
+    if (cert.custom_html) {
+        let flagStateName = '';
+        let flagLogo = null;
+        if (cert.flag_administration_id || cert.FlagState) {
+            const flag = cert.FlagState || await db.FlagAdministration.findByPk(cert.flag_administration_id, { transaction });
+            if (flag) {
+                flagStateName = flag.flag_state_name || '';
+                if (flag.logo_url) {
                     flagLogo = await fileAccessService.resolveUrl(flag.logo_url, user, true);
                 }
             }
-            const issuingAuthority = cert.CertificateType?.issuing_authority === 'FLAG' ? (cert.FlagState?.flag_state_name || 'Flag Administration') : 'GR CLASS';
-            
-            // 2. Build dynamic tags (exclude signature/stamp — resolved later via tiered lookup)
-            const dynamicTagsRaw = jobId ? await buildTagValuesForJob(jobId) : {};
-            const { signature: _omitSig, stamp: _omitStamp, ...dynamicTags } = dynamicTagsRaw;
-
-            const certType = cert.CertificateType;
-            const term = cert.certificate_term || 'FULL_TERM';
-            const isSurveyReq = certType 
-                ? (term === 'SHORT_TERM' ? certType.requires_survey_short_term : certType.requires_survey_full_term)
-                : false;
-
-            const formatDate = (v) => {
-                if (!v) return '';
-                try {
-                    const d = (v instanceof Date) ? v : new Date(v);
-                    if (Number.isNaN(d.getTime())) return String(v);
-                    return d.toISOString().slice(0, 10);
-                } catch {
-                    return String(v);
-                }
-            };
-
-            const allDataSources = {
-                ...dynamicTags,
-                vessel_name: cert.Vessel?.vessel_name || 'Company Wide',
-                imo_number: cert.Vessel?.imo_number || 'N/A',
-                call_sign: cert.Vessel?.call_sign || 'N/A',
-                mmsi_number: cert.Vessel?.mmsi_number || 'N/A',
-                port_of_registry: cert.Vessel?.port_of_registry || 'N/A',
-                year_built: cert.Vessel?.year_built || 'N/A',
-                ship_type: cert.Vessel?.ship_type || 'N/A',
-                gross_tonnage: cert.Vessel?.gross_tonnage || 'N/A',
-                net_tonnage: cert.Vessel?.net_tonnage || 'N/A',
-                deadweight: cert.Vessel?.deadweight || 'N/A',
-                ballast_water_capacity: cert.Vessel?.ballast_water_capacity || 'N/A',
-                // Company (client) fields — used by DOC and other company-level certificates
-                company_name: cert.Vessel?.Client?.company_name || cert.Client?.company_name || '',
-                company_address: cert.Vessel?.Client?.address || cert.Client?.address || '',
-                company_id_number: cert.Vessel?.Client?.company_id_number || cert.Client?.company_id_number || '',
-                certificate_number: certificateNumber,
-                certificate_type: cert.CertificateType?.name || '',
-                issue_date: formatDate(cert.issue_date),
-                expiry_date: formatDate(cert.expiry_date),
-                remarks: certificatePdfService.formatRemarksHtml(cert.remarks),
-                survey_completion_date: isSurveyReq
-                    ? (dynamicTags.survey_completed_date || formatDate(cert.issue_date))
-                    : 'Remotely Surveyed',
-                certificate_term: cert.certificate_term || '',
-                issuing_authority: issuingAuthority,
-                flag_state: cert.FlagState?.flag_state_name || '',
-                port: dynamicTags.place_of_survey || '',
-                place: dynamicTags.place_of_survey || '',
-                surveyor_name: dynamicTags.surveyor_name || '',
-                gr_class_logo: grClassLogo,
-                flag_logo: flagLogo
-            };
-
-            // 3. Fetch Template
-            if (cert.certificate_term) {
-                // Attempt to find a template matching the specified term
-                template = await db.CertificateTemplate.findOne({
-                    where: {
-                        certificate_type_id: cert.certificate_type_id,
-                        is_active: true,
-                        certificate_term: cert.certificate_term,
-                    },
-                    order: [['createdAt', 'DESC']],
-                    transaction,
-                });
-                
-                if (!template) {
-                    throw { statusCode: 400, message: `No active certificate template found for term ${cert.certificate_term}` };
-                }
-            } else {
-                // No term specified; attempt to find a template without a term (default template)
-                template = await db.CertificateTemplate.findOne({
-                    where: {
-                        certificate_type_id: cert.certificate_type_id,
-                        is_active: true,
-                        certificate_term: null,
-                    },
-                    order: [['createdAt', 'DESC']],
-                    transaction,
-                });
-                
-                if (!template) {
-                    throw { statusCode: 400, message: 'No active default certificate template found' };
-                }
-            }
-
-            if (!template?.template_content) {
-                logger.warn('No valid template content found for certificate', { certId: cert.id });
-                throw { statusCode: 400, message: 'No valid template content found for this certificate.' };
-            }
-
-            const verificationUrl = env.certificateVerifyPublicUrl.replace('{number}', encodeURIComponent(certificateNumber));
-            const qrDataUrl = await QRCode.toDataURL(verificationUrl, { width: 120, margin: 1 });
-            
-            allDataSources.qr_code = `<img src="${qrDataUrl}" style="width:120px;height:120px;" alt="QR Code"/>`;
-            allDataSources.qr_data_url = qrDataUrl;
-            allDataSources.qr_code_url = qrDataUrl;
-
-            const filledHtml = certificatePdfService.fillTemplate(template.template_content, allDataSources);
-            let compiledHtml = filledHtml.includes('<html') ? filledHtml : certificatePdfService.wrapHtmlForPdf(filledHtml);
-            compiledHtml = certificatePdfService.updateRemarksInHtml(compiledHtml, cert.remarks);
-            finalHtml = cleanCustomHtml(compiledHtml);
-            
-            // Save compiled HTML to db (keep {signature}/{stamp} placeholders for later regeneration)
+        }
+        let finalHtml = certificatePdfService.updateFieldsInHtml(cert.custom_html, {
+            certificate_number: certificateNumber,
+            issue_date: cert.issue_date,
+            expiry_date: cert.expiry_date,
+            flag_state: flagStateName,
+            flag_logo: flagLogo,
+        });
+        finalHtml = certificatePdfService.updateRemarksInHtml(finalHtml, cert.remarks);
+        finalHtml = cleanCustomHtml(finalHtml);
+        if (persistUpdates && finalHtml !== cert.custom_html) {
             await cert.update({ custom_html: finalHtml }, { transaction });
         }
+        return finalHtml;
+    }
 
-        // Resolve signature/stamp for PDF output only — custom_html keeps placeholders
-        let signatureBase64 = '';
-        let stampBase64 = '';
+    const grClassLogo = 'https://grclass.com/grclass-logo.webp';
+    let flagLogo = null;
+    if (cert.flag_administration_id || cert.FlagState) {
+        const flag = cert.FlagState || await db.FlagAdministration.findByPk(cert.flag_administration_id, { transaction });
+        if (flag?.logo_url) {
+            flagLogo = await fileAccessService.resolveUrl(flag.logo_url, user, true);
+        }
+    }
+    const issuingAuthority = cert.CertificateType?.issuing_authority === 'FLAG'
+        ? (cert.FlagState?.flag_state_name || 'Flag Administration')
+        : 'GR CLASS';
+
+    const dynamicTagsRaw = jobId ? await buildTagValuesForJob(jobId) : {};
+    const { signature: _omitSig, stamp: _omitStamp, ...dynamicTags } = dynamicTagsRaw;
+
+    const certType = cert.CertificateType;
+    const term = cert.certificate_term || 'FULL_TERM';
+    const isSurveyReq = certType
+        ? (term === 'SHORT_TERM' ? certType.requires_survey_short_term : certType.requires_survey_full_term)
+        : false;
+
+    const formatDate = (v) => {
+        if (!v) return '';
         try {
-            signatureBase64 = await resolveCertificateSignatureBase64(cert, transaction);
-            const dynamicTags = jobId ? await buildTagValuesForJob(jobId) : {};
-            stampBase64 = dynamicTags.stamp || '';
-        } catch (err) {
-            logger.error('Error resolving certificate signature/stamp for PDF:', err);
+            const d = (v instanceof Date) ? v : new Date(v);
+            if (Number.isNaN(d.getTime())) return String(v);
+            return d.toISOString().slice(0, 10);
+        } catch {
+            return String(v);
         }
+    };
 
-        try {
-            if (!stampBase64) {
-                const fs = await import('fs');
-                const path = await import('path');
-                const { fileURLToPath } = await import('url');
-                const __filename = fileURLToPath(import.meta.url);
-                const __dirname = path.dirname(__filename);
-                const stampPath = path.join(__dirname, '..', 'payments', 'Gr-class-stamp.png');
-                if (fs.existsSync(stampPath)) {
-                    stampBase64 = `data:image/png;base64,${fs.readFileSync(stampPath).toString('base64')}`;
-                }
-            }
-        } catch (err) {
-            logger.error('Error loading fallback stamp file for PDF:', err);
-        }
+    const allDataSources = {
+        ...dynamicTags,
+        vessel_name: cert.Vessel?.vessel_name || 'Company Wide',
+        imo_number: cert.Vessel?.imo_number || 'N/A',
+        call_sign: cert.Vessel?.call_sign || 'N/A',
+        mmsi_number: cert.Vessel?.mmsi_number || 'N/A',
+        port_of_registry: cert.Vessel?.port_of_registry || 'N/A',
+        year_built: cert.Vessel?.year_built || 'N/A',
+        ship_type: cert.Vessel?.ship_type || 'N/A',
+        gross_tonnage: cert.Vessel?.gross_tonnage || 'N/A',
+        net_tonnage: cert.Vessel?.net_tonnage || 'N/A',
+        deadweight: cert.Vessel?.deadweight || 'N/A',
+        ballast_water_capacity: cert.Vessel?.ballast_water_capacity || 'N/A',
+        company_name: cert.Vessel?.Client?.company_name || cert.Client?.company_name || '',
+        company_address: cert.Vessel?.Client?.address || cert.Client?.address || '',
+        company_id_number: cert.Vessel?.Client?.company_id_number || cert.Client?.company_id_number || '',
+        certificate_number: certificateNumber,
+        certificate_type: cert.CertificateType?.name || '',
+        issue_date: formatDate(cert.issue_date),
+        expiry_date: formatDate(cert.expiry_date),
+        remarks: certificatePdfService.formatRemarksHtml(cert.remarks),
+        survey_completion_date: isSurveyReq
+            ? (dynamicTags.survey_completed_date || formatDate(cert.issue_date))
+            : 'Remotely Surveyed',
+        certificate_term: cert.certificate_term || '',
+        issuing_authority: issuingAuthority,
+        flag_state: cert.FlagState?.flag_state_name || '',
+        port: dynamicTags.place_of_survey || '',
+        place: dynamicTags.place_of_survey || '',
+        surveyor_name: dynamicTags.surveyor_name || '',
+        gr_class_logo: grClassLogo,
+        flag_logo: flagLogo,
+    };
 
-        if (signatureBase64) {
-            finalHtml = finalHtml.replaceAll('{signature}', signatureBase64);
+    let template = null;
+    if (cert.certificate_term) {
+        template = await db.CertificateTemplate.findOne({
+            where: {
+                certificate_type_id: cert.certificate_type_id,
+                is_active: true,
+                certificate_term: cert.certificate_term,
+            },
+            order: [['createdAt', 'DESC']],
+            transaction,
+        });
+        if (!template) {
+            throw { statusCode: 400, message: `No active certificate template found for term ${cert.certificate_term}` };
         }
-        if (stampBase64) {
-            finalHtml = finalHtml.replaceAll('{stamp}', stampBase64);
+    } else {
+        template = await db.CertificateTemplate.findOne({
+            where: {
+                certificate_type_id: cert.certificate_type_id,
+                is_active: true,
+                certificate_term: null,
+            },
+            order: [['createdAt', 'DESC']],
+            transaction,
+        });
+        if (!template) {
+            throw { statusCode: 400, message: 'No active default certificate template found' };
         }
+    }
+
+    if (!template?.template_content) {
+        throw { statusCode: 400, message: 'No valid template content found for this certificate.' };
+    }
+
+    const verificationUrl = env.certificateVerifyPublicUrl.replace('{number}', encodeURIComponent(certificateNumber));
+    const qrDataUrl = await QRCode.toDataURL(verificationUrl, { width: 120, margin: 1 });
+
+    allDataSources.qr_code = `<img src="${qrDataUrl}" style="width:120px;height:120px;" alt="QR Code"/>`;
+    allDataSources.qr_data_url = qrDataUrl;
+    allDataSources.qr_code_url = qrDataUrl;
+
+    const filledHtml = certificatePdfService.fillTemplate(template.template_content, allDataSources);
+    let compiledHtml = filledHtml.includes('<html') ? filledHtml : certificatePdfService.wrapHtmlForPdf(filledHtml);
+    compiledHtml = certificatePdfService.updateRemarksInHtml(compiledHtml, cert.remarks);
+    const finalHtml = cleanCustomHtml(compiledHtml);
+
+    if (persistUpdates) {
+        await cert.update({ custom_html: finalHtml }, { transaction });
+    }
+    return finalHtml;
+};
+
+export const _generateCertificateFile = async (cert, user, transaction = null) => {
+    try {
+        const certificateNumber = cert.certificate_number;
+        let finalHtml = await _assembleCertificateHtml(cert, user, transaction, { persistUpdates: true });
+        finalHtml = await _applySignatureAndStampToHtml(finalHtml, cert, transaction);
 
         const pdfBuffer = await certificatePdfService.htmlToPdfBuffer(finalHtml);
         const fileUrl = await s3Service.uploadFile(
@@ -818,13 +925,134 @@ export const _generateCertificateFile = async (cert, user, transaction = null) =
             'application/pdf',
             s3Service.UPLOAD_FOLDERS.CERTIFICATES
         );
-        
+
         await cert.update({ pdf_file_url: fileUrl, generated_pdf_url: fileUrl }, { transaction });
         return fileUrl;
     } catch (err) {
         logger.error('Error in _generateCertificateFile', { certId: cert.id, err: err.message });
         throw err;
     }
+};
+
+const PDF_GENERATION_INCLUDES = [
+    {
+        model: db.Vessel,
+        include: [{ model: db.Client, as: 'Client', attributes: ['company_name', 'address', 'company_id_number'] }],
+    },
+    { model: db.Client, as: 'Client', attributes: ['id', 'company_name', 'address', 'company_id_number'] },
+    { model: db.CertificateType },
+    { model: db.FlagAdministration, as: 'FlagState' },
+];
+
+const PREVIEW_INCLUDES = [
+    { model: db.CertificateType, attributes: ['id', 'signature_url', 'issuing_authority', 'name', 'requires_survey_short_term', 'requires_survey_full_term'] },
+    { model: db.FlagAdministration, as: 'FlagState', attributes: ['flag_state_name', 'logo_url'] },
+];
+
+const loadCertificateForPdfGeneration = async (certificateId, transaction = null) =>
+    Certificate.findByPk(certificateId, {
+        useMaster: true,
+        transaction,
+        include: PDF_GENERATION_INCLUDES,
+    });
+
+const loadCertificateForPreview = async (certificateId, scopeWhere = {}, transaction = null) =>
+    Certificate.findOne({
+        where: { id: certificateId, ...scopeWhere },
+        useMaster: true,
+        transaction,
+        include: PREVIEW_INCLUDES,
+    });
+
+const attachPdfSignedUrls = async (cert, user) => {
+    if (cert?.pdf_file_url) {
+        const key = fileAccessService.getKeyFromUrl(cert.pdf_file_url);
+        let pdfUrl = fileAccessService.generatePublicCdnUrl(key);
+        if (!pdfUrl) {
+            pdfUrl = await fileAccessService.generateSignedUrl(key, 3600, user);
+        }
+        cert.setDataValue('pdf_url', pdfUrl);
+    }
+    if (cert?.generated_pdf_url) {
+        const key2 = fileAccessService.getKeyFromUrl(cert.generated_pdf_url);
+        let genPdfUrl = fileAccessService.generatePublicCdnUrl(key2);
+        if (!genPdfUrl) {
+            genPdfUrl = await fileAccessService.generateSignedUrl(key2, 3600, user);
+        }
+        cert.setDataValue('generated_pdf_signed_url', genPdfUrl);
+    }
+    return cert;
+};
+
+const needsPdfRegeneration = (cert) =>
+    !cert?.pdf_file_url || cert.status === 'DRAFT';
+
+/** Background / queue worker entry — generates PDF on EC2 when SQS is not used. */
+export const generateCertificatePdfById = async (certificateId, userId) => {
+    const cert = await loadCertificateForPdfGeneration(certificateId);
+    if (!cert) {
+        logger.warn('[pdf] Background generation skipped — certificate not found', { certificateId });
+        return null;
+    }
+    let user = null;
+    if (userId) {
+        user = await db.User.findByPk(userId, { attributes: ['id', 'role', 'client_id', 'email'] });
+    }
+    if (!user) {
+        user = { id: userId || null, role: 'ADMIN' };
+    }
+    await _generateCertificateFile(cert, user);
+    return cert.id;
+};
+
+/**
+ * Sync PDF generation for download — always runs on EC2 so the user gets the file immediately.
+ */
+export const prepareCertificateDownload = async (id, user) => {
+    const scopeWhere = await getCertificateScopeFilter(user);
+    const exists = await Certificate.findOne({ where: { id, ...scopeWhere }, attributes: ['id'] });
+    if (!exists) {
+        const any = await Certificate.findByPk(id, { attributes: ['id'] });
+        if (any) {
+            throw { statusCode: 403, message: 'You do not have access to this certificate' };
+        }
+        throw { statusCode: 404, message: 'Certificate not found' };
+    }
+
+    let cert = await loadCertificateForPdfGeneration(id);
+    if (needsPdfRegeneration(cert)) {
+        await _generateCertificateFile(cert, user);
+        cert = await loadCertificateForPdfGeneration(id);
+    }
+
+    if (!cert?.pdf_file_url) {
+        throw { statusCode: 500, message: 'Certificate PDF could not be generated' };
+    }
+
+    await attachPdfSignedUrls(cert, user);
+    return cert;
+};
+
+/** Browser-ready HTML preview with resolved signature, stamp, and CDN/signed asset URLs. */
+export const getCertificatePreviewHtml = async (id, user) => {
+    const scopeWhere = await getCertificateScopeFilter(user);
+    let cert = await loadCertificateForPreview(id, scopeWhere);
+    if (!cert) {
+        const any = await Certificate.findByPk(id, { attributes: ['id'] });
+        if (any) {
+            throw { statusCode: 403, message: 'You do not have access to this certificate' };
+        }
+        throw { statusCode: 404, message: 'Certificate not found' };
+    }
+
+    if (!cert.custom_html?.trim()) {
+        cert = await loadCertificateForPdfGeneration(id);
+    }
+
+    let html = await _assembleCertificateHtml(cert, user, null, { persistUpdates: false });
+    html = await _applySignatureAndStampToHtml(html, cert, null, { forPreview: true, user });
+    html = await _resolveHtmlAssetUrls(html, user);
+    return { html };
 };
 
 export const verifyTemplateExists = async (certificateTypeId, term, transaction = null) => {
@@ -1047,94 +1275,71 @@ export const generateCertificate = async (data, user) => {
 
         await transaction.commit();
 
-        try {
-            // Generate PDF outside transaction (non-critical, best-effort)
-            const freshCert = await Certificate.findByPk(cert.id, {
-                useMaster: true,
-                include: [
-                    { model: db.Vessel, include: [{ model: db.Client, as: 'Client', attributes: ['company_name', 'address', 'company_id_number'] }] },
-                    { model: db.Client, as: 'Client', attributes: ['id', 'company_name', 'address', 'company_id_number'] },
-                    { model: db.CertificateType },
-                    { model: db.FlagAdministration, as: 'FlagState' }
-                ]
-            });
-            await _generateCertificateFile(freshCert, user);
-            
-            const finalCert = await Certificate.findByPk(cert.id, {
-                useMaster: true,
-                include: [
-                    { model: db.Vessel, attributes: ['vessel_name', 'imo_number'] },
-                    { model: db.CertificateType, attributes: ['name'] }
-                ]
-            });
-            if (finalCert && finalCert.pdf_file_url) {
-                const key = fileAccessService.getKeyFromUrl(finalCert.pdf_file_url);
-                const signedUrl = await fileAccessService.generateSignedUrl(key, 3600, user);
-                finalCert.setDataValue('pdf_url', signedUrl);
-            }
+        const finalCert = await Certificate.findByPk(cert.id, {
+            useMaster: true,
+            include: [
+                { model: db.Vessel, attributes: ['vessel_name', 'imo_number'] },
+                { model: db.CertificateType, attributes: ['name'] },
+            ],
+        });
 
-            // ── Non-blocking Notification Dispatch ──
-            (async () => {
-                try {
-                    const vesselId = job.vessel_id;
-                    const vesselFull = await db.Vessel.findByPk(vesselId, { attributes: ['client_id'] });
-                    
-                    const commonData = {
-                        certificateNumber,
-                        vesselName: job.Vessel?.vessel_name,
-                        certificateType: certType?.name,
-                        expiryDate: expiryDate.toLocaleDateString(),
-                        jobId: job.id,
-                        status: 'ISSUED'
-                    };
+        // PDF is generated on download — not during draft creation (keeps API fast).
+        (async () => {
+            try {
+                const vesselId = job.vessel_id;
+                const vesselFull = await db.Vessel.findByPk(vesselId, { attributes: ['client_id'] });
 
-                    // 1. Notify Client Users
-                    if (vesselFull?.client_id) {
-                        const clientUsers = await db.User.findAll({
-                            where: { client_id: vesselFull.client_id, role: 'CLIENT', status: 'ACTIVE' },
-                            attributes: ['email']
-                        });
-                        const clientEmails = clientUsers.map(u => u.email);
-                        if (clientEmails.length > 0) {
-                            await emailService.sendTemplateEmail(clientEmails, 'CERTIFICATE_GENERATED', { 
-                                ...commonData, 
-                                isInternal: false 
-                            });
-                        }
-                    }
+                const commonData = {
+                    certificateNumber,
+                    vesselName: job.Vessel?.vessel_name,
+                    certificateType: certType?.name,
+                    expiryDate: expiryDate.toLocaleDateString(),
+                    jobId: job.id,
+                    status: 'ISSUED',
+                };
 
-                    // 2. Notify Internal Managers (GM & TM)
-                    const internalUsers = await db.User.findAll({
-                        where: { role: { [Op.in]: ['GM', 'TM'] }, status: 'ACTIVE' },
-                        attributes: ['email']
+                if (vesselFull?.client_id) {
+                    const clientUsers = await db.User.findAll({
+                        where: { client_id: vesselFull.client_id, role: 'CLIENT', status: 'ACTIVE' },
+                        attributes: ['email'],
                     });
-                    const internalEmails = internalUsers.map(u => u.email);
-                    
-                    // 3. Notify Assigned Surveyor
-                    if (job.assigned_surveyor_id) {
-                        const surveyor = await db.User.findByPk(job.assigned_surveyor_id, { attributes: ['email'] });
-                        if (surveyor?.email && !internalEmails.includes(surveyor.email)) {
-                            internalEmails.push(surveyor.email);
-                        }
-                    }
-
-                    if (internalEmails.length > 0) {
-                        await emailService.sendTemplateEmail(internalEmails, 'CERTIFICATE_GENERATED', { 
-                            ...commonData, 
-                            isInternal: true 
+                    const clientEmails = clientUsers.map((u) => u.email);
+                    if (clientEmails.length > 0) {
+                        await emailService.sendTemplateEmail(clientEmails, 'CERTIFICATE_GENERATED', {
+                            ...commonData,
+                            isInternal: false,
                         });
                     }
-                } catch (err) {
-                    logger.error('Failed to dispatch certificate generation emails', { certificateNumber, err: err.message });
                 }
-            })();
 
-            return finalCert;
-        } catch (postCommitErr) {
-            logger.error('Error in post-commit certificate generation logic', { jobId: job_id, err: postCommitErr.message });
-            // Return what we have
-            return await Certificate.findByPk(cert.id, { include: [db.Vessel, db.CertificateType], useMaster: true });
-        }
+                const internalUsers = await db.User.findAll({
+                    where: { role: { [Op.in]: ['GM', 'TM'] }, status: 'ACTIVE' },
+                    attributes: ['email'],
+                });
+                const internalEmails = internalUsers.map((u) => u.email);
+
+                if (job.assigned_surveyor_id) {
+                    const surveyor = await db.User.findByPk(job.assigned_surveyor_id, { attributes: ['email'] });
+                    if (surveyor?.email && !internalEmails.includes(surveyor.email)) {
+                        internalEmails.push(surveyor.email);
+                    }
+                }
+
+                if (internalEmails.length > 0) {
+                    await emailService.sendTemplateEmail(internalEmails, 'CERTIFICATE_GENERATED', {
+                        ...commonData,
+                        isInternal: true,
+                    });
+                }
+            } catch (err) {
+                logger.error('Failed to dispatch certificate generation emails', {
+                    certificateNumber,
+                    err: err.message,
+                });
+            }
+        })();
+
+        return finalCert;
     } catch (error) {
         await transaction.rollback();
         throw error;
@@ -1306,27 +1511,7 @@ export const getCertificateById = async (id, user) => {
         ],
     });
     if (cert) {
-        if (cert.status === 'DRAFT' && !cert.custom_html) {
-            await _generateCertificateFile(cert, user);
-        }
-        if (cert.pdf_file_url) {
-            const key = fileAccessService.getKeyFromUrl(cert.pdf_file_url);
-            let pdfUrl = fileAccessService.generatePublicCdnUrl(key);
-            if (!pdfUrl) {
-                // Generate signed URL (1 hour access for internal/authorized users)
-                pdfUrl = await fileAccessService.generateSignedUrl(key, 3600, user);
-            }
-            cert.setDataValue('pdf_url', pdfUrl);
-        }
-        
-        if (cert.generated_pdf_url) {
-            const key2 = fileAccessService.getKeyFromUrl(cert.generated_pdf_url);
-            let genPdfUrl = fileAccessService.generatePublicCdnUrl(key2);
-            if (!genPdfUrl) {
-                genPdfUrl = await fileAccessService.generateSignedUrl(key2, 3600, user);
-            }
-            cert.setDataValue('generated_pdf_signed_url', genPdfUrl);
-        }
+        await attachPdfSignedUrls(cert, user);
 
         return await fileAccessService.resolveEntity(cert, user);
     }
@@ -1448,7 +1633,9 @@ export const updateDraft = async (id, data, user) => {
         expiry_date,
         signature_url: fileAccessService.getKeyFromUrl(signature_url),
         custom_html: cleanCustomHtml(updatedHtml),
-        ...(certificate_term && certificate_term !== cert.certificate_term ? { custom_html: null } : {})
+        ...(certificate_term && certificate_term !== cert.certificate_term ? { custom_html: null } : {}),
+        pdf_file_url: null,
+        generated_pdf_url: null,
     });
 
     await db.CertificateHistory.create({
@@ -1468,14 +1655,10 @@ export const updateDraft = async (id, data, user) => {
         include: [
             { model: db.Vessel, attributes: ['vessel_name', 'imo_number'] },
             { model: db.CertificateType, attributes: ['name', 'signature_url'] },
-            { model: db.FlagAdministration, as: 'FlagState', attributes: ['id', 'flag_state_name', 'logo_url'] }
-        ]
+            { model: db.FlagAdministration, as: 'FlagState', attributes: ['id', 'flag_state_name', 'logo_url'] },
+        ],
     });
-    if (finalCert && finalCert.pdf_file_url) {
-        const key = fileAccessService.getKeyFromUrl(finalCert.pdf_file_url);
-        const signedUrl = await fileAccessService.generateSignedUrl(key, 3600, user);
-        finalCert.setDataValue('pdf_url', signedUrl);
-    }
+    await attachPdfSignedUrls(finalCert, user);
 
     return await fileAccessService.resolveEntity(finalCert, user);
 };
@@ -1488,7 +1671,11 @@ export const updateDraftLayout = async (id, data, user) => {
     const { custom_html } = data;
     
     const extractedData = certificatePdfService.extractFieldsFromHtml(custom_html);
-    const updates = { custom_html: cleanCustomHtml(custom_html) };
+    const updates = {
+        custom_html: cleanCustomHtml(custom_html),
+        pdf_file_url: null,
+        generated_pdf_url: null,
+    };
     
     if (extractedData.certificate_number !== undefined) {
         updates.certificate_number = extractedData.certificate_number;
@@ -1522,32 +1709,19 @@ export const updateDraftLayout = async (id, data, user) => {
         status: cert.status,
         changed_by_user_id: user.id,
         change_reason: 'Draft layout visually edited',
-        changed_at: new Date()
+        changed_at: new Date(),
     });
 
-    // Regenerate PDF file on draft layout update
-    const freshCert = await Certificate.findByPk(cert.id, {
-        useMaster: true,
-        include: [
-            { model: db.Vessel, include: [{ model: db.Client, as: 'Client', attributes: ['company_name', 'address', 'company_id_number'] }] },
-            { model: db.CertificateType },
-            { model: db.FlagAdministration, as: 'FlagState' }
-        ]
-    });
-    await _generateCertificateFile(freshCert, user);
+    // No PDF regeneration on layout save — PDF is generated on download only.
 
     const finalCert = await Certificate.findByPk(cert.id, {
         useMaster: true,
         include: [
             { model: db.Vessel, attributes: ['vessel_name', 'imo_number'] },
-            { model: db.CertificateType, attributes: ['name'] }
-        ]
+            { model: db.CertificateType, attributes: ['name'] },
+        ],
     });
-    if (finalCert && finalCert.pdf_file_url) {
-        const key = fileAccessService.getKeyFromUrl(finalCert.pdf_file_url);
-        const signedUrl = await fileAccessService.generateSignedUrl(key, 3600, user);
-        finalCert.setDataValue('pdf_url', signedUrl);
-    }
+    await attachPdfSignedUrls(finalCert, user);
 
     return finalCert;
 };
@@ -1574,7 +1748,9 @@ export const issueCertificate = async (id, user) => {
         await cert.update({
             status: 'VALID',
             issued_at: issuedAt,
-            issued_by_user_id: user.id
+            issued_by_user_id: user.id,
+            pdf_file_url: null,
+            generated_pdf_url: null,
         }, { transaction });
 
         // Update JobCertificate status to ISSUED, which will auto-sync parent JobRequest status
@@ -1596,18 +1772,24 @@ export const issueCertificate = async (id, user) => {
             }
         }
 
-        await _generateCertificateFile(cert, user, transaction);
-
         await db.CertificateHistory.create({
             certificate_id: cert.id,
             status: 'ISSUED',
             changed_by_user_id: user.id,
-            change_reason: 'Certificate officially issued and PDF generated',
-            changed_at: issuedAt
+            change_reason: 'Certificate officially issued (PDF available on download)',
+            changed_at: issuedAt,
         }, { transaction });
 
         await transaction.commit();
-        return cert;
+
+        const issuedCert = await Certificate.findByPk(id, {
+            useMaster: true,
+            include: [
+                { model: db.Vessel, attributes: ['vessel_name', 'imo_number'] },
+                { model: db.CertificateType, attributes: ['name'] },
+            ],
+        });
+        return issuedCert;
     } catch (err) {
         await transaction.rollback();
         throw err;
