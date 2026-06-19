@@ -75,6 +75,62 @@ export const updateFieldsInHtml = (html, data) => {
     return updatedHtml;
 };
 
+export const DEFAULT_REMARKS_PLACEHOLDER = 'N/A';
+
+/**
+ * Build the standard remarks block used in certificate HTML (before gen-notice / footer).
+ * Always returns a block so the remarks section exists for later draft updates.
+ * @param {string} remarksText
+ * @returns {string}
+ */
+export const formatRemarksHtml = (remarksText) => {
+    const displayText = remarksText && String(remarksText).trim()
+        ? String(remarksText).trim()
+        : DEFAULT_REMARKS_PLACEHOLDER;
+    return `
+                <div class="sec-label">OBSERVACIONES / REMARKS</div>
+                <div class="certify-box remarks-block" data-field="remarks" style="background: #ffffff; border-left: 4.5px solid var(--navy-blue); padding: 8px 12px; font-family: 'Times New Roman', serif; font-size: 8.5pt; font-weight: bold; color: var(--navy-blue); margin-bottom: 2.5mm; text-align: left;">
+                    ${displayText}
+                </div>`;
+};
+
+const REMARKS_BLOCK_REGEX = /<div class="sec-label">OBSERVACIONES \/ REMARKS<\/div>\s*<div class="certify-box[^"]*"[^>]*>[\s\S]*?<\/div>/gi;
+
+/**
+ * Sync remarks into custom certificate HTML — replaces placeholder, existing block, or inserts before gen-notice.
+ * @param {string} html
+ * @param {string} remarksText
+ * @returns {string}
+ */
+export const updateRemarksInHtml = (html, remarksText) => {
+    if (!html || typeof html !== 'string') return html;
+    const remarksHtml = formatRemarksHtml(remarksText);
+
+    let updated = html.replace(/\{\{?\s*remarks\s*\}?\}/g, remarksHtml);
+
+    const withReplacedBlock = updated.replace(REMARKS_BLOCK_REGEX, remarksHtml);
+    if (withReplacedBlock !== updated) {
+        return withReplacedBlock;
+    }
+
+    const genNoticeIdx = updated.indexOf('<div class="gen-notice"');
+    if (genNoticeIdx !== -1) {
+        return updated.slice(0, genNoticeIdx) + remarksHtml + '\n                ' + updated.slice(genNoticeIdx);
+    }
+
+    const footerIdx = updated.indexOf('<div class="footer-area"');
+    if (footerIdx !== -1) {
+        return updated.slice(0, footerIdx) + remarksHtml + '\n                ' + updated.slice(footerIdx);
+    }
+
+    const bodyCloseIdx = updated.lastIndexOf('</div>');
+    if (bodyCloseIdx !== -1) {
+        return updated.slice(0, bodyCloseIdx) + remarksHtml + updated.slice(bodyCloseIdx);
+    }
+
+    return updated + remarksHtml;
+};
+
 /**
  * Generate PDF buffer from HTML string using Puppeteer.
  * @param {string} html - Full HTML document (can include <style>)
