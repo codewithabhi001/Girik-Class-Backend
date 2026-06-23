@@ -321,7 +321,138 @@ body {
     page-break-inside: avoid;
   }
 }
-</style>
+
+        /* --- COMPACTING OVERRIDES TO PREVENT OVERFLOW AND BORDER COLLISION --- */
+        .no-print + .cert-page h1,
+        .no-print + .cert-page h2,
+        .no-print + .cert-page h3,
+        .no-print + .cert-page h4,
+        .no-print + .cert-page h5,
+        .no-print + .cert-page h6 {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-weight: bold !important;
+            color: var(--navy-blue) !important;
+        }
+        .no-print + .cert-page h1 { font-size: 9.5pt !important; line-height: 1.15 !important; margin-bottom: 1mm !important; text-align: center !important; }
+        .no-print + .cert-page h2 { font-size: 8.5pt !important; line-height: 1.15 !important; margin-bottom: 0.8mm !important; text-align: center !important; }
+        .no-print + .cert-page h3 { font-size: 7.8pt !important; line-height: 1.15 !important; margin-bottom: 0.8mm !important; }
+        .no-print + .cert-page h4 { font-size: 7.2pt !important; line-height: 1.15 !important; margin-bottom: 0.6mm !important; }
+        
+        .no-print + .cert-page p,
+        .no-print + .cert-page .body p {
+            font-size: 7pt !important;
+            line-height: 1.2 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0.4mm !important;
+        }
+        
+        .no-print + .cert-page table p {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: inherit !important;
+            line-height: inherit !important;
+        }
+        
+        .no-print + .cert-page ol,
+        .no-print + .cert-page ul {
+            margin-top: 0 !important;
+            margin-bottom: 1mm !important;
+            padding-left: 3.5mm !important;
+        }
+        .no-print + .cert-page li {
+            font-size: 7pt !important;
+            line-height: 1.2 !important;
+            margin-bottom: 0.3mm !important;
+        }
+        
+        .no-print + .cert-page table {
+            margin-top: 0 !important;
+            margin-bottom: 1mm !important;
+            border-collapse: collapse !important;
+            width: 100% !important;
+        }
+        .no-print + .cert-page table td,
+        .no-print + .cert-page table th {
+            padding: 1px 2.5px !important;
+            font-size: 7pt !important;
+            line-height: 1.15 !important;
+        }
+        
+        .no-print + .cert-page .certify-box,
+        .no-print + .cert-page .certify {
+            margin-top: 0 !important;
+            margin-bottom: 1.5mm !important;
+            padding: 3px 5px !important;
+            font-size: 7.2pt !important;
+            line-height: 1.25 !important;
+        }
+        
+        .no-print + .cert-page .vgrid,
+        .no-print + .cert-page .vgrid-2 {
+            margin-top: 0 !important;
+            margin-bottom: 1.5mm !important;
+            padding: 2px 6px !important;
+        }
+        
+        .no-print + .cert-page .authority {
+            margin-top: 0 !important;
+            margin-bottom: 1.5mm !important;
+            padding-bottom: 1mm !important;
+            font-size: 7.5pt !important;
+            line-height: 1.25 !important;
+        }
+        
+        .no-print + .cert-page .cert-header {
+            margin-bottom: 1.5mm !important;
+            padding-bottom: 1mm !important;
+        }
+        
+        .no-print + .cert-page .footnotes {
+            margin-bottom: 1mm !important;
+            font-size: 5.5pt !important;
+            line-height: 1.15 !important;
+        }
+        .no-print + .cert-page .footnotes p {
+            margin-bottom: 0.2mm !important;
+        }
+        
+        .no-print + .cert-page .gen-notice {
+            margin-top: auto !important;
+            margin-bottom: 1mm !important;
+            padding: 2px 4px !important;
+        }
+        .no-print + .cert-page .gen-notice-text {
+            font-size: 5.5pt !important;
+        }
+        
+        .no-print + .cert-page .footer-area {
+            margin-top: 0 !important;
+            padding-top: 0.5mm !important;
+        }
+        .no-print + .cert-page .sig-line img {
+            max-height: 20px !important;
+        }
+        .no-print + .cert-page .stamp-container {
+            width: 24mm !important;
+            height: 24mm !important;
+        }
+        .no-print + .cert-page .diamond-stamp {
+            width: 17mm !important;
+            height: 17mm !important;
+        }
+        .no-print + .cert-page .stamp-text-wrapper {
+            width: 22mm !important;
+        }
+        .no-print + .cert-page .st-mid {
+            font-size: 6.5pt !important;
+        }
+        .no-print + .cert-page .qr-box,
+        .no-print + .cert-page .qr-wrap {
+            width: 32px !important;
+            height: 32px !important;
+        }
+    </style>
 </head>
 <body>
 
