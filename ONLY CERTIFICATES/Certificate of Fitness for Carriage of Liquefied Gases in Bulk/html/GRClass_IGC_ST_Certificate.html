@@ -476,16 +476,17 @@
 </head>
 <body>
 
-    <div class="no-print">
+<div class="no-print">
         <div>
             <button class="btn-print" onclick="window.print()">🖨 Print / Save PDF</button>
             <span class="tag-hint">Note: Replace {tags} with actual backend data before printing.</span>
         </div>
-    </div>
 
     <div class="cert-page">
         <div class="border-outer">
             <div class="border-inner">
+                <div class="watermark">GR CLASS</div>
+                
                 
                 <div class="watermark">GR CLASS</div>
 
@@ -510,11 +511,9 @@
                     Issued under the authority of the Government of <strong><span class="cert-field" data-field="flag_state">{flag_state}</span></strong><br>
     By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO) operating under IMO Framework
                 </div>
-
                 <div class="body" style="flex: 1; display: flex; flex-direction: column;">
-                    <h1>SHORT TERM INTERNATIONAL CERTIFICATE OF FITNESS FOR THE CARRIAGE OF LIQUEFIED</h1><p><strong>GASES IN BULK</strong></p><p>Issued under the provisions of the INTERNATIONAL CODE FOR THE CONSTRUCTION AND EQUIPMENT</p><p>OF SHIPS CARRYING LIQUEFIED GASES IN BULK</p><p>(Resolution MSC. 5(48) as amended by resolution MSC. 17(58)) Under the authority of the Government of</p><p><strong>      THE MERCHANT MARINE HONDURAS</strong></p><p><strong>By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><h4>IGC No.</h4><table><tr><td><p><strong>Name Ship</strong></p></td><td><p><strong>Distinctive number or letters</strong></p></td><td><p><strong>Port of registry</strong></p></td><td><p><strong>Gross tonnage</strong></p></td><td><p><strong>Cargo capacity (m3)</strong></p></td><td><p><strong>Ship type</strong></p><p><strong>(Code paragraph 2.1.2)</strong></p></td></tr><tr><td rowspan="3"></td><td><p>{call_sign}</p></td><td rowspan="3"><p>{port_of_registry}</p></td><td rowspan="3"><p>{gross_tonnage}</p></td><td rowspan="3"></td><td rowspan="3"><p>{ship_type}</p></td></tr><tr><td><p><strong>IMO number</strong></p></td></tr><tr><td><p>{imo_number}</p></td></tr></table><p>Date on which keel was laid or ship was at a similar stage of construction or (in the case of a converted ship) date on which conversion to gas carrier was commenced:     	</p><p>The ship also complies fully with the following amendments to the Code:   	</p><p>The ship is exempted from compliance with the following provisions of the Code:  	</p><p>THIS IS TO CERTIFY:</p><p>1</p><ol><li>That the ship has been surveyed in accordance with the provisions of section 1.5 of the Code.</li><li>That the survey showed that the structure, equipment, fittings, arrangements and materials of the ship and the conditions thereof are in all respects satisfactory and that the ship complies with the relevant provisions of the Code:</li><li>That the following designed criteria have been used:<ol><li>ambient air temperature		ºC</li><li>ambient water temperature	ºC</li></ol></li></ol><p>.3</p><table><tr><td rowspan="2"><p><strong>Tank type and number</strong></p></td><td colspan="4"><p><strong>Stress factors</strong></p></td><td rowspan="2"><p><strong>Materials</strong></p></td><td rowspan="2"><p><strong>MARVS</strong></p></td></tr><tr><td><p><strong>A</strong></p></td><td><p><strong>B</strong></p></td><td><p><strong>C</strong></p></td><td><p><strong>D</strong></p></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Cargo piping</strong></p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table><p>NB: Tank numbers referred to in this list are identified on attachment 2, signed and dated tank plan.</p><p>.4 Mechanical properties of the cargo tank material were determined at		ºC</p><ol><li>That the ship is suitable for the carriage in bulk of the following products, provided that all relevant operational provisions of the Code are observed. </li></ol><table><tr><td><p><strong>Products</strong></p></td><td><p><strong>Conditions of Carriage (tank numbers, etc.)</strong></p></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td colspan="2"><p><strong>Continued on attachment 1.1, Tank numbers referred to in this list are identified on attachment 2</strong></p></td></tr></table><ol><li>That in accordance with 1.4./2.8.2, the provisions of the Code are modified in respect of the ship in the following manner;</li><li>That the ship must be loaded:</li><li>in accordance with the loading conditions provided in the approved loading manual, stamped and dated	 	 and signed by a responsible officer of the Administration, or of an organization recognized by the Administration;</li><li>in accordance with the loading limitations appended to this Certificate.</li></ol><p>Where it is required to load the ship other than in accordance with the above instruction, then the necessary calculations to justify the proposed loading conditions shall be communicated to the certifying Administration who may authorize in writing the adoption of the proposed loading condition.2</p><p>This certificate is valid until		3subject to surveys in accordance with 1.5 of the Code.{expiry_date}</p><p>Completion date of the survey on which this certificate is based:     	{survey_completion_date}</p><table><tr><td><p>Issued at</p></td><td><p> 	</p></td><td><p>Date of Issue</p></td><td><p> 	</p></td></tr><tr><td><p>{place_of_survey}</p></td><td><p>(Place of issue of certificate)</p></td><td><p>{issue_date}</p></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p>{surveyor_name}GR CLASS REPRESENTATIVE</p><p>Notes on completion of Certificate:</p><ol><li>“Ship type”: Any entry under this line must be related to all relevant recommendations, e.g. an entry “Type 2G” should mean Type 2G in all respects prescribed by the Code.</li><li>Paragraph 2.1 and 2.2: The ambient temperatures accepted or required by the Administration for the purposes of 4.8.1 of the Code to be inserted.</li><li>Paragraph 2.3: Stress factors and materials as accepted or required by the Administration for the purposes of 4.5.1.4 and 4.5.1.6 of the Code to be inserted.</li><li>Paragraph 2.4: Temperature accepted by the Administration for the purposes of 4.5.1.7 to be inserted.</li><li>Paragraph 3: Only products listed in chapter 19 of the Code or which have been evaluated by the Administration in accordance with paragraph 1.1.6 of the Code or their compatible mixtures having physical properties within the limitations of tank design should be listed. In respect of the latter “new” products, any special requirements provisionally prescribed should be noted.</li></ol><p></p><p>1 Delete as appropriate.</p><p>2 Instead of being incorporated in the Certificate, this text may be appended to the Certificate if duly signed and stamped.</p><p>3 The date of expiry as specified by the Administration in accordance with 1.5.6.1 of the Code. The day and the month of his day correspond to the anniversary date as defined in 1.3.3 of the Code, unless amended in accordance with 1.5.6.8 of the Code.</p><p><strong>IGC No 	 IMO No 	</strong></p><p><strong>                                                GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><h3>INTERNATIONAL CERTIFICATE OF FITNESS FOR THE CARRIAGE OF LIQUEFIED GASES IN BULK</h3><p><strong>ATTACHMENT No. 1</strong></p><p>Continued list of products to those specified in section 3, and the conditions of their carriage.</p><table><tr><td><p><strong>Products</strong></p></td><td><p><strong>Conditions of Carriage (tank numbers, etc.)</strong></p></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table><p>	</p><p>{surveyor_name}GR CLASS REPRESENTATIVE</p><p><strong>IGC No 	 IMO No 	</strong></p><p><strong>                                             GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><h3>INTERNATIONAL CERTIFICATE OF FITNTESS FOR THE CARRIAGE LIQUEFIED GASES IN BULK</h3><p><strong>ATTACHMENT No. 2 TANK PLAN</strong></p><table><tr><td><p><strong>Name of ship</strong></p></td><td></td></tr><tr><td><p><strong>Distinctive number or letters:</strong></p></td><td></td></tr><tr><td><p><strong>IMO Number</strong></p></td><td></td></tr></table><p><strong>Cargo area</strong></p><p>	</p><p>{surveyor_name}GR CLASS REPRESENTATIVE</p>
+                    <h1>SHORT TERM INTERNATIONAL CERTIFICATE OF FITNESS FOR THE CARRIAGE OF LIQUEFIED</h1><p><strong>GASES IN BULK</strong></p><p>Issued under the provisions of the INTERNATIONAL CODE FOR THE CONSTRUCTION AND EQUIPMENT</p><p>OF SHIPS CARRYING LIQUEFIED GASES IN BULK</p><p>(Resolution MSC. 5(48) as amended by resolution MSC. 17(58)) Under the authority of the Government of</p><p><strong>      THE MERCHANT MARINE HONDURAS</strong></p><p><strong>By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><h4>IGC No.</h4><table><tr><td><p><strong>Name Ship</strong></p></td><td><p><strong>Distinctive number or letters</strong></p></td><td><p><strong>Port of registry</strong></p></td><td><p><strong>Gross tonnage</strong></p></td><td><p><strong>Cargo capacity (m3)</strong></p></td><td><p><strong>Ship type</strong></p><p><strong>(Code paragraph 2.1.2)</strong></p></td></tr><tr><td rowspan="3"></td><td><p>{call_sign}</p></td><td rowspan="3"><p>{port_of_registry}</p></td><td rowspan="3"><p>{gross_tonnage}</p></td><td rowspan="3"></td><td rowspan="3"><p>{ship_type}</p></td></tr><tr><td><p><strong>IMO number</strong></p></td></tr><tr><td><p>{imo_number}</p></td></tr></table><p>Date on which keel was laid or ship was at a similar stage of construction or (in the case of a converted ship) date on which conversion to gas carrier was commenced:     	</p><p>The ship also complies fully with the following amendments to the Code:   	</p><p>The ship is exempted from compliance with the following provisions of the Code:  	</p><p>THIS IS TO CERTIFY:</p><p>1</p><ol><li>That the ship has been surveyed in accordance with the provisions of section 1.5 of the Code.</li><li>That the survey showed that the structure, equipment, fittings, arrangements and materials of the ship and the conditions thereof are in all respects satisfactory and that the ship complies with the relevant provisions of the Code:</li><li>That the following designed criteria have been used:<ol><li>ambient air temperature		ºC</li><li>ambient water temperature	ºC</li></ol></li></ol><p>.3</p><table><tr><td rowspan="2"><p><strong>Tank type and number</strong></p></td><td colspan="4"><p><strong>Stress factors</strong></p></td><td rowspan="2"><p><strong>Materials</strong></p></td><td rowspan="2"><p><strong>MARVS</strong></p></td></tr><tr><td><p><strong>A</strong></p></td><td><p><strong>B</strong></p></td><td><p><strong>C</strong></p></td><td><p><strong>D</strong></p></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td><p><strong>Cargo piping</strong></p></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table><p>NB: Tank numbers referred to in this list are identified on attachment 2, signed and dated tank plan.</p><p>.4 Mechanical properties of the cargo tank material were determined at		ºC</p><ol><li>That the ship is suitable for the carriage in bulk of the following products, provided that all relevant operational provisions of the Code are observed. </li></ol><table><tr><td><p><strong>Products</strong></p></td><td><p><strong>Conditions of Carriage (tank numbers, etc.)</strong></p></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td colspan="2"><p><strong>Continued on attachment 1.1, Tank numbers referred to in this list are identified on attachment 2</strong></p></td></tr></table><ol><li>That in accordance with 1.4./2.8.2<sup>1</sup>, the provisions of the Code are modified in respect of the ship in the following manner;</li><li>That the ship must be loaded:</li><li>in accordance with the loading conditions provided in the approved loading manual, stamped and dated	 	 and signed by a responsible officer of the Administration, or of an organization recognized by the Administration;<sup>1</sup></li><li>in accordance with the loading limitations appended to this Certificate.<sup>1</sup></li></ol><p>Where it is required to load the ship other than in accordance with the above instruction, then the necessary calculations to justify the proposed loading conditions shall be communicated to the certifying Administration who may authorize in writing the adoption of the proposed loading condition.<sup>2</sup></p><p>This certificate is valid until<sup>3</sup> subject to surveys in accordance with 1.5 of the Code.{expiry_date}</p><p>Completion date of the survey on which this certificate is based:     	{survey_completion_date}</p><table><tr><td><p>Issued at</p></td><td><p> 	</p></td><td><p>Date of Issue</p></td><td><p> 	</p></td></tr><tr><td><p>{place_of_survey}</p></td><td><p>(Place of issue of certificate)</p></td><td><p>{issue_date}</p></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p>{surveyor_name}GR CLASS REPRESENTATIVE</p>
                 </div>
-
                 {remarks}
                 <div class="gen-notice">
                     <svg width="10" height="11" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.6; flex-shrink: 0; margin-right: 2px; vertical-align: middle;">
@@ -525,25 +524,49 @@
                         Verify at <strong>grclass.com</strong>
                     </span>
                 </div>
-
                 <div class="footer-area">
                     <div class="stamp-container">
                         <div class="diamond-stamp"></div>
-                        <div class="stamp-text-wrapper">
-                            <div class="st-top">ISSUING AUTHORITY</div>
-                            <div class="st-mid">APPROVED</div>
-                            <div class="st-bot">GR CLASS</div>
-                        </div>
-                    </div>
+            </div>
+            <div class="page-indicator">
+                <span>IGC-ST</span>
+                <span>Page 1 of 3</span>
+            </div>
+        </div>
+    </div>
 
-                    <div class="signature-area">
-                        <div class="sig-line">
-                            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Signature" style="max-height: 28px; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%);">
-                        </div>
-                        <div class="sig-name">GR CLASS Representative</div>
-                        <div class="sig-title">GR CLASS</div>
+    <div class="cert-page">
+        <div class="border-outer">
+            <div class="border-inner">
+                <div class="watermark">GR CLASS</div>
+                <div class="mini-hdr">
+                    <div class="mini-hdr-left">
+                        <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" style="height: 18px; object-fit: contain;">
+                        <span>GR CLASS</span>
                     </div>
+                    <div class="mini-hdr-right">
+                        Certificate No: <span>{certificate_number}</span>
+                    </div>
+                </div>
+                <div class="body" style="flex: 1; display: flex; flex-direction: column;">
+                    <p>Notes on completion of Certificate:</p><ol><li>“Ship type”: Any entry under this line must be related to all relevant recommendations, e.g. an entry “Type 2G” should mean Type 2G in all respects prescribed by the Code.</li><li>Paragraph 2.1 and 2.2: The ambient temperatures accepted or required by the Administration for the purposes of 4.8.1 of the Code to be inserted.</li><li>Paragraph 2.3: Stress factors and materials as accepted or required by the Administration for the purposes of 4.5.1.4 and 4.5.1.6 of the Code to be inserted.</li><li>Paragraph 2.4: Temperature accepted by the Administration for the purposes of 4.5.1.7 to be inserted.</li><li>Paragraph 3: Only products listed in chapter 19 of the Code or which have been evaluated by the Administration in accordance with paragraph 1.1.6 of the Code or their compatible mixtures having physical properties within the limitations of tank design should be listed. In respect of the latter “new” products, any special requirements provisionally prescribed should be noted.</li></ol><p></p><p>1 Delete as appropriate.</p><p>2 Instead of being incorporated in the Certificate, this text may be appended to the Certificate if duly signed and stamped.</p><p>3 The date of expiry as specified by the Administration in accordance with 1.5.6.1 of the Code. The day and the month of his day correspond to the anniversary date as defined in 1.3.3 of the Code, unless amended in accordance with 1.5.6.8 of the Code.</p><p><strong>IGC No 	 IMO No 	</strong></p><p><strong>                                                GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><h3>INTERNATIONAL CERTIFICATE OF FITNESS FOR THE CARRIAGE OF LIQUEFIED GASES IN BULK</h3>
 
+<p><strong>ATTACHMENT No. 1</strong></p><p>Continued list of products to those specified in section 3, and the conditions of their carriage.</p><table><tr><td><p><strong>Products</strong></p></td><td><p><strong>Conditions of Carriage (tank numbers, etc.)</strong></p></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr><tr><td></td><td></td></tr></table><p>	</p><p>{surveyor_name}GR CLASS REPRESENTATIVE</p><p><strong>IGC No 	 IMO No 	</strong></p><p><strong>                                             GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><h3>INTERNATIONAL CERTIFICATE OF FITNTESS FOR THE CARRIAGE LIQUEFIED GASES IN BULK</h3>
+                </div>
+                <div class="gen-notice">
+                    <svg width="10" height="11" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.6; flex-shrink: 0; margin-right: 2px; vertical-align: middle;">
+                        <path d="M10.5 5H9.5V3.5C9.5 1.57 7.93 0 6 0C4.07 0 2.5 1.57 2.5 3.5V5H1.5C0.67 5 0 5.67 0 6.5V12.5C0 13.33 0.67 14 1.5 14H10.5C11.33 14 12 13.33 12 12.5V6.5C12 5.67 11.33 5 10.5 5ZM3.8 3.5C3.8 2.29 4.79 1.3 6 1.3C7.21 1.3 8.2 2.29 8.2 3.5V5H3.8V3.5ZM6.75 9.85V11.5H5.25V9.85C4.8 9.57 4.5 9.07 4.5 8.5C4.5 7.67 5.17 7 6 7C6.83 7 7.5 7.67 7.5 8.5C7.5 9.07 7.2 9.57 6.75 9.85Z" fill="#1b365d"/>
+                    </svg>
+                    <span class="gen-notice-text">
+                        Computer-generated certificate — does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
+                        Verify at <strong>grclass.com</strong>
+                    </span>
+                </div>
+                <div class="footer-area">
+                    <div style="font-size: 7pt; color: var(--text-muted); line-height: 1.3;">
+                        <strong>GR CLASS</strong><br>
+                        Classified for Standard (GR CLASS)
+                    </div>
                     <div class="qr-section">
                         <div>
                             <strong>GR CLASS</strong>
@@ -554,11 +577,59 @@
                         </div>
                     </div>
                 </div>
-
             </div>
             <div class="page-indicator">
                 <span>IGC-ST</span>
-                <span>Page 1 of 1</span>
+                <span>Page 2 of 3</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="cert-page">
+        <div class="border-outer">
+            <div class="border-inner">
+                <div class="watermark">GR CLASS</div>
+                <div class="mini-hdr">
+                    <div class="mini-hdr-left">
+                        <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" style="height: 18px; object-fit: contain;">
+                        <span>GR CLASS</span>
+                    </div>
+                    <div class="mini-hdr-right">
+                        Certificate No: <span>{certificate_number}</span>
+                    </div>
+                </div>
+                <div class="body" style="flex: 1; display: flex; flex-direction: column;">
+                    <p><strong>ATTACHMENT No. 2 TANK PLAN</strong></p><table><tr><td><p><strong>Name of ship</strong></p></td><td></td></tr><tr><td><p><strong>Distinctive number or letters:</strong></p></td><td></td></tr><tr><td><p><strong>IMO Number</strong></p></td><td></td></tr></table><p><strong>Cargo area</strong></p><p>	</p><p>{surveyor_name}GR CLASS REPRESENTATIVE</p>
+                </div>
+                </div>
+                <div class="gen-notice">
+                    <svg width="10" height="11" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.6; flex-shrink: 0; margin-right: 2px; vertical-align: middle;">
+                        <path d="M10.5 5H9.5V3.5C9.5 1.57 7.93 0 6 0C4.07 0 2.5 1.57 2.5 3.5V5H1.5C0.67 5 0 5.67 0 6.5V12.5C0 13.33 0.67 14 1.5 14H10.5C11.33 14 12 13.33 12 12.5V6.5C12 5.67 11.33 5 10.5 5ZM3.8 3.5C3.8 2.29 4.79 1.3 6 1.3C7.21 1.3 8.2 2.29 8.2 3.5V5H3.8V3.5ZM6.75 9.85V11.5H5.25V9.85C4.8 9.57 4.5 9.07 4.5 8.5C4.5 7.67 5.17 7 6 7C6.83 7 7.5 7.67 7.5 8.5C7.5 9.07 7.2 9.57 6.75 9.85Z" fill="#1b365d"/>
+                    </svg>
+                    <span class="gen-notice-text">
+                        Computer-generated certificate — does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
+                        Verify at <strong>grclass.com</strong>
+                    </span>
+                </div>
+                <div class="footer-area">
+                    <div style="font-size: 7pt; color: var(--text-muted); line-height: 1.3;">
+                        <strong>GR CLASS</strong><br>
+                        Classified for Standard (GR CLASS)
+                    </div>
+                    <div class="qr-section">
+                        <div>
+                            <strong>GR CLASS</strong>
+                            Classified for Standard
+                        </div>
+                        <div class="qr-box">
+                            {qr_code}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="page-indicator">
+                <span>IGC-ST</span>
+                <span>Page 3 of 3</span>
             </div>
         </div>
     </div>

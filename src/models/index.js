@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import Sequelize from 'sequelize';
 import env from '../config/env.js';
 import { getContext } from '../utils/context.util.js';
@@ -97,7 +97,7 @@ const loadModels = async () => {
         });
 
     for (const file of files) {
-        const modelModule = await import(path.join(__dirname, file));
+        const modelModule = await import(pathToFileURL(path.join(__dirname, file)).href);
         const model = modelModule.default(sequelize, Sequelize.DataTypes);
         db[model.name] = model;
     }

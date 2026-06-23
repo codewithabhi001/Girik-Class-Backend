@@ -476,16 +476,17 @@
 </head>
 <body>
 
-    <div class="no-print">
+<div class="no-print">
         <div>
             <button class="btn-print" onclick="window.print()">🖨 Print / Save PDF</button>
             <span class="tag-hint">Note: Replace {tags} with actual backend data before printing.</span>
         </div>
-    </div>
 
     <div class="cert-page">
         <div class="border-outer">
             <div class="border-inner">
+                <div class="watermark">GR CLASS</div>
+                
                 
                 <div class="watermark">GR CLASS</div>
 
@@ -510,11 +511,9 @@
                     Issued under the authority of the Government of <strong><span class="cert-field" data-field="flag_state">{flag_state}</span></strong><br>
     By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO) operating under IMO Framework
                 </div>
-
                 <div class="body" style="flex: 1; display: flex; flex-direction: column;">
-                    <p><em></em><strong>FISHING VESSEL SAFETY CERTIFICATE</strong></p><h1>ISSUED UNDER THE PROVISIONS OF STATUTORY INSTRUMENT NO. 113 OF 1995</h1><p>under the authority of the Government of</p><p><strong>    THE MERCHANT MARINE HONDURAS</strong></p><p><strong>By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><p><strong>FISVEL No.</strong></p><table><tr><td><p><strong>Name of ship</strong></p></td><td><p><strong>Type</strong></p></td><td><p><strong>Distinctive number or letters</strong></p></td><td><p><strong>Port of registry</strong></p></td><td><p><strong>Gross tonnage</strong></p></td><td><p><strong>Keel laid</strong></p></td></tr><tr><td rowspan="3"><p>{vessel_name}</p></td><td rowspan="3"></td><td><p>{call_sign}</p></td><td rowspan="3"><p>{port_of_registry}</p></td><td rowspan="3"><p>{gross_tonnage}</p></td><td rowspan="3"><p>{year_built}</p></td></tr><tr><td><p><strong>IMO number1</strong></p></td></tr><tr><td><p>{imo_number}</p></td></tr></table><p>Authorized for voyages proceeding not further than	miles from shore.</p><p>The survey has shown that:</p><ol><li>The life-saving appliances provided for a total number of		persons and no more, viz:</li></ol><p> 	Select as appropriate2 capable of accommodating		persons;</p><p> 	Motor boats (included in the total shown above);</p><p>Liferafts, for which approved launching devices are not required, capable of</p><p> 	accommodating</p><p>persons;</p><p>Liferafts, for which approved launching devices are required, capable of</p><p> 	accommodating</p><p>persons;</p><p> 	Lifebuoys;</p><p> 	Lifejackets;</p><ol><li>That the lifeboats and liferafts were equipped in accordance with the provisions of the Rules.</li><li>The ship complied with the provisions of the Rules as regards the arrangement and condition of the hull, machinery and equipment, including the fire extinguishing appliances and fire control plans.</li><li>The ship was provided with navigation lights and shapes, pilot ladder, and means of making sound signals and distress signals, in accordance with the provisions of the Rules and the International Regulations for Prevention of Collisions at Sea in force.</li><li>In al other aspects, the ship complied with the requirements of the Rules so far as these requirements apply thereto.</li></ol><p>This certificate is valid until    	{expiry_date}</p><p> </p><table><tr><td><p>Issued at</p></td><td><p> 	</p></td><td><p>Date of issue 		</p></td></tr><tr><td><p>{place_of_survey}</p></td><td><p>(Place of issue of certificate)            </p></td><td><p>{issue_date}</p></td></tr></table><p>{surveyor_name}GR CLASS REPRESENTATIVE</p><p><strong>1 In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A. 600 (15).</strong></p><p><strong>2 Select as appropriate</strong></p><p><strong>IMO No.</strong></p><p><strong>MANDATORY ANNUAL SURVEY</strong></p><p>This is to certify that at a periodical inspection required by Regulation 7 of the Regulations, the ship was found to comply with the relevant provisions.</p><p><strong>Annual Survey</strong></p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p><strong>Annual/Intermediate1 Survey</strong></p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p><strong>Annual/Intermediate1 Survey</strong></p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p><strong>Annual Survey</strong></p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p>1 Delete as appropriate</p>
+                    <p><em></em><strong>FISHING VESSEL SAFETY CERTIFICATE</strong></p><h1>ISSUED UNDER THE PROVISIONS OF STATUTORY INSTRUMENT NO. 113 OF 1995</h1><p>under the authority of the Government of</p><p><strong>    THE MERCHANT MARINE HONDURAS</strong></p><p><strong>By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><p><strong>FISVEL No.</strong></p><table><tr><td><p><strong>Name of ship</strong></p></td><td><p><strong>Type</strong></p></td><td><p><strong>Distinctive number or letters</strong></p></td><td><p><strong>Port of registry</strong></p></td><td><p><strong>Gross tonnage</strong></p></td><td><p><strong>Keel laid</strong></p></td></tr><tr><td rowspan="3"><p>{vessel_name}</p></td><td rowspan="3"></td><td><p>{call_sign}</p></td><td rowspan="3"><p>{port_of_registry}</p></td><td rowspan="3"><p>{gross_tonnage}</p></td><td rowspan="3"><p>{year_built}</p></td></tr><tr><td><p><strong>IMO number1</strong></p></td></tr><tr><td><p>{imo_number}</p></td></tr></table><p>Authorized for voyages proceeding not further than	miles from shore.</p><p>The survey has shown that:</p><ol><li>The life-saving appliances provided for a total number of		persons and no more, viz:</li></ol><p> 	Select as appropriate<sup>2</sup> capable of accommodating		persons;</p><p> 	Motor boats (included in the total shown above);</p><p>Liferafts, for which approved launching devices are not required, capable of</p><p> 	accommodating</p><p>persons;</p><p>Liferafts, for which approved launching devices are required, capable of</p><p> 	accommodating</p><p>persons;</p><p> 	Lifebuoys;</p><p> 	Lifejackets;</p><ol><li>That the lifeboats and liferafts were equipped in accordance with the provisions of the Rules.</li><li>The ship complied with the provisions of the Rules as regards the arrangement and condition of the hull, machinery and equipment, including the fire extinguishing appliances and fire control plans.</li><li>The ship was provided with navigation lights and shapes, pilot ladder, and means of making sound signals and distress signals, in accordance with the provisions of the Rules and the International Regulations for Prevention of Collisions at Sea in force.</li><li>In al other aspects, the ship complied with the requirements of the Rules so far as these requirements apply thereto.</li></ol><p>This certificate is valid until    	{expiry_date}</p><p> </p><table><tr><td><p>Issued at</p></td><td><p> 	</p></td><td><p>Date of issue 		</p></td></tr><tr><td><p>{place_of_survey}</p></td><td><p>(Place of issue of certificate)            </p></td><td><p>{issue_date}</p></td></tr></table><p>{surveyor_name}GR CLASS REPRESENTATIVE</p><p><strong>1 In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A. 600 (15).</strong></p><p><strong>2 Select as appropriate</strong></p><p><strong>IMO No.</strong></p>
                 </div>
-
                 {remarks}
                 <div class="gen-notice">
                     <svg width="10" height="11" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.6; flex-shrink: 0; margin-right: 2px; vertical-align: middle;">
@@ -525,25 +524,48 @@
                         Verify at <strong>grclass.com</strong>
                     </span>
                 </div>
-
                 <div class="footer-area">
                     <div class="stamp-container">
                         <div class="diamond-stamp"></div>
-                        <div class="stamp-text-wrapper">
-                            <div class="st-top">ISSUING AUTHORITY</div>
-                            <div class="st-mid">APPROVED</div>
-                            <div class="st-bot">GR CLASS</div>
-                        </div>
-                    </div>
+            </div>
+            <div class="page-indicator">
+                <span>FVSC-FT</span>
+                <span>Page 1 of 2</span>
+            </div>
+        </div>
+    </div>
 
-                    <div class="signature-area">
-                        <div class="sig-line">
-                            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Signature" style="max-height: 28px; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%);">
-                        </div>
-                        <div class="sig-name">GR CLASS Representative</div>
-                        <div class="sig-title">GR CLASS</div>
+    <div class="cert-page">
+        <div class="border-outer">
+            <div class="border-inner">
+                <div class="watermark">GR CLASS</div>
+                <div class="mini-hdr">
+                    <div class="mini-hdr-left">
+                        <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" style="height: 18px; object-fit: contain;">
+                        <span>GR CLASS</span>
                     </div>
-
+                    <div class="mini-hdr-right">
+                        Certificate No: <span>{certificate_number}</span>
+                    </div>
+                </div>
+                <div class="body" style="flex: 1; display: flex; flex-direction: column;">
+                    <p><strong>MANDATORY ANNUAL SURVEY</strong></p><p>This is to certify that at a periodical inspection required by Regulation 7 of the Regulations, the ship was found to comply with the relevant provisions.</p><p><strong>Annual Survey</strong></p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p><strong>Annual/Intermediate1 Survey</strong></p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p><strong>Annual/Intermediate1 Survey</strong></p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p><strong>Annual Survey</strong></p><p><strong>Surveyor’s Name	Signature &amp; Stamp	 	</strong></p><table><tr><td><p><strong>Place</strong></p></td><td><p><strong> 	</strong></p></td><td><p><strong>Date</strong></p></td><td><p><strong> 	  Job request No.	 	</strong></p></td></tr><tr><td></td><td><p>Port, Country</p></td><td></td><td><p>(DD-MM-YYYY)</p></td></tr></table><p>1 Delete as appropriate</p>
+                </div>
+                </div>
+                <div class="gen-notice">
+                    <svg width="10" height="11" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.6; flex-shrink: 0; margin-right: 2px; vertical-align: middle;">
+                        <path d="M10.5 5H9.5V3.5C9.5 1.57 7.93 0 6 0C4.07 0 2.5 1.57 2.5 3.5V5H1.5C0.67 5 0 5.67 0 6.5V12.5C0 13.33 0.67 14 1.5 14H10.5C11.33 14 12 13.33 12 12.5V6.5C12 5.67 11.33 5 10.5 5ZM3.8 3.5C3.8 2.29 4.79 1.3 6 1.3C7.21 1.3 8.2 2.29 8.2 3.5V5H3.8V3.5ZM6.75 9.85V11.5H5.25V9.85C4.8 9.57 4.5 9.07 4.5 8.5C4.5 7.67 5.17 7 6 7C6.83 7 7.5 7.67 7.5 8.5C7.5 9.07 7.2 9.57 6.75 9.85Z" fill="#1b365d"/>
+                    </svg>
+                    <span class="gen-notice-text">
+                        Computer-generated certificate — does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
+                        Verify at <strong>grclass.com</strong>
+                    </span>
+                </div>
+                <div class="footer-area">
+                    <div style="font-size: 7pt; color: var(--text-muted); line-height: 1.3;">
+                        <strong>GR CLASS</strong><br>
+                        Classified for Standard (GR CLASS)
+                    </div>
                     <div class="qr-section">
                         <div>
                             <strong>GR CLASS</strong>
@@ -554,11 +576,10 @@
                         </div>
                     </div>
                 </div>
-
             </div>
             <div class="page-indicator">
                 <span>FVSC-FT</span>
-                <span>Page 1 of 1</span>
+                <span>Page 2 of 2</span>
             </div>
         </div>
     </div>
