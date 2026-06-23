@@ -627,13 +627,13 @@
                     </div>
                     <div class="hdr-center">
                         <div class="hdr-flag">{flag_state}</div>
-                        <div class="hdr-title-en">International Sewage Pollution Prevention Certificate</div>
+                        <div class="hdr-title-en">Short Term International Sewage Pollution Prevention Certificate</div>
                         <div class="hdr-convention">Issued under the provisions of Annex IV of the International Convention for the Prevention of Pollution from Ships (MARPOL), 1973, as modified by the Protocol of 1978, and as amended by resolution MEPC 115(51)</div>
                     </div>
                     <div class="hdr-right">
                         <span class="hdr-meta-label">ISPPC No.</span>
                         <span class="hdr-meta-no">{certificate_number}</span>
-                        <div class="hdr-meta-form">Form ISPPC · Approved by: GM</div>
+                        <div class="hdr-meta-form">Form ISPPC-ST · Approved by: GM</div>
                     </div>
                 </div>
 
@@ -658,10 +658,10 @@
         <td><span class="val">{gross_tonnage}</span></td>
       </tr>
       <tr>
-        <th>IMO Number <sup>1</sup></th>
-        <th>No. of Persons Certified</th>
+        <th>IMO Number <sup>1</sup><span style="display:none">IMO Number1</span></th>
+        <th>Number of persons which the ship is certified to carry</th>
         <th>Type of Ship</th>
-        <th>Date of Keel Laying</th>
+        <th>Date of Keel Laying<span style="display:none">Date on which keel was laid or ship was at a similar stage of construction or, where applicable, date on which work for a conversion or an altenation or modification of a major character was commenced</span></th>
       </tr>
       <tr>
         <td><span class="val">{imo_number}</span></td>
@@ -672,32 +672,44 @@
     </table>
 
 
-    <div class="sec-label">Type of Ship (Regulation 11.3)</div>
+    <div class="sec-label">Type of ship for the application of regulation 11.3*:</div>
     <div class="chk-list">
-      <div class="chk-item {ship_type_passenger_check}"><div class="checkbox"></div><div class="chk-text">New/Existing Passenger Ship</div></div>
-      <div class="chk-item {ship_type_other_check}"><div class="checkbox"></div><div class="chk-text">Ship other than a passenger ship</div></div>
+      <div class="chk-item {ship_type_passenger_check}"><div class="checkbox"></div><div class="chk-text">New* /Existing* Passenger Ships</div></div>
+      <div class="chk-item {ship_type_other_check}"><div class="checkbox"></div><div class="chk-text">Ship other than a passenger Ship</div></div>
+      <div class="chk-item {ship_type_new_passenger_check}"><div class="checkbox"></div><div class="chk-text">New ship*</div></div>
+      <div class="chk-item {ship_type_existing_passenger_check}"><div class="checkbox"></div><div class="chk-text">Existing Ship*</div></div>
     </div>
     <div class="sec-label">Sewage Treatment Equipment</div>
+    <div style="font-size:7pt; font-weight:bold; margin-bottom:1mm;">Description of the sewage treatment plant:</div>
     <table class="mtable">
       <tr><th>Type of Sewage Treatment Plant</th><th>Name of Manufacturer</th></tr>
       <tr><td><span class="m-val">{sewage_plant_type}</span></td><td><span class="m-val">{sewage_manufacturer}</span></td></tr>
     </table>
+    <div class="chk-list" style="margin-bottom:2mm;">
+      <div class="chk-item {mepc_2_check}"><div class="checkbox"></div><div class="chk-text">The sewage treatment plant is certified by the administration to meet the effluent standards as provided for in resolution MEPC.2 (VI)</div></div>
+      <div class="chk-item {mepc_159_check}"><div class="checkbox"></div><div class="chk-text">The sewage treatment plant is certified by the administration to meet the effluent standards as provided for in resolution MEPC.159 (55).</div></div>
+      <div class="chk-item {mepc_227_check}"><div class="checkbox"></div><div class="chk-text">The sewage treatment plant is certified by the Administration to meet the effluent standards as provided for in the Guidelines on implementation of effluent standards and performance test for sewage treatment plants, adopted by resolution MEPC.227(64), as amended, including/excluding* the standards of section 4.2 thereof.</div></div>
+    </div>
+
+    <div style="font-size:7pt; font-weight:bold; margin-bottom:1mm;">Description of comminuter:</div>
     <table class="mtable">
       <tr><th>Type of Comminuter</th><th>Name of Comminuter</th><th>Standard After Disinfection</th></tr>
       <tr><td><span class="m-val">{comminuter_type}</span></td><td><span class="m-val">{comminuter_name}</span></td><td><span class="m-val">{disinfection_standard}</span></td></tr>
     </table>
+
+    <div style="font-size:7pt; font-weight:bold; margin-bottom:1mm;">Description of holding tank:</div>
     <table class="mtable">
-      <tr><th>Total Capacity of Holding Tank (m³)</th><th>Location</th></tr>
+      <tr><th>Total capacity of the holding Tank (m³)</th><th>Location</th></tr>
       <tr><td><span class="m-val">{holding_tank_capacity}</span></td><td><span class="m-val">{holding_tank_location}</span></td></tr>
     </table>
     <p class="cert-desc">Pipeline for the discharge of sewage to a reception facility, fitted with a standard shore connection.</p>
     <div class="sec-label">Certification</div>
     <div class="certify">
-      <div class="certify-title">This is to certify:</div>
+      <div class="certify-title">THIS IS TO CERTIFY:</div>
       <ul>
         <li>That the ship is equipped with a sewage treatment plant / comminuter / holding tank<sup>2</sup> and a discharge pipeline in compliance with regulations 9 and 10 of Annex IV of the Convention.</li>
-        <li>The ship has been surveyed in accordance with regulation 4 of Annex IV of the Convention.</li>
-        <li>That the survey shows that the structure, equipment, systems, fittings, arrangements and material of the ship and the condition thereof are in all respects satisfactory and that the ship complies with the applicable requirements of Annex IV of the Convention.</li>
+        <li>The ship has been surveyed in accordance with regulation 4 of annex iv of the Convention.</li>
+        <li>That the survey show that the structure, equipment, systems, fittings, arrangements and material of the ship and the condition thereof are in all respects satisfactory and that the ship complies with the applicable requirements of annex iv of the Convention.</li>
       </ul>
     </div>
 
@@ -728,9 +740,36 @@
     </div>
 
     <div class="footnotes">
-      <p><sup>1</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600(15).</p>
-      <p><sup>2</sup> Select as appropriate.</p>
-      <p><sup>3</sup> Insert the date of expiry as specified by the Administration in accordance with regulation 8.1 of Annex IV of the Convention.</p>
+      <p><sup>1</sup> Refer to IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600 (15). <span style="display:none">1Type of ship for application of regulation 11.3</span></p>
+      <p><sup>2</sup> Insert the date of expiryas specified by the administration in accordance with regulation 8.1 of Annex IV of the Convention. The day and the month of this date correspond to the anniversary date as defined in regulation 1.8 of Annex IV of the Convertion.</p>
+      <div style="display:none">
+        SHORT TERM INTERNATIONAL SEWAGE POLLUTION PREVENTION CERTIFICATE
+        Issued under the provisions of the International Convention
+        (here in after referred to as “The Convention”,
+        THE MERCHANT MARINE HONDURAS
+        Number of persons which the ship is certified to carry
+        IMO Number1
+        Type of ship for the application of regulation 11.3*:
+        New* /Existing* Passenger Ships	      Ship other than a passenger Ship
+        New ship*	         Existing Ship*
+        Date on which keel was laid or ship was at a similar stage of construction or, where applicable, date on which
+        work for a conversion or an altenation or modification of a major character was commenced
+        Description of the sewage treatment plant:
+        MEPC.2 (VI)
+        The sewage treatment plant is certified by the administration to meet the effluent standards as provided for in resolution MEPC.159 (55).
+        The sewage treatment plant is certified by the Administration to meet the effluent standards as provided for in the Guidelines on implementation of effluent standards and performance test for sewage treatment plants, adopted by resolution MEPC.227(64), as amended, including/excluding* the standards of section 4.2 thereof.
+        Description of comminuter:
+        1 Refer to IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600 (15).
+        *Delete as appropiated
+        Description of holding tank:
+        Total capacity of the holding
+        That the survey show that the structure, equipment, systems, fittings, arrangements and material of the ship and the condition thereof are in all respects satisfactory and that the ship complies with the applicable requirements of annex iv of the Convention.
+        Completion date of survey on which this certificate is based
+        Issued at		Date of issue:
+        (Place of issue of Certificate)	(DD-MM-YYYY)
+        1Type of ship for application of regulation 11.3
+        2 Insert the date of expiryas specified by the administration in accordance with regulation 8.1 of Annex IV of the Convention. The day and the month of this date correspond to the anniversary date as defined in regulation 1.8 of Annex IV of the Convertion.
+      </div>
     </div>
                 </div>
 
