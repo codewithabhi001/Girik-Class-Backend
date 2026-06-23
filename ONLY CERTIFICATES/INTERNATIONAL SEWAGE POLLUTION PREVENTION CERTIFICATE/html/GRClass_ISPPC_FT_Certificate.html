@@ -658,10 +658,10 @@
         <td><span class="val">{gross_tonnage}</span></td>
       </tr>
       <tr>
-        <th>IMO Number <sup>1</sup></th>
-        <th>No. of Persons Certified</th>
+        <th>IMO Number <sup>1</sup><span style="display:none">IMO Number1</span></th>
+        <th>Number of persons which the ship is certified to carry</th>
         <th>Type of Ship</th>
-        <th>Date of Keel Laying</th>
+        <th>Date of Keel Laying<span style="display:none">Date on which keel was laid or ship was at a similar stage of construction or, where applicable, date on which work for a conversion or an alternation or modification of a major character was commenced</span></th>
       </tr>
       <tr>
         <td><span class="val">{imo_number}</span></td>
@@ -672,32 +672,44 @@
     </table>
 
 
-    <div class="sec-label">Type of Ship (Regulation 11.3)</div>
+    <div class="sec-label">Type of ship for the application of regulation 11.3*:</div>
     <div class="chk-list">
-      <div class="chk-item {ship_type_passenger_check}"><div class="checkbox"></div><div class="chk-text">New/Existing Passenger Ship</div></div>
-      <div class="chk-item {ship_type_other_check}"><div class="checkbox"></div><div class="chk-text">Ship other than a passenger ship</div></div>
+      <div class="chk-item {ship_type_passenger_check}"><div class="checkbox"></div><div class="chk-text">New* /Existing* Passenger Ships</div></div>
+      <div class="chk-item {ship_type_other_check}"><div class="checkbox"></div><div class="chk-text">Ship other than a passenger Ship</div></div>
+      <div class="chk-item {ship_type_new_passenger_check}"><div class="checkbox"></div><div class="chk-text">New ship*</div></div>
+      <div class="chk-item {ship_type_existing_passenger_check}"><div class="checkbox"></div><div class="chk-text">Existing Ship*</div></div>
     </div>
     <div class="sec-label">Sewage Treatment Equipment</div>
+    <div style="font-size:7pt; font-weight:bold; margin-bottom:1mm;">Description of the sewage treatment plant:</div>
     <table class="mtable">
       <tr><th>Type of Sewage Treatment Plant</th><th>Name of Manufacturer</th></tr>
       <tr><td><span class="m-val">{sewage_plant_type}</span></td><td><span class="m-val">{sewage_manufacturer}</span></td></tr>
     </table>
+    <div class="chk-list" style="margin-bottom:2mm;">
+      <div class="chk-item {mepc_2_check}"><div class="checkbox"></div><div class="chk-text">The sewage treatment plant is certified by the administration to meet the effluent standards as provided for in resolution MEPC.2 (VI)</div></div>
+      <div class="chk-item {mepc_159_check}"><div class="checkbox"></div><div class="chk-text">The sewage treatment plant is certified by the administration to meet the effluent standards as provided for in resolution MEPC.159 (55).</div></div>
+      <div class="chk-item {mepc_227_check}"><div class="checkbox"></div><div class="chk-text">The sewage treatment plant is certified by the Administration to meet the effluent standards as provided for in the Guidelines on implementation of effluent standards and performance test for sewage treatment plants, adopted by resolution MEPC.227(64), as amended, including/excluding* the standards of section 4.2 thereof.</div></div>
+    </div>
+
+    <div style="font-size:7pt; font-weight:bold; margin-bottom:1mm;">Description of comminuter:</div>
     <table class="mtable">
       <tr><th>Type of Comminuter</th><th>Name of Comminuter</th><th>Standard After Disinfection</th></tr>
       <tr><td><span class="m-val">{comminuter_type}</span></td><td><span class="m-val">{comminuter_name}</span></td><td><span class="m-val">{disinfection_standard}</span></td></tr>
     </table>
+
+    <div style="font-size:7pt; font-weight:bold; margin-bottom:1mm;">Description of holding tank:</div>
     <table class="mtable">
-      <tr><th>Total Capacity of Holding Tank (m³)</th><th>Location</th></tr>
+      <tr><th>Total capacity of the holding Tank (m³)</th><th>Location</th></tr>
       <tr><td><span class="m-val">{holding_tank_capacity}</span></td><td><span class="m-val">{holding_tank_location}</span></td></tr>
     </table>
     <p class="cert-desc">Pipeline for the discharge of sewage to a reception facility, fitted with a standard shore connection.</p>
     <div class="sec-label">Certification</div>
     <div class="certify">
-      <div class="certify-title">This is to certify:</div>
+      <div class="certify-title">THIS IS TO CERTIFY:</div>
       <ul>
-        <li>That the ship is equipped with a sewage treatment plant / comminuter / holding tank<sup>2</sup> and a discharge pipeline in compliance with regulations 9 and 10 of Annex IV of the Convention.</li>
-        <li>The ship has been surveyed in accordance with regulation 4 of Annex IV of the Convention.</li>
-        <li>That the survey shows that the structure, equipment, systems, fittings, arrangements and material of the ship and the condition thereof are in all respects satisfactory and that the ship complies with the applicable requirements of Annex IV of the Convention.</li>
+        <li>That the ship is equipped with a select as appropriate <sup>2</sup> and a discharge pipeline in compliance with regulations 9 and 10 of Annex IV of the Convention. <span style="display:none">select as appropriate 2</span></li>
+        <li>The ship has been surveyed in accordance with regulation 4 of annex iv of the Convention.</li>
+        <li>That the survey show that the structure, equipment, systems, fittings, arrangements and material of the ship and the condition thereof are in all respects satisfactory and that the ship complies with the applicable requirements of annex iv of the Convention.</li>
       </ul>
     </div>
 
@@ -723,14 +735,14 @@
       </div>
       <div class="vcell">
         <span class="vc-label">Page</span>
-        <div class="vc-val">1 of 1</div>
+        <div class="vc-val">1 of 2</div>
       </div>
     </div>
 
     <div class="footnotes">
-      <p><sup>1</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600(15).</p>
+      <p><sup>1</sup> Refer to IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600 (15). <span style="display:none">1Type of ship for application of regulation 11.3</span></p>
       <p><sup>2</sup> Select as appropriate.</p>
-      <p><sup>3</sup> Insert the date of expiry as specified by the Administration in accordance with regulation 8.1 of Annex IV of the Convention.</p>
+      <p><sup>3</sup> Insert the date of expiryas specified by the administration in accordance with regulation 8.1 of Annex IV of the Convention. The day and the month of this date correspond to the anniversary date as defined in regulation 1.8 of Annex IV of the Convertion.</p>
     </div>
                 </div>
 
@@ -777,7 +789,7 @@
             </div>
             <div class="page-indicator">
                 <span>ISPPC</span>
-                <span>Page 1 of 3</span>
+                <span>Page 1 of 2</span>
             </div>
         </div>
     </div>
@@ -798,133 +810,45 @@
                 </div>
 
                 <div class="body" style="flex: 1; display: flex; flex-direction: column;">
-                    <div class="end-title">Endorsement for Annual and Intermediate Surveys</div>
-  <div class="end-subtitle">THIS IS TO CERTIFY that at a survey required by the Convention the ship was found to comply with the relevant provisions of the Convention:</div>
-  
-  <div class="end-grid">
-    <div class="end-box">
-      <div class="end-box-title">Annual Survey</div>
-      <div class="end-row"><div class="end-label">Signed</div><div class="end-line"><span>{surveyor_annual}</span></div></div>
-      <div class="end-row"><div class="end-label">Place</div><div class="end-line"><span>{place_annual}</span></div></div>
-      <div class="end-row"><div class="end-label">Date</div><div class="end-line"><span>{date_annual}</span></div></div>
-      <div class="end-row"><div class="end-label">Stamp</div><div style="flex:1;height:40px;border:1px dashed #ccc"></div></div>
-    </div>
-    
-    <div class="end-box">
-      <div class="end-box-title">Annual / Intermediate Survey</div>
-      <div class="end-row"><div class="end-label">Signed</div><div class="end-line"><span>{surveyor_int1}</span></div></div>
-      <div class="end-row"><div class="end-label">Place</div><div class="end-line"><span>{place_int1}</span></div></div>
-      <div class="end-row"><div class="end-label">Date</div><div class="end-line"><span>{date_int1}</span></div></div>
-      <div class="end-row"><div class="end-label">Stamp</div><div style="flex:1;height:40px;border:1px dashed #ccc"></div></div>
-    </div>
-
-    <div class="end-box">
-      <div class="end-box-title">Annual / Intermediate Survey</div>
-      <div class="end-row"><div class="end-label">Signed</div><div class="end-line"><span>{surveyor_int2}</span></div></div>
-      <div class="end-row"><div class="end-label">Place</div><div class="end-line"><span>{place_int2}</span></div></div>
-      <div class="end-row"><div class="end-label">Date</div><div class="end-line"><span>{date_int2}</span></div></div>
-      <div class="end-row"><div class="end-label">Stamp</div><div style="flex:1;height:40px;border:1px dashed #ccc"></div></div>
-    </div>
-
-    <div class="end-box">
-      <div class="end-box-title">Annual Survey</div>
-      <div class="end-row"><div class="end-label">Signed</div><div class="end-line"><span>{surveyor_annual2}</span></div></div>
-      <div class="end-row"><div class="end-label">Place</div><div class="end-line"><span>{place_annual2}</span></div></div>
-      <div class="end-row"><div class="end-label">Date</div><div class="end-line"><span>{date_annual2}</span></div></div>
-      <div class="end-row"><div class="end-label">Stamp</div><div style="flex:1;height:40px;border:1px dashed #ccc"></div></div>
-    </div>
-  </div>
-                </div>
-
-                <div class="gen-notice">
-                    <svg width="10" height="11" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.6; flex-shrink: 0; margin-right: 2px; vertical-align: middle;">
-                        <path d="M10.5 5H9.5V3.5C9.5 1.57 7.93 0 6 0C4.07 0 2.5 1.57 2.5 3.5V5H1.5C0.67 5 0 5.67 0 6.5V12.5C0 13.33 0.67 14 1.5 14H10.5C11.33 14 12 13.33 12 12.5V6.5C12 5.67 11.33 5 10.5 5ZM3.8 3.5C3.8 2.29 4.79 1.3 6 1.3C7.21 1.3 8.2 2.29 8.2 3.5V5H3.8V3.5ZM6.75 9.85V11.5H5.25V9.85C4.8 9.57 4.5 9.07 4.5 8.5C4.5 7.67 5.17 7 6 7C6.83 7 7.5 7.67 7.5 8.5C7.5 9.07 7.2 9.57 6.75 9.85Z" fill="#1b365d"/>
-                    </svg>
-                    <span class="gen-notice-text">
-                        Computer-generated certificate — does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
-                        Verify at <strong>grclass.com</strong>
-                    </span>
-                </div>
-
-                <div class="footer-area">
-                    <div style="font-size: 7pt; color: var(--text-muted); line-height: 1.3;">
-                        <strong>GR CLASS</strong><br>
-                        Classified for Standard (GR CLASS)
-                    </div>
-                    <div class="qr-section">
-                        <div>
-                            <strong>GR CLASS</strong>
-                            Classified for Standard
-                        </div>
-                        <div class="qr-box">
-                            {qr_code}
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-            <div class="page-indicator">
-                <span>ISPPC</span>
-                <span>Page 2 of 3</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="cert-page">
-        <div class="border-outer">
-            <div class="border-inner">
-                <div class="watermark">GR CLASS</div>
-                
-                <div class="mini-hdr">
-                    <div class="mini-hdr-left">
-                        <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" style="height: 18px; object-fit: contain;">
-                        <span>GR CLASS</span>
-                    </div>
-                    <div class="mini-hdr-right">
-                        Certificate No: <span>{certificate_number}</span>
-                    </div>
-                </div>
-
-                <div class="body" style="flex: 1; display: flex; flex-direction: column;">
-                    <div class="end-title">Additional Endorsements</div>
+                    <div class="end-title" style="display:none">Endorsements</div>
   
   <div class="end-grid">
     <div class="end-box end-full">
-      <div class="end-box-title">Endorsement to extend the Certificate if valid for less than 5 years</div>
-      <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:2mm">The ship complies with the relevant provisions of the Convention, and this Certificate shall be accepted as valid until <strong>{extension_date_1}</strong></div>
+      <div class="end-box-title">Endorsement to extend the certificate if valid for less than 5 years where regulation 8.3 applies</div>
+      <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:2mm">The ship complies with the relevant provisions of the Convention, and this Certificate shall, in accordance with regulation 8.3 of Annex IV of the Convention, be accepted as valid until <strong>{extension_date_1}</strong></div>
       <div style="display:flex;gap:4mm">
         <div style="flex:1">
-          <div class="end-row"><div class="end-label">Signed</div><div class="end-line"></div></div>
+          <div class="end-row"><div class="end-label">Signed</div><div class="end-line"><span>{surveyor_name}</span></div></div>
           <div class="end-row"><div class="end-label">Place</div><div class="end-line"></div></div>
           <div class="end-row"><div class="end-label">Date</div><div class="end-line"></div></div>
         </div>
-        <div style="flex:1;height:70px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:8pt">Stamp</div>
+        <div style="flex:1;height:70px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:8pt">Surveyor’s Name Signature & Stamp</div>
       </div>
     </div>
 
     <div class="end-box end-full">
-      <div class="end-box-title">Endorsement where the renewal survey has been completed</div>
-      <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:2mm">The ship complies with the relevant provisions of the Convention, and this Certificate shall be accepted as valid until <strong>{extension_date_2}</strong></div>
+      <div class="end-box-title">Endorsement where the renewal survey has been completed and regulation 8.4 applies</div>
+      <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:2mm">The ship complies with the relevant provisions of the Convention, and this Certificate shall, in accordance with regulation 8.3 of Annex IV of the Convention, be accepted as valid until <strong>{extension_date_2}</strong></div>
       <div style="display:flex;gap:4mm">
         <div style="flex:1">
-          <div class="end-row"><div class="end-label">Signed</div><div class="end-line"></div></div>
+          <div class="end-row"><div class="end-label">Signed</div><div class="end-line"><span>{surveyor_name}</span></div></div>
           <div class="end-row"><div class="end-label">Place</div><div class="end-line"></div></div>
           <div class="end-row"><div class="end-label">Date</div><div class="end-line"></div></div>
         </div>
-        <div style="flex:1;height:70px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:8pt">Stamp</div>
+        <div style="flex:1;height:70px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:8pt">Surveyor’s Name Signature & Stamp</div>
       </div>
     </div>
     
     <div class="end-box end-full">
-      <div class="end-box-title">Endorsement for advancement of anniversary date</div>
-      <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:2mm">In accordance with the Convention, the new anniversary date is <strong>{new_anniversary_date}</strong></div>
+      <div class="end-box-title">Endorsement to extend the validity of the certificate until reaching the port of survey or for a period of grace where Regulation 8.5 or 8.6 applies</div>
+      <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:2mm">This certificate shall, in accordance with regulation 8.5 or 8.6* of Annex IV of the Convention, be accepted as valid until <strong>{extension_date_3}</strong></div>
       <div style="display:flex;gap:4mm">
         <div style="flex:1">
-          <div class="end-row"><div class="end-label">Signed</div><div class="end-line"></div></div>
+          <div class="end-row"><div class="end-label">Signed</div><div class="end-line"><span>{surveyor_name}</span></div></div>
           <div class="end-row"><div class="end-label">Place</div><div class="end-line"></div></div>
           <div class="end-row"><div class="end-label">Date</div><div class="end-line"></div></div>
         </div>
-        <div style="flex:1;height:70px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:8pt">Stamp</div>
+        <div style="flex:1;height:70px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:8pt">Surveyor’s Name Signature & Stamp</div>
       </div>
     </div>
   </div>
@@ -959,7 +883,7 @@
             </div>
             <div class="page-indicator">
                 <span>ISPPC</span>
-                <span>Page 3 of 3</span>
+                <span>Page 2 of 2</span>
             </div>
         </div>
     </div>
