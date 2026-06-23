@@ -527,7 +527,31 @@
                 <div class="footer-area">
                     <div class="stamp-container">
                         <div class="diamond-stamp"></div>
-            </div>
+                        <div class="stamp-text-wrapper">
+                            <div class="st-top">ISSUING AUTHORITY</div>
+                            <div class="st-mid">APPROVED</div>
+                            <div class="st-bot">GR CLASS</div>
+                        </div>
+                    </div>
+
+                    <div class="signature-area">
+                        <div class="sig-line">
+                            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Signature" style="max-height: 28px; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%);">
+                        </div>
+                        <div class="sig-name">GR CLASS Representative</div>
+                        <div class="sig-title">GR CLASS</div>
+                    </div>
+
+                    <div class="qr-section">
+                        <div>
+                            <strong>GR CLASS</strong>
+                            Classified for Standard
+                        </div>
+                        <div class="qr-box">
+                            {qr_code}
+                        </div>
+                    </div>
+                </div>
             <div class="page-indicator">
                 <span>IBC-FT</span>
                 <span>Page 1 of 5</span>
@@ -696,7 +720,6 @@
                 </div>
                 <div class="body" style="flex: 1; display: flex; flex-direction: column;">
                     <p><strong>ATTACHMENT No. 2</strong></p><p><strong>TANK PLAN</strong></p><p><a id="IBC_No."></a><strong>IBC No.</strong></p><table><tr><td><p><strong>Name of ship</strong></p></td><td></td></tr><tr><td><p><strong>Distinctive number or letters:</strong></p></td><td></td></tr><tr><td><p><strong>IMO Number</strong></p></td><td></td></tr></table><p><strong>Cargo area</strong></p><p>	</p><p>{surveyor_name}GR CLASS REPRESENTATIVE</p>
-                </div>
                 </div>
                 <div class="gen-notice">
                     <svg width="10" height="11" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.6; flex-shrink: 0; margin-right: 2px; vertical-align: middle;">
