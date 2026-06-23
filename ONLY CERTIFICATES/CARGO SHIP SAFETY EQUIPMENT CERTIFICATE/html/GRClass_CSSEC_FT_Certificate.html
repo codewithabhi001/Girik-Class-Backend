@@ -631,9 +631,9 @@
                         <div class="hdr-convention">Issued under the provisions of the International Convention for the Safety of Life at Sea (SOLAS), 1974, as amended. Supplemented by a Record of Equipment (Form E)</div>
                     </div>
                     <div class="hdr-right">
-                        <span class="hdr-meta-label">CSSEC No.</span>
+                        <span class="hdr-meta-label">CEC No.</span>
                         <span class="hdr-meta-no">{certificate_number}</span>
-                        <div class="hdr-meta-form">Form CSSEC · Approved by: GM</div>
+                        <div class="hdr-meta-form">Form CEC-FT · Approved by: GM</div>
                     </div>
                 </div>
 
@@ -647,7 +647,7 @@
     <table class="vtable">
       <tr>
         <th>Name of Ship</th>
-        <th>Distinctive No. / Letters</th>
+        <th>Distinctive number or letters</th>
         <th>Port of Registry</th>
         <th>Gross Tonnage</th>
       </tr>
@@ -658,10 +658,10 @@
         <td><span class="val">{gross_tonnage}</span></td>
       </tr>
       <tr>
-        <th>IMO Number <sup>2</sup></th>
-        <th>Deadweight (metric tons) <sup>1</sup></th>
+        <th>IMO number <sup>2</sup>:</th>
+        <th>Dead weight of ship (metric tons) <sup>1</sup></th>
         <th>Length of Ship (Reg. III/3.12)</th>
-        <th>Date of Keel Laying</th>
+        <th style="font-size: 5.5pt !important; line-height: 1.15; padding: 1px 2px !important;">Date on which keel was laid or ship was at similar stage of construction or, where applicable, date on which work for a conversion or an alteration or modification of a major character was commenced:</th>
       </tr>
       <tr>
         <td><span class="val">{imo_number}</span></td>
@@ -672,7 +672,7 @@
     </table>
 
 
-    <div class="sec-label">Type of Ship <sup>3</sup></div>
+    <div class="sec-label">Type of ship <sup>3</sup></div>
     <div class="chk-list">
       <div class="chk-item {ship_type_bulk_check}"><div class="checkbox"></div><div class="chk-text">Bulk Carrier</div></div>
       <div class="chk-item {ship_type_oil_check}"><div class="checkbox"></div><div class="chk-text">Oil Tanker</div></div>
@@ -681,20 +681,28 @@
       <div class="chk-item {ship_type_cargo_check}"><div class="checkbox"></div><div class="chk-text">Cargo ship other than any of the above</div></div>
     </div>
     <div class="sec-label">Certification</div>
-    <div class="certify">
-      <div class="certify-title">This is to certify:</div>
-      <ul>
-        <li>That the ship has been surveyed in accordance with the requirements of regulation I/8 of the Convention.</li>
-        <li>The ship complied with the requirements of the Convention as regards fire safety systems and appliances and fire control plans.</li>
-        <li>The life-saving appliances and the equipment of the lifeboats, liferafts and rescue boats were provided in accordance with the requirements of the Convention.</li>
-        <li>The ship was provided with a line-throwing appliance and radio installations used in life-saving appliances in accordance with the requirements of the Convention.</li>
-        <li>The ship complied with the requirements of the Convention as regards shipborne navigational equipment, means of embarkation for pilots and nautical publications.</li>
-        <li>The ship was provided with lights, shapes and means of making sound signals and distress signals in accordance with the requirements of the Convention and the International Regulations for Preventing Collisions at Sea in force.</li>
-        <li>In all other respects the ship complied with the relevant requirements of the Convention.</li>
-        <li>The ship was/was not<sup>4</sup> subjected to an alternative design and arrangements in pursuance of regulation(s) II-2/17 / III/38<sup>4</sup> of the Convention.</li>
-      </ul>
+    <div class="certify" style="font-size: 7.2pt; line-height: 1.25;">
+      <div class="certify-title" style="font-weight: bold; margin-bottom: 2px;">THIS IS TO CERTIFY:</div>
+      <ol style="margin-left: 14px; padding-left: 0; list-style-type: decimal;">
+        <li style="margin-bottom: 1.5px;">That the ship has been surveyed in accordance with the requirements of regulation I/8 of the Convention.</li>
+        <li style="margin-bottom: 1.5px;">That the survey showed that:
+          <ol style="list-style-type: none; margin-left: 0; padding-left: 0;">
+            <li style="margin-left: 0; padding-left: 0; margin-bottom: 1px;">2.1 the ship complied with the requirements of the Convention as regards fire safety systems and appliances and fire control plans;</li>
+            <li style="margin-left: 0; padding-left: 0; margin-bottom: 1px;">2.2 the life-saving appliances and the equipment of the lifeboats, liferafts and rescue boats were provided in accordance with the requirements of the Convention;</li>
+            <li style="margin-left: 0; padding-left: 0; margin-bottom: 1px;">2.3 the ship was provided with a line-throwing appliance and radio installations used in life-saving appliances in accordance with the requirements of the Convention;</li>
+            <li style="margin-left: 0; padding-left: 0; margin-bottom: 1px;">2.4 the ship complied with the requirements of the Convention as regards shipborne navigational equipment, means of embarkation for pilots and nautical publications;</li>
+            <li style="margin-left: 0; padding-left: 0; margin-bottom: 1px;">2.5 the ship was provided with lights, shapes and means of making sound signals and distress signals in accordance with the requirements of the Convention and the International Regulations for Preventing Collisions at Sea in force;</li>
+            <li style="margin-left: 0; padding-left: 0; margin-bottom: 1px; min-height: 10px;">2.6</li>
+            <li style="margin-left: 0; padding-left: 0; margin-bottom: 1px; min-height: 10px;">2.7</li>
+            <li style="margin-left: 0; padding-left: 0; margin-bottom: 1px; min-height: 10px;">2.8</li>
+            <li style="margin-left: 0; padding-left: 0; margin-bottom: 1.5px;">in all other respects the ship complied with the relevant requirements of the Convention.</li>
+          </ol>
+        </li>
+        <li style="margin-bottom: 1.5px;">the ship was/was not<sup>4</sup> subjected to an alternative design and arrangements in pursuance of regulation(s) II-2/17 / III/38<sup>4</sup> of the Convention. A Document of approval of alternative design and arrangements for fire protection/life-saving appliances and arrangements<sup>4</sup> is/is not<sup>4</sup> appended to this Certificate.</li>
+        <li style="margin-bottom: 1.5px;">That the ship operates in accordance with resolution III/26.1.1.1<sup>5</sup> within the limits of the trade area <span class="inline-val" style="min-width: 150px;">{trade_limits}</span></li>
+        <li style="margin-bottom: 1.5px;">That an Exemption Certificate has / has not<sup>4</sup> been issued.</li>
+      </ol>
     </div>
-    <p class="cert-desc">That an Exemption Certificate has / has not<sup>3</sup> been issued.</p>
 
     <div class="sec-label">Dates &amp; Validity</div>
     <div class="vgrid">
@@ -718,16 +726,16 @@
       </div>
       <div class="vcell">
         <span class="vc-label">Page</span>
-        <div class="vc-val">1 of 1</div>
+        <div class="vc-val">1 of 3</div>
       </div>
     </div>
 
     <div class="footnotes">
       <p><sup>1</sup> Alternatively, the particulars of the ship may be placed horizontally in boxes.</p>
-      <p><sup>2</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600(15).</p>
-      <p><sup>3</sup> Select as appropriate.</p>
+      <p><sup>2</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600 (15).</p>
+      <p><sup>3</sup> For oil tankers, chemical tankers and gas carriers only.</p>
       <p><sup>4</sup> Delete as appropriate.</p>
-      <p><sup>5</sup> Refer to the 1983 amendments to SOLAS (MSC.6(48)).</p>
+      <p><sup>5</sup> Refer to the 1983 amendments to SOLAS (MSC.6(48)), applicable to ships constructed on or after 1 July 1986, but before 1 July 1998 in the case of self-righting partially enclosed lifeboat(s) on board.</p>
     </div>
                 </div>
 
@@ -795,12 +803,12 @@
                 </div>
 
                 <div class="body" style="flex: 1; display: flex; flex-direction: column;">
-                    <div class="end-title">Endorsement for Annual and Intermediate Surveys</div>
-  <div class="end-subtitle">THIS IS TO CERTIFY that at a survey required by the Convention the ship was found to comply with the relevant provisions of the Convention:</div>
+                    <div class="end-title">Endorsement for annual and Periodical surveys</div>
+  <div class="end-subtitle">THIS IS TO CERTIFY that at a survey required by regulation I/8 of the convention, the ship was found to comply with the relevant requirement of the convention.</div>
   
   <div class="end-grid">
     <div class="end-box">
-      <div class="end-box-title">Annual Survey</div>
+      <div class="end-box-title">Annual survey:</div>
       <div class="end-row"><div class="end-label">Signed</div><div class="end-line"><span>{surveyor_annual}</span></div></div>
       <div class="end-row"><div class="end-label">Place</div><div class="end-line"><span>{place_annual}</span></div></div>
       <div class="end-row"><div class="end-label">Date</div><div class="end-line"><span>{date_annual}</span></div></div>
@@ -808,7 +816,7 @@
     </div>
     
     <div class="end-box">
-      <div class="end-box-title">Annual / Intermediate Survey</div>
+      <div class="end-box-title">Annual / Periodical survey<sup>4</sup></div>
       <div class="end-row"><div class="end-label">Signed</div><div class="end-line"><span>{surveyor_int1}</span></div></div>
       <div class="end-row"><div class="end-label">Place</div><div class="end-line"><span>{place_int1}</span></div></div>
       <div class="end-row"><div class="end-label">Date</div><div class="end-line"><span>{date_int1}</span></div></div>
@@ -816,7 +824,7 @@
     </div>
 
     <div class="end-box">
-      <div class="end-box-title">Annual / Intermediate Survey</div>
+      <div class="end-box-title">Annual / Periodical survey<sup>4</sup></div>
       <div class="end-row"><div class="end-label">Signed</div><div class="end-line"><span>{surveyor_int2}</span></div></div>
       <div class="end-row"><div class="end-label">Place</div><div class="end-line"><span>{place_int2}</span></div></div>
       <div class="end-row"><div class="end-label">Date</div><div class="end-line"><span>{date_int2}</span></div></div>
@@ -824,11 +832,27 @@
     </div>
 
     <div class="end-box">
-      <div class="end-box-title">Annual Survey</div>
+      <div class="end-box-title">Annual survey:</div>
       <div class="end-row"><div class="end-label">Signed</div><div class="end-line"><span>{surveyor_annual2}</span></div></div>
       <div class="end-row"><div class="end-label">Place</div><div class="end-line"><span>{place_annual2}</span></div></div>
       <div class="end-row"><div class="end-label">Date</div><div class="end-line"><span>{date_annual2}</span></div></div>
       <div class="end-row"><div class="end-label">Stamp</div><div style="flex:1;height:40px;border:1px dashed #ccc"></div></div>
+    </div>
+  </div>
+
+  <div class="end-box end-full" style="margin-top: 1.5mm;">
+    <div class="end-box-title">Annual / Periodical survey in accordance with Regulation I/14(h)(iii)</div>
+    <div class="end-subtitle" style="text-align: left; padding: 0; margin-bottom: 2.5mm; font-size: 7.2pt; line-height: 1.3;">THIS IS TO CERTIFY that, at an annual / Periodical<sup>4</sup> survey in accordance with regulation I/14(h)(iii) of the convention, the ship was found to comply with relevant requirements of the convention.</div>
+    <div style="display: flex; gap: 4mm;">
+      <div style="flex: 1;">
+        <div class="end-row"><div class="end-label">Signed</div><div class="end-line"><span>{surveyor_h_iii}</span></div></div>
+        <div class="end-row"><div class="end-label">Place</div><div class="end-line"><span>{place_h_iii}</span></div></div>
+        <div class="end-row"><div class="end-label">Date</div><div class="end-line"><span>{date_h_iii}</span></div></div>
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end;">
+        <div class="end-row"><div class="end-label" style="width: 80px;">Job request No.</div><div class="end-line"><span>{job_request_h_iii}</span></div></div>
+        <div class="end-row"><div class="end-label" style="width: 80px;">Stamp</div><div style="flex:1;height:32px;border:1px dashed #ccc"></div></div>
+      </div>
     </div>
   </div>
                 </div>
@@ -885,43 +909,76 @@
                 <div class="body" style="flex: 1; display: flex; flex-direction: column;">
                     <div class="end-title">Additional Endorsements</div>
   
-  <div class="end-grid">
-    <div class="end-box end-full">
-      <div class="end-box-title">Endorsement to extend the Certificate if valid for less than 5 years</div>
-      <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:2mm">The ship complies with the relevant provisions of the Convention, and this Certificate shall be accepted as valid until <strong>{extension_date_1}</strong></div>
-      <div style="display:flex;gap:4mm">
-        <div style="flex:1">
-          <div class="end-row"><div class="end-label">Signed</div><div class="end-line"></div></div>
-          <div class="end-row"><div class="end-label">Place</div><div class="end-line"></div></div>
-          <div class="end-row"><div class="end-label">Date</div><div class="end-line"></div></div>
+  <div class="end-grid" style="gap: 2mm;">
+    <div class="end-box end-full" style="padding: 2mm; margin-bottom: 0.5mm;">
+      <div class="end-box-title" style="font-size: 7.2pt; border-bottom: 1px solid var(--border); padding-bottom: 1px; margin-bottom: 1.5mm;">Endorsement to extend the certificate if valid for less than 5 years where regulation I/14(c) applies</div>
+      <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:1.5mm;font-size:6.8pt;line-height:1.2;">This ship complies with the relevant requirements of the convention, and this certificate shall, in accordance with regulation I/14(d) of the Convention, be accepted as valid until <strong>{extension_date_1}</strong></div>
+      <div style="display:flex;gap:4mm;align-items:center">
+        <div style="flex:2.5;display:grid;grid-template-columns:1fr 1fr;gap:2px 6px">
+          <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Signed</div><div class="end-line" style="height:12px"><span>{surveyor_ext1}</span></div></div>
+          <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Place</div><div class="end-line" style="height:12px"><span>{place_ext1}</span></div></div>
+          <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Date</div><div class="end-line" style="height:12px"><span>{date_ext1}</span></div></div>
+          <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Job No.</div><div class="end-line" style="height:12px"><span>{job_request_ext1}</span></div></div>
         </div>
-        <div style="flex:1;height:70px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:8pt">Stamp</div>
+        <div style="flex:1;height:38px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:7pt">Stamp</div>
       </div>
     </div>
 
-    <div class="end-box end-full">
-      <div class="end-box-title">Endorsement where the renewal survey has been completed</div>
-      <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:2mm">The ship complies with the relevant provisions of the Convention, and this Certificate shall be accepted as valid until <strong>{extension_date_2}</strong></div>
-      <div style="display:flex;gap:4mm">
-        <div style="flex:1">
-          <div class="end-row"><div class="end-label">Signed</div><div class="end-line"></div></div>
-          <div class="end-row"><div class="end-label">Place</div><div class="end-line"></div></div>
-          <div class="end-row"><div class="end-label">Date</div><div class="end-line"></div></div>
+    <div class="end-box end-full" style="padding: 2mm; margin-bottom: 0.5mm;">
+      <div class="end-box-title" style="font-size: 7.2pt; border-bottom: 1px solid var(--border); padding-bottom: 1px; margin-bottom: 1.5mm;">Endorsement where the renewal survey has been completed and regulation I/14(d) applies</div>
+      <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:1.5mm;font-size:6.8pt;line-height:1.2;">This ship complies with the relevant requirements of the convention, and this certificate shall, in accordance with regulation I/14(d) of the Convention, be accepted as valid until <strong>{extension_date_2}</strong></div>
+      <div style="display:flex;gap:4mm;align-items:center">
+        <div style="flex:2.5;display:grid;grid-template-columns:1fr 1fr;gap:2px 6px">
+          <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Signed</div><div class="end-line" style="height:12px"><span>{surveyor_ext2}</span></div></div>
+          <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Place</div><div class="end-line" style="height:12px"><span>{place_ext2}</span></div></div>
+          <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Date</div><div class="end-line" style="height:12px"><span>{date_ext2}</span></div></div>
+          <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Job No.</div><div class="end-line" style="height:12px"><span>{job_request_ext2}</span></div></div>
         </div>
-        <div style="flex:1;height:70px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:8pt">Stamp</div>
+        <div style="flex:1;height:38px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:7pt">Stamp</div>
+      </div>
+    </div>
+
+    <div class="end-box end-full" style="padding: 2mm; margin-bottom: 0.5mm;">
+      <div class="end-box-title" style="font-size: 7.2pt; border-bottom: 1px solid var(--border); padding-bottom: 1px; margin-bottom: 1.5mm;">Endorsement to extend the validity of the certificate until reaching the port of survey or for a period of grace where Regulation I/14(e) or I/14(f) applies</div>
+      <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:1.5mm;font-size:6.8pt;line-height:1.2;">This certificate shall, in accordance with Regulation I/14(e) / I/14(f)<sup>4</sup> of the Convention, be accepted as valid until <strong>{extension_date_3}</strong></div>
+      <div style="display:flex;gap:4mm;align-items:center">
+        <div style="flex:2.5;display:grid;grid-template-columns:1fr 1fr;gap:2px 6px">
+          <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Signed</div><div class="end-line" style="height:12px"><span>{surveyor_ext3}</span></div></div>
+          <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Place</div><div class="end-line" style="height:12px"><span>{place_ext3}</span></div></div>
+          <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Date</div><div class="end-line" style="height:12px"><span>{date_ext3}</span></div></div>
+          <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Job No.</div><div class="end-line" style="height:12px"><span>{job_request_ext3}</span></div></div>
+        </div>
+        <div style="flex:1;height:38px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:7pt">Stamp</div>
       </div>
     </div>
     
-    <div class="end-box end-full">
-      <div class="end-box-title">Endorsement for advancement of anniversary date</div>
-      <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:2mm">In accordance with the Convention, the new anniversary date is <strong>{new_anniversary_date}</strong></div>
-      <div style="display:flex;gap:4mm">
-        <div style="flex:1">
-          <div class="end-row"><div class="end-label">Signed</div><div class="end-line"></div></div>
-          <div class="end-row"><div class="end-label">Place</div><div class="end-line"></div></div>
-          <div class="end-row"><div class="end-label">Date</div><div class="end-line"></div></div>
+    <div class="end-box end-full" style="padding: 2mm; margin-bottom: 0.5mm;">
+      <div class="end-box-title" style="font-size: 7.2pt; border-bottom: 1px solid var(--border); padding-bottom: 1px; margin-bottom: 1.5mm;">Endorsement for advancement of anniversary date where Regulation I/14(h) applies</div>
+      
+      <div style="display:flex;gap:4mm;margin-bottom:2mm;border-bottom:1px dashed #eee;padding-bottom:2mm;align-items:center">
+        <div style="flex:2.5;">
+          <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:1.5mm;font-size:6.8pt;line-height:1.2;">In accordance with Regulation I/14 (h) of the Convention the new anniversary date is <strong>{new_anniversary_date}</strong></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 6px">
+            <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Signed</div><div class="end-line" style="height:12px"><span>{surveyor_adv1}</span></div></div>
+            <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Place</div><div class="end-line" style="height:12px"><span>{place_adv1}</span></div></div>
+            <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Date</div><div class="end-line" style="height:12px"><span>{date_adv1}</span></div></div>
+            <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Job No.</div><div class="end-line" style="height:12px"><span>{job_request_adv1}</span></div></div>
+          </div>
         </div>
-        <div style="flex:1;height:70px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:8pt">Stamp</div>
+        <div style="flex:1;height:55px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:7pt">Stamp</div>
+      </div>
+
+      <div style="display:flex;gap:4mm;align-items:center">
+        <div style="flex:2.5;">
+          <div class="end-subtitle" style="text-align:left;padding:0;margin-bottom:1.5mm;font-size:6.8pt;line-height:1.2;">In accordance with Regulation I/14 (h) of the Convention the new anniversary date is <strong>{new_anniversary_date_2}</strong></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 6px">
+            <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Signed</div><div class="end-line" style="height:12px"><span>{surveyor_adv2}</span></div></div>
+            <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Place</div><div class="end-line" style="height:12px"><span>{place_adv2}</span></div></div>
+            <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Date</div><div class="end-line" style="height:12px"><span>{date_adv2}</span></div></div>
+            <div class="end-row" style="margin-bottom:1px"><div class="end-label" style="width:45px;font-size:6.8pt">Job No.</div><div class="end-line" style="height:12px"><span>{job_request_adv2}</span></div></div>
+          </div>
+        </div>
+        <div style="flex:1;height:55px;border:1px dashed #ccc;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:7pt">Stamp</div>
       </div>
     </div>
   </div>
