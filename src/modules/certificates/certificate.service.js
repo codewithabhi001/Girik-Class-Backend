@@ -219,7 +219,15 @@ export const getCertificateTypes = async (options = {}) => {
     const queryOptions = {
         where,
         attributes: ['id', 'name', 'short_code', 'issuing_authority', 'validity_years', 'status', 'requires_survey'],
+        include: [{
+            model: db.CertificateTemplate,
+            as: 'Templates',
+            where: { is_active: true },
+            required: false,
+            attributes: ['certificate_term']
+        }],
         order: [['name', 'ASC']],
+        distinct: true, // Need this because of the hasMany include
         useReplica: true
     };
 

@@ -8,6 +8,10 @@ export const na = (value) => (value == null || value === '') ? 'N/A' : value;
 /** Minimal certificate type row for list endpoints (no description / required_documents). */
 export const flatCertificateTypeListRow = (row) => {
     const t = toPlain(row);
+    const available_terms = (t.Templates || [])
+        .map(tmpl => tmpl.certificate_term)
+        .filter(Boolean); // e.g. ['FULL_TERM', 'SHORT_TERM']
+
     return {
         id: t.id,
         name: t.name,
@@ -18,6 +22,7 @@ export const flatCertificateTypeListRow = (row) => {
         requires_survey: t.requires_survey,
         requires_survey_short_term: t.requires_survey_short_term,
         requires_survey_full_term: t.requires_survey_full_term,
+        available_terms,
     };
 };
 

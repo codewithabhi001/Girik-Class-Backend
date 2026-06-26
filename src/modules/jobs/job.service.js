@@ -607,7 +607,17 @@ export const getJobById = async (id, scopeFilters = {}, user = null) => {
                 where: user?.role === 'SURVEYOR' ? { assigned_surveyor_id: user.id } : undefined,
                 required: false,
                 include: [
-                    'CertificateType',
+                    {
+                        model: CertificateType,
+                        as: 'CertificateType',
+                        include: [{
+                            model: db.CertificateTemplate,
+                            as: 'Templates',
+                            where: { is_active: true },
+                            required: false,
+                            attributes: ['certificate_term']
+                        }]
+                    },
                     { model: Survey, as: 'survey' },
                     { model: Certificate, as: 'Certificate', attributes: ['id', 'certificate_number', 'status', 'source_type', 'issue_date', 'expiry_date', 'uploaded_file_url', 'generated_pdf_url', 'pdf_file_url'] }
                 ]
@@ -626,6 +636,17 @@ export const getJobById = async (id, scopeFilters = {}, user = null) => {
     if (!job) throw { statusCode: 404, message: 'The requested job could not be found.' };
 
     const jobPlain = job.get({ plain: true });
+
+    if (Array.isArray(jobPlain.certificates)) {
+        jobPlain.certificates.forEach(jc => {
+            if (jc.CertificateType) {
+                jc.CertificateType.available_terms = (jc.CertificateType.Templates || [])
+                    .map(t => t.certificate_term)
+                    .filter(Boolean);
+                delete jc.CertificateType.Templates;
+            }
+        });
+    }
 
     // Override pending_action for CREATED status if all certs have 0 required docs
     if (jobPlain.job_status === 'CREATED') {
