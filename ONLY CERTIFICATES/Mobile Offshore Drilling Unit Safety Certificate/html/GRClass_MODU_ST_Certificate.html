@@ -662,7 +662,77 @@
                 </div>
 
                 <div class="body" style="flex: 1; display: flex; flex-direction: column;">
-                    <p><strong>SHORT TERM MOBILE OFFSHORE </strong><a id="DRILLING_UNIT_SAFETY_CERTIFICATE_(2009)"></a><strong>DRILLING UNIT SAFETY CERTIFICATE (2009)</strong></p><p><a id="SHORT_TERM_MOBILE_OFFSHORE"></a><strong></strong>Issued under the provisions of the Code for the Construction and Equipment Of Mobile Offshore Drilling Units (2009) Under the authority of the Government of</p><p><strong>          THE MERCHANT MARINE HONDURAS</strong></p><p><strong>By GR CLASS CLASSIFIED FOR STANDARD (GR CLASS)</strong></p><p><strong>MODU No.</strong></p><table><tr><td><p><strong>Distinctive identification (Name or Number)</strong></p></td><td><p><strong>Type</strong></p><p><strong>(Section 1.3 of the Code)</strong></p></td><td><p><strong>Port of registry</strong></p></td></tr><tr><td></td><td></td><td><p>{port_of_registry}</p></td></tr></table><p>Date on which keel was laid or unit was at a similar stage of construction or on which major conversion was commenced	 	</p><p>(DD-MM-YYYY)</p><p>THIS IS TO CERTIFY:</p><ol><li>That the above-mentioned unit has been duly surveyed in accordance with the applicable provisions of the Code for the Construction and Equipment of Mobile Offshore Drilling Units, 2009.</li><li>That the Survey showed that the structure, equipment, fittings, radio station arrangements and materials of the unit and the conditions thereof are in all respects satisfactory and that the unit complies with the relevant provisions of the Code.</li><li>That the life-saving appliances provide for a total number of		persons and no more as follows:</li><li>That, in accordance with section 1.4 of the Code, the provisions of the Code are modified in respect of the unit</li></ol><p>in the following manner:	 	</p><ol><li>That this unit has been issued with an approval for the continuous survey techniques under paragraph 1.6.4 Of the Code in lieu of renewal and intermediate surveys in respect of:</li></ol><p>Hull                     Machinery	</p><p>	</p><p>Signature and seal of approving	Date of continuous survey authority	Programmed approval</p><p>This provisional certificate is valid until	 	{expiry_date}</p><p>Issued at		Date of issue  	</p><p>(Place of issue of certificate)	(DD-MM-YYYY)</p><p></p><p><strong>GR CLASSREPRESENTATIVE</strong></p><p><a id="_Hlk213083592"></a>GR CLASS – CLASSIFIED FOR STANDARD (GR CLASS)</p><p>E-mail: info@grclass.com Web: www.grclass.com</p><p><strong>Form MODU-ST	                                                                       Approved by: GM	 	                                             Page 1 of 1</strong></p>
+                    <div class="sec-label">Unit Particulars</div>
+    <table class="vtable">
+      <tr>
+        <th>Distinctive Identification (Name or Number)</th>
+        <th>Type (Section 1.3 of the Code)</th>
+        <th>Port of Registry</th>
+        <th>IMO Number <sup>1</sup></th>
+      </tr>
+      <tr>
+        <td><span class="val">{vessel_name}</span></td>
+        <td><span class="val">{ship_type}</span></td>
+        <td><span class="val">{port_of_registry}</span></td>
+        <td><span class="val">{imo_number}</span></td>
+      </tr>
+    </table>
+
+    <div class="sec-label">Vessel Particulars</div>
+    <table class="vtable">
+      <tr>
+        <th>Name of Ship</th>
+        <th>Distinctive Number or Letters</th>
+        <th>Gross Tonnage</th>
+        <th>Date Keel Laid / Major Conversion</th>
+      </tr>
+      <tr>
+        <td><span class="val">{vessel_name}</span></td>
+        <td><span class="val">{call_sign}</span></td>
+        <td><span class="val">{gross_tonnage}</span></td>
+        <td><span class="val">{keel_laid_date}</span></td>
+      </tr>
+    </table>
+
+    <div class="sec-label">Certification</div>
+    <div class="certify">
+      <div class="certify-title">This is to certify that:</div>
+      <ul>
+        <li>The above-mentioned unit has been duly surveyed in accordance with the applicable provisions of the Code for the Construction and Equipment of Mobile Offshore Drilling Units, 2009.</li>
+        <li>The Survey showed that the structure, equipment, fittings, radio station arrangements and materials of the unit and the conditions thereof are in all respects satisfactory and that the unit complies with the relevant provisions of the Code.</li>
+        <li>The life-saving appliances provide for a total number of <span class="inline-val">{persons_on_board}</span> persons and no more.</li>
+      </ul>
+    </div>
+
+    <div class="sec-label">Dates &amp; Validity</div>
+    <div class="vgrid">
+      <div class="vcell">
+        <span class="vc-label">Survey Completion Date</span>
+        <div class="vc-val">{survey_completion_date}</div>
+      </div>
+      <div class="vcell">
+        <span class="vc-label">Date of Issue</span>
+        <div class="vc-val">{issue_date}</div>
+      </div>
+      <div class="vcell hi">
+        <span class="vc-label">Valid Until</span>
+        <div class="vc-val">{expiry_date}</div>
+      </div>
+    </div>
+    <div class="vgrid-2">
+      <div class="vcell">
+        <span class="vc-label">Place of Issue</span>
+        <div class="vc-val">{place_of_survey}</div>
+      </div>
+      <div class="vcell">
+        <span class="vc-label">Page</span>
+        <div class="vc-val">1 of 1</div>
+      </div>
+    </div>
+
+    <div class="footnotes">
+      <p><sup>1</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600(15).</p>
+    </div>
                 </div>
 
                 {remarks}

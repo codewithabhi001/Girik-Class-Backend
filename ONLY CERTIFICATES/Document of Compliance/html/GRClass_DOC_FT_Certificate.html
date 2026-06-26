@@ -662,34 +662,39 @@
                 </div>
 
                 <div class="body" style="flex: 1; display: flex; flex-direction: column;">
-                    <div class="sec-label">Vessel Particulars</div>
+                    <div class="sec-label">Company Particulars</div>
     <table class="vtable">
       <tr>
-        <th>Company Name & Address (ISM Code 1.1.2)</th>
+        <th>Company Name &amp; Address (ISM Code 1.1.2)</th>
         <th>Company Identification Number <sup>1</sup></th>
-        <th></th>
-        <th></th>
+        <th>DOC Number</th>
+        <th>Issued By</th>
       </tr>
       <tr>
         <td><span class="val">{company_name}</span></td>
         <td><span class="val">{company_id}</span></td>
-        <td><span class="val"></span></td>
-        <td><span class="val"></span></td>
-      </tr>
-      <tr>
-        <th>DOC Number</th>
-        <th>Issued By</th>
-        <th></th>
-        <th></th>
-      </tr>
-      <tr>
         <td><span class="val">{certificate_number}</span></td>
         <td><span class="val">GR CLASS</span></td>
-        <td><span class="val"></span></td>
-        <td><span class="val"></span></td>
       </tr>
     </table>
 
+    <div class="sec-label">Vessel Particulars</div>
+    <table class="vtable">
+      <tr>
+        <th>Name of Ship</th>
+        <th>Distinctive Number or Letters</th>
+        <th>Port of Registry</th>
+        <th>Gross Tonnage</th>
+        <th>IMO Number <sup>2</sup></th>
+      </tr>
+      <tr>
+        <td><span class="val">{vessel_name}</span></td>
+        <td><span class="val">{call_sign}</span></td>
+        <td><span class="val">{port_of_registry}</span></td>
+        <td><span class="val">{gross_tonnage}</span></td>
+        <td><span class="val">{imo_number}</span></td>
+      </tr>
+    </table>
 
     <div class="sec-label">Type(s) of Ships Covered</div>
     <div class="chk-list">
@@ -740,6 +745,7 @@
 
     <div class="footnotes">
       <p><sup>1</sup> "Company Identification Number" item is added by Res. MSC.195(80) and entered into force on January 01st, 2009.</p>
+      <p><sup>2</sup> In accordance with IMO Ship Identification Number Scheme adopted by the Organization by Resolution A.600(15).</p>
     </div>
                 </div>
 
