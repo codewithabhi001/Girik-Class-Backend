@@ -72,22 +72,27 @@
             padding: 8mm; /* Margins slightly reduced for extra height room */
             display: flex;
             flex-direction: column;
+            overflow: hidden; /* Prevent borders from overflowing if content gets too large */
         }
 
         /* Double Border System */
         .border-outer {
             border: 2.5px solid var(--navy-blue);
-            height: 100%;
+            flex: 1; /* Allow flex to fit the 297mm cert-page */
+            display: flex;
+            flex-direction: column;
             padding: 3px;
             position: relative;
+            min-height: 0; /* Important for flex children to not overflow */
         }
         .border-inner {
             border: 1px solid var(--gold-primary);
-            height: 100%;
+            flex: 1;
             padding: 7mm 7mm 8.5mm 7mm; /* Inner padding slightly reduced */
             display: flex;
             flex-direction: column;
             position: relative;
+            min-height: 0;
         }
 
         /* Background Watermark */
@@ -116,6 +121,7 @@
             padding-bottom: 2mm;
             margin-bottom: 2.5mm;
             z-index: 1;
+            flex-shrink: 0;
         }
         
         .hdr-left { flex: 0 0 85px; text-align: left; }
@@ -184,6 +190,7 @@
             border-bottom: 1px solid #ddd;
             margin-bottom: 2.5mm;
             z-index: 1;
+            flex-shrink: 0;
         }
         .authority strong { color: var(--navy-blue); text-transform: uppercase; }
 
@@ -208,6 +215,7 @@
             margin-bottom: 2mm;
             table-layout: fixed; /* Fixes horizontal overflow */
             z-index: 1;
+            flex-shrink: 0;
         }
         .data-table th, .data-table td, .vtable th, .vtable td, .mtable th, .mtable td {
             border: 1px solid #ccc;
@@ -245,7 +253,7 @@
         }
 
         /* Checkbox items */
-        .chk-list { display: flex; flex-direction: column; gap: 1.5px; margin-bottom: 1.5mm; z-index: 1; }
+        .chk-list { display: flex; flex-direction: column; gap: 1.5px; margin-bottom: 1.5mm; z-index: 1; flex-shrink: 0; }
         .chk-item {
             display: flex; align-items: flex-start; gap: 5px;
             padding: 1px 3px; border: 1px solid transparent;
@@ -279,6 +287,7 @@
             line-height: 1.25;
             margin-bottom: 2mm;
             z-index: 1;
+            flex-shrink: 0;
         }
         .footnotes p { margin-bottom: 1px; }
         sup { color: var(--navy-blue); font-weight: bold; font-size: 5.5pt; }
@@ -294,6 +303,7 @@
             margin-bottom: 2.5mm;
             text-align: justify;
             z-index: 1;
+            flex-shrink: 0;
         }
         .certify-box i { color: var(--text-muted); font-size: 8pt; display: block; margin-top: 2px; }
         .certify-title {
@@ -312,6 +322,7 @@
             padding: 5px 10px;
             margin-bottom: 2.5mm;
             z-index: 1;
+            flex-shrink: 0;
         }
         .vgrid-2 {
             display: flex;
@@ -321,6 +332,7 @@
             padding: 4px 10px;
             margin-bottom: 2.5mm;
             z-index: 1;
+            flex-shrink: 0;
         }
         .vcell { text-align: left; }
         .vcell-label, .vc-label { font-size: 6pt; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1px; display: block; }
@@ -334,6 +346,7 @@
             margin-top: auto;
             padding-top: 1mm;
             z-index: 1;
+            flex-shrink: 0;
         }
 
         /* DIAMOND STAMP (BHAGWA) */
@@ -389,6 +402,7 @@
             border-top: 1px solid #eee; padding-top: 1px; margin-top: 2.5mm;
             font-size: 5.5pt; color: #888;
             z-index: 1;
+            flex-shrink: 0;
         }
 
         /* ── PAGE 2 SPECIFIC / ENDORSEMENTS ── */
@@ -396,6 +410,7 @@
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid #ccc; padding-bottom: 1.5mm; margin-bottom: 3mm;
             z-index: 1;
+            flex-shrink: 0;
         }
         .mini-hdr-left { display: flex; align-items: center; gap: 6px; font-size: 7pt; font-weight: bold; color: var(--navy-blue); }
         .mini-hdr-left img { height: 18px; object-fit: contain; }
@@ -406,16 +421,19 @@
             font-family: 'Georgia', serif; font-size: 11pt; font-weight: bold;
             color: var(--navy-blue); text-align: center; margin: 3mm 0 1.5mm;
             z-index: 1;
+            flex-shrink: 0;
         }
         .end-subtitle {
             font-size: 7.5pt; color: var(--text-muted); text-align: center; margin-bottom: 3mm;
             padding: 0 8mm; line-height: 1.4;
             z-index: 1;
+            flex-shrink: 0;
         }
         .end-grid {
             display: grid; grid-template-columns: 1fr 1fr; gap: 3mm 5mm;
             margin-bottom: 3mm;
             z-index: 1;
+            flex-shrink: 0;
         }
         .end-box {
             border: 1px solid var(--border); background: #fff; padding: 2.5mm;
@@ -468,6 +486,7 @@
                 page-break-inside: avoid;
                 background: white !important;
                 position: relative !important;
+                overflow: hidden !important;
             }
             .cert-page:last-child { page-break-after: auto; }
         }

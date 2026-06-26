@@ -5,6 +5,7 @@
     <title>GR Class – CERTIFICATE OF TEST AND THOROUGH EXAMINATION (FOR DERRICKS USED IN UNION PURCHASE)</title>
     
     <style>
+        /* ── OPTIMIZED CSS (SYSTEM FONTS FOR INSTANT LOAD) ── */
         :root {
             --navy-blue: #0b2545;
             --navy-light: #133c6d;
@@ -12,9 +13,11 @@
             --text-dark: #1a1a1a;
             --text-muted: #444444;
             --paper: #ffffff;
-            --stamp-color: #E65100;
+            --stamp-color: #E65100; /* Bhagwa Color */
             --bg-light: #f4f6f8;
+            --primary: #0b2545;
             --border: #ccc;
+            --light: #f4f6f8;
         }
 
         *, *::before, *::after {
@@ -25,7 +28,7 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            font-size: 7.8pt;
+            font-size: 7.8pt; /* Compact font size to prevent overflow */
             background: #222;
             padding: 20px 0 40px;
             color: var(--text-dark);
@@ -58,6 +61,7 @@
         .btn-print:hover { background: #967645; }
         .tag-hint { font-size: 7.5pt; color: #666; font-style: italic; }
 
+        /* ── CERTIFICATE DESIGN (A4) ── */
         .cert-page {
             width: 210mm;
             height: 297mm;
@@ -65,26 +69,33 @@
             margin: 0 auto 15mm auto;
             position: relative;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            padding: 8mm;
+            padding: 8mm; /* Margins slightly reduced for extra height room */
             display: flex;
             flex-direction: column;
+            overflow: hidden; /* Prevent borders from overflowing if content gets too large */
         }
 
+        /* Double Border System */
         .border-outer {
             border: 2.5px solid var(--navy-blue);
-            height: 100%;
+            flex: 1; /* Allow flex to fit the 297mm cert-page */
+            display: flex;
+            flex-direction: column;
             padding: 3px;
             position: relative;
+            min-height: 0; /* Important for flex children to not overflow */
         }
         .border-inner {
             border: 1px solid var(--gold-primary);
-            height: 100%;
+            flex: 1;
             padding: 7mm 7mm 8.5mm 7mm; /* Inner padding slightly reduced */
             display: flex;
             flex-direction: column;
             position: relative;
+            min-height: 0;
         }
 
+        /* Background Watermark */
         .watermark {
             position: absolute;
             top: 50%; left: 50%;
@@ -101,6 +112,7 @@
             z-index: 0;
         }
 
+        /* ── HEADER ── */
         .cert-header {
             display: flex;
             justify-content: space-between;
@@ -109,6 +121,7 @@
             padding-bottom: 2mm;
             margin-bottom: 2.5mm;
             z-index: 1;
+            flex-shrink: 0;
         }
         
         .hdr-left { flex: 0 0 85px; text-align: left; }
@@ -129,6 +142,14 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             margin-bottom: 3px;
+        }
+        .hdr-title-es {
+            font-family: 'Georgia', serif;
+            font-size: 9.5pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+            margin-bottom: 1px;
+            text-transform: uppercase;
         }
         .hdr-title-en {
             font-family: 'Georgia', serif;
@@ -158,87 +179,166 @@
         }
         .hdr-meta-form { font-size: 6pt; color: var(--navy-blue); margin-top: 2px; font-weight: bold; }
 
+        /* ── AUTHORITY ── */
         .authority {
             text-align: center;
             font-family: 'Times New Roman', serif;
-            font-size: 8pt;
+            font-size: 8.5pt;
             color: var(--text-dark);
-            line-height: 1.25;
-            padding-bottom: 1.5mm;
+            line-height: 1.35;
+            padding-bottom: 2mm;
             border-bottom: 1px solid #ddd;
-            margin-bottom: 2mm;
+            margin-bottom: 2.5mm;
             z-index: 1;
+            flex-shrink: 0;
         }
         .authority strong { color: var(--navy-blue); text-transform: uppercase; }
 
+        /* ── SECTIONS & TABLES ── */
         .sec-label {
             font-family: 'Arial', sans-serif;
-            font-size: 7pt;
+            font-size: 7.2pt;
             font-weight: bold;
             color: var(--navy-light);
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin: 1.2mm 0 0.8mm 0;
+            margin: 2mm 0 1mm 0;
             border-left: 3px solid var(--gold-primary);
-            padding-left: 4px;
+            padding-left: 5px;
             z-index: 1;
         }
 
-        .data-table, .vtable {
+        /* Data table & Vessel table styling combined */
+        .data-table, .vtable, .mtable {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 1.5mm;
-            table-layout: fixed;
+            margin-bottom: 2mm;
+            table-layout: fixed; /* Fixes horizontal overflow */
             z-index: 1;
+            flex-shrink: 0;
         }
-        .data-table th, .data-table td, .vtable th, .vtable td {
+        .data-table th, .data-table td, .vtable th, .vtable td, .mtable th, .mtable td {
             border: 1px solid #ccc;
-            padding: 2px 4px;
+            padding: 2px 4px; /* Compact padding */
             text-align: left;
-            word-wrap: break-word;
+            word-wrap: break-word; /* Wraps long content */
             overflow-wrap: break-word;
         }
-        .data-table th, .vtable th {
+        .data-table th, .vtable th, .mtable th {
             background: var(--bg-light);
             font-size: 6pt;
             text-transform: uppercase;
             color: var(--text-muted);
             line-height: 1.2;
         }
-        .data-table td, .vtable td {
+        .data-table td, .vtable td, .mtable td {
             font-family: 'Times New Roman', serif;
-            font-size: 8pt;
+            font-size: 8pt; /* Compact font size */
             font-weight: bold;
             color: var(--navy-blue);
             vertical-align: middle;
         }
+        
+        .val, .m-val {
+            font-family: 'Times New Roman', serif;
+            font-size: 8.5pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+        }
+        
+        .val-large {
+            font-size: 13pt !important;
+            text-align: center;
+            padding: 6px !important;
+        }
+
+        /* Checkbox items */
+        .chk-list { display: flex; flex-direction: column; gap: 1.5px; margin-bottom: 1.5mm; z-index: 1; flex-shrink: 0; }
+        .chk-item {
+            display: flex; align-items: flex-start; gap: 5px;
+            padding: 1px 3px; border: 1px solid transparent;
+            font-size: 7.2pt; line-height: 1.3; color: var(--text-dark);
+        }
+        .chk-item.checked { background: var(--bg-light); border-color: var(--border); font-weight: 500; }
+        .checkbox {
+            width: 9px; height: 9px; border: 1px solid var(--navy-blue); flex-shrink: 0; margin-top: 1.5px;
+            background: #fff; position: relative;
+        }
+        .chk-item.checked .checkbox { background: var(--navy-blue); }
+        .chk-item.checked .checkbox::after {
+            content: ''; position: absolute; left: 1.5px; top: 0;
+            width: 3.5px; height: 5px;
+            border-right: 1.2px solid #fff; border-bottom: 1.2px solid #fff;
+            transform: rotate(38deg);
+        }
+        .chk-text b { color: var(--navy-blue); }
+        .inline-val {
+            display: inline-block; font-family: 'Times New Roman', serif;
+            font-size: 9pt; font-weight: bold; color: var(--navy-blue);
+            border-bottom: 1px dashed var(--navy-blue);
+            padding: 0 2px; min-width: 50px; line-height: 1.1; vertical-align: bottom;
+        }
+
+        /* ── FOOTNOTES & PARAGRAPHS ── */
+        .footnotes {
+            font-family: 'Arial', sans-serif;
+            font-size: 6pt;
+            color: #666;
+            line-height: 1.25;
+            margin-bottom: 2mm;
+            z-index: 1;
+            flex-shrink: 0;
+        }
+        .footnotes p { margin-bottom: 1px; }
+        sup { color: var(--navy-blue); font-weight: bold; font-size: 5.5pt; }
 
         .certify-box, .certify {
             border: 1px solid #ccc;
             border-left: 4.5px solid var(--navy-blue);
             background: var(--bg-light);
-            padding: 4px 6px;
+            padding: 5px 8px;
             font-family: 'Times New Roman', serif;
-            font-size: 8pt;
-            line-height: 1.25;
-            margin-bottom: 2mm;
+            font-size: 8.5pt;
+            line-height: 1.35;
+            margin-bottom: 2.5mm;
             text-align: justify;
             z-index: 1;
+            flex-shrink: 0;
         }
+        .certify-box i { color: var(--text-muted); font-size: 8pt; display: block; margin-top: 2px; }
+        .certify-title {
+            font-weight: bold; color: var(--navy-blue); font-size: 8.5pt;
+            margin-bottom: 2px; text-transform: uppercase; letter-spacing: .5px;
+        }
+        .certify ul { margin-left: 14px; }
+        .certify ul li { margin-bottom: 1.5px; }
 
+        /* ── VALIDITY GRID ── */
         .vgrid {
             display: flex;
             justify-content: space-between;
             border: 1px solid var(--gold-primary);
             background: #fdfbf7;
-            padding: 4px 8px;
-            margin-bottom: 1.5mm;
+            padding: 5px 10px;
+            margin-bottom: 2.5mm;
             z-index: 1;
+            flex-shrink: 0;
+        }
+        .vgrid-2 {
+            display: flex;
+            justify-content: space-between;
+            border: 1px solid var(--border);
+            background: #ffffff;
+            padding: 4px 10px;
+            margin-bottom: 2.5mm;
+            z-index: 1;
+            flex-shrink: 0;
         }
         .vcell { text-align: left; }
-        .vc-label { font-size: 6pt; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1px; display: block; }
-        .vc-val { font-family: 'Courier New', monospace; font-size: 9pt; font-weight: bold; color: var(--navy-blue); }
+        .vcell-label, .vc-label { font-size: 6pt; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1px; display: block; }
+        .vcell-val, .vc-val { font-family: 'Courier New', monospace; font-size: 9pt; font-weight: bold; color: var(--navy-blue); }
 
+        /* ── FOOTER AREA ── */
         .footer-area {
             display: flex;
             justify-content: space-between;
@@ -246,8 +346,10 @@
             margin-top: auto;
             padding-top: 1mm;
             z-index: 1;
+            flex-shrink: 0;
         }
 
+        /* DIAMOND STAMP (BHAGWA) */
         .stamp-container {
             position: relative;
             width: 28mm;
@@ -263,7 +365,8 @@
             border: 1.8px solid var(--stamp-color);
             transform: rotate(45deg);
             position: absolute;
-            background: rgba(230, 81, 0, 0.05);
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 60%), rgba(230, 81, 0, 0.05);
+            box-shadow: inset 0 0 3px rgba(230, 81, 0, 0.2);
         }
         .diamond-stamp::before {
             content: '';
@@ -287,11 +390,11 @@
         .sig-line { border-bottom: 1px solid var(--text-dark); height: 18px; margin-bottom: 3px; position: relative; }
         .sig-line img { max-height: 25px; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%); }
         .sig-name { font-family: 'Times New Roman', serif; font-size: 9pt; font-weight: bold; color: var(--navy-blue); }
-        .sig-title { font-size: 5.5pt; color: var(--text-muted); text-transform: uppercase; }
+        .sig-title, .sig-desig { font-size: 6pt; color: var(--text-muted); text-transform: uppercase; }
 
         .qr-section { display: flex; align-items: center; gap: 4px; text-align: right; font-size: 5.5pt; color: var(--text-muted); line-height: 1.2; }
-        .qr-box { width: 34px; height: 34px; border: 1px solid #ccc; padding: 2px; }
-        .qr-box img { width: 100%; height: 100%; display: block; }
+        .qr-box, .qr-wrap { width: 38px; height: 38px; border: 1px solid #ccc; padding: 2px; }
+        .qr-box img, .qr-wrap img { width: 100% !important; height: 100% !important; display: block; }
         .qr-section strong { color: var(--navy-blue); font-size: 7pt; display: block; margin-bottom: 1px; }
 
         .page-indicator {
@@ -299,12 +402,62 @@
             border-top: 1px solid #eee; padding-top: 1px; margin-top: 2.5mm;
             font-size: 5.5pt; color: #888;
             z-index: 1;
+            flex-shrink: 0;
         }
+
+        /* ── PAGE 2 SPECIFIC / ENDORSEMENTS ── */
+        .mini-hdr {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #ccc; padding-bottom: 1.5mm; margin-bottom: 3mm;
+            z-index: 1;
+            flex-shrink: 0;
+        }
+        .mini-hdr-left { display: flex; align-items: center; gap: 6px; font-size: 7pt; font-weight: bold; color: var(--navy-blue); }
+        .mini-hdr-left img { height: 18px; object-fit: contain; }
+        .mini-hdr-right { font-size: 7pt; color: var(--text-muted); }
+        .mini-hdr-right span { font-family: 'Courier New', monospace; font-weight: bold; color: var(--navy-blue); }
+
+        .end-title {
+            font-family: 'Georgia', serif; font-size: 11pt; font-weight: bold;
+            color: var(--navy-blue); text-align: center; margin: 3mm 0 1.5mm;
+            z-index: 1;
+            flex-shrink: 0;
+        }
+        .end-subtitle {
+            font-size: 7.5pt; color: var(--text-muted); text-align: center; margin-bottom: 3mm;
+            padding: 0 8mm; line-height: 1.4;
+            z-index: 1;
+            flex-shrink: 0;
+        }
+        .end-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 3mm 5mm;
+            margin-bottom: 3mm;
+            z-index: 1;
+            flex-shrink: 0;
+        }
+        .end-box {
+            border: 1px solid var(--border); background: #fff; padding: 2.5mm;
+        }
+        .end-box-title {
+            font-size: 7pt; font-weight: bold; text-transform: uppercase;
+            letter-spacing: 0.5px; color: var(--navy-light); border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5px; margin-bottom: 2.5mm;
+        }
+        .end-row {
+            display: flex; align-items: flex-end; margin-bottom: 2.5mm; font-size: 7.2pt;
+        }
+        .end-label { width: 60px; color: var(--text-muted); }
+        .end-line { flex: 1; border-bottom: 1px dashed #ccc; height: 12px; position: relative; }
+        .end-line span {
+            position: absolute; bottom: 1px; left: 4px; font-family: 'Times New Roman', serif;
+            font-size: 9.5pt; font-weight: bold; color: var(--navy-blue);
+        }
+        .end-full { grid-column: 1 / -1; }
 
         .gen-notice {
             background: var(--bg-light); border: 1px solid var(--border);
-            padding: 1.5mm 3mm; display: flex; align-items: center; justify-content: center;
-            gap: 4px; flex-shrink: 0; margin-top: auto; border-radius: 2px;
+            padding: 2mm 3.5mm; display: flex; align-items: center; justify-content: center;
+            gap: 5px; flex-shrink: 0; margin-top: auto; border-radius: 2px;
             z-index: 1;
         }
         .gen-notice-text {
@@ -313,24 +466,29 @@
         }
         .gen-notice-text strong { color: var(--navy-blue); font-weight: bold; }
 
+        /* 🔹 FIXED PRINT RULES FOR BLANK PDF 🔹 */
         @page { size: A4; margin: 0; }
         @media print {
-            html, body {
-                background: #fff !important;
-                padding: 0 !important;
-                margin: 0 !important;
+            html, body {font-size: 7.8pt; 
+                background: #fff !important; 
+                padding: 0 !important; 
+                margin: 0 !important; 
+                width: auto !important; 
+                height: auto !important;
             }
             .no-print { display: none !important; }
             .cert-page {
-                box-shadow: none !important;
+                box-shadow: none !important; 
                 margin: 0 !important;
-                width: 210mm !important;
-                height: 296.5mm !important;
-                page-break-after: always;
+                width: 210mm !important; 
+                height: 296.5mm !important; /* Slightly below 297 to avoid 1px extra blank page */
+                page-break-after: always; 
                 page-break-inside: avoid;
                 background: white !important;
                 position: relative !important;
+                overflow: hidden !important;
             }
+            .cert-page:last-child { page-break-after: auto; }
         }
     
         /* --- COMPACTING OVERRIDES TO PREVENT OVERFLOW AND BORDER COLLISION --- */

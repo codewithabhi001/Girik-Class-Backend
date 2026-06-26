@@ -1,10 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>GR Class – FISVEL-FT Certificate</title>
-    
-    <style>
+import os
+import glob
+import re
+
+base_dir = "/Users/abhinavvishwakarma/Desktop/Gr-class-Workshop/Gr-Class-Backend/ONLY CERTIFICATES"
+
+new_style = """<style>
         /* ── OPTIMIZED CSS (SYSTEM FONTS FOR INSTANT LOAD) ── */
         :root {
             --navy-blue: #0b2545;
@@ -621,137 +621,18 @@
             width: 32px !important;
             height: 32px !important;
         }
-    </style>
+    </style>"""
 
-</head>
-<body>
+html_files = glob.glob(os.path.join(base_dir, "**/*.html"), recursive=True)
 
-    <div class="no-print">
-        <div>
-            <button class="btn-print" onclick="window.print()">🖨 Print / Save PDF</button>
-            <span class="tag-hint">Note: Replace {tags} with actual backend data before printing.</span>
-        </div>
-    </div>
-
-    <div class="cert-page">
-        <div class="border-outer">
-            <div class="border-inner">
-                
-                <div class="watermark">GR CLASS</div>
-
-                <div class="cert-header">
-                    <div class="hdr-left">
-                        <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" onerror="this.style.display='none'; document.getElementById('logo-fb1').style.display='flex';">
-                        <div class="logo-fallback" id="logo-fb1" style="display:none;"><span>GR</span></div>
-                    </div>
-                    <div class="hdr-center">
-                        <div class="hdr-flag">{flag_state}</div>
-                        <div class="hdr-title-en">Fishing Vessel Safety Certificate</div>
-                        <div class="hdr-convention">Issued under the provisions of the Torremolinos International Convention for the Safety of Fishing Vessels, 1977 and 1993 Protocol</div>
-                    </div>
-                    <div class="hdr-right">
-                        <span class="hdr-meta-label">FISVEL-FT No.</span>
-                        <span class="hdr-meta-no">{certificate_number}</span>
-                        <div class="hdr-meta-form">Form FVSC-FT · Approved by: GM</div>
-                    </div>
-                </div>
-
-                <div class="authority">
-                    Issued under the authority of the Government of <strong>{flag_state}</strong><br>
-    By <strong>GR CLASS</strong> — Classified for Standard (GR CLASS) · Recognized Organization (RO) operating under IMO Framework
-                </div>
-
-                <div class="body" style="flex: 1; display: flex; flex-direction: column;">
-                    <!-- VESSEL PARTICULARS -->
-    <div class="sec-label">Vessel Particulars</div>
-    <table class="vtable">
-      <tr>
-        <th style="width:25%">Name of Ship</th>
-        <th style="width:25%">Distinctive No. / Letters</th>
-        <th style="width:25%">Port of Registry</th>
-        <th style="width:25%">Gross Tonnage</th>
-      </tr>
-      <tr>
-        <td><span class="val">{vessel_name}</span></td>
-        <td><span class="val">{call_sign}</span></td>
-        <td><span class="val">{port_of_registry}</span></td>
-        <td><span class="val">{gross_tonnage}</span></td>
-      </tr>
-      <tr>
-        <th>IMO Number <sup>1</sup></th>
-        <th>Ship Type</th>
-        <th>Net Tonnage</th>
-        <th>Deadweight</th>
-      </tr>
-      <tr>
-        <td><span class="val">{imo_number}</span></td>
-        <td><span class="val">{ship_type}</span></td>
-        <td><span class="val">{net_tonnage}</span></td>
-        <td><span class="val">{deadweight}</span></td>
-      </tr>
-    </table>
-
-
-    <!-- CERTIFICATION -->
-    <div class="sec-label">Certification</div>
-    <p class="cert-desc">This is to certify that the vessel has been surveyed and found in compliance with the relevant safety and technical standards for the issuance of the FISHING VESSEL SAFETY CERTIFICATE.</p>
-    <div class="certify">
-      <div class="certify-title">This is to certify that:</div>
-      <ul>
-        <li>The ship has been surveyed in accordance with the applicable rules and regulations;</li>
-        <li>The survey shows that the structure, equipment, and condition of the ship comply with the safety standards of GR CLASS.</li>
-      </ul>
-                </div>
-
-                </div>
-
-                {remarks}
-                <div class="gen-notice">
-                    <svg width="10" height="11" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.6; flex-shrink: 0; margin-right: 2px; vertical-align: middle;">
-                        <path d="M10.5 5H9.5V3.5C9.5 1.57 7.93 0 6 0C4.07 0 2.5 1.57 2.5 3.5V5H1.5C0.67 5 0 5.67 0 6.5V12.5C0 13.33 0.67 14 1.5 14H10.5C11.33 14 12 13.33 12 12.5V6.5C12 5.67 11.33 5 10.5 5ZM3.8 3.5C3.8 2.29 4.79 1.3 6 1.3C7.21 1.3 8.2 2.29 8.2 3.5V5H3.8V3.5ZM6.75 9.85V11.5H5.25V9.85C4.8 9.57 4.5 9.07 4.5 8.5C4.5 7.67 5.17 7 6 7C6.83 7 7.5 7.67 7.5 8.5C7.5 9.07 7.2 9.57 6.75 9.85Z" fill="#1b365d"/>
-                    </svg>
-                    <span class="gen-notice-text">
-                        Computer-generated certificate — does not require a physical signature.&nbsp;&nbsp;·&nbsp;&nbsp;
-                        Verify at <strong>grclass.com</strong>
-                    </span>
-                </div>
-
-                <div class="footer-area">
-                    <div class="stamp-container">
-                        <div class="diamond-stamp"></div>
-                        <div class="stamp-text-wrapper">
-                            <div class="st-top">ISSUING AUTHORITY</div>
-                            <div class="st-mid">APPROVED</div>
-                            <div class="st-bot">GR CLASS</div>
-                        </div>
-                    </div>
-
-                    <div class="signature-area">
-                        <div class="sig-line">
-                            <img src="{signature}" onerror="this.src='../../../src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.src='./src/modules/payments/Gr-class-sign.png'; this.onerror=function(){ this.style.display='none'; } };" alt="Signature" style="max-height: 28px; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%);">
-                        </div>
-                        <div class="sig-name">GR CLASS Representative</div>
-                        <div class="sig-title">GR CLASS</div>
-                    </div>
-
-                    <div class="qr-section">
-                        <div>
-                            <strong>GR CLASS</strong>
-                            Classified for Standard
-                        </div>
-                        <div class="qr-box">
-                            {qr_code}
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-            <div class="page-indicator">
-                <span>FVSC-FT</span>
-                <span>Page 1 of 1</span>
-            </div>
-        </div>
-    </div>
-
-</body>
-</html>
+for file_path in html_files:
+    with open(file_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    
+    # Replace the <style>...</style> block
+    updated_content = re.sub(r'<style>.*?</style>', new_style, content, flags=re.DOTALL)
+    
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(updated_content)
+        
+print("Successfully updated styles for all HTML files.")
