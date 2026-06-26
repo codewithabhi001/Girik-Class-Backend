@@ -11,6 +11,18 @@ const { JobRequest, JobStatusHistory, Survey, SurveyStatusHistory, User } = db;
 export const JOB_TERMINAL_STATES = ['CERTIFIED', 'REJECTED'];
 export const SURVEY_TERMINAL_STATES = ['FINALIZED'];
 
+// Helper: resolve survey requirement for any certificate term
+function isSurveyRequiredForTerm(certType, term) {
+    const map = {
+        SHORT_TERM: certType.requires_survey_short_term,
+        FULL_TERM: certType.requires_survey_full_term,
+        INTERIM: certType.requires_survey_interim,
+        CONDITIONAL: certType.requires_survey_conditional,
+        PROVISIONAL: certType.requires_survey_provisional,
+    };
+    return map[term] ?? certType.requires_survey_full_term ?? true;
+}
+
 // States after which PAYMENT / REWORK / SURVEY actions are permanently blocked.
 export const JOB_POST_FINALIZATION_STATES = ['FINALIZED', 'CERTIFIED'];
 
@@ -235,7 +247,7 @@ export const updateJobStatus = async (jobId, newStatus, userId, reason = null, o
                     for (const jc of jobCerts) {
                         const certType = await db.CertificateType.findByPk(jc.certificate_type_id, { transaction: txn });
                         const term = jc.certificate_term || 'FULL_TERM';
-                        const isSurveyReq = term === 'SHORT_TERM' ? certType.requires_survey_short_term : certType.requires_survey_full_term;
+                        const isSurveyReq = isSurveyRequiredForTerm(certType, term);
                         if (certType && !isSurveyReq) {
                             continue; // Skip survey creation and status update for non-survey certs
                         }
@@ -439,14 +451,14 @@ export const updateSurveyStatus = async (surveyId, newStatus, userId, reason = n
                     const parentJobId = jcForLog.job_request_id;
                      const jobCerts = await db.JobCertificate.findAll({
                          where: { job_request_id: parentJobId },
-                         include: [{ model: db.CertificateType, attributes: ['id', 'requires_survey', 'requires_survey_short_term', 'requires_survey_full_term'] }],
+                         include: [{ model: db.CertificateType, attributes: ['id', 'requires_survey', 'requires_survey_short_term', 'requires_survey_full_term', 'requires_survey_interim', 'requires_survey_conditional', 'requires_survey_provisional'] }],
                          transaction: txn
                      });
                      
                      const surveyRequiredCerts = jobCerts.filter(c => {
                          if (!c.CertificateType) return true;
                          const term = c.certificate_term || 'FULL_TERM';
-                         return term === 'SHORT_TERM' ? c.CertificateType.requires_survey_short_term : c.CertificateType.requires_survey_full_term;
+                         return isSurveyRequiredForTerm(c.CertificateType, term);
                      });
                     const certIds = surveyRequiredCerts.map(c => c.id);
                     const surveys = await Survey.findAll({ where: { job_certificate_id: certIds }, transaction: txn });

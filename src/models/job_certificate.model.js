@@ -41,7 +41,7 @@ export default (sequelize, DataTypes) => {
             comment: 'Specific remarks if this particular certificate needs rework'
         },
         certificate_term: {
-            type: DataTypes.ENUM('FULL_TERM', 'SHORT_TERM'),
+            type: DataTypes.ENUM('FULL_TERM', 'SHORT_TERM', 'INTERIM', 'CONDITIONAL', 'PROVISIONAL'),
             defaultValue: 'FULL_TERM'
         }
     }, {

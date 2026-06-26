@@ -10,6 +10,9 @@ export default (sequelize, DataTypes) => {
         requires_survey: { type: DataTypes.BOOLEAN, defaultValue: true },
         requires_survey_short_term: { type: DataTypes.BOOLEAN, defaultValue: false },
         requires_survey_full_term: { type: DataTypes.BOOLEAN, defaultValue: true },
+        requires_survey_interim: { type: DataTypes.BOOLEAN, defaultValue: false },
+        requires_survey_conditional: { type: DataTypes.BOOLEAN, defaultValue: false },
+        requires_survey_provisional: { type: DataTypes.BOOLEAN, defaultValue: false },
         signature_url: {
             type: DataTypes.STRING,
             allowNull: true,

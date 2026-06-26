@@ -14,7 +14,7 @@ export default (sequelize, DataTypes) => {
             defaultValue: true
         },
         applies_to_term: {
-            type: DataTypes.ENUM('FULL_TERM', 'SHORT_TERM', 'BOTH'),
+            type: DataTypes.ENUM('FULL_TERM', 'SHORT_TERM', 'INTERIM', 'CONDITIONAL', 'PROVISIONAL', 'BOTH', 'ALL'),
             defaultValue: 'FULL_TERM'
         }
     }, {

@@ -4,7 +4,7 @@ export default (sequelize, DataTypes) => {
         certificate_type_id: { type: DataTypes.UUID, allowNull: false },
         template_name: { type: DataTypes.STRING, allowNull: false },
         certificate_term: {
-            type: DataTypes.ENUM('FULL_TERM', 'SHORT_TERM'),
+            type: DataTypes.ENUM('FULL_TERM', 'SHORT_TERM', 'INTERIM', 'CONDITIONAL', 'PROVISIONAL'),
             allowNull: true,
         },
         template_content: {

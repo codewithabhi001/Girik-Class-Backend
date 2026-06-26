@@ -75,7 +75,7 @@ export const schemas = {
         reason: Joi.string().optional().allow('', null),
         certificates: Joi.array().items(Joi.object({
             certificate_type_id: Joi.string().guid().required(),
-            certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM').optional().default('FULL_TERM'),
+            certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM', 'INTERIM', 'CONDITIONAL', 'PROVISIONAL').optional().default('FULL_TERM'),
             uploaded_documents: Joi.array().items(Joi.object({
                 required_document_id: Joi.string().guid().optional().allow(null, ''),
                 custom_document_name: Joi.string().optional().allow(null, ''),
@@ -114,7 +114,7 @@ export const schemas = {
         issue_date: Joi.date().iso().optional(),
         expiry_date: Joi.date().iso().optional(),
         flag_administration_id: Joi.string().guid().optional().allow(null),
-        certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM').optional(),
+        certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM', 'INTERIM', 'CONDITIONAL', 'PROVISIONAL').optional(),
     }).or('job_id', 'job_certificate_id'),
     applySurveyor: Joi.object({
         full_name: Joi.string().required(),
@@ -347,11 +347,14 @@ export const schemas = {
         requires_survey: Joi.boolean().optional().default(true),
         requires_survey_short_term: Joi.boolean().optional(),
         requires_survey_full_term: Joi.boolean().optional(),
+        requires_survey_interim: Joi.boolean().optional(),
+        requires_survey_conditional: Joi.boolean().optional(),
+        requires_survey_provisional: Joi.boolean().optional(),
         signature_url: Joi.string().optional().allow('', null),
         required_documents: Joi.array().items(Joi.object({
             document_name: Joi.string().required(),
             is_mandatory: Joi.boolean().optional().default(true),
-            applies_to_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM', 'BOTH').optional().default('FULL_TERM')
+            applies_to_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM', 'INTERIM', 'CONDITIONAL', 'PROVISIONAL', 'BOTH', 'ALL').optional().default('FULL_TERM')
         })).optional()
     }),
     updateCertificateType: Joi.object({
@@ -364,22 +367,25 @@ export const schemas = {
         requires_survey: Joi.boolean().optional(),
         requires_survey_short_term: Joi.boolean().optional(),
         requires_survey_full_term: Joi.boolean().optional(),
+        requires_survey_interim: Joi.boolean().optional(),
+        requires_survey_conditional: Joi.boolean().optional(),
+        requires_survey_provisional: Joi.boolean().optional(),
         signature_url: Joi.string().optional().allow('', null),
         required_documents: Joi.array().items(Joi.object({
             document_name: Joi.string().required(),
             is_mandatory: Joi.boolean().optional().default(true),
-            applies_to_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM', 'BOTH').optional().default('FULL_TERM')
+            applies_to_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM', 'INTERIM', 'CONDITIONAL', 'PROVISIONAL', 'BOTH', 'ALL').optional().default('FULL_TERM')
         })).optional()
     }),
     addCertificateTypeRequiredDocument: Joi.object({
         document_name: Joi.string().required().trim(),
         is_mandatory: Joi.boolean().optional().default(true),
-        applies_to_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM', 'BOTH').optional().default('FULL_TERM'),
+        applies_to_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM', 'INTERIM', 'CONDITIONAL', 'PROVISIONAL', 'BOTH', 'ALL').optional().default('FULL_TERM'),
     }),
     updateCertificateTypeRequiredDocument: Joi.object({
         document_name: Joi.string().optional().trim(),
         is_mandatory: Joi.boolean().optional(),
-        applies_to_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM', 'BOTH').optional(),
+        applies_to_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM', 'INTERIM', 'CONDITIONAL', 'PROVISIONAL', 'BOTH', 'ALL').optional(),
     }).or('document_name', 'is_mandatory', 'applies_to_term'),
     uploadDocument: Joi.object({
         entity_type: Joi.string().required(),
@@ -441,7 +447,7 @@ export const schemas = {
     createTemplate: Joi.object({
         template_name: Joi.string().required(),
         certificate_type_id: Joi.string().guid().required(),
-        certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM').optional().allow(null),
+        certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM', 'INTERIM', 'CONDITIONAL', 'PROVISIONAL').optional().allow(null),
         template_content: Joi.string().required(),
         variables: Joi.array().items(Joi.string()).optional(),
         is_active: Joi.boolean().optional().default(true)
@@ -449,7 +455,7 @@ export const schemas = {
     updateTemplate: Joi.object({
         template_name: Joi.string().optional(),
         certificate_type_id: Joi.string().guid().optional(),
-        certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM').optional().allow(null),
+        certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM', 'INTERIM', 'CONDITIONAL', 'PROVISIONAL').optional().allow(null),
         template_content: Joi.string().optional(),
         variables: Joi.array().items(Joi.string()).optional(),
         is_active: Joi.boolean().optional()
@@ -613,7 +619,7 @@ export const schemas = {
     // ── Certificate Management ───────────────────────────────────────────
     updateCertificateDraft: Joi.object({
         flag_administration_id: Joi.string().guid().optional(),
-        certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM').optional(),
+        certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM', 'INTERIM', 'CONDITIONAL', 'PROVISIONAL').optional(),
         remarks: Joi.string().allow('', null).optional(),
         issue_date: Joi.date().iso().optional(),
         expiry_date: Joi.date().iso().optional(),

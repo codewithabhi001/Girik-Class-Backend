@@ -9,6 +9,17 @@ import * as lifecycleService from '../../services/lifecycle.service.js';
 import { Op } from 'sequelize';
 import { finalizeSurvey } from '../surveys/survey.service.js';
 
+// Helper: resolve survey requirement for any certificate term
+function isSurveyRequiredForTerm(certType, term) {
+    const map = {
+        SHORT_TERM: certType.requires_survey_short_term,
+        FULL_TERM: certType.requires_survey_full_term,
+        INTERIM: certType.requires_survey_interim,
+        CONDITIONAL: certType.requires_survey_conditional,
+        PROVISIONAL: certType.requires_survey_provisional,
+    };
+    return map[term] ?? certType.requires_survey_full_term ?? true;
+}
 const JobRequest = db.JobRequest;
 const JobStatusHistory = db.JobStatusHistory;
 const User = db.User;
@@ -192,7 +203,7 @@ export const createJob = async (data, userId, options = {}) => {
         if (!certType) throw { statusCode: 400, message: `The selected certificate type ${cert.certificate_type_id} is invalid.` };
         
         const term = cert.certificate_term || 'FULL_TERM';
-        const isSurveyReq = term === 'SHORT_TERM' ? certType.requires_survey_short_term : certType.requires_survey_full_term;
+        const isSurveyReq = isSurveyRequiredForTerm(certType, term);
 
         // ── Template Validations ──
         const certTemplate = await db.CertificateTemplate.findOne({
@@ -219,7 +230,7 @@ export const createJob = async (data, userId, options = {}) => {
                 where: {
                     certificate_type_id: cert.certificate_type_id,
                     is_mandatory: true,
-                    applies_to_term: { [Op.in]: [term, 'BOTH'] }
+                    applies_to_term: { [Op.in]: [term, 'BOTH', 'ALL'] }
                 },
                 useMaster: true
             });
@@ -257,7 +268,7 @@ export const createJob = async (data, userId, options = {}) => {
             const requiredDocs = await db.CertificateRequiredDocument.findAll({
                 where: {
                     certificate_type_id: cert.certificate_type_id,
-                    applies_to_term: { [Op.in]: [term, 'BOTH'] }
+                    applies_to_term: { [Op.in]: [term, 'BOTH', 'ALL'] }
                 },
                 transaction: txn
             });
@@ -624,7 +635,7 @@ export const getJobById = async (id, scopeFilters = {}, user = null) => {
             const count = await CertificateRequiredDocument.count({
                 where: {
                     certificate_type_id: c.certificate_type_id,
-                    applies_to_term: { [Op.in]: [term, 'BOTH'] }
+                    applies_to_term: { [Op.in]: [term, 'BOTH', 'ALL'] }
                 }
             });
             if (count > 0) {
@@ -2133,7 +2144,7 @@ export const getJobDocuments = async (jobId, user) => {
     // Fetch all certificates for this job (with type info)
     const jobCerts = await JobCertificate.findAll({
         where: { job_request_id: jobId },
-        include: [{ model: CertificateType, attributes: ['id', 'name', 'issuing_authority', 'requires_survey', 'requires_survey_short_term', 'requires_survey_full_term'] }],
+        include: [{ model: CertificateType, attributes: ['id', 'name', 'issuing_authority', 'requires_survey', 'requires_survey_short_term', 'requires_survey_full_term', 'requires_survey_interim', 'requires_survey_conditional', 'requires_survey_provisional'] }],
         useReplica: true
     });
 
@@ -2141,9 +2152,7 @@ export const getJobDocuments = async (jobId, user) => {
     const certificates = await Promise.all(jobCerts.map(async (jc) => {
         const jcPlain = jc.get({ plain: true });
         const term = jcPlain.certificate_term || 'FULL_TERM';
-        const isSurveyReq = term === 'SHORT_TERM'
-            ? jcPlain.CertificateType?.requires_survey_short_term
-            : (jcPlain.CertificateType?.requires_survey_full_term ?? true);
+        const isSurveyReq = isSurveyRequiredForTerm(jcPlain.CertificateType || {}, term);
 
         // Required docs for this specific certificate type and term
         const requiredDocs = await CertificateRequiredDocument.findAll({
