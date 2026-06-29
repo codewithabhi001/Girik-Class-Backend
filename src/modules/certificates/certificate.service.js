@@ -1130,17 +1130,24 @@ export const generateCertificate = async (data, user) => {
         const certTypeId = jobCert?.certificate_type_id;
         if (!certTypeId) throw { statusCode: 400, message: 'Certificate type not found for this job/certificate' };
 
-        const certType = await db.CertificateType.findByPk(certTypeId, { attributes: ['id', 'name', 'issuing_authority', 'short_code', 'requires_survey', 'requires_survey_short_term', 'requires_survey_full_term'], transaction });
+        const certType = await db.CertificateType.findByPk(certTypeId, { attributes: ['id', 'name', 'issuing_authority', 'short_code', 'requires_survey', 'requires_survey_short_term', 'requires_survey_full_term', 'requires_survey_interim', 'requires_survey_conditional', 'requires_survey_provisional'], transaction });
         if (!certType) throw { statusCode: 404, message: 'Certificate type not found' };
 
-        const term = certificate_term || jobCert?.certificate_term || 'FULL_TERM';
-        if (!term || !['FULL_TERM', 'SHORT_TERM'].includes(term)) {
-            throw { statusCode: 400, message: 'Certificate term is required and must be either FULL_TERM or SHORT_TERM.' };
+        const term = String(certificate_term || jobCert?.certificate_term || 'FULL_TERM').toUpperCase();
+        if (!term || !['FULL_TERM', 'SHORT_TERM', 'INTERIM', 'CONDITIONAL', 'PROVISIONAL'].includes(term)) {
+            throw { statusCode: 400, message: 'Certificate term is required and must be one of: FULL_TERM, SHORT_TERM, INTERIM, CONDITIONAL, PROVISIONAL.' };
         }
 
         await verifyTemplateExists(certTypeId, term, transaction);
 
-        const isSurveyReq = term === 'SHORT_TERM' ? certType.requires_survey_short_term : certType.requires_survey_full_term;
+        const surveyReqByTerm = {
+            FULL_TERM: certType.requires_survey_full_term,
+            SHORT_TERM: certType.requires_survey_short_term,
+            INTERIM: certType.requires_survey_interim,
+            CONDITIONAL: certType.requires_survey_conditional,
+            PROVISIONAL: certType.requires_survey_provisional,
+        };
+        const isSurveyReq = surveyReqByTerm[term] ?? certType.requires_survey;
 
         // ── Guard 1: Status Check ──
         const targetStatus = jobCert ? jobCert.status : job.job_status;
@@ -1513,7 +1520,9 @@ export const getCertificateById = async (id, user) => {
         include: [
             { model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }, 
             { model: db.Client, as: 'Client', attributes: ['id', 'company_name', 'address', 'company_id_number'] },
-            { model: db.CertificateType, attributes: ['name', 'signature_url'] },
+            { model: db.CertificateType, attributes: ['name', 'signature_url'],
+              include: [{ model: db.CertificateTemplate, as: 'Templates', attributes: ['certificate_term'], where: { is_active: true }, required: false }]
+            },
             { model: db.JobRequest, attributes: ['id', 'job_request_number'] },
             { model: db.FlagAdministration, as: 'FlagState', attributes: ['id', 'flag_state_name', 'logo_url'] }
         ],
@@ -1521,7 +1530,15 @@ export const getCertificateById = async (id, user) => {
     if (cert) {
         await attachPdfSignedUrls(cert, user);
 
-        return await fileAccessService.resolveEntity(cert, user);
+        // Compute available_terms from Templates for the Edit Draft modal
+        const resolved = await fileAccessService.resolveEntity(cert, user);
+        if (resolved.CertificateType?.Templates) {
+            resolved.CertificateType.available_terms = resolved.CertificateType.Templates
+                .map(t => t.certificate_term)
+                .filter(Boolean);
+            delete resolved.CertificateType.Templates;
+        }
+        return resolved;
     }
     const exists = await Certificate.findByPk(id);
     if (exists) {
@@ -1601,7 +1618,9 @@ export const updateDraft = async (id, data, user) => {
     if (!cert) throw { statusCode: 404, message: 'Certificate not found' };
     if (cert.status !== 'DRAFT') throw { statusCode: 400, message: 'Only draft certificates can be updated' };
 
-    const { flag_administration_id, certificate_term, remarks, issue_date, expiry_date, signature_url } = data;
+    const { flag_administration_id, certificate_term: rawTerm, remarks, issue_date, expiry_date, signature_url } = data;
+    // Sanitize empty string to null — prevents orphaned drafts with no matching template
+    const certificate_term = rawTerm === '' ? null : rawTerm;
     
     if (certificate_term !== undefined) {
         await verifyTemplateExists(cert.certificate_type_id, certificate_term);

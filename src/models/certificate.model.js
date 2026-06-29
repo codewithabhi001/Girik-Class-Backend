@@ -11,7 +11,7 @@ export default (sequelize, DataTypes) => {
             defaultValue: 'INTERNAL'
         },
         certificate_term: {
-            type: DataTypes.ENUM('FULL_TERM', 'SHORT_TERM'),
+            type: DataTypes.ENUM('FULL_TERM', 'SHORT_TERM', 'INTERIM', 'CONDITIONAL', 'PROVISIONAL'),
             allowNull: true,
             defaultValue: null
         },
