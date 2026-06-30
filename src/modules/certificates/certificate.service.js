@@ -876,8 +876,9 @@ const _assembleCertificateHtml = async (cert, user, transaction = null, { persis
         remarks: certificatePdfService.formatRemarksHtml(cert.remarks),
         survey_completion_date: isSurveyReq
             ? (dynamicTags.survey_completed_date || formatDate(cert.issue_date))
-            : 'Remotely Surveyed',
+            : (!cert.vessel_id ? formatDate(cert.issue_date) : 'Remotely Surveyed'),
         certificate_term: cert.certificate_term || '',
+        term: cert.certificate_term ? cert.certificate_term.replace('_', ' ') : '',
         issuing_authority: issuingAuthority,
         flag_state: cert.FlagState?.flag_state_name || '',
         port: dynamicTags.place_of_survey || '',
