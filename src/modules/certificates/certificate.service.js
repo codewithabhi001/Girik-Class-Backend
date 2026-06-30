@@ -309,6 +309,9 @@ export const createCertificateType = async (data) => {
         const requiresSurvey = certData.requires_survey ?? true;
         const requiresSurveyShortTerm = certData.requires_survey_short_term ?? (requiresSurvey ? false : false);
         const requiresSurveyFullTerm = certData.requires_survey_full_term ?? (requiresSurvey ? true : false);
+        const requiresSurveyInterim = certData.requires_survey_interim ?? false;
+        const requiresSurveyConditional = certData.requires_survey_conditional ?? false;
+        const requiresSurveyProvisional = certData.requires_survey_provisional ?? false;
 
         const type = await CertificateType.create({
             name: certData.name,
@@ -320,6 +323,9 @@ export const createCertificateType = async (data) => {
             requires_survey: requiresSurvey,
             requires_survey_short_term: requiresSurveyShortTerm,
             requires_survey_full_term: requiresSurveyFullTerm,
+            requires_survey_interim: requiresSurveyInterim,
+            requires_survey_conditional: requiresSurveyConditional,
+            requires_survey_provisional: requiresSurveyProvisional,
             signature_url: certData.signature_url ?? null,
         }, { transaction: txn });
 
@@ -359,11 +365,17 @@ export const updateCertificateType = async (id, data) => {
         const requiresSurvey = certData.requires_survey !== undefined ? certData.requires_survey : type.requires_survey;
         const requiresSurveyShortTerm = certData.requires_survey_short_term !== undefined ? certData.requires_survey_short_term : (certData.requires_survey === false ? false : type.requires_survey_short_term);
         const requiresSurveyFullTerm = certData.requires_survey_full_term !== undefined ? certData.requires_survey_full_term : (certData.requires_survey === false ? false : type.requires_survey_full_term);
+        const requiresSurveyInterim = certData.requires_survey_interim !== undefined ? certData.requires_survey_interim : type.requires_survey_interim;
+        const requiresSurveyConditional = certData.requires_survey_conditional !== undefined ? certData.requires_survey_conditional : type.requires_survey_conditional;
+        const requiresSurveyProvisional = certData.requires_survey_provisional !== undefined ? certData.requires_survey_provisional : type.requires_survey_provisional;
 
         await type.update({
             ...certData,
             requires_survey_short_term: requiresSurveyShortTerm,
-            requires_survey_full_term: requiresSurveyFullTerm
+            requires_survey_full_term: requiresSurveyFullTerm,
+            requires_survey_interim: requiresSurveyInterim,
+            requires_survey_conditional: requiresSurveyConditional,
+            requires_survey_provisional: requiresSurveyProvisional
         }, { transaction: txn });
 
         if (required_documents) {
@@ -856,6 +868,7 @@ const _assembleCertificateHtml = async (cert, user, transaction = null, { persis
         company_name: cert.Vessel?.Client?.company_name || cert.Client?.company_name || '',
         company_address: cert.Vessel?.Client?.address || cert.Client?.address || '',
         company_id_number: cert.Vessel?.Client?.company_id_number || cert.Client?.company_id_number || '',
+        company_id: cert.Vessel?.Client?.company_id_number || cert.Client?.company_id_number || '',
         certificate_number: certificateNumber,
         certificate_type: cert.CertificateType?.name || '',
         issue_date: formatDate(cert.issue_date),
