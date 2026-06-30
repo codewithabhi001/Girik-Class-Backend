@@ -111,6 +111,7 @@ export const flatSurveyReportListRow = (row) => {
         survey_statement_status: na(s.survey_statement_status),
         survey_statement_pdf_url: na(s.survey_statement_pdf_url),
         job_status: na(s.JobCertificate?.JobRequest?.job_status ?? s.JobRequest?.job_status),
+        job_request_number: na(s.JobCertificate?.JobRequest?.job_request_number ?? s.JobRequest?.job_request_number),
         vessel_name: na(s.JobCertificate?.JobRequest?.Vessel?.vessel_name ?? s.JobRequest?.Vessel?.vessel_name),
         imo_number: na(s.JobCertificate?.JobRequest?.Vessel?.imo_number ?? s.JobRequest?.Vessel?.imo_number),
         surveyor_name: na(s.User?.name),
@@ -120,6 +121,31 @@ export const flatSurveyReportListRow = (row) => {
 
 export const flatPaymentListRow = (row) => {
     const p = toPlain(row);
+    
+    let vessel_name = 'N/A';
+    let client_id = 'N/A';
+    let company_name = 'N/A';
+    
+    if (p.JobRequest) {
+        if (p.JobRequest.vessel_id === null || p.JobRequest.vessel_id === undefined) {
+            vessel_name = 'Company Wide';
+            client_id = p.JobRequest.client_id || p.JobRequest.Client?.id || 'N/A';
+            company_name = p.JobRequest.Client?.company_name || 'N/A';
+        } else {
+            vessel_name = p.JobRequest.Vessel?.vessel_name || 'N/A';
+            client_id = p.JobRequest.Vessel?.client_id || 'N/A';
+            company_name = p.JobRequest.Vessel?.Client?.company_name || 'N/A';
+        }
+    } else if (p.reason && p.reason.trim().startsWith('{')) {
+        try {
+            const parsed = JSON.parse(p.reason);
+            company_name = parsed.client_name || 'N/A';
+            vessel_name = parsed.vessel_name || 'N/A';
+        } catch (e) {}
+    } else if (p.reason) {
+        company_name = p.reason;
+    }
+
     return {
         id: na(p.id),
         job_id: na(p.job_id),
@@ -135,9 +161,9 @@ export const flatPaymentListRow = (row) => {
         remaining: na(p.remaining),
         net_amount: na(p.net_amount),
         refunded_amount: na(p.refunded_amount),
-        vessel_name: na(p.JobRequest?.Vessel?.vessel_name),
-        client_id: na(p.JobRequest?.Vessel?.client_id),
-        company_name: na(p.JobRequest?.Vessel?.Client?.company_name),
+        vessel_name: na(vessel_name),
+        client_id: na(client_id),
+        company_name: na(company_name),
         job_status: na(p.JobRequest?.job_status),
         reason: na(p.reason),
     };

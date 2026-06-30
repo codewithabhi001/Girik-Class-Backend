@@ -254,7 +254,7 @@ const getOperationalStats = async () => {
             drafting_needed: draftingNeededJobs.map(j => ({
                 id: j.id,
                 job_request_number: j.job_request_number,
-                vessel: j.Vessel?.vessel_name,
+                vessel: j.vessel_id === null || j.vessel_id === undefined ? "Company Wide" : (j.Vessel?.vessel_name || null),
                 type: (j.certificates || []).map(c => c.CertificateType?.name).filter(Boolean).join(', ') || 'N/A',
                 finalized_at: j.updatedAt
             }))
@@ -263,14 +263,14 @@ const getOperationalStats = async () => {
             jobs: recentJobs.map(j => ({
                 id: j.id,
                 job_request_number: j.job_request_number,
-                vessel: j.Vessel?.vessel_name,
+                vessel: j.vessel_id === null || j.vessel_id === undefined ? "Company Wide" : (j.Vessel?.vessel_name || null),
                 type: (j.certificates || []).map(c => c.CertificateType?.name).filter(Boolean).join(', ') || 'N/A',
                 status: j.job_status,
                 created_at: j.createdAt
             })),
             certificates: recentCertificates.map(c => ({
                 id: c.id,
-                vessel: c.Vessel?.vessel_name,
+                vessel: c.vessel_id === null || c.vessel_id === undefined ? "Company Wide" : (c.Vessel?.vessel_name || null),
                 name: c.certificate_name,
                 status: c.status,
                 issued_at: c.issued_date || c.createdAt
@@ -285,14 +285,16 @@ const getOperationalStats = async () => {
             })),
             surveys: recentSurveys.map(s => ({
                 id: s.id,
-                vessel: s.JobCertificate?.JobRequest?.Vessel?.vessel_name ?? s.JobRequest?.Vessel?.vessel_name,
+                vessel: (s.JobCertificate?.JobRequest?.vessel_id === null || s.JobCertificate?.JobRequest?.vessel_id === undefined || s.JobRequest?.vessel_id === null || s.JobRequest?.vessel_id === undefined)
+                    ? "Company Wide"
+                    : (s.JobCertificate?.JobRequest?.Vessel?.vessel_name ?? s.JobRequest?.Vessel?.vessel_name ?? null),
                 surveyor: s.User?.name,
                 status: s.survey_status,
                 updated_at: s.updatedAt
             })),
             non_conformities: recentNCs.map(n => ({
                 id: n.id,
-                vessel: n.JobRequest?.Vessel?.vessel_name,
+                vessel: n.JobRequest?.vessel_id === null || n.JobRequest?.vessel_id === undefined ? "Company Wide" : (n.JobRequest?.Vessel?.vessel_name || null),
                 description: n.description,
                 status: n.status,
                 created_at: n.createdAt
@@ -342,7 +344,7 @@ export const getGMDashboard = async () => {
                         id: j.id,
                         job_request_number: j.job_request_number,
                         certificate_id: c.generated_certificate_id,
-                        vessel: j.Vessel?.vessel_name,
+                        vessel: j.vessel_id === null || j.vessel_id === undefined ? "Company Wide" : (j.Vessel?.vessel_name || null),
                         type: c.CertificateType?.name || 'N/A',
                         finalized_at: j.updatedAt
                     }))
@@ -407,7 +409,9 @@ export const getTMDashboard = async (user) => {
         id: j.id,
         job_request_number: j.job_request_number,
         job_status: j.job_status,
-        vessel: j.Vessel ? { vessel_name: j.Vessel.vessel_name, imo_number: j.Vessel.imo_number } : null,
+        vessel: j.vessel_id === null || j.vessel_id === undefined
+            ? { vessel_name: "Company Wide", imo_number: "N/A" }
+            : (j.Vessel ? { vessel_name: j.Vessel.vessel_name, imo_number: j.Vessel.imo_number } : null),
         certificate_type: (j.certificates || []).map(c => c.CertificateType?.name).filter(Boolean).join(', ') || 'N/A',
         created_at: j.createdAt,
         updated_at: j.updatedAt,
@@ -496,7 +500,9 @@ export const getTODashboard = async (user) => {
         id: j.id,
         job_request_number: j.job_request_number,
         job_status: j.job_status,
-        vessel: j.Vessel ? { vessel_name: j.Vessel.vessel_name, imo_number: j.Vessel.imo_number } : null,
+        vessel: j.vessel_id === null || j.vessel_id === undefined
+            ? { vessel_name: "Company Wide", imo_number: "N/A" }
+            : (j.Vessel ? { vessel_name: j.Vessel.vessel_name, imo_number: j.Vessel.imo_number } : null),
         certificate_type: (j.certificates || []).map(c => c.CertificateType?.name).filter(Boolean).join(', ') || 'N/A',
         created_at: j.createdAt,
         updated_at: j.updatedAt,
@@ -519,8 +525,8 @@ export const getTODashboard = async (user) => {
                     id: n.id,
                     job_id: n.job_id,
                     job_request_number: n.JobRequest?.job_request_number,
-                    vessel_name: n.JobRequest?.Vessel?.vessel_name,
-                    vessel: n.JobRequest?.Vessel?.vessel_name,
+                    vessel_name: n.JobRequest?.vessel_id === null || n.JobRequest?.vessel_id === undefined ? "Company Wide" : (n.JobRequest?.Vessel?.vessel_name || null),
+                    vessel: n.JobRequest?.vessel_id === null || n.JobRequest?.vessel_id === undefined ? "Company Wide" : (n.JobRequest?.Vessel?.vessel_name || null),
                     description: n.description,
                     severity: n.severity,
                     created_at: n.createdAt
@@ -664,7 +670,9 @@ export const getSurveyorDashboard = async (user) => {
             job_status: j.job_status,
             survey_status: overallSurveyStatus,
             target_date: j.target_date,
-            vessel: j.Vessel ? { vessel_name: j.Vessel.vessel_name, imo_number: j.Vessel.imo_number } : null,
+            vessel: j.vessel_id === null || j.vessel_id === undefined
+                ? { vessel_name: "Company Wide", imo_number: "N/A" }
+                : (j.Vessel ? { vessel_name: j.Vessel.vessel_name, imo_number: j.Vessel.imo_number } : null),
             certificate_type: (j.certificates || []).map(c => c.CertificateType?.name).filter(Boolean).join(', ') || 'N/A'
         };
     };
@@ -718,12 +726,14 @@ export const getClientDashboard = async (clientId) => {
         };
     }
 
+
     // 2. Parallel fetch jobs, certificates, payments, surveys and NCs
     const [jobs, certificates, payments, surveys, ncs] = await Promise.all([
         JobRequest.findAll({
-            where: { vessel_id: vesselIds },
+            where: { [db.Sequelize.Op.or]: [{ vessel_id: vesselIds }, { client_id: clientId }] },
             include: [
                 { model: Vessel, attributes: ['vessel_name'] },
+                { model: db.Client, as: 'Client', attributes: ['company_name'] },
                 { model: JobCertificate, as: 'certificates', include: [{ model: CertificateType, attributes: ['name'] }] },
                 { model: User, as: 'surveyor', attributes: ['name', 'email'] }
             ],
@@ -731,7 +741,7 @@ export const getClientDashboard = async (clientId) => {
             useReplica: true
         }),
         Certificate.findAll({
-            where: { vessel_id: vesselIds },
+            where: { [db.Sequelize.Op.or]: [{ vessel_id: vesselIds }, { client_id: clientId }] },
             include: [{ model: Vessel, attributes: ['vessel_name'] }],
             order: [['createdAt', 'DESC']],
             useReplica: true
@@ -739,9 +749,12 @@ export const getClientDashboard = async (clientId) => {
         Payment.findAll({
             include: [{
                 model: JobRequest,
-                where: { vessel_id: vesselIds },
+                where: { [db.Sequelize.Op.or]: [{ vessel_id: vesselIds }, { client_id: clientId }] },
                 required: true,
-                include: [{ model: Vessel, attributes: ['vessel_name'] }]
+                include: [
+                    { model: Vessel, attributes: ['vessel_name'] },
+                    { model: db.Client, as: 'Client', attributes: ['company_name'] }
+                ]
             }],
             order: [['createdAt', 'DESC']],
             useReplica: true
@@ -752,7 +765,7 @@ export const getClientDashboard = async (clientId) => {
                 required: true,
                 include: [{
                     model: JobRequest,
-                    where: { vessel_id: vesselIds },
+                    where: { [db.Sequelize.Op.or]: [{ vessel_id: vesselIds }, { client_id: clientId }] },
                     required: true,
                     include: [{ model: Vessel, attributes: ['vessel_name'] }]
                 }]
@@ -765,7 +778,7 @@ export const getClientDashboard = async (clientId) => {
         NonConformity.findAll({
             include: [{
                 model: JobRequest,
-                where: { vessel_id: vesselIds },
+                where: { [db.Sequelize.Op.or]: [{ vessel_id: vesselIds }, { client_id: clientId }] },
                 required: true,
                 include: [{ model: Vessel, attributes: ['vessel_name'] }]
             }],
@@ -803,7 +816,7 @@ export const getClientDashboard = async (clientId) => {
         recent_jobs: jobs.slice(0, 5).map(j => ({
             id: j.id,
             job_request_number: j.job_request_number,
-            vessel_name: j.Vessel?.vessel_name,
+            vessel_name: j.vessel_id === null || j.vessel_id === undefined ? "Company Wide" : (j.Vessel?.vessel_name || null),
             type: (j.certificates || []).map(c => c.CertificateType?.name).filter(Boolean).join(', ') || 'N/A',
             status: j.job_status,
             surveyor: j.surveyor?.name,
@@ -818,13 +831,15 @@ export const getClientDashboard = async (clientId) => {
         recent_certificates: certificates.slice(0, 5).map(c => ({
             id: c.id,
             name: c.certificate_name,
-            vessel: c.Vessel?.vessel_name,
+            vessel: c.vessel_id === null || c.vessel_id === undefined ? "Company Wide" : (c.Vessel?.vessel_name || null),
             expiry_date: c.expiry_date,
             issued_date: c.issued_date || c.createdAt
         })),
         recent_surveys: surveys.slice(0, 5).map(s => ({
             id: s.id,
-            vessel: s.JobCertificate?.JobRequest?.Vessel?.vessel_name ?? s.JobRequest?.Vessel?.vessel_name,
+            vessel: (s.JobCertificate?.JobRequest?.vessel_id === null || s.JobCertificate?.JobRequest?.vessel_id === undefined || s.JobRequest?.vessel_id === null || s.JobRequest?.vessel_id === undefined)
+                ? "Company Wide"
+                : (s.JobCertificate?.JobRequest?.Vessel?.vessel_name ?? s.JobRequest?.Vessel?.vessel_name ?? null),
             surveyor: s.User?.name,
             status: s.survey_status,
             date: s.submitted_at || s.updatedAt
@@ -835,15 +850,15 @@ export const getClientDashboard = async (clientId) => {
             amount: p.amount,
             currency: p.currency,
             status: p.payment_status,
-            vessel_name: p.JobRequest?.Vessel?.vessel_name,
+            vessel_name: p.JobRequest?.vessel_id === null || p.JobRequest?.vessel_id === undefined ? "Company Wide" : (p.JobRequest?.Vessel?.vessel_name || null),
             date: p.payment_date || p.createdAt
         })),
         open_non_conformities_list: ncs.filter(n => n.status === 'OPEN').slice(0, 5).map(n => ({
             id: n.id,
             job_id: n.job_id,
             job_request_number: n.JobRequest?.job_request_number,
-            vessel_name: n.JobRequest?.Vessel?.vessel_name,
-            vessel: n.JobRequest?.Vessel?.vessel_name,
+            vessel_name: n.JobRequest?.vessel_id === null || n.JobRequest?.vessel_id === undefined ? "Company Wide" : (n.JobRequest?.Vessel?.vessel_name || null),
+            vessel: n.JobRequest?.vessel_id === null || n.JobRequest?.vessel_id === undefined ? "Company Wide" : (n.JobRequest?.Vessel?.vessel_name || null),
             description: n.description,
             severity: n.severity,
             date: n.createdAt
@@ -853,7 +868,7 @@ export const getClientDashboard = async (clientId) => {
             invoice_number: p.invoice_number,
             amount: p.amount,
             currency: p.currency,
-            vessel_name: p.JobRequest?.Vessel?.vessel_name
+            vessel_name: p.JobRequest?.vessel_id === null || p.JobRequest?.vessel_id === undefined ? "Company Wide" : (p.JobRequest?.Vessel?.vessel_name || null)
         })),
         expiring_certificates: certificates
             .filter(c => {
@@ -869,7 +884,7 @@ export const getClientDashboard = async (clientId) => {
             .map(c => ({
                 id: c.id,
                 name: c.certificate_name,
-                vessel: c.Vessel?.vessel_name,
+                vessel: c.vessel_id === null || c.vessel_id === undefined ? "Company Wide" : (c.Vessel?.vessel_name || null),
                 expiry_date: c.expiry_date
             }))
     };

@@ -971,7 +971,7 @@ export const getSurveyReports = async (query, user) => {
                     model: JobRequest,
                     where: jobRequestWhere,
                     required: true,
-                    attributes: ['id', 'job_status'],
+                    attributes: ['id', 'job_status', 'job_request_number'],
                     include: [{ model: db.Vessel, attributes: ['vessel_name', 'imo_number'] }]
                 }]
             },

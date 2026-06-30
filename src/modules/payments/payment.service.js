@@ -296,13 +296,21 @@ export const getPayments = async (query, scopeFilters = {}, user = null) => {
     const include = [{
         model: JobRequest,
         required: false, // LEFT JOIN to support null job_id
-        attributes: ['id', 'job_request_number', 'job_status', 'vessel_id'],
-        include: [{
-            model: Vessel,
-            required: false,
-            attributes: ['vessel_name', 'client_id'],
-            include: [{ model: db.Client, as: 'Client', required: false, attributes: ['company_name'] }]
-        }]
+        attributes: ['id', 'job_request_number', 'job_status', 'vessel_id', 'client_id'],
+        include: [
+            {
+                model: Vessel,
+                required: false,
+                attributes: ['vessel_name', 'client_id'],
+                include: [{ model: db.Client, as: 'Client', required: false, attributes: ['company_name'] }]
+            },
+            {
+                model: db.Client,
+                as: 'Client',
+                required: false,
+                attributes: ['company_name']
+            }
+        ]
     }];
 
     // Filter by vessel via JobRequest join
@@ -354,12 +362,17 @@ export const getPaymentById = async (id, scopeFilters = {}, user = null) => {
         include: [{
             model: JobRequest,
             required: false,
-            attributes: ['id', 'job_request_number', 'job_status'],
+            attributes: ['id', 'job_request_number', 'job_status', 'vessel_id', 'client_id'],
             include: [
                 { 
                     model: Vessel, 
                     attributes: ['vessel_name', 'imo_number', 'client_id'],
                     include: [{ model: db.Client, as: 'Client', attributes: ['company_name', 'address', 'country'] }]
+                },
+                {
+                    model: db.Client,
+                    as: 'Client',
+                    attributes: ['company_name', 'address', 'country']
                 },
                 {
                     model: db.JobCertificate,
@@ -377,10 +390,14 @@ export const getPaymentById = async (id, scopeFilters = {}, user = null) => {
 
     const enriched = enrichPaymentWithLedger(plain, ledgers);
     enriched.job_request_number = plain.JobRequest?.job_request_number ?? null;
-    enriched.vessel_name = plain.JobRequest?.Vessel?.vessel_name ?? null;
-    enriched.imo_number = plain.JobRequest?.Vessel?.imo_number ?? null;
+    enriched.vessel_name = plain.JobRequest 
+        ? (plain.JobRequest.vessel_id === null || plain.JobRequest.vessel_id === undefined ? "Company Wide" : (plain.JobRequest.Vessel?.vessel_name ?? null))
+        : null;
+    enriched.imo_number = plain.JobRequest 
+        ? (plain.JobRequest.vessel_id === null || plain.JobRequest.vessel_id === undefined ? "N/A" : (plain.JobRequest.Vessel?.imo_number ?? null))
+        : null;
     enriched.job_status = plain.JobRequest?.job_status ?? null;
-    const client = plain.JobRequest?.Vessel?.Client;
+    const client = plain.JobRequest?.Vessel?.Client || plain.JobRequest?.Client;
     enriched.client_company = client?.company_name ?? null;
     enriched.client_address = client ? `${client.address || ''} ${client.country || ''}`.trim() : null;
     enriched.reason = plain.reason ?? null;
@@ -406,12 +423,17 @@ export const getPaymentByJobId = async (jobId, scopeFilters = {}, user = null) =
         include: [{
             model: JobRequest,
             required: false,
-            attributes: ['id', 'job_request_number', 'job_status'],
+            attributes: ['id', 'job_request_number', 'job_status', 'vessel_id', 'client_id'],
             include: [
                 { 
                     model: Vessel, 
                     attributes: ['vessel_name', 'imo_number', 'client_id'],
                     include: [{ model: db.Client, as: 'Client', attributes: ['company_name', 'address', 'country'] }]
+                },
+                {
+                    model: db.Client,
+                    as: 'Client',
+                    attributes: ['company_name', 'address', 'country']
                 },
                 {
                     model: db.JobCertificate,
@@ -429,10 +451,14 @@ export const getPaymentByJobId = async (jobId, scopeFilters = {}, user = null) =
 
     const enriched = enrichPaymentWithLedger(plain, ledgers);
     enriched.job_request_number = plain.JobRequest?.job_request_number ?? null;
-    enriched.vessel_name = plain.JobRequest?.Vessel?.vessel_name ?? null;
-    enriched.imo_number = plain.JobRequest?.Vessel?.imo_number ?? null;
+    enriched.vessel_name = plain.JobRequest 
+        ? (plain.JobRequest.vessel_id === null || plain.JobRequest.vessel_id === undefined ? "Company Wide" : (plain.JobRequest.Vessel?.vessel_name ?? null))
+        : null;
+    enriched.imo_number = plain.JobRequest 
+        ? (plain.JobRequest.vessel_id === null || plain.JobRequest.vessel_id === undefined ? "N/A" : (plain.JobRequest.Vessel?.imo_number ?? null))
+        : null;
     enriched.job_status = plain.JobRequest?.job_status ?? null;
-    const client = plain.JobRequest?.Vessel?.Client;
+    const client = plain.JobRequest?.Vessel?.Client || plain.JobRequest?.Client;
     enriched.client_company = client?.company_name ?? null;
     enriched.client_address = client ? `${client.address || ''} ${client.country || ''}`.trim() : null;
     enriched.reason = plain.reason ?? null;
@@ -464,6 +490,10 @@ export const generateInvoicePdf = async (paymentId) => {
                     include: [{ model: db.Client, as: 'Client' }]
                 },
                 {
+                    model: db.Client,
+                    as: 'Client'
+                },
+                {
                     model: db.JobCertificate,
                     as: 'certificates',
                     include: [{ model: db.CertificateType }]
@@ -479,12 +509,12 @@ export const generateInvoicePdf = async (paymentId) => {
     let html = await fs.readFile(templatePath, 'utf8');
 
     // 3. Prepare replacements
-    let billingToName = 'Standalone Billing';
+    let billingToName = 'General Billing';
     let billingToAddress = 'General System Record';
-    let clientCompany = 'VSV MARINE MANAGEMENT'; // Default client company
+    let clientCompany = ''; // Default client company
     let subject = 'General Maritime Charges';
-    let vesselName = 'N/A';
-    let imoNumber = 'N/A';
+    let vesselName = '';
+    let imoNumber = '';
     let itemRows = '';
 
     let parsedReason = null;
@@ -496,7 +526,7 @@ export const generateInvoicePdf = async (paymentId) => {
 
     if (payment.JobRequest && !parsedReason) {
         const vessel = payment.JobRequest.Vessel;
-        const client = vessel?.Client;
+        const client = vessel?.Client || payment.JobRequest.Client;
 
         if (client) {
             billingToName = client.company_name || 'N/A';
@@ -504,9 +534,9 @@ export const generateInvoicePdf = async (paymentId) => {
             clientCompany = client.company_name || 'VSV MARINE MANAGEMENT';
         }
         
-        subject = `Flag Change & Class change (OMCS to GR Class)`;
-        vesselName = vessel?.vessel_name || 'N/A';
-        imoNumber = vessel?.imo_number || 'N/A';
+        subject = payment.JobRequest.reason || `Flag Change & Class change (OMCS to GR Class)`;
+        vesselName = vessel ? (vessel.vessel_name || '') : 'Company Wide';
+        imoNumber = vessel ? (vessel.imo_number || '') : 'N/A';
 
         // Build item rows for job certificates
         const certs = payment.JobRequest.certificates || [];
@@ -541,8 +571,14 @@ export const generateInvoicePdf = async (paymentId) => {
             billingToAddress = parsedReason.client_address || 'General System Record';
             clientCompany = parsedReason.client_name || 'VSV MARINE MANAGEMENT';
             subject = parsedReason.subject || 'General Maritime Charges';
-            vesselName = parsedReason.vessel_name || 'N/A';
-            imoNumber = parsedReason.imo_number || 'N/A';
+            vesselName = parsedReason.vessel_name || '';
+            imoNumber = parsedReason.imo_number || '';
+
+            // Extract agent billing fields
+            const isAgentBilling = !!parsedReason.is_agent_billing;
+            const billingParty = parsedReason.billing_party || '';
+            const agentPersonName = parsedReason.agent_name || '';
+            const principalCompany = parsedReason.principal_company || '';
 
             // Build item rows for standalone custom items
             const items = parsedReason.items || [];
@@ -571,13 +607,46 @@ export const generateInvoicePdf = async (paymentId) => {
                   <td class="num">${Number(payment.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                 </tr>`;
             }
+
+            // Build agent notice banner if agent billing
+            if (isAgentBilling && billingParty) {
+                billingToName = billingParty;  // Override billing name to the billing party
+                clientCompany = billingParty;
+                const agentBannerHtml = `
+                <div style="background:#f0f5ff;border:1px solid #c8d4e8;border-left:4px solid #0B2443;padding:6px 12px;font-size:8.5pt;color:#1a1a1a;margin-bottom:8px;line-height:1.4;">
+                  <span style="background:#0B2443;color:#fff;font-size:7pt;font-weight:700;padding:1px 6px;border-radius:2px;letter-spacing:.5px;margin-right:6px;">AGENT</span>
+                  This Debit Note is raised in the name of <strong>${billingParty}</strong> as the billing party, acting as
+                  authorized agent for and on behalf of <strong>${principalCompany || 'the Principal Company'}</strong>${agentPersonName ? ` — represented by <strong>${agentPersonName}</strong>` : ''}.
+                </div>
+                <div style="display:flex;gap:10px;margin-bottom:8px;font-size:8.5pt;">
+                  <div style="flex:1;border:1px solid #b08d57;padding:6px 10px;background:#fff8ed;">
+                    <span style="font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#888;display:block;margin-bottom:3px;">Billed To (Billing Party)</span>
+                    <div style="font-weight:700;color:#0B2443;font-size:9.5pt;line-height:1.3;">${billingParty}</div>
+                    ${principalCompany ? `<div style="font-size:8pt;color:#666;">Agent for ${principalCompany}</div>` : ''}
+                  </div>
+                  ${agentPersonName ? `<div style="flex:1;border:1px solid #e0e8f0;padding:6px 10px;background:#fdfdfd;">
+                    <span style="font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#888;display:block;margin-bottom:3px;">Authorized Agent / Contact</span>
+                    <div style="font-weight:700;color:#0B2443;font-size:9.5pt;">${agentPersonName}</div>
+                    <div style="font-size:8pt;color:#666;">Authorized Representative</div>
+                  </div>` : ''}
+                  ${principalCompany ? `<div style="flex:1;border:1px solid #e0e8f0;padding:6px 10px;background:#fdfdfd;">
+                    <span style="font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#888;display:block;margin-bottom:3px;">On Behalf Of (Principal)</span>
+                    <div style="font-weight:700;color:#0B2443;font-size:9pt;line-height:1.3;">${principalCompany}</div>
+                    <div style="font-size:8pt;color:#666;">Shipowner / ISM Company</div>
+                  </div>` : ''}
+                </div>`;
+                // Inject agent banner before the info-row in template
+                html = html.replace('{{agent_banner}}', agentBannerHtml);
+            } else {
+                html = html.replace('{{agent_banner}}', '');
+            }
         } else {
             subject = payment.reason || 'General Maritime Services';
             itemRows += `
             <tr>
               <td class="idx">1</td>
               <td>
-                Standalone billing services: <strong>${payment.reason || 'General services rendered'}</strong>
+                <strong>${payment.reason || 'General maritime certification services rendered'}</strong>
               </td>
               <td class="num">${Number(payment.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
               <td class="num">${Number(payment.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
@@ -610,8 +679,21 @@ export const generateInvoicePdf = async (paymentId) => {
         logger.error('Error reading signature image:', err);
     }
 
+    // Dynamic vessel and imo row generation (only show if not empty / not N/A)
+    let vesselRow = '';
+    let imoRow = '';
+    if (vesselName && vesselName.trim() !== '' && vesselName.trim().toUpperCase() !== 'N/A') {
+        vesselRow = `<div class="info-line" style="margin-top:10px;"><div class="info-label">Vessel</div><div class="info-value" style="margin-left:auto;font-weight:700;">${vesselName}</div></div>`;
+    }
+    if (imoNumber && imoNumber.trim() !== '' && imoNumber.trim().toUpperCase() !== 'N/A') {
+        const imoMargin = vesselRow ? '' : ' style="margin-top:10px;"';
+        imoRow = `<div class="info-line"${imoMargin}><div class="info-label">IMO No.</div><div class="info-value" style="margin-left:auto;">${imoNumber}</div></div>`;
+    }
+
     // Dynamic bank details (empty bank details as requested by user)
     const replacements = {
+        vessel_row: vesselRow,
+        imo_row: imoRow,
         invoice_number: payment.invoice_number,
         invoice_date: invoiceDate,
         currency: payment.currency || 'USD',
@@ -634,6 +716,7 @@ export const generateInvoicePdf = async (paymentId) => {
         iban_eur: '',
         signature_img: signImgBase64,
         signature_display: signImgBase64 ? 'block' : 'none',
+        agent_banner: '', // Fallback: cleared for JOB invoices (agent billing path replaces inline above)
     };
 
     // Replace placeholders in HTML template

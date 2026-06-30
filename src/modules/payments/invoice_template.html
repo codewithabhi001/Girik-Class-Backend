@@ -179,6 +179,8 @@
   <hr class="header-rule">
   <hr class="header-rule-thin">
 
+  {{agent_banner}}
+
   <div class="info-row">
     <div class="info-box">
       <div class="info-line">
@@ -193,8 +195,8 @@
     <div class="info-box right">
       <div class="info-line"><div class="info-label">No.</div><div class="info-value" style="margin-left:auto;font-weight:700;">{{invoice_number}}</div></div>
       <div class="info-line"><div class="info-label">Date</div><div class="info-value" style="margin-left:auto;">{{invoice_date}}</div></div>
-      <div class="info-line" style="margin-top:10px;"><div class="info-label">Vessel</div><div class="info-value" style="margin-left:auto;font-weight:700;">{{vessel_name}}</div></div>
-      <div class="info-line"><div class="info-label">IMO No.</div><div class="info-value" style="margin-left:auto;">{{imo_number}}</div></div>
+      {{vessel_row}}
+      {{imo_row}}
     </div>
   </div>
 
