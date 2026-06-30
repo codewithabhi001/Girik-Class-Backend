@@ -820,9 +820,14 @@ const _assembleCertificateHtml = async (cert, user, transaction = null, { persis
 
     const certType = cert.CertificateType;
     const term = cert.certificate_term || 'FULL_TERM';
-    const isSurveyReq = certType
-        ? (term === 'SHORT_TERM' ? certType.requires_survey_short_term : certType.requires_survey_full_term)
-        : false;
+    let isSurveyReq = false;
+    if (certType) {
+        if (term === 'SHORT_TERM') isSurveyReq = certType.requires_survey_short_term;
+        else if (term === 'INTERIM') isSurveyReq = certType.requires_survey_interim;
+        else if (term === 'CONDITIONAL') isSurveyReq = certType.requires_survey_conditional;
+        else if (term === 'PROVISIONAL') isSurveyReq = certType.requires_survey_provisional;
+        else isSurveyReq = certType.requires_survey_full_term;
+    }
 
     const formatDate = (v) => {
         if (!v) return '';
