@@ -1045,6 +1045,56 @@ export const verifyAllJobDocuments = async (jobId, body, user) => {
     const userId = actualUser.id;
 
     const job = await requireJob(jobId, { includeVessel: true, useMaster: true });
+
+    // Handle document rejection flow if approved is false
+    const approved = actualBody?.approved !== false;
+    if (!approved) {
+        const rejectedDocs = actualBody.rejected_documents;
+        if (!rejectedDocs || !Array.isArray(rejectedDocs) || rejectedDocs.length === 0) {
+            throw { statusCode: 400, message: 'Please specify which documents are invalid (rejected_documents array required).' };
+        }
+
+        // Mark each rejected document (only if they are currently PENDING)
+        for (const rd of rejectedDocs) {
+            if (!rd.document_id) continue;
+            await JobDocument.update(
+                {
+                    verification_status: 'REJECTED',
+                    rejection_reason: rd.reason || 'Document is invalid or not acceptable.',
+                    verified_by: userId
+                },
+                { where: { id: rd.document_id, job_id: jobId, verification_status: 'PENDING' } }
+            );
+        }
+
+        // Audit trail
+        await JobStatusHistory.create({
+            job_id: jobId,
+            previous_status: job.job_status,
+            new_status: job.job_status,
+            changed_by: userId,
+            reason: `Documents rejected by ${actualUser.role}`
+        });
+
+        // Notify client to re-upload
+        const clientId = job.Vessel?.client_id || job.client_id;
+        const vesselName = job.Vessel?.vessel_name || job.Client?.company_name || 'Company Wide';
+        if (clientId) {
+            const clientUser = await User.findOne({ where: { client_id: clientId, role: 'CLIENT' }, useMaster: true });
+            if (clientUser) {
+                notificationService.sendNotification(clientUser.id, 'JOB_DOCUMENTS_REJECTED', {
+                    jobId: jobId,
+                    vesselName: vesselName,
+                    rejectedCount: rejectedDocs.length,
+                    reasons: rejectedDocs.map(rd => rd.reason).filter(Boolean)
+                }).catch(() => { });
+            }
+        }
+
+        return {
+            message: `${rejectedDocs.length} document(s) rejected. Client has been notified to re-upload.`
+        };
+    }
     
     // Get all certificates in PENDING or REWORK_REQUESTED status
     const pendingCerts = await JobCertificate.findAll({ 
@@ -1056,8 +1106,18 @@ export const verifyAllJobDocuments = async (jobId, body, user) => {
         useMaster: true 
     });
 
-    if (pendingCerts.length === 0) {
-        throw { statusCode: 400, message: 'No pending certificates found for this job to verify.' };
+    // Get all pending global documents
+    const pendingGlobalDocs = await JobDocument.findAll({
+        where: {
+            job_id: jobId,
+            job_certificate_id: null,
+            verification_status: 'PENDING'
+        },
+        useMaster: true
+    });
+
+    if (pendingCerts.length === 0 && pendingGlobalDocs.length === 0) {
+        throw { statusCode: 400, message: 'No pending certificates or global documents found for this job to verify.' };
     }
 
     const verifiedCerts = [];
@@ -1102,21 +1162,27 @@ export const verifyAllJobDocuments = async (jobId, body, user) => {
 
         // Approve all pending documents for this certificate
         await JobDocument.update(
-            { verification_status: 'APPROVED', verified_by: user.id },
+            { verification_status: 'APPROVED', verified_by: actualUser.id },
             { where: { job_certificate_id: jc.id, verification_status: 'PENDING' } }
         );
 
         // Update the certificate status
-        const successRemarks = actualBody?.remarks || actualBody?.reason || `${user.role} bulk verified all documents`;
-        const updatedJc = await lifecycleService.updateJobCertificateStatus(jc.id, 'DOCUMENT_VERIFIED', user.id, successRemarks);
+        const successRemarks = actualBody?.remarks || actualBody?.reason || `${actualUser.role} bulk verified all documents`;
+        const updatedJc = await lifecycleService.updateJobCertificateStatus(jc.id, 'DOCUMENT_VERIFIED', actualUser.id, successRemarks);
         verifiedCerts.push(updatedJc);
     }
+
+    // Approve all pending global documents for the job
+    await JobDocument.update(
+        { verification_status: 'APPROVED', verified_by: actualUser.id },
+        { where: { job_id: jobId, job_certificate_id: null, verification_status: 'PENDING' } }
+    );
 
     const allCerts = await db.JobCertificate.findAll({ where: { job_request_id: jobId } });
     const allVerified = allCerts.every(c => c.status === 'DOCUMENT_VERIFIED' || ['ISSUED', 'REJECTED'].includes(c.status));
     if (allVerified) {
         const successRemarks = actualBody?.remarks || actualBody?.reason || 'All certificate documents verified';
-        await lifecycleService.updateJobStatus(jobId, 'DOCUMENT_VERIFIED', user.id, successRemarks);
+        await lifecycleService.updateJobStatus(jobId, 'DOCUMENT_VERIFIED', actualUser.id, successRemarks);
     }
 
     // Notify ADMIN/GM/TM
@@ -2260,8 +2326,18 @@ export const uploadJobDocuments = async (jobId, documents, user) => {
     const hasPendingCert = jobCerts.some((c) => ['PENDING', 'REWORK_REQUESTED'].includes(c.status));
     const UPLOAD_ALLOWED_STATUSES = ['CREATED', 'REWORK_REQUESTED'];
     const inProgressWithPendingCert = job.job_status === 'IN_PROGRESS' && hasPendingCert;
-    if (!UPLOAD_ALLOWED_STATUSES.includes(job.job_status) && !inProgressWithPendingCert) {
-        throw { statusCode: 400, message: 'Documents can only be uploaded while the job is in CREATED, REWORK_REQUESTED, or IN_PROGRESS with a certificate still awaiting verification.' };
+    
+    const isInternalUser = ['ADMIN', 'GM', 'TO', 'TM'].includes(user.role);
+    const isTerminalState = ['CERTIFIED', 'REJECTED'].includes(job.job_status);
+
+    if (isInternalUser) {
+        if (isTerminalState) {
+            throw { statusCode: 400, message: 'Documents cannot be uploaded to a job in a terminal status (CERTIFIED or REJECTED).' };
+        }
+    } else {
+        if (!UPLOAD_ALLOWED_STATUSES.includes(job.job_status) && !inProgressWithPendingCert) {
+            throw { statusCode: 400, message: 'Documents can only be uploaded while the job is in CREATED, REWORK_REQUESTED, or IN_PROGRESS with a certificate still awaiting verification.' };
+        }
     }
 
     // Client ownership check
@@ -2339,11 +2415,21 @@ export const reuploadJobDocument = async (jobId, documentId, body, user) => {
 
     const jobCerts = await JobCertificate.findAll({ where: { job_request_id: jobId }, useMaster: true });
     const hasPendingCert = jobCerts.some((c) => ['PENDING', 'REWORK_REQUESTED'].includes(c.status));
-    const reuploadAllowed =
-        ['CREATED', 'REWORK_REQUESTED'].includes(job.job_status) ||
-        (job.job_status === 'IN_PROGRESS' && hasPendingCert);
-    if (!reuploadAllowed) {
-        throw { statusCode: 400, message: 'Documents can only be re-uploaded while the job allows document corrections.' };
+    
+    const isInternalUser = ['ADMIN', 'GM', 'TO', 'TM'].includes(user.role);
+    const isTerminalState = ['CERTIFIED', 'REJECTED'].includes(job.job_status);
+
+    if (isInternalUser) {
+        if (isTerminalState) {
+            throw { statusCode: 400, message: 'Documents cannot be re-uploaded for a job in a terminal status (CERTIFIED or REJECTED).' };
+        }
+    } else {
+        const reuploadAllowed =
+            ['CREATED', 'REWORK_REQUESTED'].includes(job.job_status) ||
+            (job.job_status === 'IN_PROGRESS' && hasPendingCert);
+        if (!reuploadAllowed) {
+            throw { statusCode: 400, message: 'Documents can only be re-uploaded while the job allows document corrections.' };
+        }
     }
 
     // Client ownership check
