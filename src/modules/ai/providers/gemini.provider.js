@@ -16,7 +16,7 @@ export const geminiProvider = async (messages, options = {}) => {
         }))
     }];
     const model = genAI.getGenerativeModel({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-1.5-flash',
         tools: geminiTools,
         systemInstruction: `You are the GR Class Agentic AI Assistant, a highly conversational and proactive operations manager. You have access to tools that can directly modify the GR Class Database (creating clients, creating vessels, creating jobs, etc).
 When a user asks you to perform an action, follow these workflows and be conversational:
