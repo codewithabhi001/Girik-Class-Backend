@@ -10,7 +10,7 @@
 | [ADMIN.md](./ADMIN.md) | 👑 Super Admin (Part 1) | Auth, Users, Clients, Vessels, Jobs |
 | [ADMIN_PART2.md](./ADMIN_PART2.md) | 👑 Super Admin (Part 2) | Surveys, Certificates, Payments, Surveyors |
 | [ADMIN_PART3.md](./ADMIN_PART3.md) | 👑 Super Admin (Part 3) | Checklists, Dashboard, Reports, System, Everything Else |
-| [GM.md](./GM.md) | 🏢 General Manager | Job approval, Assign surveyors, Payments, Clients |
+| [GM.md](./GM.md) |  General Manager | Job approval, Assign surveyors, Payments, Clients |
 | [TM.md](./TM.md) | ⚙️ Technical Manager | Survey finalize, TOCA, Surveyor MGMT, Cert suspend/renew |
 | [TO.md](./TO.md) | 📋 Technical Officer | Document verify, Technical review, NC create/close |
 | [.md](./.md) | 📎 Technical Assistant | Jobs (read), Payment processing |

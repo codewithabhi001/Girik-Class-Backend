@@ -8,23 +8,23 @@
   html { background: #fff; }
   body {
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 10.5pt;
+    font-size: 9pt;
     color: #1a1a1a;
     background: #fff;
-    padding: 10px 0 10px;
-    line-height: 1.5;
+    padding: 0;
+    line-height: 1.4;
   }
 
   .no-print { display: none !important; }
 
   .page {
-    width: 210mm; min-height: 297mm;
+    width: 100%;
     background: #fff;
     margin: 0 auto;
-    padding: 8mm 16mm 8mm;
+    padding: 0;
     position: relative;
-    display: flex; flex-direction: column;
-    overflow: hidden;
+    display: block;
+    overflow: visible;
   }
 
   /* watermark */
@@ -32,10 +32,10 @@
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%) rotate(-32deg);
-    font-size: 100pt;
+    font-size: 80pt;
     font-weight: 800;
-    color: rgba(11, 36, 67, 0.04);
-    letter-spacing: 14px;
+    color: rgba(11, 36, 67, 0.03);
+    letter-spacing: 12px;
     white-space: nowrap;
     z-index: 0;
     pointer-events: none;
@@ -44,110 +44,118 @@
   .page > *:not(.watermark) { position: relative; z-index: 1; }
 
   /* HEADER STRUCTURE */
-  .doc-header-main { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .brand-block { display: flex; align-items: center; gap: 14px; }
-  .logo-img { width: 68px; height: auto; }
+  .doc-header-main { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .brand-block { display: flex; align-items: center; gap: 10px; }
+  .logo-img { width: 56px; height: auto; }
   .brand-text { display: flex; flex-direction: column; }
-  .org-name { font-size: 22pt; font-weight: 900; letter-spacing: 0.5px; color: #0B2443; line-height: 1.1; }
-  .org-tagline { font-size: 8pt; color: #B5891F; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 2px; }
+  .org-name { font-size: 17pt; font-weight: 900; letter-spacing: 0.5px; color: #0B2443; line-height: 1.1; }
+  .org-tagline { font-size: 7.5pt; color: #B5891F; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 1px; }
   
-  .doc-title-block { text-align: right; min-width: 200px; }
-  .doc-title { font-size: 21pt; font-weight: 900; letter-spacing: 1.5px; color: #0B2443; line-height: 1.1; white-space: nowrap; }
-  .doc-subtitle { font-size: 8.5pt; color: #666; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 3px; white-space: nowrap; }
+  .doc-title-block { text-align: right; min-width: 180px; }
+  .doc-title { font-size: 17pt; font-weight: 900; letter-spacing: 1px; color: #0B2443; line-height: 1.1; white-space: nowrap; }
+  .doc-subtitle { font-size: 8pt; color: #666; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 2px; white-space: nowrap; }
 
   /* Full-width address row underneath */
-  .address-row { width: 100%; font-size: 8.5pt; color: #444; line-height: 1.4; padding-top: 4px; border-top: 1px solid #eef2f6; margin-bottom: 4px; }
+  .address-row { width: 100%; font-size: 7.5pt; color: #444; line-height: 1.3; padding-top: 3px; border-top: 1px solid #eef2f6; margin-bottom: 2px; }
 
-  .header-rule { border: none; border-top: 3px solid #0B2443; margin: 4px 0 1px; }
-  .header-rule-thin { border: none; border-top: 1px solid #B5891F; margin: 0 0 12px; }
+  .header-rule { border: none; border-top: 2px solid #0B2443; margin: 3px 0 1px; }
+  .header-rule-thin { border: none; border-top: 1px solid #B5891F; margin: 0 0 8px; }
 
   /* info boxes */
-  .info-row { display: flex; gap: 14px; margin-bottom: 8px; }
+  .info-row { display: flex; gap: 12px; margin-bottom: 6px; page-break-inside: avoid; break-inside: avoid; }
   .info-box {
     flex: 1;
     border: 1px solid #c8d4e3;
     border-radius: 2px;
-    padding: 10px 14px;
-    font-size: 9.5pt;
+    padding: 8px 12px;
+    font-size: 8.5pt;
     background: #FAFCFF;
   }
-  .info-box.right { max-width: 230px; background: #fff; }
-  .info-line { display: flex; gap: 10px; margin-bottom: 4px; }
-  .info-label { width: 60px; font-weight: 700; color: #0B2443; flex-shrink: 0; }
+  .info-box.right { max-width: 220px; background: #fff; }
+  .info-line { display: flex; gap: 8px; margin-bottom: 3px; }
+  .info-label { width: 55px; font-weight: 700; color: #0B2443; flex-shrink: 0; }
   .info-value { color: #1a1a1a; }
   .subject-line {
-    margin-top: 8px; padding-top: 8px; border-top: 1px dashed #c8d4e3;
+    margin-top: 6px; padding-top: 6px; border-top: 1px dashed #c8d4e3;
   }
   .subject-line .info-label { color: #B5891F; }
 
   /* services table */
-  .svc-table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin-bottom: 4px; }
+  .svc-table { width: 100%; border-collapse: collapse; font-size: 8.5pt; margin-bottom: 4px; page-break-inside: auto; }
+  .svc-table thead { display: table-header-group; }
   .svc-table th {
     background: #0B2443; color: #fff;
-    font-weight: 700; font-size: 9pt;
-    padding: 7px 10px; text-align: left;
+    font-weight: 700; font-size: 8pt;
+    padding: 5px 8px; text-align: left;
     border: 1px solid #0B2443;
   }
   .svc-table th.num { text-align: right; }
+  .svc-table tr { page-break-inside: avoid; break-inside: avoid; page-break-after: auto; }
   .svc-table td {
-    padding: 8px 10px;
+    padding: 6px 8px;
     border: 1px solid #d8e0ea;
     vertical-align: top;
   }
   .svc-table td.num { text-align: right; white-space: nowrap; font-weight: 600; }
-  .svc-table td.idx { text-align: center; width: 32px; font-weight: 700; color: #0B2443; }
-  .svc-table .section-row td { font-weight: 700; padding: 8px 10px 4px; border: none; color: #0B2443; }
+  .svc-table td.idx { text-align: center; width: 28px; font-weight: 700; color: #0B2443; }
+  .svc-table .section-row td { font-weight: 700; padding: 6px 8px 3px; border: none; color: #0B2443; }
   .svc-table .total-row td { font-weight: 800; border-top: 2px solid #0B2443; background: #EEF3F9; }
 
   /* totals */
-  .totals-wrap { display: flex; justify-content: flex-end; margin-bottom: 8px; }
-  .totals-table { width: 270px; font-size: 9.5pt; border-collapse: collapse; }
-  .totals-table td { padding: 5px 10px; border: 1px solid #d8e0ea; }
+  .totals-wrap { display: flex; justify-content: flex-end; margin-bottom: 6px; page-break-inside: avoid; break-inside: avoid; }
+  .totals-table { width: 250px; font-size: 8.5pt; border-collapse: collapse; }
+  .totals-table td { padding: 4px 8px; border: 1px solid #d8e0ea; }
   .totals-table td.lbl { font-weight: 700; background: #F4F7FB; width: 50%; color: #0B2443; }
   .totals-table td.val { text-align: right; font-weight: 600; }
   .totals-table tr.grand td { font-weight: 800; border-top: 2px solid #0B2443; background: #EEF3F9; }
   .totals-table tr.grand.eur td { background: #FFF8E7; }
 
   /* payment + say */
-  .bottom-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; margin-bottom: 8px; }
-  .pay-title { font-weight: 800; font-size: 10pt; margin-bottom: 6px; color: #0B2443; text-transform: uppercase; letter-spacing: .5px; }
-  .pay-lines { font-size: 9.5pt; line-height: 1.7; }
-  .pay-lines .row { display: flex; gap: 8px; }
-  .pay-lines .lbl { width: 90px; font-weight: 700; flex-shrink: 0; color: #444; }
+  .bottom-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px; margin-bottom: 6px; page-break-inside: avoid; break-inside: avoid; }
+  .pay-title { font-weight: 800; font-size: 9pt; margin-bottom: 4px; color: #0B2443; text-transform: uppercase; letter-spacing: .5px; }
+  .pay-lines { font-size: 8.5pt; line-height: 1.6; }
+  .pay-lines .row { display: flex; gap: 6px; }
+  .pay-lines .lbl { width: 80px; font-weight: 700; flex-shrink: 0; color: #444; }
   .say-box {
     border: 1px solid #B5891F; border-radius: 2px;
-    padding: 10px 14px; font-size: 10pt; font-style: italic;
+    padding: 8px 12px; font-size: 9pt; font-style: italic;
     height: fit-content;
     background: #FFFCF4;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
-  .say-box .lbl { font-weight: 700; font-style: normal; display: block; margin-bottom: 4px; color: #0B2443; text-transform: uppercase; letter-spacing: .5px; font-size: 8.5pt; }
+  .say-box .lbl { font-weight: 700; font-style: normal; display: block; margin-bottom: 3px; color: #0B2443; text-transform: uppercase; letter-spacing: .5px; font-size: 8pt; }
 
   /* charges note */
-  .charges-note { font-size: 10.5pt; font-weight: 700; font-style: italic; margin-bottom: 8px; color: #0B2443; }
+  .charges-note { font-size: 9pt; font-weight: 700; font-style: italic; margin-bottom: 6px; color: #0B2443; page-break-inside: avoid; break-inside: avoid; }
 
   /* signature area */
-  .sign-area { margin-top: auto; position: relative; }
-  .sign-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; position: relative; }
-  .sign-col { text-align: center; font-size: 9.5pt; min-width: 180px; position: relative; z-index: 2; }
-  .sign-line { border-bottom: 1px solid #000; margin-bottom: 4px; position: relative; }
-  .sign-img-wrap { height: 60px; position: relative; display: flex; align-items: flex-end; justify-content: center; overflow: hidden; }
-  .sign-img-wrap img { max-height: 70px; max-width: 160px; object-fit: contain; }
+  .sign-area { margin-top: auto; position: relative; page-break-inside: avoid; break-inside: avoid; }
+  .sign-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; position: relative; }
+  .sign-col { text-align: center; font-size: 8.5pt; min-width: 160px; position: relative; z-index: 2; }
+  .sign-line { border-bottom: 1px solid #000; margin-bottom: 3px; position: relative; }
+  .sign-img-wrap { height: 45px; position: relative; display: flex; align-items: flex-end; justify-content: center; overflow: hidden; }
+  .sign-img-wrap img { max-height: 50px; max-width: 140px; object-fit: contain; }
+  .sign-img-wrap img[data-display="none"] { display: none !important; }
+  .sign-img-wrap img[data-display="block"] { display: block !important; }
   .sign-label { font-weight: 700; color: #0B2443; }
   
-  .computerized-note { font-size: 9pt; color: #222; font-weight: bold; font-style: italic; margin-top: 14px; text-align: center; position: relative; z-index: 2; background: #f9f9f9; padding: 6px; border: 1px dashed #ccc; }
+  .computerized-note { font-size: 8pt; color: #222; font-weight: bold; font-style: italic; margin-top: 8px; text-align: center; position: relative; z-index: 2; background: #f9f9f9; padding: 4px; border: 1px dashed #ccc; page-break-inside: avoid; break-inside: avoid; }
 
   /* footer */
   .doc-footer {
     border-top: 1.5px solid #0B2443;
-    margin-top: 10px;
-    padding-top: 4px;
+    margin-top: 6px;
+    padding-top: 2px;
     display: flex; justify-content: space-between;
-    font-size: 8pt; color: #555;
+    font-size: 7pt; color: #555;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   @media print {
     html, body { background: none; padding: 0; }
-    .page { margin: 0; box-shadow: none; padding: 10mm; }
+    .page { margin: 0; box-shadow: none; padding: 0; }
   }
 </style>
 </head>
@@ -249,7 +257,7 @@
     <div class="sign-row">
       <div class="sign-col">
         <div class="sign-img-wrap">
-          <img src="{{signature_img}}" style="display: {{signature_display}};" alt="Director Signature">
+          <img src="{{signature_img}}" data-display="{{signature_display}}" alt="Director Signature">
         </div>
         <div class="sign-line"></div>
         <div class="sign-label">Director</div>

@@ -115,7 +115,7 @@ POST /auth/logout
 
 ---
 
-## 🏢 Client Profile (Self-Service)
+##  Client Profile (Self-Service)
 
 ### 5. Get Client Profile
 ```http

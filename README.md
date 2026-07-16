@@ -111,7 +111,7 @@ All endpoints are prefixed with `/api/v1`.
 | `POST` | `/forgot-password`| Initiate password reset | Public | `email` |
 | `POST` | `/reset-password` | Complete password reset | Public | `token`, `newPassword` |
 
-### 🏢 Client Module (`/clients`)
+###  Client Module (`/clients`)
 
 | Method | Endpoint | Description | Access | Body Params |
 | :--- | :--- | :--- | :--- | :--- |
