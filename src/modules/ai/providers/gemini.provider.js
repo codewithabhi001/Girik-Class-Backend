@@ -6,6 +6,7 @@ export const geminiProvider = async (messages, options = {}) => {
     if (!apiKey) throw new Error('GEMINI_API_KEY is not defined in environment variables or request body.');
 
     const genAI = new GoogleGenerativeAI(apiKey);
+    const modelName = options.model_name || 'gemini-2.5-flash';
 
     // Map tools to Gemini format (OpenAPI schema compatible)
     const geminiTools = [{
@@ -16,7 +17,7 @@ export const geminiProvider = async (messages, options = {}) => {
         }))
     }];
     const model = genAI.getGenerativeModel({
-        model: 'gemini-1.5-flash',
+        model: modelName,
         tools: geminiTools,
         systemInstruction: `You are the GR Class Agentic AI Assistant, a highly conversational and proactive operations manager. You have access to tools that can directly modify the GR Class Database (creating clients, creating vessels, creating jobs, etc).
 When a user asks you to perform an action, follow these workflows and be conversational:
