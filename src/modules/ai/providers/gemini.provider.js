@@ -124,6 +124,13 @@ IMPORTANT: ALWAYS provide a clear, conversational, and professional text respons
                 message: "I'm currently receiving too many requests. Google's Free AI tier has a strict rate limit. Please try again in about a minute!"
             };
         }
+
+        // Handle 503 Service Unavailable
+        if (error.status === 503 || (error.message && error.message.includes('503'))) {
+            return {
+                message: "Google's AI service is currently experiencing high demand (503 Service Unavailable). Please try again in a few minutes, or try switching the AI Model from the Settings menu."
+            };
+        }
         
         return {
             message: "I encountered an internal error while processing your request. Please check the backend logs."
