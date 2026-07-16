@@ -1,4 +1,6 @@
 import * as clientService from '../../clients/client.service.js';
+import * as emailService from '../../../services/email.service.js';
+import crypto from 'crypto';
 
 export const createClientTool = {
     name: 'createClient',
@@ -52,6 +54,9 @@ export const createClientTool = {
     },
     execute: async (args) => {
         try {
+            // Generate a secure random password
+            const generatedPassword = crypto.randomBytes(6).toString('hex') + 'A1!';
+            
             // Because our DB creates a user automatically, we construct the payload
             const payload = {
                 ...args,
@@ -59,15 +64,34 @@ export const createClientTool = {
                 user: {
                     name: args.contact_person_name,
                     email: args.contact_person_email,
-                    password: 'Password123', // Default strong password for AI created users
+                    password: generatedPassword, 
                     role: 'CLIENT',
                     phone: args.phone
                 }
             };
             const result = await clientService.createClient(payload);
+            
+            // Send welcome email with credentials
+            const emailHtml = `
+                <h2>Welcome to GR Class!</h2>
+                <p>Hello ${args.contact_person_name},</p>
+                <p>Your client portal has been successfully created for <b>${args.company_name}</b>.</p>
+                <p>You can log in using the following credentials:</p>
+                <ul>
+                    <li><b>Email:</b> ${args.contact_person_email}</li>
+                    <li><b>Password:</b> ${generatedPassword}</li>
+                </ul>
+                <p>Please change your password after logging in.</p>
+                <br/>
+                <p>Best Regards,<br/>GR Class System</p>
+            `;
+            
+            emailService.sendEmail(args.contact_person_email, 'Welcome to GR Class - Login Credentials', emailHtml, 'system')
+                .catch(e => console.error('[AI Tool Email Error]', e));
+
             return {
                 success: true,
-                message: `Client ${args.company_name} successfully registered.`,
+                message: `Client ${args.company_name} successfully registered and login credentials emailed to ${args.contact_person_email}.`,
                 client_id: result.client.id,
                 user_id: result.user.id
             };

@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.use(authenticate);
 
-// We limit this powerful feature to ADMIN and GM roles for now
-router.post('/chat', authorizeRoles('ADMIN', 'GM'), aiController.chatWithAI);
+// We limit this powerful feature to ADMIN role only
+router.post('/chat', authorizeRoles('ADMIN'), aiController.chatWithAI);
 
 export default router;
