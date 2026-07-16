@@ -43,6 +43,8 @@ jobs:
              cd $DEPLOY_DIR; \
              git fetch origin ${{ github.ref_name }}; \
              git reset --hard origin/${{ github.ref_name }}; \
+             rm -rf ~/.cache/puppeteer; \
+             export PUPPETEER_CACHE_DIR=$DEPLOY_DIR/.cache/puppeteer; \
              npm install --omit=dev; \
              if pm2 show $PM2_NAME > /dev/null; then \
                pm2 reload $PM2_NAME --update-env; \
