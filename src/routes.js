@@ -40,6 +40,7 @@ import complianceRoutes from './modules/compliance/compliance.routes.js';
 import siteStaticRoutes from './modules/site_static/site_static.routes.js';
 import newsletterRoutes from './modules/website/newsletter.routes.js';
 import contactRoutes from './modules/contact/contact.routes.js';
+import aiRoutes from './modules/ai/ai.routes.js';
 
 // Client Modules
 const router = express.Router();
@@ -91,6 +92,7 @@ router.use('/portfolio-feedback', portfolioFeedbackRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/website/static-content', siteStaticRoutes);
 router.use('/website/newsletter', newsletterRoutes);
+router.use('/ai', aiRoutes);
 
 
 export default router;
