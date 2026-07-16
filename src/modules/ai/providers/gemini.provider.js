@@ -6,7 +6,7 @@ export const geminiProvider = async (messages, options = {}) => {
     if (!apiKey) throw new Error('GEMINI_API_KEY is not defined in environment variables or request body.');
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const modelName = options.model_name || 'gemini-1.5-flash';
+    const modelName = options.model_name || 'gemini-flash-latest';
 
     // Map tools to Gemini format (OpenAPI schema compatible)
     const geminiTools = [{
