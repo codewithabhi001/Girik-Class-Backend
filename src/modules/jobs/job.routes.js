@@ -21,6 +21,7 @@ router.get('/:id/eligible-surveyors', authorizeRoles('ADMIN', 'GM', 'TM'), jobCo
 // ─── Create ───────────────────────────────────────────────
 // CREATED
 router.post('/', authorizeRoles('CLIENT', 'ADMIN', 'GM'), validate(schemas.createJob), jobController.createJob);
+router.post('/:id/certificates', authorizeRoles('ADMIN', 'GM'), validate(schemas.addCertificates), jobController.addCertificates);
 
 // ─── Explicit Semantic Workflow Transitions ───────────────
 

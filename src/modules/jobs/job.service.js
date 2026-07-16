@@ -2788,3 +2788,149 @@ export const deleteJob = async (jobId, transaction = null) => {
 export const updateJobStatus = (id, status, remarks, userId) => {
     throw { statusCode: 400, message: 'Direct status update is disabled. Use semantic workflow endpoints.' };
 };
+
+export const addCertificatesToJob = async (jobId, certificates, user) => {
+    if (!isRoleAllowed(['ADMIN', 'GM'], user.role)) {
+        throw { statusCode: 403, message: 'You do not have permission to add certificates to an existing job.' };
+    }
+    const userId = user.id;
+    const job = await requireJob(jobId, { includeVessel: true, useMaster: true });
+
+    // Allow adding certificates to CERTIFIED jobs (it will automatically transition back to an active state).
+    // Only block if the job is explicitly REJECTED or CANCELLED.
+    if (['REJECTED', 'CANCELLED', 'CLOSED'].includes(job.job_status)) {
+        throw { statusCode: 400, message: `Cannot add certificates to a ${job.job_status} job.` };
+    }
+
+    const txn = await db.sequelize.transaction();
+    try {
+        const addedCerts = [];
+
+        // If surveyor is assigned, pre-verify they can inspect all new certificates
+        let surveyorProfile = null;
+        let authorizedCerts = [];
+        if (job.assigned_surveyor_id) {
+            surveyorProfile = await db.SurveyorProfile.findOne({
+                where: { user_id: job.assigned_surveyor_id },
+                transaction: txn,
+                useMaster: true
+            });
+            if (surveyorProfile) {
+                authorizedCerts = surveyorProfile.authorized_certificates;
+                if (typeof authorizedCerts === 'string') {
+                    try { authorizedCerts = JSON.parse(authorizedCerts); } catch (e) { authorizedCerts = []; }
+                }
+                if (!Array.isArray(authorizedCerts)) authorizedCerts = [];
+            }
+        }
+
+        for (const cert of certificates) {
+            const term = cert.certificate_term || 'FULL_TERM';
+
+            // Verify certificate type exists
+            const certType = await db.CertificateType.findByPk(cert.certificate_type_id, { transaction: txn });
+            if (!certType) {
+                throw { statusCode: 404, message: `Certificate type not found.` };
+            }
+
+            // Check if certificate type is already in this job request
+            const existing = await db.JobCertificate.findOne({
+                where: { job_request_id: jobId, certificate_type_id: cert.certificate_type_id },
+                transaction: txn
+            });
+            if (existing) {
+                throw { statusCode: 400, message: `Certificate type (${certType.name}) is already present in this job request.` };
+            }
+
+            // Verify surveyor authorization if assigned
+            if (job.assigned_surveyor_id && certType && !authorizedCerts.includes(certType.name)) {
+                throw {
+                    statusCode: 400,
+                    message: `Currently assigned surveyor is not authorized to inspect ${certType.name}.`
+                };
+            }
+
+            // Fetch required docs
+            const requiredDocs = await db.CertificateRequiredDocument.findAll({
+                where: {
+                    certificate_type_id: cert.certificate_type_id,
+                    applies_to_term: { [Op.in]: [term, 'BOTH', 'ALL'] }
+                },
+                transaction: txn
+            });
+
+            const initialStatus = requiredDocs.length === 0 ? 'DOCUMENT_VERIFIED' : 'PENDING';
+
+            // Create JobCertificate
+            const jobCert = await db.JobCertificate.create({
+                job_request_id: jobId,
+                certificate_type_id: cert.certificate_type_id,
+                certificate_term: term,
+                status: initialStatus,
+                assigned_surveyor_id: job.assigned_surveyor_id || null
+            }, { transaction: txn });
+
+            // Create Survey if needed
+            if (job.assigned_surveyor_id && certType && certType.requires_survey !== false) {
+                await db.Survey.create({
+                    job_certificate_id: jobCert.id,
+                    surveyor_id: job.assigned_surveyor_id,
+                    survey_status: 'NOT_STARTED'
+                }, { transaction: txn });
+            }
+
+            // Create Documents
+            if (cert.uploaded_documents && cert.uploaded_documents.length > 0) {
+                const docsToCreate = cert.uploaded_documents.map(doc => ({
+                    job_id: jobId,
+                    job_certificate_id: jobCert.id,
+                    required_document_id: doc.required_document_id || null,
+                    custom_document_name: doc.custom_document_name || null,
+                    file_url: doc.file_url,
+                    uploaded_by: userId,
+                    verification_status: 'PENDING'
+                }));
+                await db.JobDocument.bulkCreate(docsToCreate, { transaction: txn });
+            }
+
+            addedCerts.push(jobCert);
+        }
+
+        // Re-evaluate job status if it was CREATED or DOCUMENT_VERIFIED
+        const allCerts = await db.JobCertificate.findAll({
+            where: { job_request_id: jobId },
+            transaction: txn
+        });
+        const allCertsVerified = allCerts.length > 0 && allCerts.every(c => c.status === 'DOCUMENT_VERIFIED');
+
+        let targetStatus = job.job_status;
+        if (['CREATED', 'DOCUMENT_VERIFIED'].includes(job.job_status)) {
+            targetStatus = allCertsVerified ? 'DOCUMENT_VERIFIED' : 'CREATED';
+            if (targetStatus !== job.job_status) {
+                await job.update({ job_status: targetStatus }, { transaction: txn });
+                
+                await db.JobStatusHistory.create({
+                    job_id: jobId,
+                    previous_status: job.job_status,
+                    new_status: targetStatus,
+                    changed_by: userId,
+                    reason: `Status updated because new certificates were added to the job request.`
+                }, { transaction: txn });
+            }
+        }
+
+        await db.JobStatusHistory.create({
+            job_id: jobId,
+            previous_status: job.job_status,
+            new_status: targetStatus,
+            changed_by: userId,
+            reason: `Added new certificates: ${addedCerts.map(c => c.id).join(', ')}`
+        }, { transaction: txn });
+
+        await txn.commit();
+        return { success: true, addedCount: addedCerts.length };
+    } catch (err) {
+        await txn.rollback();
+        throw err;
+    }
+};

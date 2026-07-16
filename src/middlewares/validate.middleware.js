@@ -93,6 +93,17 @@ export const schemas = {
         }).optional(),
         skip_mandatory_check: Joi.boolean().optional().default(false)
     }).or('vessel_id', 'client_id'),
+    addCertificates: Joi.object({
+        certificates: Joi.array().items(Joi.object({
+            certificate_type_id: Joi.string().guid().required(),
+            certificate_term: Joi.string().valid('FULL_TERM', 'SHORT_TERM', 'INTERIM', 'CONDITIONAL', 'PROVISIONAL').optional().default('FULL_TERM'),
+            uploaded_documents: Joi.array().items(Joi.object({
+                required_document_id: Joi.string().guid().optional().allow(null, ''),
+                custom_document_name: Joi.string().optional().allow(null, ''),
+                file_url: Joi.string().required()
+            })).optional().default([])
+        })).min(1).required()
+    }),
     submitSurvey: Joi.object({
         submit_latitude: Joi.number().optional(),
         submit_longitude: Joi.number().optional(),

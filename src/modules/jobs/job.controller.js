@@ -349,3 +349,10 @@ export const deleteJob = async (req, res, next) => {
         res.status(200).json({ success: true, message: 'Job permanently deleted successfully.' });
     } catch (error) { next(error); }
 };
+
+export const addCertificates = async (req, res, next) => {
+    try {
+        const result = await jobService.addCertificatesToJob(req.params.id, req.body.certificates, req.user);
+        res.status(200).json({ success: true, message: 'Certificates successfully added to job.', data: result });
+    } catch (error) { next(error); }
+};
