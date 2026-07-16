@@ -19,6 +19,19 @@ export const updateSelfProfile = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
+export const deleteUser = async (req, res, next) => {
+    try {
+        const hardDelete = req.query.hard === 'true';
+        if (hardDelete && !['ADMIN', 'GM'].includes(req.user.role)) {
+            throw { statusCode: 403, message: 'Only Admins and GMs can permanently delete users.' };
+        }
+        const result = await userService.deleteUser(req.params.id, hardDelete);
+        await cache.del(`user:profile:${req.params.id}`);
+        await cache.del(`user:detail:${req.params.id}`);
+        res.json({ success: true, message: result.message, data: result });
+    } catch (error) { next(error); }
+};
+
 export const getUsers = async (req, res, next) => {
     try {
         const users = await userService.getUsers(req.query, req.user.id);
@@ -51,14 +64,7 @@ export const updateStatus = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
-export const deleteUser = async (req, res, next) => {
-    try {
-        const result = await userService.deleteUser(req.params.id);
-        await cache.del(`user:profile:${req.params.id}`);
-        await cache.del(`user:detail:${req.params.id}`);
-        res.json({ success: true, message: 'User deleted successfully', data: result });
-    } catch (error) { next(error); }
-};
+
 
 export const updateFcmToken = async (req, res, next) => {
     try {

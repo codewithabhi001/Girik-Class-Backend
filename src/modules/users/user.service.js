@@ -110,9 +110,29 @@ export const updateStatus = async (id, status) => {
     return user;
 };
 
-export const deleteUser = async (id) => {
+export const deleteUser = async (id, hardDelete = false) => {
     const user = await User.findByPk(id);
     if (!user) throw { statusCode: 404, message: 'User not found' };
+
+    if (hardDelete) {
+        try {
+            // Delete dependent records first
+            await db.SurveyorProfile.destroy({ where: { user_id: id } });
+            await db.NotificationPreference.destroy({ where: { user_id: id } });
+            // Attempt to hard delete user
+            await user.destroy();
+            return { message: 'User permanently deleted' };
+        } catch (error) {
+            if (error.name === 'SequelizeForeignKeyConstraintError') {
+                throw { 
+                    statusCode: 400, 
+                    message: 'Cannot permanently delete this user because they are associated with existing jobs or records. Please use soft delete instead.' 
+                };
+            }
+            throw error;
+        }
+    }
+
     await user.update({ status: 'DELETED' }); // Soft delete
     return { message: 'User deleted' };
 };

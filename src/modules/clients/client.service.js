@@ -90,9 +90,63 @@ export const updateClient = async (id, data) => {
     return await client.update(data);
 };
 
-export const deleteClient = async (id) => {
-    const client = await getClientById(id, { useMaster: true });
-    return await client.update({ status: 'INACTIVE' });
+export const deleteClient = async (id, hardDelete = false) => {
+    let transaction;
+    if (hardDelete) {
+        transaction = await db.sequelize.transaction();
+    }
+
+    try {
+        const client = await getClientById(id, { useMaster: true, transaction });
+        
+        if (hardDelete) {
+            // Find and hard delete all Jobs belonging to this Client
+            const jobs = await db.JobRequest.findAll({
+                where: { client_id: id },
+                attributes: ['id'],
+                transaction
+            });
+            const jobService = await import('../jobs/job.service.js');
+            for (const job of jobs) {
+                await jobService.deleteJob(job.id, transaction);
+            }
+
+            // Find and hard delete all Vessels belonging to this Client
+            const vessels = await db.Vessel.findAll({
+                where: { client_id: id },
+                attributes: ['id'],
+                transaction
+            });
+            const vesselService = await import('../vessels/vessel.service.js');
+            for (const vessel of vessels) {
+                await vesselService.deleteVessel(vessel.id, transaction);
+            }
+
+            // Hard delete all Users belonging to this Client
+            const users = await db.User.findAll({
+                where: { client_id: id },
+                attributes: ['id'],
+                transaction
+            });
+            const userService = await import('../users/user.service.js');
+            for (const user of users) {
+                await userService.deleteUser(user.id, true);
+            }
+
+            // Finally, destroy the Client
+            await client.destroy({ transaction });
+            await transaction.commit();
+            return { message: 'Client permanently deleted successfully' };
+        }
+
+        // Default to soft delete
+        await client.update({ status: 'INACTIVE' });
+        return { message: 'Client deactivated successfully' };
+
+    } catch (error) {
+        if (transaction) await transaction.rollback();
+        throw error;
+    }
 };
 
 

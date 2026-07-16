@@ -44,4 +44,7 @@ router.get('/:id', authorizeRoles('ADMIN', 'GM', 'SURVEYOR', 'CLIENT'), vesselCo
 // Update vessel details
 router.put('/:id', authorizeRoles('ADMIN', 'GM'), validate(schemas.updateVessel), vesselController.updateVessel);
 
+// Delete vessel permanently
+router.delete('/:id', authorizeRoles('ADMIN', 'GM'), vesselController.deleteVessel);
+
 export default router;

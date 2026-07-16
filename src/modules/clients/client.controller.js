@@ -49,11 +49,15 @@ export const updateClient = async (req, res, next) => {
 
 export const deleteClient = async (req, res, next) => {
     try {
-        await clientService.deleteClient(req.params.id);
+        const hardDelete = req.query.hard === 'true';
+        if (hardDelete && !['ADMIN', 'GM'].includes(req.user.role)) {
+            throw { statusCode: 403, message: 'Only Admins and GMs can permanently delete clients.' };
+        }
+        await clientService.deleteClient(req.params.id, hardDelete);
         await cache.del(`client:detail:${req.params.id}`);
         res.status(200).json({
             success: true,
-            message: 'Client deleted/deactivated successfully'
+            message: hardDelete ? 'Client permanently deleted successfully' : 'Client deactivated successfully'
         });
     } catch (error) { next(error); }
 };

@@ -2629,6 +2629,124 @@ export const addInternalNote = async (jobId, noteText, userId) => {
     return note;
 };
 
+export const deleteJob = async (jobId, transaction = null) => {
+    // Determine if we need to manage our own transaction
+    let t = transaction;
+    let ownTransaction = false;
+    
+    if (!t) {
+        t = await db.sequelize.transaction();
+        ownTransaction = true;
+    }
+
+    try {
+        const job = await db.JobRequest.findByPk(jobId, { transaction: t });
+        if (!job) throw { statusCode: 404, message: 'Job not found' };
+
+        const jobCertificates = await db.JobCertificate.findAll({
+            where: { job_request_id: jobId },
+            transaction: t
+        });
+        const jobCertificateIds = jobCertificates.map(jc => jc.id);
+
+        if (jobCertificateIds.length > 0) {
+            // Find related surveys
+            const surveys = await db.Survey.findAll({
+                where: { job_certificate_id: { [db.Sequelize.Op.in]: jobCertificateIds } },
+                transaction: t
+            });
+            const surveyIds = surveys.map(s => s.id);
+
+            if (surveyIds.length > 0) {
+                // Delete survey status history
+                await db.SurveyStatusHistory.destroy({
+                    where: { survey_id: { [db.Sequelize.Op.in]: surveyIds } },
+                    transaction: t
+                });
+
+                // Delete survey signed documents
+                await db.SurveySignedDocument.destroy({
+                    where: { survey_id: { [db.Sequelize.Op.in]: surveyIds } },
+                    transaction: t
+                });
+
+                // Delete surveys
+                await db.Survey.destroy({
+                    where: { id: { [db.Sequelize.Op.in]: surveyIds } },
+                    transaction: t
+                });
+            }
+
+            // Delete JobDocuments
+            await db.JobDocument.destroy({
+                where: { job_certificate_id: { [db.Sequelize.Op.in]: jobCertificateIds } },
+                transaction: t
+            });
+
+            // Delete ActivityPlanning
+            await db.ActivityPlanning.destroy({
+                where: { job_certificate_id: { [db.Sequelize.Op.in]: jobCertificateIds } },
+                transaction: t
+            });
+
+            // Delete GpsTracking
+            await db.GpsTracking.destroy({
+                where: { job_certificate_id: { [db.Sequelize.Op.in]: jobCertificateIds } },
+                transaction: t
+            });
+
+            // Delete NonConformity
+            await db.NonConformity.destroy({
+                where: { job_certificate_id: { [db.Sequelize.Op.in]: jobCertificateIds } },
+                transaction: t
+            });
+
+            // Delete JobCertificate records
+            await db.JobCertificate.destroy({
+                where: { id: { [db.Sequelize.Op.in]: jobCertificateIds } },
+                transaction: t
+            });
+        }
+
+        // Delete JobReschedule
+        await db.JobReschedule.destroy({
+            where: { job_id: jobId },
+            transaction: t
+        });
+
+        // Delete Payment
+        await db.Payment.destroy({
+            where: { job_id: jobId },
+            transaction: t
+        });
+
+        // Delete JobStatusHistory
+        await db.JobStatusHistory.destroy({
+            where: { job_id: jobId },
+            transaction: t
+        });
+        
+        // Also any top-level JobDocuments
+        await db.JobDocument.destroy({
+            where: { job_id: jobId },
+            transaction: t
+        });
+
+        // Delete the JobRequest
+        await db.JobRequest.destroy({
+            where: { id: jobId },
+            transaction: t
+        });
+
+        if (ownTransaction) await t.commit();
+        
+        return { message: 'Job permanently deleted successfully' };
+    } catch (error) {
+        if (ownTransaction) await t.rollback();
+        throw error;
+    }
+};
+
 export const updateJobStatus = (id, status, remarks, userId) => {
     throw { statusCode: 400, message: 'Direct status update is disabled. Use semantic workflow endpoints.' };
 };

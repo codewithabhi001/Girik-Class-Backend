@@ -339,3 +339,13 @@ export const createInternalJobMessage = async (req, res, next) => {
 // updateJobStatus (generic) — REMOVED. Direct status updates blocked.
 // holdJob / resumeJob — REMOVED (not part of strict workflow).
 // cloneJob — REMOVED.
+
+export const deleteJob = async (req, res, next) => {
+    try {
+        if (!['ADMIN', 'GM'].includes(req.user.role)) {
+            throw { statusCode: 403, message: 'Only Admins and GMs can permanently delete jobs.' };
+        }
+        await jobService.deleteJob(req.params.id);
+        res.status(200).json({ success: true, message: 'Job permanently deleted successfully.' });
+    } catch (error) { next(error); }
+};

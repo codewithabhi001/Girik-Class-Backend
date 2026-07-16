@@ -5,7 +5,7 @@ import { flatVesselListRow } from '../../utils/listRowFlatten.util.js';
 import * as fileAccessService from '../../services/fileAccess.service.js';
 import axios from 'axios';
 import env from '../../config/env.js';
-
+import * as jobService from '../jobs/job.service.js';
 
 const enrichVesselUploadedDocuments = async (docs, user = null) => {
     return Promise.all(docs.map(async (doc) => {
@@ -339,5 +339,62 @@ export const lookupVesselByImo = async (imoNumber) => {
             statusCode: error.response?.status || 500, 
             message: error.response?.data?.error?.message || 'Error fetching vessel details from external registry.' 
         };
+    }
+};
+
+export const deleteVessel = async (id, transaction = null) => {
+    let t = transaction;
+    let ownTransaction = false;
+
+    if (!t) {
+        t = await db.sequelize.transaction();
+        ownTransaction = true;
+    }
+    
+    try {
+        const vessel = await db.Vessel.findByPk(id, { transaction: t });
+        if (!vessel) throw { statusCode: 404, message: 'Vessel not found' };
+
+        // Find all jobs for this vessel
+        const jobs = await db.JobRequest.findAll({
+            where: { vessel_id: id },
+            attributes: ['id'],
+            transaction: t
+        });
+
+        // Delete all jobs for this vessel
+        for (const job of jobs) {
+            await jobService.deleteJob(job.id, t);
+        }
+
+        // Delete VesselDocuments
+        await db.VesselDocument.destroy({
+            where: { vessel_id: id },
+            transaction: t
+        });
+
+        // Delete GpsTracking
+        await db.GpsTracking.destroy({
+            where: { vessel_id: id },
+            transaction: t
+        });
+        
+        // Delete Certificate
+        await db.Certificate.destroy({
+            where: { vessel_id: id },
+            transaction: t
+        });
+
+        // Finally, delete the Vessel
+        await db.Vessel.destroy({
+            where: { id },
+            transaction: t
+        });
+
+        if (ownTransaction) await t.commit();
+        return { message: 'Vessel permanently deleted successfully' };
+    } catch (error) {
+        if (ownTransaction) await t.rollback();
+        throw error;
     }
 };

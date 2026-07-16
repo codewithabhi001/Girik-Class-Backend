@@ -102,3 +102,13 @@ export const lookupVesselByImo = async (req, res, next) => {
         next(error);
     }
 };
+
+export const deleteVessel = async (req, res, next) => {
+    try {
+        if (!['ADMIN', 'GM'].includes(req.user.role)) {
+            throw { statusCode: 403, message: 'Only Admins and GMs can permanently delete vessels.' };
+        }
+        await vesselService.deleteVessel(req.params.id);
+        res.status(200).json({ success: true, message: 'Vessel permanently deleted successfully.' });
+    } catch (error) { next(error); }
+};

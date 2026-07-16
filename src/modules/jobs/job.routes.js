@@ -95,4 +95,7 @@ router.post('/:id/messages/external', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'T
 
 router.post('/:id/messages/internal', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), upload.any(), validate(schemas.createJobMessage), jobController.createInternalJobMessage);
 
+// ─── Deletion ────────────────────────────────────────────
+router.delete('/:id', authorizeRoles('ADMIN', 'GM'), jobController.deleteJob);
+
 export default router;

@@ -27,20 +27,20 @@ try {
     console.log('Attempting to load Firebase service account from:', fullPath);
 
     if (!existsSync(fullPath)) {
-        throw new Error(`File not found at: ${fullPath}`);
+        logger.warn(`Firebase service account file not found at: ${fullPath}. Push notifications will be disabled.`);
+    } else {
+        const serviceAccount = JSON.parse(readFileSync(fullPath, 'utf8'));
+
+        firebaseApp = admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount)
+        });
+
+        console.log('Firebase Admin SDK initialized successfully');
+        logger.info('Firebase Admin SDK initialized successfully');
     }
-
-    const serviceAccount = JSON.parse(readFileSync(fullPath, 'utf8'));
-
-    firebaseApp = admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-    });
-
-    console.log('Firebase Admin SDK initialized successfully');
-    logger.info('Firebase Admin SDK initialized successfully');
 } catch (error) {
-    console.error('Failed to initialize Firebase Admin SDK:', error.message);
-    logger.error('Failed to initialize Firebase Admin SDK:', error);
+    console.error('Error initializing Firebase Admin SDK:', error);
+    logger.error('Error initializing Firebase Admin SDK:', error);
 }
 
 export default firebaseApp;
