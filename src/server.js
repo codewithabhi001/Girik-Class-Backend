@@ -53,3 +53,4 @@ const startServer = async () => {
 };
 
 startServer();
+// Triggered nodemon reload

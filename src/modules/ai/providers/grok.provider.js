@@ -31,7 +31,7 @@ IMPORTANT: Before calling a tool, you do NOT need to ask for permission if they 
     const apiMessages = [systemMessage, ...messages];
 
     let response = await openai.chat.completions.create({
-        model: 'grok-beta', // or grok-2 if available
+        model: 'grok-2-latest', // updated model
         messages: apiMessages,
         tools: openaiTools,
         tool_choice: 'auto',
@@ -62,7 +62,7 @@ IMPORTANT: Before calling a tool, you do NOT need to ask for permission if they 
 
         // Send the tool results back to the model to generate the final response
         response = await openai.chat.completions.create({
-            model: 'grok-beta',
+            model: 'grok-2-latest',
             messages: apiMessages,
             tools: openaiTools
         });
