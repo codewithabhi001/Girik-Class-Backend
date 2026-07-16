@@ -1,5 +1,23 @@
 import dotenv from 'dotenv';
+import { execSync } from 'child_process';
 dotenv.config();
+
+let branchDbName = null;
+try {
+    const branch = execSync('git rev-parse --abbrev-ref HEAD', { stdio: 'pipe', encoding: 'utf8' }).trim();
+    if (branch === 'main') {
+        branchDbName = 'Gr_class_Prod';
+    } else {
+        branchDbName = 'Gr_class_Dev';
+    }
+} catch (e) {
+    // Ignore errors (e.g., git not installed or not a git repo)
+}
+
+const isProd = process.env.NODE_ENV === 'production';
+const finalDbName = isProd 
+    ? (process.env.DB_NAME || 'Gr_class_Prod')
+    : (branchDbName || process.env.DB_NAME || 'Gr_class_Dev');
 
 export default {
     nodeEnv: process.env.NODE_ENV || 'development',
@@ -10,7 +28,7 @@ export default {
         port: process.env.DB_PORT || 3306,
         username: process.env.DB_USER || 'root',
         password: process.env.DB_PASS || '',
-        name: process.env.DB_NAME || 'gr_class_db',
+        name: finalDbName,
         dialect: process.env.DB_DIALECT || 'mysql',
         sslCa: process.env.DB_SSL_CA,
         replicaHost: process.env.DB_REPLICA_HOST || null,
