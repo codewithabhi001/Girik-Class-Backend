@@ -2708,6 +2708,41 @@ export const deleteJob = async (jobId, transaction = null) => {
             });
         }
 
+        // Find related certificates to delete history later
+        const certs = await db.Certificate.findAll({
+            where: { job_id: jobId },
+            attributes: ['id'],
+            transaction: t
+        });
+        const certIds = certs.map(c => c.id);
+
+        if (certIds.length > 0 && db.CertificateHistory) {
+            await db.CertificateHistory.destroy({
+                where: { certificate_id: { [db.Sequelize.Op.in]: certIds } },
+                transaction: t
+            });
+        }
+
+        // Delete ActivityPlanning
+        if (db.ActivityPlanning) {
+            await db.ActivityPlanning.destroy({ where: { job_id: jobId }, transaction: t });
+        }
+        
+        // Unlink ActivityRequest
+        if (db.ActivityRequest) {
+            await db.ActivityRequest.update({ linked_job_id: null }, { where: { linked_job_id: jobId }, transaction: t });
+        }
+
+        // Delete top-level tracking/financial/feedback records
+        if (db.Message) await db.Message.destroy({ where: { job_id: jobId }, transaction: t });
+        if (db.JobNote) await db.JobNote.destroy({ where: { job_id: jobId }, transaction: t });
+        if (db.NonConformity) await db.NonConformity.destroy({ where: { job_id: jobId }, transaction: t });
+        if (db.GpsTracking) await db.GpsTracking.destroy({ where: { job_id: jobId }, transaction: t });
+        if (db.CustomerFeedback) await db.CustomerFeedback.destroy({ where: { job_id: jobId }, transaction: t });
+        
+        // Financial Ledger must be deleted BEFORE Payment due to foreign keys
+        if (db.FinancialLedger) await db.FinancialLedger.destroy({ where: { job_id: jobId }, transaction: t });
+
         // Delete JobReschedule
         await db.JobReschedule.destroy({
             where: { job_id: jobId },
@@ -2731,6 +2766,9 @@ export const deleteJob = async (jobId, transaction = null) => {
             where: { job_id: jobId },
             transaction: t
         });
+
+        // Finally delete certificates
+        if (db.Certificate) await db.Certificate.destroy({ where: { job_id: jobId }, transaction: t });
 
         // Delete the JobRequest
         await db.JobRequest.destroy({
