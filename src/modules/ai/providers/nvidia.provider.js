@@ -1,13 +1,13 @@
 import OpenAI from 'openai';
 import { allTools, getToolByName } from '../tools/index.js';
 
-export const groqProvider = async (messages) => {
-    const apiKey = process.env.GROQ_API_KEY;
-    if (!apiKey) throw new Error('GROQ_API_KEY is not defined in environment variables.');
+export const nvidiaProvider = async (messages) => {
+    const apiKey = process.env.NVIDIA_API_KEY;
+    if (!apiKey) throw new Error('NVIDIA_API_KEY is not defined in environment variables.');
 
     const openai = new OpenAI({
         apiKey: apiKey,
-        baseURL: 'https://api.groq.com/openai/v1'
+        baseURL: 'https://integrate.api.nvidia.com/v1'
     });
 
     // Map our tools to OpenAI format
@@ -60,7 +60,7 @@ ALWAYS provide a clear, conversational, and professional text response confirmin
     });
 
     let response = await openai.chat.completions.create({
-        model: 'llama-3.1-8b-instant',
+        model: 'meta/llama-3.1-70b-instruct',
         messages: apiMessages,
         tools: openaiTools,
         tool_choice: 'auto',
@@ -107,7 +107,7 @@ ALWAYS provide a clear, conversational, and professional text response confirmin
 
         // Send the tool results back to the model to generate the final response
         response = await openai.chat.completions.create({
-            model: 'llama-3.1-8b-instant',
+            model: 'meta/llama-3.1-70b-instruct',
             messages: apiMessages,
             tools: openaiTools
         });
