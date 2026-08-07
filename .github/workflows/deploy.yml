@@ -47,7 +47,7 @@ jobs:
              export PUPPETEER_CACHE_DIR=$DEPLOY_DIR/.cache/puppeteer; \
              npm install --omit=dev; \
              if pm2 show $PM2_NAME > /dev/null; then \
-               pm2 reload $PM2_NAME --update-env; \
+               pm2 reload $PM2_NAME --update-env --force; \
              else \
                pm2 start src/server.js --name $PM2_NAME --update-env; \
              fi; \
