@@ -3,12 +3,12 @@ export const emailTheme = {
     background: '#fafafa',
     white: '#ffffff',
     brand: {
-      primary: '#1e1b4b',   // Deep Navy (Header)
-      deep: '#4338ca',      // Deep Indigo (Footer)
-      main: '#2563eb',      // Vibrant Industrial Blue (from ref image)
-      accent: '#3b82f6',    // Bright Blue
-      navy_sec: '#0f172a',  // Secondary Navy
-      surface: '#f8fafc',   // Very Light Surface
+      primary: '#ffffff',   // Clean White (Header)
+      deep: '#0f172a',      // Dark Navy (For text accents if needed)
+      main: '#0B2443',      // GR Class Navy
+      accent: '#B5891F',    // GR Class Gold
+      navy_sec: '#f8fafc',  // Very Light Surface for Footers
+      surface: '#ffffff',   // Pure White
       faded: '#e2e8f0',     // Border Color
     },
     functional: {

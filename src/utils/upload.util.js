@@ -5,21 +5,30 @@ import path from 'path';
  * Standalone validation for images
  */
 export const validateImage = (fileName, mimeType) => {
-    return true; // allow all formats
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
+    const ext = path.extname(fileName).toLowerCase();
+    return allowedMimeTypes.includes(mimeType) && allowedExtensions.includes(ext);
 };
 
 /**
  * Standalone validation for documents (PDF + Images)
  */
 export const validateDoc = (fileName, mimeType) => {
-    return true; // allow all formats
+    const allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.webp', '.doc', '.docx'];
+    const ext = path.extname(fileName).toLowerCase();
+    return allowedMimeTypes.includes(mimeType) && allowedExtensions.includes(ext);
 };
 
 /**
  * Standalone validation for videos
  */
 export const validateVideo = (fileName, mimeType) => {
-    return true; // allow all formats
+    const allowedMimeTypes = ['video/mp4', 'video/quicktime', 'image/jpeg', 'image/png', 'image/webp'];
+    const allowedExtensions = ['.mp4', '.mov', '.jpg', '.jpeg', '.png', '.webp'];
+    const ext = path.extname(fileName).toLowerCase();
+    return allowedMimeTypes.includes(mimeType) && allowedExtensions.includes(ext);
 };
 
 /**
@@ -40,7 +49,7 @@ export const docFileFilter = (req, file, cb) => {
     if (validateDoc(file.originalname, file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error(`Invalid file format. Only PDF, JPEG, PNG and WEBP files are allowed.`), false);
+        cb(new Error(`Invalid file format. Only PDF, JPEG, PNG, WEBP, DOC and DOCX files are allowed.`), false);
     }
 };
 
@@ -63,15 +72,18 @@ const defaultLimits = {
 // Multer instances
 export const imageUpload = multer({
     storage: multer.memoryStorage(),
-    limits: defaultLimits
+    limits: defaultLimits,
+    fileFilter: imageFileFilter
 });
 
 export const docUpload = multer({
     storage: multer.memoryStorage(),
-    limits: defaultLimits
+    limits: defaultLimits,
+    fileFilter: docFileFilter
 });
 
 export const videoUpload = multer({
     storage: multer.memoryStorage(),
-    limits: defaultLimits
+    limits: defaultLimits,
+    fileFilter: videoFileFilter
 });

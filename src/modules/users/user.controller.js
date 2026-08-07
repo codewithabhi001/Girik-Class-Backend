@@ -90,3 +90,19 @@ export const getUserById = async (req, res, next) => {
         res.json({ success: true, message: 'User details fetched successfully', data });
     } catch (error) { next(error); }
 };
+
+export const logoutAllSessions = async (req, res, next) => {
+    try {
+        await userService.logoutAllSessions(req.params.id);
+        res.json({ success: true, message: 'All active sessions for this user have been logged out' });
+    } catch (error) { next(error); }
+};
+
+export const getUserSessions = async (req, res, next) => {
+    try {
+        const sessions = await userService.getUserSessions(req.params.id);
+        res.json({ success: true, data: sessions });
+    } catch (error) { next(error); }
+};
+
+

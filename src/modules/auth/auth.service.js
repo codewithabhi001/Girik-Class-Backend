@@ -43,8 +43,22 @@ export const login = async (email, password) => {
         throw { statusCode: 403, message: 'User is not active' };
     }
 
+    // Check Lockout
+    if (user.locked_until && new Date() < new Date(user.locked_until)) {
+        throw { statusCode: 403, message: 'Account is locked. Please try again later.' };
+    }
+
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
+        // Increment failed attempts
+        const newFailedAttempts = (user.failed_login_attempts || 0) + 1;
+        const updates = { failed_login_attempts: newFailedAttempts };
+        
+        if (newFailedAttempts >= 5) {
+            updates.locked_until = new Date(Date.now() + 15 * 60 * 1000); // Lock for 15 mins
+        }
+        await user.update(updates, { useMaster: true });
+
         const ctx = getContext();
         db.AuditLog.create({
             action: 'LOGIN_FAILED',
@@ -52,9 +66,14 @@ export const login = async (email, password) => {
             entity_id: user.id,
             ip_address: ctx.ip,
             user_agent: ctx.userAgent,
-            new_values: { email }
+            new_values: { email, newFailedAttempts }
         }).catch(() => { });
         throw { statusCode: 401, message: 'Invalid credentials' };
+    }
+
+    // Reset failed attempts on successful login
+    if (user.failed_login_attempts > 0 || user.locked_until) {
+        await user.update({ failed_login_attempts: 0, locked_until: null }, { useMaster: true });
     }
 
     // Set context for audit logging
@@ -74,10 +93,31 @@ export const login = async (email, password) => {
     // Non-blocking — don't wait for this DB write
     user.update({ last_login_at: new Date() }, { user_id: user.id }).catch(() => { });
 
+    // Generate tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    // Track User Session in DB
+    if (db.UserSession) {
+        db.UserSession.create({
+            user_id: user.id,
+            ip_address: metadata.ipAddress,
+            user_agent: metadata.userAgent,
+            last_activity_at: new Date()
+        }).catch(err => console.error('Failed to log user session:', err));
+    }
+
     // Resolve only profile_pic_url directly instead of full recursive resolveEntity
     let profilePicUrl = user.profile_pic_url || null;
     if (profilePicUrl && !profilePicUrl.startsWith('http')) {
         profilePicUrl = await fileAccessService.resolveUrl(profilePicUrl);
+    }
+    
+    // Check maintenance mode
+    const { getMaintenanceMode } = await import('../system/system.service.js');
+    const maintenance = await getMaintenanceMode();
+    if (maintenance.isMaintenance && user.role !== 'ADMIN') {
+        throw { statusCode: 503, message: maintenance.message || 'System is under maintenance. Only administrators can log in right now.' };
     }
 
     const userObj = {
@@ -89,8 +129,8 @@ export const login = async (email, password) => {
     };
     return {
         user: userObj,
-        accessToken: generateAccessToken(user),
-        refreshToken: generateRefreshToken(user),
+        accessToken,
+        refreshToken,
     };
 };
 
@@ -224,6 +264,39 @@ export const forgotPassword = async (email) => {
     );
 };
 
+const enforcePasswordHistory = async (user, newPassword) => {
+    // Check current password
+    if (user.password_hash) {
+        const isMatch = await bcrypt.compare(newPassword, user.password_hash);
+        if (isMatch) throw { statusCode: 400, message: 'New password cannot be the same as your current password' };
+    }
+
+    if (!db.PasswordHistory) return;
+
+    // Check last 5 passwords
+    const histories = await db.PasswordHistory.findAll({
+        where: { user_id: user.id },
+        order: [['created_at', 'DESC']],
+        limit: 4, // Checking against current + last 4 = 5 passwords total
+        useMaster: true
+    });
+
+    for (const history of histories) {
+        const isMatch = await bcrypt.compare(newPassword, history.password_hash);
+        if (isMatch) {
+            throw { statusCode: 400, message: 'New password cannot be the same as any of your last 5 passwords' };
+        }
+    }
+};
+
+const savePasswordHistory = async (user) => {
+    if (!db.PasswordHistory || !user.password_hash) return;
+    await db.PasswordHistory.create({
+        user_id: user.id,
+        password_hash: user.password_hash,
+    }).catch(() => {});
+};
+
 export const resetPassword = async (token, newPassword) => {
     let decoded;
     try {
@@ -238,9 +311,17 @@ export const resetPassword = async (token, newPassword) => {
     if (!user) {
         throw { statusCode: 400, message: 'User not found. Please request a new password reset.' };
     }
+
+    await enforcePasswordHistory(user, newPassword);
+    await savePasswordHistory(user); // Save the OLD password to history before updating
+
     const salt = await bcrypt.genSalt(env.bcrypt.saltRounds || 10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
-    await user.update({ password_hash: hashedPassword, force_password_reset: false });
+    await user.update({ 
+        password_hash: hashedPassword, 
+        force_password_reset: false,
+        last_password_change_at: new Date()
+    });
     return user.id;
 };
 
@@ -253,8 +334,15 @@ export const changePassword = async (userId, oldPassword, newPassword) => {
     if (!isMatch) {
         throw { statusCode: 400, message: 'Incorrect old password' };
     }
+
+    await enforcePasswordHistory(user, newPassword);
+    await savePasswordHistory(user);
+
     const salt = await bcrypt.genSalt(env.bcrypt.saltRounds || 10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
-    await user.update({ password_hash: hashedPassword });
+    await user.update({ 
+        password_hash: hashedPassword,
+        last_password_change_at: new Date()
+    });
 };
 

@@ -12,6 +12,16 @@ export const flatCertificateTypeListRow = (row) => {
         .map(tmpl => tmpl.certificate_term)
         .filter(Boolean); // e.g. ['FULL_TERM', 'SHORT_TERM']
 
+    const now = new Date();
+    const is_new = (t.Templates || []).some(tmpl => {
+        const dateStr = tmpl.createdAt || tmpl.created_at;
+        if (!dateStr) return false;
+        const createdAt = new Date(dateStr);
+        const diffTime = Math.abs(now - createdAt);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays <= 7;
+    });
+
     return {
         id: t.id,
         name: t.name,
@@ -23,6 +33,7 @@ export const flatCertificateTypeListRow = (row) => {
         requires_survey_short_term: t.requires_survey_short_term,
         requires_survey_full_term: t.requires_survey_full_term,
         available_terms,
+        is_new,
     };
 };
 

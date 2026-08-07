@@ -37,4 +37,10 @@ router.put('/:id/status', authorizeRoles('ADMIN'), validate(schemas.updateUserSt
 // Delete user
 router.delete('/:id', authorizeRoles('ADMIN'), userController.deleteUser);
 
+// Logout All Sessions for a user
+router.post('/:id/logout-all', authorizeRoles('ADMIN'), userController.logoutAllSessions);
+
+// Get User Sessions
+router.get('/:id/sessions', authorizeRoles('ADMIN', 'GM', 'TM', 'TO'), userController.getUserSessions);
+
 export default router;

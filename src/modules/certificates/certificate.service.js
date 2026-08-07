@@ -224,7 +224,7 @@ export const getCertificateTypes = async (options = {}) => {
             as: 'Templates',
             where: { is_active: true },
             required: false,
-            attributes: ['certificate_term']
+            attributes: ['certificate_term', 'createdAt', 'created_at']
         }],
         order: [['name', 'ASC']],
         distinct: true, // Need this because of the hasMany include

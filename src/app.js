@@ -34,9 +34,16 @@ app.set('trust proxy', 1);
 // Drop scanner paths (/secrets.json, phpinfo.php, etc.) before they hit rate limits or heavy logging
 app.use(probeBlockMiddleware);
 
+// Global Maintenance Mode check
+app.use(checkMaintenanceMode);
+
 // CORS
 const allowedOrigins = [
-    '*'
+    'https://ops.grclass.com',
+    'https://www.grclass.com',
+    'https://grclass.com',
+    'http://localhost:3000',
+    'http://localhost:3001'
 ];
 
 /** Webmail origins that POST for RFC 8058 List-Unsubscribe one-click (e.g. Gmail next to sender). */

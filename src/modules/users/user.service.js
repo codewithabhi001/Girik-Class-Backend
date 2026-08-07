@@ -244,3 +244,26 @@ export const getUserById = async (id) => {
     const resolved = await fileAccessService.resolveEntity(user);
     return formatWithNa(resolved);
 };
+
+export const logoutAllSessions = async (userId) => {
+    if (!db.UserSession) return;
+    
+    // Deactivate all active sessions for this user
+    await db.UserSession.update(
+        { is_active: false },
+        { where: { user_id: userId, is_active: true } }
+    );
+};
+
+export const getUserSessions = async (userId) => {
+    if (!db.UserSession) return [];
+    
+    return await db.UserSession.findAll({
+        where: { user_id: userId },
+        order: [['created_at', 'DESC']],
+        limit: 10,
+        attributes: ['id', 'ip_address', 'user_agent', 'last_activity_at', 'is_active', 'created_at']
+    });
+};
+
+
