@@ -75,13 +75,24 @@ export const sendEmail = async (to, subject, body, type = 'system', options = {}
             baseOptions.attachments = options.attachments;
         }
 
-        // Auto-attach logo if the template uses it
-        if (body.includes('cid:grclass-logo')) {
-            baseOptions.attachments = baseOptions.attachments || [];
+        // Auto-attach inline PNG assets used by email layout (CID — Gmail-safe)
+        baseOptions.attachments = baseOptions.attachments || [];
+        const inlineAssets = [
+            { cid: 'grclass-logo', file: 'grclass-logo.png' },
+            { cid: 'grclass-qr', file: 'grclass-verify-qr.png' },
+            { cid: 'icon-location', file: 'icons/location.png' },
+            { cid: 'icon-phone', file: 'icons/phone.png' },
+            { cid: 'icon-email', file: 'icons/email.png' },
+            { cid: 'icon-web', file: 'icons/web.png' }
+        ];
+        for (const asset of inlineAssets) {
+            if (!body.includes(`cid:${asset.cid}`)) continue;
             baseOptions.attachments.push({
-                filename: 'grclass-logo.webp',
-                path: path.join(__dirname, '../email-templates/grclass-logo.webp'),
-                cid: 'grclass-logo'
+                filename: path.basename(asset.file),
+                path: path.join(__dirname, '../email-templates', asset.file),
+                cid: asset.cid,
+                contentDisposition: 'inline',
+                contentType: 'image/png'
             });
         }
 
