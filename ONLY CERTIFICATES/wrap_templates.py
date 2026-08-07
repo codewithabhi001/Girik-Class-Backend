@@ -1,8 +1,14 @@
-<!DOCTYPE html>
+import os
+import glob
+import re
+
+base_dir = r"a:\Girik workspace\grclass-backend\ONLY CERTIFICATES"
+
+template_str = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IMSBC Approved Cargoes List</title>
+    <title>{PAGE_TITLE}</title>
     
     <style>
         /* ── OPTIMIZED CSS (SYSTEM FONTS FOR INSTANT LOAD) ── */
@@ -645,7 +651,7 @@
                     </div>
                     <div class="hdr-center">
                         <div class="hdr-flag">{term}</div>
-                        <div class="hdr-title-en">IMSBC Approved Cargoes List</div>
+                        <div class="hdr-title-en">{PAGE_TITLE}</div>
                         <div class="hdr-convention"></div>
                     </div>
                     <div class="hdr-right">
@@ -661,87 +667,7 @@
                 </div>
 
                 <div class="body" style="flex: 1; display: flex; flex-direction: column;">
-                    <table>
-<thead><tr><th>Certificate No.</th><th>-IMSBC-IC-</th></tr></thead>
-<tbody>
-</tbody></table>
-<p>Control Number:</p>
-<h2>INTERIM CERTIFICATE OF COMPLIANCE WITH THE</h2>
-<h2>INTERNATIONAL MARITIME</h2>
-<h2>SOLID BULK CARGOES (IMSBC) CODE</h2>
-<p>Issued under the authority of the Government of</p>
-<h2>GR CLASS-CLASSIFIED FOR STANDARD</h2>
-<table>
-<thead><tr><th>Name of ship</th><th>Distinctive number or letters</th><th>Port of registry</th><th>Gross tonnage</th></tr></thead>
-<tbody>
-</tbody></table>
-<p>IMO number</p>
-<p>This is to certify that the ship is suitable for the carriage in bulk of all cargoes listed in Attachment 1 in the cargo hold stated in accordance with the provisions of the International Maritime Solid Bulk Cargoes Code provided that:</p>
-<table>
-<thead><tr><th>a.</th><th>The relevant construction and equipment are maintained in good order;</th></tr></thead>
-<tbody>
-</tbody></table>
-<table>
-<thead><tr><th>b.</th><th>Any cargo should be loaded and distributed in pursuant to information provided in the approved* loading manual and the stability information booklet provided on board the ship.</th></tr></thead>
-<tbody>
-<tr><td>c.</td><td>The nominal specific gravity of any cargo should not exceed the allowable value indicated in the loading manual; and</td></tr>
-</tbody></table>
-<table>
-<thead><tr><th>d.</th><th>The remaining operational requirements stipulated in the Code, including those stated in General Note on Attachment 2, should be ensured.</th></tr></thead>
-<tbody>
-</tbody></table>
-<p>This certificate is valid until</p>
-<p>Completion date of the survey on which this certificate is based (YY/MM/DD)</p>
-<p>Issued at</p>
-<p>Date of issue</p>
-<p>(Place of issue of certificate)</p>
-<h2>(YYYY-MM-DD)</h2>
-<p>Signature of authori</p>
-<p>ed official issuing the Certificate</p>
-<p>Name:</p>
-<h2>GR CLASS-CLASSIFIED FOR STANDARD</h2>
-<h2>CERTIFICATE OF COMPLIANCE WITH THE</h2>
-<h2>INTERNATIONAL MARITIME</h2>
-<h2>SOLID BULK CARGOES (IMSBC) CODE</h2>
-<h2>ATTACHMENT  1</h2>
-<h2>LIST OF CARGOES PERMITTED TO BE CARRIED</h2>
-<p>Material</p>
-<table>
-<thead><tr><th>IMO CLASS</th><th>UN No.</th><th>NOTE</th></tr></thead>
-<tbody>
-</tbody></table>
-<p>(See Attachment 2)</p>
-<table>
-<thead><tr><th>All materials of Group A and Group C</th><th></th><th></th><th>1, 2*, 4</th></tr></thead>
-<tbody>
-</tbody></table>
-<p>*Delete if not appropriate</p>
-<p>Date:</p>
-<p>At:</p>
-<h2>GR CLASS-CLASSIFIED FOR STANDARD</h2>
-<h2>GR CLASS-CLASSIFIED FOR STANDARD</h2>
-<h2>CERTIFICATE OF COMPLIANCE WITH THE</h2>
-<h2>INTERNATIONAL MARITIME</h2>
-<h2>SOLID BULK CARGOES (IMSBC) CODE</h2>
-<h2>ATTACHMENT  2</h2>
-<h2>GENERAL NOTE</h2>
-<p>When it has been required by the Code, persons, who may be exposed to the dust of the cargo, shall wear protective clothing, goggles or other equivalent dust eye - protection and dust filter mask, as necessary.</p>
-<p>When carrying a solid bulk cargo which is liable to emit a toxic or flammable gas, and/or cause oxygen depletion in the cargo space, the appropriate instrument(s) for measuring the concentration of gas and oxygen in the cargo space shall be provided.</p>
-<h2>NOTE</h2>
-<table>
-<thead><tr><th>1.</th><th>Except AMMONIUM NITRATE BASED FERTILIZER (non-hazardous), COAL SLURRY*, SCRAP METAL* AND SULPHUR (FORMED, SOLID)*.</th></tr></thead>
-<tbody>
-<tr><td>2.</td><td>CHOPPED RUBBER AND PLASTIC INSULATION, COARSE CHOPPED TYRES and GRANULATE TYPE RUBBER are not permitted to be loaded when the planned interval between the commencement of loading and the completion of discharge of the cargoes exceeds 5 days.</td></tr>
-<tr><td>3.</td><td>AMMONIUM NITRATE BASED FERTILIZER (non-hazardous) is to be stowed out of direct contact with a metal engine room boundaries</td></tr>
-<tr><td>4.</td><td>PEANUTS (in shell) and Industrial sand coated with resin are to be stowed at least 3m horizontally away from engine room boundaries</td></tr>
-<tr><td>5.</td><td>To be stowed at least 3m horizontally away from engine room boundaries.</td></tr>
-<tr><td>6.</td><td>CASTER MEAL, CASTER POMACE and CASTER FLAKE shall not be carried in bulk.</td></tr>
-<tr><td>7.</td><td>Consideration shall be given to providing the vessel with the means to top up the cargo spaces with additional supplies of inert gas taking into account the duration of the voyage. The ship´s fixed CO2  Fire extinguishing system shall not be used for this purpose.</td></tr>
-<tr><td>8.</td><td>Except  Seedcake containing solvent extractions.</td></tr>
-<tr><td>9.</td><td>Fine grained sulphur (flower of sulphur) shall not be transported in bulk</td></tr>
-<tr><td>10.</td><td>With moisture content of 15% or more.</td></tr>
-</tbody></table>
-<p>*Delete if not appropriate.</p>
+                    {BODY_CONTENT}
                 </div>
 
                 {remarks}
@@ -793,3 +719,58 @@
     </div>
 </body>
 </html>
+"""
+
+# The 11 files listed in seed_new_docs.js
+files_to_update = [
+    r"ANTI FOULING SYSTEM CERTIFICATE\html\GRClass_AFS_RA_SoC_Record.html",
+    r"International Ship Security Certificate\html\GRClass_ISSC_APR_SSPA_Approval.html",
+    r"CARGO SHIP SAFETY EQUIPMENT CERTIFICATE\html\GRClass_CSSE_Form_E.html",
+    r"CARGO SHIP SAFETY RADIO CERTIFICATE\html\GRClass_CSSR_Form_R.html",
+    r"International Air Pollution Prevention Certificate\html\GRClass_IAPP_R_SoC_Supplement.html",
+    r"International Energy Efficiency Certificate\html\GRClass_IEE_Supplement.html",
+    r"Certificate of Compliance with the International Maritime Solid Bulk Cargoes (IMSBC) CODE\html\GRClass_IMSBC_IC_Approved_Cargoes.html",
+    r"INTERNATIONAL OIL POLLUTION PREVENTION CERTIFICATE\html\GRClass_IOPP_Form_A.html",
+    r"International Load Line Certificate\html\GRClass_LL_RA_Conditions_C11.html",
+    r"Ship Oil Pollution Emergency Plan\html\GRClass_SOPEP_R_Approved_Plan.html",
+    r"Survey Statement\html\GRClass_Survey_Statement.html"
+]
+
+for rel_path in files_to_update:
+    file_path = os.path.join(base_dir, rel_path)
+    if not os.path.exists(file_path):
+        print(f"File not found: {file_path}")
+        continue
+        
+    with open(file_path, "r", encoding="utf-8") as f:
+        content = f.read()
+        
+    # Extract Title
+    title_match = re.search(r'<title>(.*?)</title>', content, re.IGNORECASE)
+    page_title = title_match.group(1).replace("GR Class – ", "").strip() if title_match else "GR Class Certificate"
+    
+    # Check if the file is ALREADY wrapped (i.e. has `<div class="body"`)
+    # If it is already using the new wrapper, we might just need to update it. 
+    # But wait, we know it's using the OLD wrapper which has `<div class="doc-content">`
+    body_match = re.search(r'<div class="doc-content">(.*?)</div>\s*<!-- Signature Block -->', content, re.DOTALL | re.IGNORECASE)
+    
+    body_content = ""
+    if body_match:
+        body_content = body_match.group(1).strip()
+    else:
+        # Fallback: maybe it just has a <body> that we can extract from?
+        print(f"doc-content not found in {file_path}, trying to extract body...")
+        body_fallback_match = re.search(r'<body[^>]*>(.*?)</body>', content, re.DOTALL | re.IGNORECASE)
+        if body_fallback_match:
+            body_content = body_fallback_match.group(1).strip()
+        else:
+            print(f"Could not extract content for {file_path}")
+            continue
+
+    # Create new HTML
+    new_html = template_str.replace("{PAGE_TITLE}", page_title).replace("{BODY_CONTENT}", body_content)
+    
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(new_html)
+        
+print("Finished rewriting HTML files.")
