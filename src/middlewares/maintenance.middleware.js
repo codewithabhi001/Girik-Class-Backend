@@ -30,7 +30,7 @@ export const checkMaintenanceMode = async (req, res, next) => {
             if (!userRole && req.headers.authorization?.startsWith('Bearer ')) {
                 const token = req.headers.authorization.split(' ')[1];
                 try {
-                    const decoded = jwt.verify(token, env.jwt.secret);
+                    const decoded = jwt.verify(token, env.jwt.accessSecret);
                     userRole = decoded.role;
                 } catch (err) {
                     console.error('Maintenance auth bypass failed:', err.message);
