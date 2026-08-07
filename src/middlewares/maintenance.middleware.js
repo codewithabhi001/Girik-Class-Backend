@@ -1,4 +1,6 @@
 import { getMaintenanceMode } from '../modules/system/system.service.js';
+import jwt from 'jsonwebtoken';
+import env from '../config/env.js';
 
 export const checkMaintenanceMode = async (req, res, next) => {
     try {
@@ -28,11 +30,11 @@ export const checkMaintenanceMode = async (req, res, next) => {
             if (!userRole && req.headers.authorization?.startsWith('Bearer ')) {
                 const token = req.headers.authorization.split(' ')[1];
                 try {
-                    const jwt = await import('jsonwebtoken');
-                    const env = (await import('../config/env.js')).default;
                     const decoded = jwt.verify(token, env.jwt.secret);
                     userRole = decoded.role;
-                } catch (err) {}
+                } catch (err) {
+                    console.error('Maintenance auth bypass failed:', err.message);
+                }
             }
 
             const staffRoles = ['ADMIN']; // Only Admin should bypass maintenance mode based on user requirements
