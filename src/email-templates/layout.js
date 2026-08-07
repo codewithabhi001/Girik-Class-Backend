@@ -108,7 +108,8 @@ export const wrapGrclassEmail = ({ title, innerHtml, preheader = '', unsubscribe
     }
     img { border:0; height:auto; line-height:100%; outline:none; text-decoration:none; -ms-interpolation-mode:bicubic; }
     table { border-collapse:collapse !important; mso-table-lspace:0pt; mso-table-rspace:0pt; }
-    .email-shell, .email-card { width:100% !important; max-width:100% !important; }
+    .email-shell { width:100% !important; max-width:100% !important; }
+    .email-card { width:100% !important; max-width:600px !important; margin: 0 auto !important; }
 
     .sig-info { width:68%; }
     .sig-brand { width:32%; }
@@ -118,6 +119,7 @@ export const wrapGrclassEmail = ({ title, innerHtml, preheader = '', unsubscribe
     .brand-desktop { display:table !important; }
 
     @media only screen and (max-width:680px) {
+      .email-shell-td { padding: 0 !important; }
       .email-pad { padding-left:16px !important; padding-right:16px !important; }
       .header { padding:18px 16px !important; }
       .content { padding:24px 16px 22px !important; }
@@ -164,8 +166,8 @@ export const wrapGrclassEmail = ({ title, innerHtml, preheader = '', unsubscribe
 
   <table role="presentation" class="email-shell" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; background-color:${SOFT};">
     <tr>
-      <td align="center" style="padding:0; width:100%;">
-        <table role="presentation" class="email-card" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; max-width:100%; background-color:#ffffff;">
+      <td align="center" class="email-shell-td" style="padding:40px 10px; width:100%;">
+        <table role="presentation" class="email-card" border="0" cellpadding="0" cellspacing="0" width="600" style="width:100%; max-width:600px; background-color:#ffffff; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); border-radius: 8px; overflow: hidden;">
 
           <!-- Brand accent -->
           <tr>
