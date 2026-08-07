@@ -251,6 +251,28 @@ export const updateMaintenanceMode = async (isMaintenance, message, userId, user
     });
 
     global._maintenanceCache = { value, ts: Date.now() };
+
+    // Asynchronously send emails to all active users if turning ON
+    if (value.isMaintenance) {
+        setImmediate(async () => {
+            try {
+                const users = await db.User.findAll({ where: { status: 'ACTIVE' }, attributes: ['email', 'name'] });
+                const { sendEmailTemplate } = await import('../../services/email.service.js');
+                
+                logger.info(`Starting maintenance notification for ${users.length} users`);
+                for (const user of users) {
+                    await sendEmailTemplate(user.email, 'MAINTENANCE_NOTIFICATION', {
+                        name: user.name,
+                        message: value.message
+                    }).catch(err => logger.error(`Failed to send maintenance email to ${user.email}:`, err));
+                }
+                logger.info(`Finished maintenance notifications`);
+            } catch (err) {
+                logger.error('Error in maintenance email loop:', err);
+            }
+        });
+    }
+
     return value;
 };
 

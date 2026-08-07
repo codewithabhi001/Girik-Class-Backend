@@ -34,6 +34,9 @@ app.set('trust proxy', 1);
 // Drop scanner paths (/secrets.json, phpinfo.php, etc.) before they hit rate limits or heavy logging
 app.use(probeBlockMiddleware);
 
+// Global Maintenance Mode check
+app.use(checkMaintenanceMode);
+
 // CORS
 const allowedOrigins = [
     'https://ops.grclass.com',

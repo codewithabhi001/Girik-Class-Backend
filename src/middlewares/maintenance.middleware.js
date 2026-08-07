@@ -24,9 +24,19 @@ export const checkMaintenanceMode = async (req, res, next) => {
 
         if (maintenance.isMaintenance) {
             // 3. Bypass check for staff/admin roles.
-            // If the request was optionally authenticated before this middleware, req.user will be set.
-            const staffRoles = ['ADMIN', 'GM', 'TM', 'TO'];
-            if (req.user && staffRoles.includes(req.user.role)) {
+            let userRole = req.user?.role;
+            if (!userRole && req.headers.authorization?.startsWith('Bearer ')) {
+                const token = req.headers.authorization.split(' ')[1];
+                try {
+                    const jwt = await import('jsonwebtoken');
+                    const env = (await import('../config/env.js')).default;
+                    const decoded = jwt.verify(token, env.jwt.secret);
+                    userRole = decoded.role;
+                } catch (err) {}
+            }
+
+            const staffRoles = ['ADMIN']; // Only Admin should bypass maintenance mode based on user requirements
+            if (userRole && staffRoles.includes(userRole)) {
                 return next();
             }
 

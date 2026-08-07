@@ -5,6 +5,7 @@ import { render as renderWelcomeUser } from './welcome-user.template.js';
 import { render as renderSubscriptionWelcome } from './subscription-welcome.template.js';
 import { render as renderContactAcknowledgement } from './contact-acknowledgement.template.js';
 import { render as renderAdminNewEnquiry } from './admin-new-enquiry.template.js';
+import { render as renderMaintenance } from './maintenance.template.js';
 
 /** @type {Record<string, (data: object) => { subject: string, html: string, type?: string }>} */
 const registry = {
@@ -15,6 +16,7 @@ const registry = {
     SUBSCRIPTION_WELCOME: renderSubscriptionWelcome,
     CONTACT_ACKNOWLEDGEMENT: renderContactAcknowledgement,
     NEW_WEBSITE_ENQUIRY: renderAdminNewEnquiry,
+    MAINTENANCE_NOTIFICATION: renderMaintenance,
 };
 
 /**

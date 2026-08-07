@@ -112,6 +112,13 @@ export const login = async (email, password) => {
     if (profilePicUrl && !profilePicUrl.startsWith('http')) {
         profilePicUrl = await fileAccessService.resolveUrl(profilePicUrl);
     }
+    
+    // Check maintenance mode
+    const { getMaintenanceMode } = await import('../system/system.service.js');
+    const maintenance = await getMaintenanceMode();
+    if (maintenance.isMaintenance && user.role !== 'ADMIN') {
+        throw { statusCode: 503, message: maintenance.message || 'System is under maintenance. Only administrators can log in right now.' };
+    }
 
     const userObj = {
         id: user.id,
