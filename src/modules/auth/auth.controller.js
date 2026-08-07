@@ -20,7 +20,10 @@ const refreshCookieOptions = {
 export const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
-        const { user, accessToken, refreshToken } = await authService.login(email, password);
+        const ipAddress = req.ip || req.connection?.remoteAddress || 'Unknown';
+        const userAgent = req.headers['user-agent'] || 'Unknown';
+        
+        const { user, accessToken, refreshToken } = await authService.login(email, password, { ipAddress, userAgent });
 
         res.cookie('token', accessToken, cookieOptions);
         res.cookie('refreshToken', refreshToken, refreshCookieOptions);

@@ -101,12 +101,10 @@ export const login = async (email, password) => {
     if (db.UserSession) {
         db.UserSession.create({
             user_id: user.id,
-            token_jti: null, // Depending on if we extract jti from token
-            ip_address: ctx ? ctx.ip : null,
-            user_agent: ctx ? ctx.userAgent : null,
-            is_active: true,
-            last_activity_at: new Date(),
-        }).catch(() => {});
+            ip_address: metadata.ipAddress,
+            user_agent: metadata.userAgent,
+            last_activity_at: new Date()
+        }).catch(err => console.error('Failed to log user session:', err));
     }
 
     // Resolve only profile_pic_url directly instead of full recursive resolveEntity
@@ -128,7 +126,6 @@ export const login = async (email, password) => {
         refreshToken,
     };
 };
-
 
 export const register = async (userData, options = {}) => {
     const { transaction } = options;

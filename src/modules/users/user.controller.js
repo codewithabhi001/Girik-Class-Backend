@@ -98,3 +98,11 @@ export const logoutAllSessions = async (req, res, next) => {
     } catch (error) { next(error); }
 };
 
+export const getUserSessions = async (req, res, next) => {
+    try {
+        const sessions = await userService.getUserSessions(req.params.id);
+        res.json({ success: true, data: sessions });
+    } catch (error) { next(error); }
+};
+
+
