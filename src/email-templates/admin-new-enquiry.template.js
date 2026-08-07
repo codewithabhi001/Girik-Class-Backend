@@ -56,7 +56,7 @@ export const render = (data) => {
       </div>
 
       <div align="center">
-        <a href="https://ops.grclass.com" style="background-color: ${theme.colors.brand.primary}; color: ${theme.colors.text.white}; padding: 15px 35px; border-radius: 0; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-block; text-transform: uppercase; letter-spacing: 0.05em;">
+        <a href="https://ops.grclass.com" style="background-color: ${theme.colors.brand.main}; color: ${theme.colors.text.white}; padding: 15px 35px; border-radius: 0; text-decoration: none; font-size: 13px; font-weight: 700; display: inline-block; text-transform: uppercase; letter-spacing: 0.05em;">
           Manage Lead in CRM
         </a>
       </div>
