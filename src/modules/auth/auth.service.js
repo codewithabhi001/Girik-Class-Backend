@@ -101,8 +101,8 @@ export const login = async (email, password) => {
     if (db.UserSession) {
         db.UserSession.create({
             user_id: user.id,
-            ip_address: metadata.ipAddress,
-            user_agent: metadata.userAgent,
+            ip_address: ctx.ip || null,
+            user_agent: ctx.userAgent || null,
             last_activity_at: new Date()
         }).catch(err => console.error('Failed to log user session:', err));
     }
