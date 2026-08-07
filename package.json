@@ -14,7 +14,8 @@
     "exceljs": "^4.4.0",
     "mammoth": "^1.12.0",
     "sequelize-cli": "^6.6.5",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "word-extractor": "^1.0.4"
   },
   "keywords": [],
   "author": "",

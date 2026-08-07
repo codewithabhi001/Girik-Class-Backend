@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GR Class – SOPEP Approved Plan</title>
+    
+    <style>
+        /* ── OPTIMIZED CSS (SYSTEM FONTS FOR INSTANT LOAD) ── */
+        :root {
+            --navy-blue: #0b2545;
+            --navy-light: #133c6d;
+            --gold-primary: #b08d57;
+            --text-dark: #1a1a1a;
+            --text-muted: #444444;
+            --paper: #ffffff;
+            --stamp-color: #E65100;
+            --bg-light: #f4f6f8;
+            --primary: #0b2545;
+            --border: #ccc;
+            --light: #f4f6f8;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 7.8pt;
+            background: #222;
+            padding: 20px 0 40px;
+            color: var(--text-dark);
+            line-height: 1.3;
+        }
+
+        .no-print {
+            width: 210mm;
+            margin: 0 auto 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-print {
+            background: var(--gold-primary);
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            font-size: 8.5pt;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 10mm 12mm 15mm;
+            background: var(--paper);
+            position: relative;
+            box-shadow: 0 6px 30px rgba(0,0,0,0.5);
+        }
+
+        .header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--navy-blue);
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-area img {
+            height: 50px;
+            width: auto;
+        }
+
+        .org-name {
+            font-size: 14pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+            letter-spacing: 1px;
+        }
+
+        .cert-title {
+            text-align: center;
+            font-size: 11pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+            text-transform: uppercase;
+            margin: 10px 0;
+            letter-spacing: 0.5px;
+        }
+
+        .doc-content {
+            margin-top: 10px;
+        }
+
+        .doc-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 6px 0;
+        }
+
+        .doc-content table th,
+        .doc-content table td {
+            border: 1px solid var(--border);
+            padding: 4px 6px;
+            font-size: 7.8pt;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .doc-content table th {
+            background: var(--bg-light);
+            font-weight: bold;
+            color: var(--navy-blue);
+        }
+
+        .doc-content p {
+            margin: 4px 0;
+            font-size: 7.8pt;
+            line-height: 1.4;
+        }
+
+        .doc-content h1, .doc-content h2, .doc-content h3 {
+            color: var(--navy-blue);
+            margin: 8px 0 4px;
+        }
+
+        .doc-content h1 { font-size: 11pt; }
+        .doc-content h2 { font-size: 9.5pt; }
+        .doc-content h3 { font-size: 8.5pt; }
+
+        .doc-content ul, .doc-content ol {
+            margin: 4px 0 4px 16px;
+            font-size: 7.8pt;
+        }
+
+        .doc-content img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .signature-block {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .signature-box {
+            text-align: center;
+            width: 40%;
+        }
+
+        .signature-box img {
+            height: 50px;
+            width: auto;
+        }
+
+        .signature-line {
+            border-top: 1px solid #333;
+            margin-top: 4px;
+            padding-top: 2px;
+            font-size: 7pt;
+        }
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .no-print { display: none !important; }
+            .page {
+                box-shadow: none;
+                margin: 0;
+                padding: 10mm;
+                min-height: auto;
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Print Controls -->
+    <div class="no-print">
+        <span style="font-size:9pt; font-weight:bold; color:#333;">SOPEP Approved Plan</span>
+        <button class="btn-print" onclick="window.print()">🖨 Print</button>
+    </div>
+
+    <!-- Certificate Page -->
+    <div class="page">
+        <!-- Header -->
+        <div class="header-bar">
+            <div class="logo-area">
+                <img src="{flag_logo}" alt="Flag Logo" onerror="this.style.display='none'">
+                <div class="org-name">GR CLASS</div>
+            </div>
+            <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" style="height:45px;">
+        </div>
+
+        <!-- Title -->
+        <div class="cert-title">SOPEP Approved Plan</div>
+
+        <!-- Document Content -->
+        <div class="doc-content">
+<p>Report No.:</p>
+<h2>CHECKLIST FOR SOPEP APPROVAL (MARPOL 73/78)</h2>
+<p>To meet the requirements of the International Convention for the Prevention of Pollution from Ships, 1973</p>
+<p>as modified by the Protocol of 1978.</p>
+<table>
+<thead><tr><th>Initial approval</th><th></th><th>Amendments</th></tr></thead>
+<tbody>
+<tr><td>Ship&#039;s Name</td><td></td><td>IMO No.</td></tr>
+<tr><td>SOPEP Prepared by:</td><td></td><td>Company Name</td></tr>
+</tbody></table>
+<p>Call Sign</p>
+<table>
+<thead><tr><th>Date Keel Laid</th><th></th><th>Operation Manager</th></tr></thead>
+<tbody>
+<tr><td>Patent No.</td><td></td><td>DPA  Name</td></tr>
+<tr><td>Gross Tonnage</td><td></td><td>Address:</td></tr>
+</tbody></table>
+<p>Type Of Ship</p>
+<table>
+<thead><tr><th>E-mail:</th><th></th><th>Telephone:</th></tr></thead>
+<tbody>
+</tbody></table>
+<p>Fax:</p>
+<table>
+<thead><tr><th>MARPOL 73/78 REFERENCES</th><th>PREVENTION OF POLLUTION ARISING FROM AN OIL POLLUTION INCIDENT</th><th>YES</th><th>NO</th><th>N/A</th><th>SOPEP  Pages and references (required)</th></tr></thead>
+<tbody>
+</tbody></table>
+<h2>REG 37(2)</h2>
+<p>The procedure to be followed by the master or other persons having charge of the ship to report an oil pollution incident.</p>
+<table>
+<thead><tr><th>REG 37(2)</th><th>The list of authorities or persons to be contacted in the event of an oil pollution incident.</th></tr></thead>
+<tbody>
+<tr><td>REG 37(2)</td><td>A detailed description of the action to be taken immediately by persons on board to reduce or control the discharge of oil following the incident.</td></tr>
+<tr><td>REG 37(2)</td><td>The procedure and point of contact on the ship for coordinating shipboard activities with national and local authorities in combating the pollution</td></tr>
+<tr><td>MEPC 54(32)</td><td>The Plan should include as an appendix the list of agencies or officials of administrations responsible for receiving and processing reports as developed and updated by the Organization.</td></tr>
+<tr><td>MARPOL 73/78 REFERENCES</td><td>STEPS TO CONTROL DISCHARGE</td><td>YES</td><td>NO</td><td>N/A</td></tr>
+<tr><td>MEPC 54(32)</td><td>Procedure for dealing with tank overflows should be included.</td></tr>
+<tr><td>MEPC 54(32)</td><td>The plan should outline the procedures for removal of oil spilled and contained on deck.</td></tr>
+</tbody></table>
+<table>
+<thead><tr><th>MARPOL 73/78 REFERENCES</th><th>STEPS TO CONTROL DISCHARGE</th><th>YES</th><th>NO</th><th>N/A</th></tr></thead>
+<tbody>
+<tr><td>MEPC 54(32)</td><td>The plan should provide guidance for responding to spillage due to suspected hull leakage</td></tr>
+<tr><td>MEPC 54(32)</td><td>The Plan should provide specific guidance for dealing with pipe leakage.</td></tr>
+<tr><td>MEPC 54(32)</td><td>The plan should provide a list of information required for making damage stability and damage longitudinal strength assessments.</td></tr>
+<tr><td>MEPC 54(32)</td><td>The plan should to be followed for ship-to-ship transfer of cargo</td></tr>
+<tr><td>MEPC 54(32)</td><td>The Plan should show where current cargo, bunker and ballast information, including quantities and specifications are available.</td></tr>
+<tr><td>MEPC 54(32)</td><td>ACTUAL DISCHARGE</td><td>YES</td><td>NO</td><td>N/A</td></tr>
+<tr><td>MEPC 54(32)</td><td>Discharge of oil, resulting from damage to the ship or its equipment, or for the purpose of securing the safety of a ship or saving life at sea</td></tr>
+<tr><td>MEPC 54(32)</td><td>A discharge during the operation of the ship of oil in excess of the quantity or instantaneous rate permitted under the present Convention</td></tr>
+<tr><td>MEPC 54(32)</td><td>PROBABLE DISCHARGE</td><td>YES</td><td>NO</td><td>N/A</td></tr>
+<tr><td>MEPC 54(32)</td><td>The nature of the damage, failure or breakdown of the ship, machinery or equipment;</td></tr>
+<tr><td>MEPC 54(32)</td><td>Ship location and proximity to land or other navigational hazards.</td></tr>
+<tr><td>MEPC 54(32)</td><td>Weather, tide, current and sea state</td></tr>
+<tr><td>MEPC 54(32)</td><td>Traffic density</td></tr>
+<tr><td>MEPC 54(32)</td><td>PORTS CONTACT</td><td>YES</td><td>NO</td><td>N/A</td></tr>
+<tr><td>MEPC 54(32)</td><td>The plan should require the master to obtain details concerning local reporting procedures upon arriving in port.</td></tr>
+<tr><td>MEPC 54(32)</td><td>PRIORITY ACTIONS</td><td>YES</td><td>NO</td><td>N/A</td></tr>
+<tr><td>MEPC 54(32)</td><td>The plan should provide ship-specific guidance to the master concerning these topics.</td></tr>
+<tr><td>MEPC 54(32)</td><td>The master priority will be to ensure the safety of personnel and the ship and to take action to prevent escalation of the incident</td></tr>
+<tr><td>MEPC 54(32)</td><td>The master will need to obtain detailed information on the damage sustained by his ship.</td></tr>
+<tr><td>MEPC 54(32)</td><td>The master will be in a position to decide what action should be taken to prevent or minimize further spillage</td></tr>
+<tr><td>MEPC 54(32)</td><td>STABILITY AND STRESS CONSIDERATIONS</td></tr>
+<tr><td>YES</td><td>NO</td><td>N/A</td></tr>
+<tr><td>MEPC 54(32)</td><td>Plan should provide a list of information required for making damage stability and damaged longitudinal strength assessment.</td></tr>
+</tbody></table>
+<table>
+<thead><tr><th>MEPC 54(32)</th><th>RESPONSE EQUIPMENT</th></tr></thead>
+<tbody>
+</tbody></table>
+<h2>YES</h2>
+<p>NO</p>
+<h2>N/A</h2>
+<table>
+<thead><tr><th>MEPC 54(32)</th><th>The plan should indicate an inventory of such equipment, if carried</th></tr></thead>
+<tbody>
+</tbody></table>
+<table>
+<thead><tr><th>MEPC 54(32)</th><th>The plan should establish personnel responsibilities for its deployment, oversight, and maintenance</th></tr></thead>
+<tbody>
+</tbody></table>
+<table>
+<thead><tr><th>MEPC 54(32)</th><th>The plan should include pollution policy</th></tr></thead>
+<tbody>
+</tbody></table>
+<h2>MEPC 54(32)</h2>
+<table>
+<thead><tr><th>INITIATING THE CLEAN - UP RESPONSE</th><th>YES</th><th>NO</th><th>N/A</th></tr></thead>
+<tbody>
+</tbody></table>
+<h2>MEPC 54(32)</h2>
+<p>In case of small operational spill, the ship should take whatever actions are necessary to prevent the oil escaping over side</p>
+<table>
+<thead><tr><th>MEPC 54(32)</th><th>In case of large operational spill, the ship is even more restricted as to what action it can take to respond practically to the spill</th></tr></thead>
+<tbody>
+<tr><td>MEPC 54(32)</td><td>DOCUMENT REVIEW, CONTROL &amp; RECORDS</td><td>YES</td><td>NO</td><td>N/A</td></tr>
+</tbody></table>
+<h2>MEPC 54(32)</h2>
+<p>Master must verify contact information given in this manual during drills</p>
+<h2>MEPC 54(32)</h2>
+<p>This plan should be reviewed by DPA, barge master of the fleet and officers annually</p>
+<h2>REMARKS</h2>
+<h2>RECOMMENDATIONS</h2>
+<table>
+<thead><tr><th>at</th><th></th><th></th><th>of</th></tr></thead>
+<tbody>
+</tbody></table>
+<p>issue</p>
+<p>GR</p>
+
+        </div>
+
+        <!-- Signature Block -->
+        <div class="signature-block">
+            <div class="signature-box">
+                <img src="{signature}" alt="signature" onerror="this.style.display='none'">
+                <div class="signature-line">Authorized Signature</div>
+            </div>
+            <div class="signature-box">
+                <img src="{stamp}" alt="stamp" onerror="this.style.display='none'">
+                <div class="signature-line">Official Stamp</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

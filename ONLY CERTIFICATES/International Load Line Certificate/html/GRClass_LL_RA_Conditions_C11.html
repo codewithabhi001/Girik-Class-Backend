@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GR Class – Conditions of Assignment of Load Lines - C11</title>
+    
+    <style>
+        /* ── OPTIMIZED CSS (SYSTEM FONTS FOR INSTANT LOAD) ── */
+        :root {
+            --navy-blue: #0b2545;
+            --navy-light: #133c6d;
+            --gold-primary: #b08d57;
+            --text-dark: #1a1a1a;
+            --text-muted: #444444;
+            --paper: #ffffff;
+            --stamp-color: #E65100;
+            --bg-light: #f4f6f8;
+            --primary: #0b2545;
+            --border: #ccc;
+            --light: #f4f6f8;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 7.8pt;
+            background: #222;
+            padding: 20px 0 40px;
+            color: var(--text-dark);
+            line-height: 1.3;
+        }
+
+        .no-print {
+            width: 210mm;
+            margin: 0 auto 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-print {
+            background: var(--gold-primary);
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            font-size: 8.5pt;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 10mm 12mm 15mm;
+            background: var(--paper);
+            position: relative;
+            box-shadow: 0 6px 30px rgba(0,0,0,0.5);
+        }
+
+        .header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--navy-blue);
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-area img {
+            height: 50px;
+            width: auto;
+        }
+
+        .org-name {
+            font-size: 14pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+            letter-spacing: 1px;
+        }
+
+        .cert-title {
+            text-align: center;
+            font-size: 11pt;
+            font-weight: bold;
+            color: var(--navy-blue);
+            text-transform: uppercase;
+            margin: 10px 0;
+            letter-spacing: 0.5px;
+        }
+
+        .doc-content {
+            margin-top: 10px;
+        }
+
+        .doc-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 6px 0;
+        }
+
+        .doc-content table th,
+        .doc-content table td {
+            border: 1px solid var(--border);
+            padding: 4px 6px;
+            font-size: 7.8pt;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .doc-content table th {
+            background: var(--bg-light);
+            font-weight: bold;
+            color: var(--navy-blue);
+        }
+
+        .doc-content p {
+            margin: 4px 0;
+            font-size: 7.8pt;
+            line-height: 1.4;
+        }
+
+        .doc-content h1, .doc-content h2, .doc-content h3 {
+            color: var(--navy-blue);
+            margin: 8px 0 4px;
+        }
+
+        .doc-content h1 { font-size: 11pt; }
+        .doc-content h2 { font-size: 9.5pt; }
+        .doc-content h3 { font-size: 8.5pt; }
+
+        .doc-content ul, .doc-content ol {
+            margin: 4px 0 4px 16px;
+            font-size: 7.8pt;
+        }
+
+        .doc-content img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .signature-block {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .signature-box {
+            text-align: center;
+            width: 40%;
+        }
+
+        .signature-box img {
+            height: 50px;
+            width: auto;
+        }
+
+        .signature-line {
+            border-top: 1px solid #333;
+            margin-top: 4px;
+            padding-top: 2px;
+            font-size: 7pt;
+        }
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .no-print { display: none !important; }
+            .page {
+                box-shadow: none;
+                margin: 0;
+                padding: 10mm;
+                min-height: auto;
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Print Controls -->
+    <div class="no-print">
+        <span style="font-size:9pt; font-weight:bold; color:#333;">Conditions of Assignment of Load Lines - C11</span>
+        <button class="btn-print" onclick="window.print()">🖨 Print</button>
+    </div>
+
+    <!-- Certificate Page -->
+    <div class="page">
+        <!-- Header -->
+        <div class="header-bar">
+            <div class="logo-area">
+                <img src="{flag_logo}" alt="Flag Logo" onerror="this.style.display='none'">
+                <div class="org-name">GR CLASS</div>
+            </div>
+            <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" style="height:45px;">
+        </div>
+
+        <!-- Title -->
+        <div class="cert-title">Conditions of Assignment of Load Lines - C11</div>
+
+        <!-- Document Content -->
+        <div class="doc-content">
+<table>
+<thead><tr><th>Record No.:</th><th>-LL-</th></tr></thead>
+<tbody>
+</tbody></table>
+<h2>RECORD OF CONDITIONS OF ASSIGNMENT</h2>
+<p>Under the Provisions of the International Convention on Load Lines, 1966.</p>
+<p>Name of Ship</p>
+<p>Port of Registry</p>
+<p>Nationality</p>
+<p>Distinctive Number or Letters</p>
+<p>Shipbuilders</p>
+<p>Yard Number</p>
+<p>Date of Construction / Conversion(1)</p>
+<p>Freeboard assigned as a ship of Type</p>
+<p>Classification society</p>
+<p>Date and Place of initial survey</p>
+<p>(1) Delete as Appropriate</p>
+<h2>SKETCH OF THE SHIP</h2>
+<p>A plan of suitable size may be attached to this Report in preference to sketches on this page.</p>
+<p>Disposition and dimensions of superstructures, trunks, deckhouses, machinery casings; extend of bulwarks, guard rails and wood sheathing on exposed deck, to be inserted in the diagrams and tables following; together with positions of hatchways, gangways, and other means for the protection of the crew; cargo ports, bow and stern doors, sidescuttles, scuppers, ventilators, air pipes, companionways, and other items that would affect the seaworthiness of the ship.</p>
+<p>L =                     m</p>
+<p>Superestructure deck</p>
+<p>0.25 L</p>
+<p>Position 2                                                                                             Position 1</p>
+<p>Freeboard deck</p>
+<p>Position 1</p>
+<p style="margin-left: 10px;">2. DOORWAYS IN SUPERESTRUCTURES, EXPOSED MACHINERY CASINGS AND DECKHOUSES PROTECTING OPENINGS IF FREEBOARD AND SUPERESTRUCTURE DECKS (Regs. 12, 17 &amp; 18)</p>
+<table>
+<thead><tr><th>POSITION</th><th>Ref. No. on Sketch or PLAN</th><th>Number and Size of openings</th><th>Height of Sills</th></tr></thead>
+<tbody>
+</tbody></table>
+<p>Closing Appliances</p>
+<table>
+<thead><tr><th>Type and Material</th><th>Number of Clips</th></tr></thead>
+<tbody>
+</tbody></table>
+<p>In Forecastle bulkhead</p>
+<p>In bridge forward bulkhead</p>
+<p>In bridge after bulkhead</p>
+<p>In raised quarter deck bulkhead</p>
+<p>In poop bulkhead</p>
+<p>In exposed machinery casing on freeboard or raised quarter decks</p>
+<p>In exposed machinery casing on superstructure decks</p>
+<p>In machinery casings within superstructure or deckhouse on freeboard deck</p>
+<p>In deckhouse in Position 1 enclosing openings leading below freeboard deck</p>
+<p>In deckhouse in Position 2 enclosing openings leading within enclosed superstructures or below freeboard deck</p>
+<p>In exposed pump-room casings</p>
+<p>HATCHWAYS AT POSITIONS 1  AND  2  CLOSED BY PORTABLE COVERS AND SECURED WEATHERTIGHT BY TARPAULINS AND BATTENING DEVICE (Reg. 15)</p>
+<p>Position and reference No. on sketch or plan</p>
+<p>Dimensions of clear opening at top of coamings</p>
+<p>Height of  coamings above deck</p>
+<table>
+<thead><tr><th>PORTABLE COVERS</th><th>MATERIAL</th></tr></thead>
+<tbody>
+</tbody></table>
+<h2>THICKNESS</h2>
+<h2>DIRECTION FITTED</h2>
+<h2>BEARING SURGACE</h2>
+<p>Spacing of Cleats</p>
+<table>
+<thead><tr><th>TARPAULINS</th><th>No. OF LAYERS</th></tr></thead>
+<tbody>
+</tbody></table>
+<h2>MATERIAL</h2>
+<p>Means of securing each section of covers:</p>
+<p>Are wood covers fitted with galvanized end bands?</p>
+<table>
+<thead><tr><th>4.</th><th>HATCHWAYS AT POSITIONS 1 AND 2 CLOSED BY WEATHERTIGHT COVERS OF STEEL (OR OTHER EQUIPMENT MATERIAL) FITTED WITH GASKETS AND CLAMPING DEVICES (Reg. 16)</th></tr></thead>
+<tbody>
+</tbody></table>
+<table>
+<thead><tr><th>Position and Reference No. on sketch or plan</th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th>Dimensions of clear opening at top of  coamings</th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th>Height of coamings above deck</th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th>Type of covers or patent name</th></tr></thead>
+<tbody>
+</tbody></table>
+<p>Material</p>
+<p>MACHINERY SPACE OPENINGS AND MISCELLANEOUS, OPENINGS IN FREEBOARD AND SUPERSTRUCTURE DECKS (REG. 17 &amp; 18)</p>
+<table>
+<thead><tr><th>POSITION AND REFERENCE NUMBER ON SKETCH OR PLAN</th><th>DIMENSIONS</th><th>HEIGHT OF COAMING</th><th>COVER</th><th>NUMBER AND SPACING OF TOGGLES</th></tr></thead>
+<tbody>
+<tr><td>MATERIAL</td><td>HOW ATTACHED</td></tr>
+</tbody></table>
+<table>
+<thead><tr><th>6.</th><th>VENTILATORS ON FREEBOARD AND SUPERSTRUCTURE DECKS (POSITION 1 AND 2) (REG.19)</th></tr></thead>
+<tbody>
+</tbody></table>
+<table>
+<thead><tr><th>DECK ON WHICH FITTED</th><th>NUMBER FITTED</th><th>COAMING</th><th>TYPE (STATE PATENT NAME, IF ANY)</th><th>CLOSING APPLIANCES</th></tr></thead>
+<tbody>
+<tr><td>DIMENSIONS</td><td>HEIGHT</td></tr>
+</tbody></table>
+<table>
+<thead><tr><th>7.</th><th>AIR PIPES ON FREEBOARD AND SUPERSTRUCTURE DECKS   (Reg. 20)</th></tr></thead>
+<tbody>
+</tbody></table>
+<table>
+<thead><tr><th>Deck on which fitted</th><th>Number fitted</th><th>Coaming</th><th>Type (state patent name, if any)</th><th>Closings Appliances</th></tr></thead>
+<tbody>
+<tr><td>Dimensions</td><td>Height</td></tr>
+</tbody></table>
+<table>
+<thead><tr><th>8.</th><th></th><th>CARGO PORT AND OTHER SIMILAR OPENINGS (Reg. 21)</th></tr></thead>
+<tbody>
+</tbody></table>
+<table>
+<thead><tr><th>Position of port</th><th>dimensions of opening</th><th>distance of lower edge from</th></tr></thead>
+<tbody>
+<tr><td>freeboard deck</td><td>Securing devices</td><td>REMARKS</td></tr>
+</tbody></table>
+<table>
+<thead><tr><th>9.</th><th>SCUPPERS, INLETS AND DISCHARGES (REG.22)</th></tr></thead>
+<tbody>
+</tbody></table>
+<h2>STATE IF SCUPPER,  OR DISCHARGE</h2>
+<table>
+<thead><tr><th>NUMBER</th><th>PIPE</th></tr></thead>
+<tbody>
+<tr><td>FROM</td><td>VERTICAL DISTANCE ABOVE TOP OF KEEL</td><td>NUMBER, TYPE AND MATERIAL OF DISCHARGE VALVES</td><td>POSITION</td></tr>
+</tbody></table>
+<h2>OF CONTROLS</h2>
+<table>
+<thead><tr><th>DIAMETER</th><th>THICKNESS</th><th>MATERIAL</th><th></th><th>DISCHARGE</th><th>UPPER MOST VALVE</th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th>OUTLET IN HULL</th><th>INBOARD</th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th>S - Scupper</th><th></th><th></th><th></th><th>MS - Mild Steel</th><th></th><th></th><th>SD - Screw Down</th></tr></thead>
+<tbody>
+<tr><td>D - Discharge</td><td></td><td></td><td></td><td>CS - Cast Steel</td><td></td><td></td><td>ANR - Automatic non-return</td></tr>
+<tr><td>GM - Gun Metal</td><td></td><td></td><td></td><td>SD ANR - Screw - down automatic non-return</td></tr>
+</tbody></table>
+<p>Any other approved material to be designated</p>
+<p style="margin-left: 10px;">10. SIDE SCUTTLES (Reg. 23)</p>
+<table>
+<thead><tr><th>POSITION</th><th>NUMBER FITTED</th><th>CLEAR GLASS SIZE</th><th>FIXED OR OPENING</th></tr></thead>
+<tbody>
+<tr><td>MATERIAL</td><td>TYPE OF GLASS AND THICKNESS,</td><td>STANDARDS USED AND TYPE NO.</td></tr>
+<tr><td>FRAME</td><td>DEADLIGHT</td></tr>
+</tbody></table>
+<p>Indicate the vertical distance between the freeboard deck and the lower sill of the sidescuttle positioned at the greatest vertical distance below the freeboard deck.</p>
+<p>FREEING PORTS (Reg. 24)</p>
+<table>
+<thead><tr><th>Length of bulwark</th><th>Height of bulwark</th></tr></thead>
+<tbody>
+<tr><td>Number and size freeing ports each side</td><td>Total area each side</td><td>Required area</td></tr>
+</tbody></table>
+<p>each side</p>
+<p>Freeboard deck after well</p>
+<p>Forward well</p>
+<p>Superstructure deck</p>
+<table>
+<thead><tr><th>State fore and aft position of each freeing</th><th></th><th>After well</th></tr></thead>
+<tbody>
+</tbody></table>
+<p>port in relation to superstructure end bulkheads</p>
+<p>Forward well</p>
+<p>Particulars of shutters, bars or rails fitted to freeing ports</p>
+<p>Height of lower edge of freeing port above deck</p>
+<table>
+<thead><tr><th>12.</th><th>Protection of the crew (Reg.25 and 26)</th></tr></thead>
+<tbody>
+</tbody></table>
+<p>State particulars of bulwarks or guard rails on freeboard and superstructure decks:</p>
+<p>State details of lifelines, walkways, gangways or underdeck passage ways where required to be fitted.</p>
+<table>
+<thead><tr><th>13.</th><th>TIMBER DECK CARGO FITTINGS (REG.44)</th></tr></thead>
+<tbody>
+</tbody></table>
+<p>State particulars of uprights, sockets, lashings, guard rails and lifelines:</p>
+<p>Other special features</p>
+<p>The conditions of assignment shown on this form are a record of the arrangements and fittings provided on the ship and are in accordance with the requirements of the relevant regulations of the International Convention on Load Lines, 1966.</p>
+<table>
+<thead><tr><th>Issued at :</th><th></th><th>,</th><th></th><th>of</th><th></th><th>of</th></tr></thead>
+<tbody>
+<tr><td>(Place of issue of the Record)</td><td></td><td>(Day)</td><td></td><td>(Month)</td><td></td><td>(Year)</td></tr>
+</tbody></table>
+<p>Signature of duly authorized official issuing the survey report</p>
+<p>Name:</p>
+<h2>GR CLASS- CLASSIFIED FOR STANDARD</h2>
+
+        </div>
+
+        <!-- Signature Block -->
+        <div class="signature-block">
+            <div class="signature-box">
+                <img src="{signature}" alt="signature" onerror="this.style.display='none'">
+                <div class="signature-line">Authorized Signature</div>
+            </div>
+            <div class="signature-box">
+                <img src="{stamp}" alt="stamp" onerror="this.style.display='none'">
+                <div class="signature-line">Official Stamp</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -54,8 +54,8 @@ async function run() {
                     const filePath = path.join(htmlDir, htmlFile);
                     const content = fs.readFileSync(filePath, 'utf-8');
 
-                    // Determine term
-                    let term = 'FULL_TERM'; // fallback
+                    // Determine term from filename
+                    let term = null; // null = supplementary document (no specific term)
                     const upperFile = htmlFile.toUpperCase();
                     if (upperFile.includes('_FT_')) term = 'FULL_TERM';
                     else if (upperFile.includes('_ST_')) term = 'SHORT_TERM';
@@ -64,15 +64,27 @@ async function run() {
                     else if (upperFile.includes('_PROV_') || upperFile.includes('_PR_') || upperFile.includes('PROVISIONAL')) term = 'PROVISIONAL';
 
                     // Check if template exists
-                    let template = await db.CertificateTemplate.findOne({
-                        where: {
-                            certificate_type_id: certType.id,
-                            certificate_term: term
-                        }
-                    });
+                    // For term-based templates: match by (certificate_type_id, certificate_term)
+                    // For supplementary docs (null term): match by (certificate_type_id, template_name)
+                    let template;
+                    if (term) {
+                        template = await db.CertificateTemplate.findOne({
+                            where: {
+                                certificate_type_id: certType.id,
+                                certificate_term: term
+                            }
+                        });
+                    } else {
+                        template = await db.CertificateTemplate.findOne({
+                            where: {
+                                certificate_type_id: certType.id,
+                                template_name: htmlFile
+                            }
+                        });
+                    }
 
                     if (!template) {
-                        console.log(`    Creating template for term: ${term} (${htmlFile})`);
+                        console.log(`    Creating template: ${term || 'SUPPLEMENT'} (${htmlFile})`);
                         await db.CertificateTemplate.create({
                             certificate_type_id: certType.id,
                             template_name: htmlFile,
@@ -81,7 +93,7 @@ async function run() {
                             is_active: true
                         });
                     } else {
-                        console.log(`    Template already exists for term: ${term} (updating content)`);
+                        console.log(`    Template already exists: ${term || 'SUPPLEMENT'} (updating content)`);
                         template.template_content = content;
                         await template.save();
                     }

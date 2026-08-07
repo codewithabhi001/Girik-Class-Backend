@@ -476,11 +476,6 @@ export const getJobs = async (query, scopeFilters = {}, userRole = null, user = 
         whereClause.createdAt = {};
         if (created_from) whereClause.createdAt[Op.gte] = new Date(created_from);
         if (created_to) whereClause.createdAt[Op.lte] = new Date(created_to);
-    } else if (INTERNAL_RECENT_ROLES.has(userRole) && !hasAnyUserFilter({ status, created_from, created_to, ...rest })) {
-        const days = Math.max(1, parseInt(recent_days || RECENT_JOBS_DEFAULT_DAYS, 10));
-        const since = new Date();
-        since.setDate(since.getDate() - days);
-        whereClause.createdAt = { [Op.gte]: since };
     }
 
     if (search && String(search).trim().length >= 3) {
