@@ -26,22 +26,9 @@ const refreshLimiter = rateLimit({
 
 const router = express.Router();
 
-import fs from 'fs';
-import path from 'path';
-
 // Login with credentials (email/password)
 // Access: Public
 router.post('/login', authLimiter, validate(schemas.login), authController.login);
-
-router.get('/debug-logs', (req, res) => {
-    try {
-        const logContent = fs.readFileSync(path.resolve(process.cwd(), 'error.log'), 'utf8');
-        const lines = logContent.split('\n').filter(l => l.trim()).slice(-100);
-        res.send(lines.join('\n'));
-    } catch (e) {
-        res.status(500).send(e.message);
-    }
-});
 
 // Logout current session (Invalidate token)
 // Access: Authenticated users
