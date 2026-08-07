@@ -10,108 +10,70 @@ export const escapeHtml = (value) => {
     .replace(/'/g, '&#39;');
 };
 
-// --- Updated Brand Theme Colors ---
-const FONT = theme.typography?.fontFamily || 'Arial, Helvetica, sans-serif';
-const BRAND = '#0A2540'; // Navy Blue
-const GOLD = '#C9A227';  // Gold
-const MUTED = '#5b6472';
-const LINE = '#e2e5ea';
-const SOFT = '#eef1f5';
+const FONT = theme.typography.fontFamily;
+const BRAND = '#0f2f57';
+const ACCENT = '#1d4f7c';
+const GOLD = '#b08d57';
+const MUTED = '#5f6b7a';
+const LINE = '#e5ebf2';
+const SOFT = '#f5f7fa';
 
-// Hosted Golden Icons for Signature (Consistent across all email clients)
-const icons = {
-  location: 'https://img.icons8.com/ios-filled/50/C9A227/marker.png',
-  phone: 'https://img.icons8.com/ios-filled/50/C9A227/phone.png',
-  email: 'https://img.icons8.com/ios-filled/50/C9A227/new-post.png',
-  web: 'https://img.icons8.com/ios-filled/50/C9A227/domain.png',
-  linkedin: 'https://img.icons8.com/ios-filled/50/C9A227/linkedin.png',
-  twitter: 'https://img.icons8.com/ios-filled/50/C9A227/twitterx.png',
-  facebook: 'https://img.icons8.com/ios-filled/50/C9A227/facebook-new.png'
-};
+const iconImg = (cid, alt) =>
+  `<img src="cid:${cid}" alt="${alt}" width="14" height="14" style="display:inline-block; border:0; outline:none; width:14px; height:14px; vertical-align:middle; margin:0 8px 1px 0;" />`;
 
-const iconRow = (iconUrl, alt, labelHtml) => `
+const iconRow = (cid, alt, labelHtml) => `
   <tr>
-    <td valign="top" style="padding:3px 8px 3px 0; width:16px;">
-      <img src="${iconUrl}" alt="${alt}" width="14" height="14" style="display:block; border:0; margin-top:2px;" />
+    <td valign="top" width="22" style="width:22px; padding:0 0 8px;">
+      ${iconImg(cid, alt)}
     </td>
-    <td style="padding:3px 0; font-size:12.5px; color:${MUTED}; line-height:18px;">
+    <td valign="top" style="padding:0 0 8px; font-family:${FONT}; font-size:13px; line-height:1.55; color:${MUTED};">
       ${labelHtml}
     </td>
   </tr>`;
 
 /**
- * GR Class branded email shell — STRICT FIXED LAYOUT (Always renders like Desktop).
+ * GR Class branded email shell — full-width desktop, stacked/centered mobile.
  * @param {{ title: string, innerHtml: string, preheader?: string, unsubscribeUrl?: string }} opts
  */
 export const wrapGrclassEmail = ({ title, innerHtml, preheader = '', unsubscribeUrl }) => {
   const safeTitle = escapeHtml(title);
   const pre = escapeHtml(preheader).slice(0, 200);
   const year = new Date().getFullYear();
-  const safeUnsubscribe = unsubscribeUrl ? escapeHtml(unsubscribeUrl) : '#';
+  const safeUnsubscribe = unsubscribeUrl ? escapeHtml(unsubscribeUrl) : '';
 
-  const unsubscribeLine = unsubscribeUrl
-    ? `<a href="${safeUnsubscribe}" style="color:#7f92b3; text-decoration:underline;">Unsubscribe</a>`
-    : `<a href="#" style="color:#7f92b3; text-decoration:underline;">Unsubscribe</a>`;
+  const unsubscribeLine = safeUnsubscribe
+    ? `<a href="${safeUnsubscribe}" style="color:#9db0c5; text-decoration:underline;">Unsubscribe</a><span style="color:#4b6480; padding:0 8px;">|</span>`
+    : '';
 
-  // Left side signature block with Golden Icons
   const contactBlock = `
-    <span style="display:block; font-size:17px; font-weight:900; color:${BRAND};">GR Class Administration</span>
-    <span style="display:block; font-size:10px; letter-spacing:1px; color:${GOLD}; text-transform:uppercase; font-weight:bold; padding-top:4px; padding-bottom:18px;">Maritime Classification &amp; Certification</span>
-
-    <span style="display:block; font-size:10px; letter-spacing:1.5px; color:#8a94a3; text-transform:uppercase; font-weight:bold; padding-bottom:10px;">Regional Offices</span>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-      ${iconRow(icons.location, 'Address', `<strong style="color:${BRAND};">HQ:</strong> B.C. 1304883, C1 Building, Ajman District Business, UAE`)}
-      ${iconRow(icons.location, 'Address', `<strong style="color:${BRAND};">India:</strong> Office No‑6, Hermes Atrium, Navi Mumbai, Maharashtra`)}
-      ${iconRow(icons.location, 'Address', `<strong style="color:${BRAND};">Greece:</strong> Notara Str. 110, Piraeus, 18535`)}
-      ${iconRow(icons.location, 'Address', `<strong style="color:${BRAND};">Panama:</strong> Edificio Global Plaza, Calle 50, Piso 21`)}
-    </table>
-
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${LINE}; padding-top:12px; margin-top:14px;">
-      <tr>
-        <td valign="middle" style="padding:5px 8px 5px 0; width:16px;">
-          <img src="${icons.phone}" alt="Phone" width="14" height="14" style="display:block; border:0;" />
-        </td>
-        <td style="padding:5px 0; font-size:12.5px;">
-          <span style="color:${GOLD}; font-weight:bold; letter-spacing:0.5px;">TEL&nbsp;&nbsp;</span><a href="tel:+971555324087" style="color:${BRAND}; text-decoration:none; font-weight:bold;">+971 55 532 4087</a>
-        </td>
-      </tr>
-      <tr>
-        <td valign="middle" style="padding:5px 8px 5px 0; width:16px;">
-          <img src="${icons.email}" alt="Email" width="14" height="14" style="display:block; border:0;" />
-        </td>
-        <td style="padding:5px 0; font-size:12.5px;">
-          <span style="color:${GOLD}; font-weight:bold; letter-spacing:0.5px;">EMAIL&nbsp;</span><a href="mailto:info@grclass.com" style="color:${BRAND}; text-decoration:none; font-weight:bold;">info@grclass.com</a>
-        </td>
-      </tr>
-      <tr>
-        <td valign="middle" style="padding:5px 8px 5px 0; width:16px;">
-          <img src="${icons.web}" alt="Web" width="14" height="14" style="display:block; border:0;" />
-        </td>
-        <td style="padding:5px 0; font-size:12.5px;">
-          <span style="color:${GOLD}; font-weight:bold; letter-spacing:0.5px;">WEB&nbsp;&nbsp;</span><a href="https://www.grclass.com" style="color:${BRAND}; text-decoration:none; font-weight:bold;">www.grclass.com</a>
-        </td>
-      </tr>
+    <p style="margin:0 0 2px; font-size:17px; font-weight:800; color:${BRAND}; line-height:1.25; letter-spacing:-0.01em;">
+      GR Class Administration
+    </p>
+    <p style="margin:0 0 14px; font-size:12px; font-weight:600; color:${GOLD}; letter-spacing:0.04em; text-transform:uppercase;">
+      Maritime Classification &amp; Certification
+    </p>
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%;">
+      ${iconRow('icon-location', 'Address', `<strong style="color:${BRAND};">HQ:</strong> B.C. 1304883, C1 Building, Ajman District Business, Makani No – 4442612247, UAE.`)}
+      ${iconRow('icon-location', 'Address', `<strong style="color:${BRAND};">India:</strong> Office No - 6, Hermes Atrium, Sector -11, CBD Belapur, Navi Mumbai, Maharashtra, India.`)}
+      ${iconRow('icon-location', 'Address', `<strong style="color:${BRAND};">Greece:</strong> Notara Str. 110, Piraeus, 18535, Greece.`)}
+      ${iconRow('icon-location', 'Address', `<strong style="color:${BRAND};">Panama:</strong> Edificio Global Plaza, Calle 50, Piso 21, Republic de Panama.`)}
+      ${iconRow('icon-phone', 'Phone', `<a href="tel:+971555324087" style="color:${MUTED}; text-decoration:none;">+971 55 532 4087</a>`)}
+      ${iconRow('icon-email', 'Email', `<a href="mailto:info@grclass.com" style="color:${ACCENT}; text-decoration:none;">info@grclass.com</a>`)}
+      ${iconRow('icon-web', 'Website', `<a href="https://grclass.com" style="color:${ACCENT}; text-decoration:none;">www.grclass.com</a>`)}
     </table>`;
 
-  // Right side signature block (Logo + dynamic CID QR)
-  const qrBlock = (size = 95) => `
-    <table role="presentation" cellpadding="0" cellspacing="0" align="right">
+  const qrBlock = (size = 96) => `
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center">
       <tr>
-        <td align="center" style="padding-bottom:20px;">
-          <table role="presentation" cellpadding="0" cellspacing="0">
-            <tr>
-              <td style="width:38px; height:38px; background-color:${BRAND}; text-align:center; vertical-align:middle; border-radius:3px;">
-                <span style="color:${GOLD}; font-family:Georgia, serif; font-weight:bold; font-size:16px; line-height:38px;">GR</span>
-              </td>
-              <td style="padding-left:10px; font-size:16px; font-weight:900; color:${BRAND}; letter-spacing: 0.5px;">CLASS</td>
-            </tr>
-          </table>
+        <td align="center" style="padding:7px; border:1px solid ${LINE}; background:#ffffff;">
+          <img src="cid:grclass-qr" alt="Scan to verify" width="${size}" height="${size}" style="display:block; border:0; width:${size}px; height:${size}px;" />
         </td>
       </tr>
       <tr>
-        <td align="center" style="border:1px dashed ${GOLD}; padding:10px; background-color:#fafbfc;">
-          <img src="cid:grclass-qr" alt="Scan to Verify" width="${size}" height="${size}" style="display:block; border:0; width:${size}px; height:${size}px;" />
-          <span style="display:block; font-size:9px; letter-spacing:1px; color:${BRAND}; font-weight:bold; text-transform:uppercase; padding-top:8px;">Scan to Verify</span>
+        <td align="center" style="padding-top:7px;">
+          <p style="margin:0; font-family:${FONT}; font-size:9px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:${MUTED};">
+            Scan to Verify
+          </p>
         </td>
       </tr>
     </table>`;
@@ -123,6 +85,8 @@ export const wrapGrclassEmail = ({ title, innerHtml, preheader = '', unsubscribe
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
   <title>${safeTitle}</title>
   <!--[if mso]>
   <noscript>
@@ -134,169 +98,220 @@ export const wrapGrclassEmail = ({ title, innerHtml, preheader = '', unsubscribe
   </noscript>
   <![endif]-->
   <style>
-    /* Strictly resetting for fixed layout. NO media queries for mobile stacking. */
-    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-    html, body { margin:0 !important; padding:0 !important; width:100% !important; background-color:${SOFT}; }
-    table, td { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-    img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
-    a { text-decoration: none; }
-    a:hover { text-decoration: underline !important; }
+    html, body { margin:0 !important; padding:0 !important; width:100% !important; }
+    body {
+      width:100% !important;
+      -webkit-text-size-adjust:100%;
+      -ms-text-size-adjust:100%;
+      background-color:${SOFT};
+      font-family:${FONT};
+    }
+    img { border:0; height:auto; line-height:100%; outline:none; text-decoration:none; -ms-interpolation-mode:bicubic; }
+    table { border-collapse:collapse !important; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+    .email-shell, .email-card { width:100% !important; max-width:100% !important; }
+
+    .sig-info { width:68%; }
+    .sig-brand { width:32%; }
+
+    /* Desktop default: stacked logo/QR. Mobile alternate hidden. */
+    .brand-mobile { display:none !important; max-height:0 !important; overflow:hidden !important; mso-hide:all; }
+    .brand-desktop { display:table !important; }
+
+    @media only screen and (max-width:680px) {
+      .email-pad { padding-left:16px !important; padding-right:16px !important; }
+      .header { padding:18px 16px !important; }
+      .content { padding:24px 16px 22px !important; }
+      .sig-pad { padding:20px 16px 14px !important; }
+      .privacy-pad { padding:16px !important; }
+      .bottom-pad { padding:16px !important; }
+
+      .sig-info,
+      .sig-brand {
+        display:block !important;
+        width:100% !important;
+        max-width:100% !important;
+        padding:0 0 14px !important;
+      }
+
+      /* Hide desktop stacked brand; show mobile one-row centered */
+      .brand-desktop {
+        display:none !important;
+        max-height:0 !important;
+        overflow:hidden !important;
+        mso-hide:all;
+        width:0 !important;
+        height:0 !important;
+        font-size:0 !important;
+        line-height:0 !important;
+      }
+      .brand-mobile {
+        display:table !important;
+        max-height:none !important;
+        overflow:visible !important;
+        width:auto !important;
+        margin:0 auto !important;
+      }
+      .sig-brand { text-align:center !important; padding-top:6px !important; padding-bottom:4px !important; }
+
+      .loc-bar { font-size:11px !important; line-height:1.55 !important; padding:12px 14px !important; }
+      .ro-label { display:none !important; }
+      .cta-btn { display:block !important; width:100% !important; box-sizing:border-box !important; text-align:center !important; }
+    }
   </style>
 </head>
-<body style="margin:0; padding:0; background-color:${SOFT}; font-family:${FONT};">
+<body style="margin:0; padding:0; width:100%; background-color:${SOFT};">
+  <span style="display:none!important;visibility:hidden;opacity:0;color:transparent;height:0;width:0;max-height:0;max-width:0;overflow:hidden;mso-hide:all;">${pre}</span>
 
-  <!-- Preheader -->
-  <div style="display:none; max-height:0; overflow:hidden; opacity:0; font-size:0; color:${SOFT};">
-    ${pre} &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
-  </div>
-
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${SOFT}; padding:32px 0;">
+  <table role="presentation" class="email-shell" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; background-color:${SOFT};">
     <tr>
-      <td align="center">
+      <td align="center" style="padding:0; width:100%;">
+        <table role="presentation" class="email-card" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; max-width:100%; background-color:#ffffff;">
 
-        <!-- Main container - strictly fixed at 620px to allow zooming out on mobile -->
-        <table role="presentation" width="620" cellpadding="0" cellspacing="0" style="width:620px; max-width:620px; background-color:#ffffff; border:1px solid #d8dde5; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">
-
-          <!-- Top rule -->
+          <!-- Brand accent -->
           <tr>
-            <td style="height:5px; background-color:${GOLD}; font-size:0; line-height:0;">&nbsp;</td>
+            <td style="height:4px; line-height:4px; font-size:0; background:linear-gradient(90deg, ${BRAND} 0%, ${ACCENT} 70%, ${GOLD} 100%); background-color:${BRAND};">&nbsp;</td>
           </tr>
 
           <!-- Header -->
           <tr>
-            <td style="padding:28px 40px 24px 40px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <td class="header email-pad" style="background-color:#ffffff; padding:24px 40px 20px; border-bottom:1px solid ${LINE};">
+              <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="width:100%;">
                 <tr>
-                  <td valign="middle" style="width:60%;">
-                    <table role="presentation" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="width:40px; height:40px; background-color:${BRAND}; text-align:center; vertical-align:middle; border-radius:3px;">
-                          <span style="color:${GOLD}; font-family:Georgia, 'Times New Roman', serif; font-weight:bold; font-size:17px; line-height:40px;">GR</span>
-                        </td>
-                        <td style="padding-left:12px;">
-                          <span style="display:block; font-size:18px; font-weight:900; color:${BRAND}; letter-spacing:0.5px;">GR CLASS</span>
-                          <span style="display:block; font-size:9.5px; color:#8a94a3; letter-spacing:1.5px; text-transform:uppercase; padding-top:2px;">Classification &amp; Certification</span>
-                        </td>
-                      </tr>
-                    </table>
+                  <td align="left" valign="middle">
+                    <a href="https://grclass.com" target="_blank" style="text-decoration:none;">
+                      <img src="cid:grclass-logo" alt="GR Class Logo" width="148" height="99" style="display:block; border:0; outline:none; height:46px; width:auto; max-width:150px;" />
+                    </a>
                   </td>
-                  <td valign="middle" align="right" style="width:40%;">
-                    <table role="presentation" cellpadding="0" cellspacing="0" align="right" style="border:1px solid ${GOLD}; background-color:#fdfbf7;">
-                      <tr>
-                        <td style="padding:7px 12px;">
-                          <span style="display:inline-block; width:6px; height:6px; background-color:${GOLD}; margin-right:7px; border-radius:50%;"></span>
-                          <span style="font-size:9px; letter-spacing:1.2px; color:${BRAND}; text-transform:uppercase; font-weight:bold;">Recognized Organization</span>
-                        </td>
-                      </tr>
-                    </table>
+                  <td align="right" valign="middle" class="ro-label" style="font-family:${FONT}; font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:#8a96a5;">
+                    Recognized Organization
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- Dynamic Body Content Row -->
+          <!-- Body -->
           <tr>
-            <td style="padding:0;">
+            <td class="content email-pad" style="padding:36px 40px 28px; font-family:${FONT}; color:#334155; font-size:15px; line-height:1.7; background-color:#ffffff;">
               ${innerHtml}
             </td>
           </tr>
 
-          <tr><td style="padding:0 40px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="border-top:1px solid ${LINE}; font-size:0; line-height:0;">&nbsp;</td></tr></table></td></tr>
-
-          <!-- Signature block -->
           <tr>
-            <td style="padding:32px 40px 10px 40px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <td class="email-pad" style="padding:0 40px; background-color:#ffffff;">
+              <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="width:100%;">
+                <tr><td style="border-top:1px solid ${LINE}; font-size:0; line-height:0;">&nbsp;</td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Signature -->
+          <tr>
+            <td class="sig-pad email-pad" style="padding:28px 40px 18px; background-color:#ffffff;">
+              <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="width:100%;">
                 <tr>
-                  <!-- Left: Contact Details -->
-                  <td valign="top" style="width:66%;">
+                  <td class="sig-info" valign="top" style="width:68%; padding-right:28px; font-family:${FONT};">
                     ${contactBlock}
                   </td>
-                  <!-- Right: Logo & QR -->
-                  <td valign="top" align="right" style="width:34%;">
-                    ${qrBlock(95)}
+
+                  <td class="sig-brand" valign="top" align="right" style="width:32%; text-align:right;">
+                    <!-- Desktop: logo above QR (right) -->
+                    <table role="presentation" class="brand-desktop" border="0" cellpadding="0" cellspacing="0" align="right" style="margin-left:auto;">
+                      <tr>
+                        <td align="center" style="padding-bottom:14px;">
+                          <a href="https://grclass.com" target="_blank" style="text-decoration:none;">
+                            <img src="cid:grclass-logo" alt="GR Class Logo" width="118" height="79" style="display:block; border:0; outline:none; width:118px; max-width:118px; height:auto; margin:0 auto;" />
+                          </a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="center">${qrBlock(100)}</td>
+                      </tr>
+                    </table>
+
+                    <!-- Mobile: logo + QR one centered row -->
+                    <table role="presentation" class="brand-mobile" border="0" cellpadding="0" cellspacing="0" align="center" style="display:none; margin:0 auto;">
+                      <tr>
+                        <td valign="middle" align="center" style="padding-right:16px;">
+                          <a href="https://grclass.com" target="_blank" style="text-decoration:none;">
+                            <img src="cid:grclass-logo" alt="GR Class Logo" width="100" height="67" style="display:block; border:0; outline:none; width:100px; height:auto;" />
+                          </a>
+                        </td>
+                        <td valign="middle" align="center">${qrBlock(84)}</td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- Locations strip -->
+          <!-- Locations -->
           <tr>
-            <td style="padding:30px 0 0 0;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:${BRAND}; border-top: 3px solid ${GOLD};">
-                <tr>
-                  <td align="center" style="padding:15px; font-size:11px; letter-spacing:1.5px; color:${GOLD}; text-transform:uppercase; font-weight:bold;">
-                    Ajman &nbsp;•&nbsp; Navi Mumbai &nbsp;•&nbsp; Piraeus &nbsp;•&nbsp; Panama
-                  </td>
-                </tr>
-              </table>
+            <td align="center" class="loc-bar" style="background-color:${BRAND}; padding:12px 20px; font-family:${FONT}; font-size:12px; font-weight:600; letter-spacing:0.06em; color:#ffffff;">
+              Ajman &nbsp;•&nbsp; Navi Mumbai &nbsp;•&nbsp; Piraeus &nbsp;•&nbsp; Panama
             </td>
           </tr>
 
-          <!-- Privacy notice -->
+          <!-- Privacy -->
           <tr>
-            <td style="padding:25px 40px 10px 40px; background-color:#f4f6f9;">
-              <span style="display:block; font-size:10px; letter-spacing:1.5px; color:${BRAND}; text-transform:uppercase; font-weight:bold; padding-bottom:8px;">Privacy &amp; Confidentiality Notice</span>
-              <span style="display:block; font-size:11px; line-height:18px; color:#6b7685;">
-                This email and any attachments are confidential and intended solely for the named recipient(s). If you received this message in error, please notify the sender and delete it immediately. Unauthorized disclosure or distribution is strictly prohibited. This bulletin is provided for general guidance only and does not constitute a survey, audit or certification action. Read our
-                <a href="https://www.grclass.com/privacy" style="color:${BRAND}; font-weight:bold;">Privacy Policy</a>, <a href="https://www.grclass.com/terms" style="color:${BRAND}; font-weight:bold;">Terms</a> and <a href="https://www.grclass.com/compliance" style="color:${BRAND}; font-weight:bold;">Compliance</a>.
-              </span>
-              <span style="display:block; font-size:11px; line-height:18px; color:#2e7d32; padding-top:10px; font-style:italic; font-weight:bold;">
+            <td class="privacy-pad email-pad" style="padding:20px 40px 10px; background-color:#ffffff;">
+              <p style="margin:0 0 10px; text-align:center; font-family:${FONT}; font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:${BRAND};">
+                Privacy and Confidentiality Notice
+              </p>
+              <p style="margin:0; font-family:${FONT}; font-size:11px; line-height:1.65; color:#7b8794;">
+                This email and any attachments are confidential and intended solely for the named recipient(s).
+                If you received this message in error, please notify the sender and delete it.
+                Unauthorized disclosure or distribution is prohibited.
+                GR Class is a Classification Society and Recognized Organization.
+                Read our
+                <a href="https://grclass.com/legal/privacy" target="_blank" style="color:${ACCENT}; text-decoration:underline; font-weight:600;">Privacy Policy</a>
+                (
+                <a href="https://grclass.com/legal/privacy" target="_blank" style="color:${ACCENT}; text-decoration:underline;">grclass.com/legal/privacy</a>
+                ).
+                Also see
+                <a href="https://grclass.com/legal/terms" target="_blank" style="color:${ACCENT}; text-decoration:underline;">Terms</a>
+                and
+                <a href="https://grclass.com/legal/compliance" target="_blank" style="color:${ACCENT}; text-decoration:underline;">Compliance</a>.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="email-pad" style="padding:6px 40px 18px; background-color:#ffffff;">
+              <p style="margin:0; font-family:${FONT}; font-size:11px; font-style:italic; color:#2f6b4f;">
                 Please consider the environment before printing this email.
-              </span>
+              </p>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="padding:0;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#081a30;">
-                <tr>
-                  <td align="center" style="padding:25px 20px 10px 20px;">
-                    <a href="#" style="display:inline-block; margin:0 8px;"><img src="${icons.linkedin}" alt="LinkedIn" width="24" height="24" style="display:block; border:0;" /></a>
-                    <a href="#" style="display:inline-block; margin:0 8px;"><img src="${icons.twitter}" alt="Twitter" width="24" height="24" style="display:block; border:0;" /></a>
-                    <a href="#" style="display:inline-block; margin:0 8px;"><img src="${icons.facebook}" alt="Facebook" width="24" height="24" style="display:block; border:0;" /></a>
-                  </td>
-                </tr>
-                <tr>
-                  <td align="center" style="padding:10px 20px 15px 20px; font-size:11.5px;">
-                    <a href="https://www.grclass.com/about" style="color:#c7cede; text-decoration:none; padding:0 10px; font-weight:bold;">About</a>
-                    <span style="color:#3a4b63;">|</span>
-                    <a href="https://www.grclass.com/contact" style="color:#c7cede; text-decoration:none; padding:0 10px; font-weight:bold;">Contact</a>
-                    <span style="color:#3a4b63;">|</span>
-                    <a href="https://www.grclass.com/privacy" style="color:#c7cede; text-decoration:none; padding:0 10px; font-weight:bold;">Privacy</a>
-                    <span style="color:#3a4b63;">|</span>
-                    <a href="https://www.grclass.com/terms" style="color:#c7cede; text-decoration:none; padding:0 10px; font-weight:bold;">Terms</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td align="center" style="padding:2px 20px 6px 20px; font-size:13px; font-weight:bold; letter-spacing:1px;">
-                    <a href="https://www.grclass.com" style="color:#ffffff; text-decoration:none;">www.grclass.com</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td align="center" style="padding:4px 20px 4px 20px; font-size:11px; color:#5b6c85;">
-                    © ${year} GR Class. All Rights Reserved.
-                  </td>
-                </tr>
-                <tr>
-                  <td align="center" style="padding:12px 30px 30px 30px; font-size:10px; line-height:16px; color:#3f5170;">
-                    You are receiving this technical bulletin as a registered maritime professional or GR Class contact. <br>
-                    <a href="#" style="color:#7f92b3; text-decoration:underline;">Manage preferences</a> &nbsp;|&nbsp; ${unsubscribeLine}
-                  </td>
-                </tr>
-              </table>
+            <td align="center" class="bottom-pad" style="background-color:#0b2138; padding:18px 24px;">
+              <p style="margin:0 0 8px; font-family:${FONT}; font-size:12px; color:#9db0c5;">
+                <a href="https://grclass.com/about" style="color:#d7e3ef; text-decoration:none;">About</a>
+                <span style="color:#4b6480; padding:0 8px;">|</span>
+                <a href="https://grclass.com/contact" style="color:#d7e3ef; text-decoration:none;">Contact</a>
+                <span style="color:#4b6480; padding:0 8px;">|</span>
+                <a href="https://grclass.com/legal/privacy" style="color:#d7e3ef; text-decoration:none;">Privacy</a>
+                <span style="color:#4b6480; padding:0 8px;">|</span>
+                <a href="https://grclass.com/legal/terms" style="color:#d7e3ef; text-decoration:none;">Terms</a>
+                <span style="color:#4b6480; padding:0 8px;">|</span>
+                <a href="https://grclass.com/legal/compliance" style="color:#d7e3ef; text-decoration:none;">Compliance</a>
+              </p>
+              <p style="margin:0; font-family:${FONT}; font-size:12px; color:#9db0c5;">
+                ${unsubscribeLine}
+                <a href="https://grclass.com" style="color:#e8f0f7; text-decoration:none; font-weight:600;">www.grclass.com</a>
+              </p>
+              <p style="margin:10px 0 0; font-family:${FONT}; font-size:11px; color:#6f8499;">
+                © ${year} GR Class. All Rights Reserved.
+              </p>
             </td>
           </tr>
-
         </table>
-
       </td>
     </tr>
   </table>
-
 </body>
 </html>`;
 };
