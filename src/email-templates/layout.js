@@ -167,7 +167,12 @@ export const wrapGrclassEmail = ({ title, innerHtml, preheader = '', unsubscribe
   <table role="presentation" class="email-shell" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; background-color:${SOFT};">
     <tr>
       <td align="center" class="email-shell-td" style="padding:40px 10px; width:100%;">
-        <table role="presentation" class="email-card" border="0" cellpadding="0" cellspacing="0" width="600" style="width:100%; max-width:600px; background-color:#ffffff; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); border-radius: 8px; overflow: hidden;">
+        <!--[if (gte mso 9)|(IE)]>
+        <table align="center" border="0" cellspacing="0" cellpadding="0" width="600" style="width:600px;">
+        <tr>
+        <td align="center" valign="top" width="600" style="width:600px;">
+        <![endif]-->
+        <table role="presentation" class="email-card" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; max-width:600px; background-color:#ffffff; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); border-radius: 8px; overflow: hidden;">
 
           <!-- Brand accent -->
           <tr>
@@ -311,6 +316,11 @@ export const wrapGrclassEmail = ({ title, innerHtml, preheader = '', unsubscribe
             </td>
           </tr>
         </table>
+        <!--[if (gte mso 9)|(IE)]>
+        </td>
+        </tr>
+        </table>
+        <![endif]-->
       </td>
     </tr>
   </table>
