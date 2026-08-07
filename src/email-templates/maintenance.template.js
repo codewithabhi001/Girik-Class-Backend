@@ -1,4 +1,4 @@
-import { layout } from './layout.js';
+import { wrapEmailHtml } from './layout.js';
 
 export const render = (data) => {
     const { name, message } = data;
@@ -35,6 +35,10 @@ export const render = (data) => {
 
     return {
         subject: 'GR Class - Scheduled Maintenance Notice',
-        html: layout(content)
+        html: wrapEmailHtml({
+            previewText: 'System is undergoing scheduled maintenance.',
+            title: 'Maintenance Notice',
+            contentHtml: content
+        })
     };
 };
