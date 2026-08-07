@@ -751,14 +751,65 @@ const generateSurveyReportPdf = async (survey, user) => {
     const resolvedSurvey = await fileAccessService.resolveEntity(survey, user);
     const resolvedChecklist = await fileAccessService.resolveEntity(checklist, user);
 
-    const html = buildSurveyReportHtml({
-        job,
-        vessel: job?.Vessel,
-        surveyor,
-        survey: { ...resolvedSurvey, is_draft: !isIssued },
-        checklist: resolvedChecklist,
-        client: job?.requester
+    let html = '';
+
+    const template = await db.CertificateTemplate.findOne({
+        where: {
+            certificate_type_id: jc.certificate_type_id,
+            certificate_term: null,
+            template_name: { [db.Sequelize.Op.like]: '%Survey_Statement%' },
+            is_active: true
+        },
+        useMaster: true
     });
+
+    if (template && template.template_content) {
+        const checklistHtml = (resolvedChecklist || []).map(item => `
+            <tr>
+                <td style="padding: 10px; border: 1px solid #edf2f7; font-size: 13px;">${item.question_text || ''}</td>
+                <td style="padding: 10px; border: 1px solid #edf2f7; text-align: center; font-weight: bold; color: ${item.answer === 'YES' ? '#2f855a' : item.answer === 'NO' ? '#c53030' : '#4a5568'};">${item.answer || ''}</td>
+                <td style="padding: 10px; border: 1px solid #edf2f7; font-size: 12px; color: #718096;">
+                    <div>${item.remarks || '-'}</div>
+                    ${item.file_url ? `<div style="margin-top: 6px; font-size: 11px;"><strong style="color:#4a5568;">Evidence:</strong> <a href="${item.file_url}" style="color: #2c5282;">View File</a></div>` : ''}
+                </td>
+            </tr>
+        `).join('');
+
+        const flagLogo = job?.Vessel?.FlagAdministration?.logo_url ? await fileAccessService.resolveUrl(job.Vessel.FlagAdministration.logo_url, user, true) : 'https://grclass.com/grclass-logo.webp';
+
+        const variables = {
+            vessel_name: job?.Vessel?.vessel_name || '',
+            imo_number: job?.Vessel?.imo_number || '',
+            ship_type: job?.Vessel?.ship_type || 'N/A',
+            port_of_registry: job?.Vessel?.port_of_registry || 'N/A',
+            gross_tonnage: job?.Vessel?.gross_tonnage || 'N/A',
+            flag_state: job?.Vessel?.FlagAdministration?.name || 'N/A',
+            surveyor_name: surveyor?.name || '',
+            client_name: job?.requester?.name || 'N/A',
+            requested_on: job?.created_at ? job.created_at.toISOString().split('T')[0] : '',
+            survey_statement: resolvedSurvey?.survey_statement || 'No statement provided.',
+            checklist_table: checklistHtml ? `<table width="100%" style="border-collapse: collapse; margin-top: 10px;"><tr><th style="background:#f4f6f8; padding:8px; border: 1px solid #ccc;">Question</th><th style="background:#f4f6f8; padding:8px; border: 1px solid #ccc;">Answer</th><th style="background:#f4f6f8; padding:8px; border: 1px solid #ccc;">Remarks</th></tr>${checklistHtml}</table>` : '',
+            flag_logo: flagLogo
+        };
+
+        html = certificatePdfService.fillTemplate(template.template_content, variables);
+        
+        if (!isIssued) {
+            html += `
+            <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 150px; color: rgba(226, 232, 240, 0.4); font-weight: bold; pointer-events: none; z-index: 9999;">
+                DRAFT
+            </div>`;
+        }
+    } else {
+        html = buildSurveyReportHtml({
+            job,
+            vessel: job?.Vessel,
+            surveyor,
+            survey: { ...resolvedSurvey, is_draft: !isIssued },
+            checklist: resolvedChecklist,
+            client: job?.requester
+        });
+    }
 
     const fullHtml = certificatePdfService.wrapHtmlForPdf(html);
     const pdfBuffer = await certificatePdfService.htmlToPdfBuffer(fullHtml);
