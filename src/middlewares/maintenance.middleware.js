@@ -4,13 +4,13 @@ export const checkMaintenanceMode = async (req, res, next) => {
     try {
         // 1. Bypass check for critical system/auth status check routes
         const bypassPaths = [
-            '/health',
-            '/readiness',
-            '/version',
-            '/system/maintenance',
-            '/system/app-status',
-            '/auth/login',
-            '/system-issues' // Allow users/apps to submit crash reports even during maintenance
+            '/api/v1/health',
+            '/api/v1/readiness',
+            '/api/v1/version',
+            '/api/v1/system/maintenance',
+            '/api/v1/system/app-status',
+            '/api/v1/auth/login',
+            '/api/v1/system-issues' // Allow users/apps to submit crash reports even during maintenance
         ];
 
         // Clean query parameters and check prefix
