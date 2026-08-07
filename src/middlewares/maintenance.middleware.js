@@ -37,7 +37,7 @@ export const checkMaintenanceMode = async (req, res, next) => {
                 }
             }
 
-            const staffRoles = ['ADMIN']; // Only Admin should bypass maintenance mode based on user requirements
+            const staffRoles = ['ADMIN', 'GM', 'TM', 'TO']; // Internal staff bypass maintenance mode
             if (userRole && staffRoles.includes(userRole)) {
                 return next();
             }
