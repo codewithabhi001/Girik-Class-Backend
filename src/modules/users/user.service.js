@@ -244,3 +244,14 @@ export const getUserById = async (id) => {
     const resolved = await fileAccessService.resolveEntity(user);
     return formatWithNa(resolved);
 };
+
+export const logoutAllSessions = async (userId) => {
+    if (!db.UserSession) return;
+    
+    // Deactivate all active sessions for this user
+    await db.UserSession.update(
+        { is_active: false },
+        { where: { user_id: userId, is_active: true } }
+    );
+};
+

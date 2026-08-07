@@ -45,6 +45,30 @@ export default (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: true,
         },
+        // Security Fields
+        failed_login_attempts: {
+            type: DataTypes.INTEGER,
+            defaultValue: 0,
+            allowNull: false,
+        },
+        locked_until: {
+            type: DataTypes.DATE,
+            allowNull: true,
+        },
+        last_password_change_at: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+        },
+        two_factor_secret: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        two_factor_enabled: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+            allowNull: false,
+        },
     }, {
         tableName: 'users',
         underscored: true,
@@ -65,6 +89,14 @@ export default (sequelize, DataTypes) => {
         User.hasMany(models.JobRequest, { foreignKey: 'assigned_surveyor_id', as: 'AssignedJobs' });
         User.hasMany(models.SupportTicket, { foreignKey: 'user_id', as: 'Tickets' });
         User.hasOne(models.NotificationPreference, { foreignKey: 'user_id', as: 'NotificationPreference' });
+        
+        // Security associations
+        if (models.PasswordHistory) {
+            User.hasMany(models.PasswordHistory, { foreignKey: 'user_id' });
+        }
+        if (models.UserSession) {
+            User.hasMany(models.UserSession, { foreignKey: 'user_id' });
+        }
     };
 
     return User;
