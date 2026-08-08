@@ -4,6 +4,7 @@ import { flatContactEnquiryListRow } from '../../utils/listRowFlatten.util.js';
 import * as notificationService from '../../services/notification.service.js';
 import emailService from '../../services/email.service.js';
 import logger from '../../utils/logger.js';
+import { scanEnquiryPayload } from '../../utils/spamDetector.util.js';
 
 const WebsiteContact = db.WebsiteContact;
 const User = db.User;
@@ -13,6 +14,31 @@ const User = db.User;
 // ─────────────────────────────────────────────────────────────────────────────
 export const submitEnquiry = async (data, ipAddress) => {
     const { full_name, company, corporate_email, message, phone, subject, source_page } = data;
+
+    // 1. Spam content & disposable email detection
+    const scanResult = scanEnquiryPayload({ full_name, corporate_email, subject, message });
+    if (scanResult.isSpam) {
+        logger.warn(`Spam enquiry blocked [reason=${scanResult.reason}] from ${corporate_email} [IP=${ipAddress}]`);
+        throw { statusCode: 400, message: 'Enquiry submission rejected by security filter.' };
+    }
+
+    // 2. Duplicate submission check within 10 minutes
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+    const duplicateOr = [{ corporate_email }];
+    if (phone) duplicateOr.push({ phone });
+    if (ipAddress) duplicateOr.push({ ip_address: ipAddress });
+
+    const existingEnquiry = await WebsiteContact.findOne({
+        where: {
+            created_at: { [Op.gte]: tenMinutesAgo },
+            [Op.or]: duplicateOr
+        }
+    });
+
+    if (existingEnquiry) {
+        logger.warn(`Duplicate enquiry attempt blocked within 10-min window [email=${corporate_email}, IP=${ipAddress}]`);
+        throw { statusCode: 429, message: 'A recent enquiry with this contact details has already been submitted. Please wait 10 minutes.' };
+    }
 
     const enquiry = await WebsiteContact.create({
         full_name,

@@ -8,20 +8,52 @@ import { validate, schemas } from '../../middlewares/validate.middleware.js';
 const router = express.Router();
 
 const contactRateLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    limit: 5, // Limit each IP to 5 requests per windowMs
+    windowMs: 10 * 60 * 1000, // 10 minutes
+    limit: 5, // Limit each IP to 5 requests per 10 minutes
     standardHeaders: true,
     legacyHeaders: false,
+    statusCode: 429,
     message: {
         success: false,
-        message: 'Too many contact requests from this IP, please try again after an hour.'
+        message: 'Too many contact requests from this IP. Please try again after 10 minutes.'
     }
 });
+
+// Middleware to validate Origin and Referer headers for public submission
+const verifyOrigin = (req, res, next) => {
+    const origin = req.headers.origin || req.headers.referer || '';
+    const allowedOrigins = [
+        'grclass.com',
+        'www.grclass.com',
+        'localhost',
+        '127.0.0.1'
+    ];
+
+    if (!origin && process.env.NODE_ENV === 'production') {
+        return res.status(403).json({
+            success: false,
+            message: 'Forbidden: Origin header required.'
+        });
+    }
+
+    if (origin) {
+        const isAllowed = allowedOrigins.some(domain => origin.includes(domain));
+        if (!isAllowed && process.env.NODE_ENV === 'production') {
+            return res.status(403).json({
+                success: false,
+                message: 'Forbidden: Requests from this origin are not allowed.'
+            });
+        }
+    }
+
+    next();
+};
 
 // ─── PUBLIC – No auth required ─────────────────────────────────────────────
 // Anyone visiting the portfolio website can submit a contact message.
 router.post(
     '/',
+    verifyOrigin,
     contactRateLimiter,
     validate(schemas.submitContactEnquiry),
     contactController.submitEnquiry

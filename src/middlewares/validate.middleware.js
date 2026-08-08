@@ -592,12 +592,12 @@ export const schemas = {
 
     // ── Contact / Website Enquiry ───────────────────────────────────────────
     submitContactEnquiry: Joi.object({
-        full_name: Joi.string().min(2).max(100).required(),
+        full_name: Joi.string().min(3).max(80).pattern(/^[a-zA-Z\s'-]{3,80}$/).message('Full name must contain 3-80 alphabetic characters').required(),
         company: Joi.string().max(150).optional().allow('', null),
         corporate_email: Joi.string().email().required(),
         message: Joi.string().min(10).max(5000).required(),
-        phone: Joi.string().pattern(/^(\+?\d{1,4}[\s-]?)?\d{6,15}$/).message('Invalid phone number').required(),
-        subject: Joi.string().max(200).optional().allow('', null),
+        phone: Joi.string().pattern(/^(\+?\d{1,4}[\s-]?)?\(?\d{1,4}\)?[\s-]?\d{3,4}[\s-]?\d{3,4}$/).message('Invalid phone number format').required(),
+        subject: Joi.string().min(3).max(200).optional().allow('', null),
         source_page: Joi.string().max(50).optional().allow('', null),
         website: Joi.string().max(200).optional().allow('', null), // Honeypot
         captcha_token: Joi.string().optional().allow('', null), // Cloudflare Turnstile token

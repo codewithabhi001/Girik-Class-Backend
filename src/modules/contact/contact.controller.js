@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as contactService from './contact.service.js';
+import logger from '../../utils/logger.js';
 
 // ─── PUBLIC ────────────────────────────────────────────────────────────────
 
@@ -10,10 +11,13 @@ import * as contactService from './contact.service.js';
 export const submitEnquiry = async (req, res, next) => {
     try {
         const { website, captcha_token, ...restBody } = req.body;
-        const ipAddress = req.ip || req.headers['x-forwarded-for'] || null;
+        const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.headers['cf-connecting-ip'] || null;
+        const userAgent = req.headers['user-agent'] || 'UNKNOWN';
+        const country = req.headers['cf-ipcountry'] || 'UNKNOWN';
 
         // 1. Honeypot check: If 'website' field is populated, it's a bot.
         if (website) {
+            logger.warn(`Honeypot trap triggered by bot [IP=${ipAddress}, Country=${country}, UA=${userAgent}]`);
             return res.status(201).json({
                 success: true,
                 message: 'Your message has been received. We will get back to you shortly.',

@@ -63,6 +63,11 @@ export default (sequelize, DataTypes) => {
         tableName: 'website_contacts',
         timestamps: true,
         underscored: true,
+        indexes: [
+            { fields: ['corporate_email', 'created_at'] },
+            { fields: ['phone', 'created_at'] },
+            { fields: ['ip_address', 'created_at'] },
+        ],
     });
 
     WebsiteContact.associate = (models) => {
