@@ -18,6 +18,16 @@ const MUTED = '#5f6b7a';
 const LINE = '#e5ebf2';
 const SOFT = '#f5f7fa';
 
+/* Subtle nautical-line SVG watermarks, encoded inline so no external asset/CID
+   is required. Kept low-opacity so they read as texture, not decoration.
+   These degrade gracefully to the solid fallback colors on clients that
+   strip background-image (e.g. Outlook desktop). */
+const shellWavePattern =
+  "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22140%22 height=%2260%22 viewBox=%220 0 140 60%22%3E%3Cpath d=%22M0 30 Q17.5 10 35 30 T70 30 T105 30 T140 30%22 fill=%22none%22 stroke=%22%230f2f57%22 stroke-opacity=%220.06%22 stroke-width=%221.5%22/%3E%3Cpath d=%22M0 48 Q17.5 28 35 48 T70 48 T105 48 T140 48%22 fill=%22none%22 stroke=%22%23b08d57%22 stroke-opacity=%220.05%22 stroke-width=%221.5%22/%3E%3C/svg%3E";
+
+const headerWavePattern =
+  "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22600%22 height=%2290%22 viewBox=%220 0 600 90%22 preserveAspectRatio=%22none%22%3E%3Cpath d=%22M-20 70 Q 130 20 280 60 T 620 50%22 fill=%22none%22 stroke=%22%23b08d57%22 stroke-opacity=%220.14%22 stroke-width=%222%22/%3E%3Cpath d=%22M-20 84 Q 150 45 300 78 T 620 68%22 fill=%22none%22 stroke=%22%230f2f57%22 stroke-opacity=%220.08%22 stroke-width=%222%22/%3E%3C/svg%3E";
+
 const iconImg = (cid, alt) =>
   `<img src="cid:${cid}" alt="${alt}" width="14" height="14" style="display:inline-block; border:0; outline:none; width:14px; height:14px; vertical-align:middle; margin:0 8px 1px 0;" />`;
 
@@ -104,6 +114,8 @@ export const wrapGrclassEmail = ({ title, innerHtml, preheader = '', unsubscribe
       -webkit-text-size-adjust:100%;
       -ms-text-size-adjust:100%;
       background-color:${SOFT};
+      background-image:url('${shellWavePattern}');
+      background-repeat:repeat;
       font-family:${FONT};
     }
     img { border:0; height:auto; line-height:100%; outline:none; text-decoration:none; -ms-interpolation-mode:bicubic; }
@@ -114,9 +126,21 @@ export const wrapGrclassEmail = ({ title, innerHtml, preheader = '', unsubscribe
     .sig-info { width:68%; }
     .sig-brand { width:32%; }
 
+    .header-bg {
+      background-color:#ffffff;
+      background-image:url('${headerWavePattern}');
+      background-repeat:no-repeat;
+      background-position:right top;
+      background-size:cover;
+    }
+
     /* Desktop default: stacked logo/QR. Mobile alternate hidden. */
     .brand-mobile { display:none !important; max-height:0 !important; overflow:hidden !important; mso-hide:all; }
     .brand-desktop { display:table !important; }
+
+    /* Logo + tagline lockup shown beside the mark in the header */
+    .logo-tagline { display:table-cell !important; }
+    .logo-tagline-mobile { display:none !important; }
 
     @media only screen and (max-width:680px) {
       .email-shell-td { padding: 0 !important; }
@@ -158,13 +182,17 @@ export const wrapGrclassEmail = ({ title, innerHtml, preheader = '', unsubscribe
       .loc-bar { font-size:11px !important; line-height:1.55 !important; padding:12px 14px !important; }
       .ro-label { display:none !important; }
       .cta-btn { display:block !important; width:100% !important; box-sizing:border-box !important; text-align:center !important; }
+
+      /* Hide the desktop divider+tagline beside the mobile logo, keep it under */
+      .logo-tagline { display:none !important; }
+      .logo-tagline-mobile { display:block !important; padding-top:6px !important; }
     }
   </style>
 </head>
-<body style="margin:0; padding:0; width:100%; background-color:${SOFT};">
+<body style="margin:0; padding:0; width:100%; background-color:${SOFT}; background-image:url('${shellWavePattern}'); background-repeat:repeat;">
   <span style="display:none!important;visibility:hidden;opacity:0;color:transparent;height:0;width:0;max-height:0;max-width:0;overflow:hidden;mso-hide:all;">${pre}</span>
 
-  <table role="presentation" class="email-shell" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; background-color:${SOFT};">
+  <table role="presentation" class="email-shell" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; background-color:${SOFT}; background-image:url('${shellWavePattern}'); background-repeat:repeat;">
     <tr>
       <td align="center" class="email-shell-td" style="padding:40px 10px; width:100%;">
         <!--[if (gte mso 9)|(IE)]>
@@ -181,13 +209,37 @@ export const wrapGrclassEmail = ({ title, innerHtml, preheader = '', unsubscribe
 
           <!-- Header -->
           <tr>
-            <td class="header email-pad" style="background-color:#ffffff; padding:24px 40px 20px; border-bottom:1px solid ${LINE};">
+            <td class="header header-bg email-pad" bgcolor="#ffffff" background="${headerWavePattern}" style="background-color:#ffffff; padding:24px 40px 20px; border-bottom:1px solid ${LINE};">
               <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="width:100%;">
                 <tr>
                   <td align="left" valign="middle">
-                    <a href="https://grclass.com" target="_blank" style="text-decoration:none;">
-                      <img src="cid:grclass-logo" alt="GR Class Logo" width="148" height="99" style="display:block; border:0; outline:none; height:46px; width:auto; max-width:150px;" />
-                    </a>
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td valign="middle">
+                          <a href="https://grclass.com" target="_blank" style="text-decoration:none;">
+                            <img src="cid:grclass-logo" alt="GR Class Logo" width="148" height="99" style="display:block; border:0; outline:none; height:46px; width:auto; max-width:150px;" />
+                          </a>
+                        </td>
+                        <td class="logo-tagline" valign="middle" style="padding-left:14px;">
+                          <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td valign="middle" style="width:1px; background-color:${LINE}; font-size:0; line-height:0;">&nbsp;</td>
+                              <td valign="middle" style="padding-left:14px;">
+                                <p style="margin:0; font-family:${FONT}; font-size:14px; font-weight:800; color:${BRAND}; letter-spacing:0.01em;">
+                                  GR&nbsp;CLASS
+                                </p>
+                                <p style="margin:1px 0 0; font-family:${FONT}; font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:${GOLD};">
+                                  Classified for Standards
+                                </p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                    <p class="logo-tagline-mobile" style="display:none; margin:2px 0 0; font-family:${FONT}; font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:${GOLD};">
+                      Classified for Standards
+                    </p>
                   </td>
                   <td align="right" valign="middle" class="ro-label" style="font-family:${FONT}; font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:#8a96a5;">
                     Recognized Organization
@@ -284,11 +336,18 @@ export const wrapGrclassEmail = ({ title, innerHtml, preheader = '', unsubscribe
             </td>
           </tr>
 
+          <!-- Environmental message -->
           <tr>
-            <td class="email-pad" style="padding:6px 40px 18px; background-color:#ffffff;">
-              <p style="margin:0; font-family:${FONT}; font-size:11px; font-style:italic; color:#2f6b4f;">
-                Please consider the environment before printing this email.
-              </p>
+            <td class="email-pad" style="padding:0 40px 24px; background-color:#ffffff;">
+              <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="width:100%;">
+                <tr>
+                  <td align="center" style="padding:10px 20px; background-color:#f0fdf4; border-radius:6px; border:1px solid #dcfce7;">
+                    <p style="margin:0; text-align:center; font-family:${FONT}; font-size:11px; font-weight:600; font-style:italic; color:#16a34a; letter-spacing:0.02em;">
+                      Please consider the environment before printing this email.
+                    </p>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
