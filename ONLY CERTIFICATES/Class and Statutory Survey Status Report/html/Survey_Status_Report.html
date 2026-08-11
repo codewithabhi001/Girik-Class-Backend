@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GR Class – Survey Status Report – {{vessel_name}}</title>
+  <meta name="description" content="Class and Statutory Survey Status Report for {{vessel_name}} (IMO {{imo_number}})">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════════════
+       GR CLASS – SURVEY STATUS REPORT
+       Standard HTML Template
+    ═══════════════════════════════════════════════════════ */
+    :root {
+      --navy: #0B2443;
+      --navy-deep: #071a33;
+      --navy-light: #133c6d;
+      --navy-surface: #0d2d52;
+      --gold: #B5891F;
+      --gold-light: #d4a94a;
+      --gold-pale: #f5ecd4;
+      --gold-glow: rgba(181, 137, 31, 0.15);
+
+      --bg-page: #0a0f1a;
+      --bg-report: #ffffff;
+      --bg-section: #fafbfc;
+      --bg-header-gradient: linear-gradient(135deg, #0B2443 0%, #133c6d 50%, #0B2443 100%);
+      --bg-row-alt: #f8f9fb;
+      --bg-row-hover: #eef3fa;
+      
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --text-white: #ffffff;
+      --text-gold: #B5891F;
+      
+      --status-valid: #059669;
+      --status-valid-bg: #ecfdf5;
+      --status-expired: #dc2626;
+      --status-expired-bg: #fef2f2;
+      --status-pending: #d97706;
+      --status-pending-bg: #fffbeb;
+      --status-conditional: #2563eb;
+      --status-conditional-bg: #eff6ff;
+      --status-suspended: #7c3aed;
+      --status-suspended-bg: #f5f3ff;
+      --status-na: #64748b;
+      --status-na-bg: #f1f5f9;
+
+      --survey-done: #059669;
+      --survey-due: #d97706;
+      --survey-overdue: #dc2626;
+      --survey-before: #2563eb;
+
+      --border-light: #e2e8f0;
+      --border-medium: #cbd5e1;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+      --shadow-glow: 0 0 30px rgba(181, 137, 31, 0.1);
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(11, 36, 67, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(181, 137, 31, 0.3);
+      padding: 12px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .toolbar-brand { display: flex; align-items: center; gap: 12px; }
+    .toolbar-logo {
+      width: 36px; height: 36px; border-radius: 8px; background: var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 14px; color: var(--navy);
+    }
+    .toolbar-title { color: var(--text-white); font-weight: 600; font-size: 15px; }
+    .toolbar-subtitle { color: var(--gold-light); font-size: 11px; font-weight: 500; text-transform: uppercase; }
+    .toolbar-actions { display: flex; gap: 10px; }
+    
+    .btn {
+      padding: 8px 18px; border: none; border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s ease;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-primary { background: var(--gold); color: var(--navy); }
+    .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+    .btn-outline { background: transparent; color: var(--text-white); border: 1px solid rgba(255,255,255,0.2); }
+
+    .report-container { max-width: 1100px; margin: 32px auto; padding: 0 24px 80px; }
+
+    .report-header {
+      background: var(--bg-header-gradient); border-radius: var(--radius-xl);
+      padding: 40px 48px; margin-bottom: 28px; position: relative; overflow: hidden;
+      box-shadow: var(--shadow-lg), var(--shadow-glow);
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+    .header-brand { display: flex; align-items: center; gap: 16px; }
+    .header-logo {
+      width: 60px; height: 60px; border-radius: 14px; background: rgba(255,255,255,0.1);
+      border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 22px; color: var(--gold);
+    }
+    .header-org-name { font-size: 20px; font-weight: 800; color: var(--text-white); letter-spacing: 1.5px; }
+    .header-org-sub { font-size: 11px; color: var(--gold-light); letter-spacing: 2px; text-transform: uppercase; }
+    .header-meta { text-align: right; color: rgba(255,255,255,0.7); font-size: 12px; }
+    .header-meta-label { font-size: 10px; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+    .header-meta-value { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--gold-light); }
+
+    .report-title { font-size: 28px; font-weight: 800; color: var(--text-white); margin-bottom: 4px; }
+    .report-subtitle { font-size: 14px; color: rgba(255,255,255,0.6); }
+
+    .vessel-hero { display: flex; align-items: center; gap: 20px; margin-top: 24px; }
+    .vessel-name-big { font-size: 36px; font-weight: 900; color: var(--text-white); letter-spacing: 2px; text-transform: uppercase; }
+    .vessel-flag-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+      padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--text-white);
+    }
+
+    .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+    .metric-card {
+      background: var(--bg-report); border-radius: var(--radius-md); padding: 20px 24px;
+      box-shadow: var(--shadow-sm); border: 1px solid var(--border-light); position: relative;
+    }
+    .metric-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+    .metric-value { font-size: 28px; font-weight: 800; color: var(--text-primary); }
+    .metric-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+    .section-card {
+      background: var(--bg-report); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light); margin-bottom: 24px; overflow: hidden;
+    }
+    .section-header {
+      display: flex; justify-content: space-between; align-items: center; padding: 20px 28px;
+      background: var(--bg-section); border-bottom: 1px solid var(--border-light); cursor: pointer;
+    }
+    .section-header-left { display: flex; align-items: center; gap: 14px; }
+    .section-number {
+      width: 32px; height: 32px; border-radius: 8px; background: var(--navy); color: var(--gold);
+      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px;
+    }
+    .section-title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+    .section-body { padding: 24px 28px; }
+
+    .data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+    .data-table thead th {
+      background: #f1f5f9; color: var(--text-secondary); font-weight: 600; font-size: 11px;
+      text-transform: uppercase; padding: 12px 16px; border-bottom: 2px solid var(--border-light); text-align: left;
+    }
+    .data-table tbody td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; color: var(--text-primary); }
+
+    .particulars-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .particular-item { padding: 14px 18px; background: var(--bg-section); border-radius: var(--radius-sm); border: 1px solid var(--border-light); }
+    .particular-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+    .particular-value { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+
+    .stakeholder-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 16px; }
+    .stakeholder-card { padding: 18px 22px; background: var(--bg-section); border-radius: var(--radius-md); border-left: 3px solid var(--navy); }
+    .stakeholder-role { font-size: 10px; font-weight: 700; color: var(--gold); text-transform: uppercase; }
+    .stakeholder-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+
+    .notes-area {
+      width: 100%; min-height: 180px; padding: 18px 22px; border: 2px dashed var(--border-medium);
+      border-radius: var(--radius-md); font-family: 'Inter', sans-serif; font-size: 14px;
+    }
+
+    [contenteditable="true"]:hover { background: rgba(181, 137, 31, 0.06); }
+    [contenteditable="true"]:focus { background: rgba(181, 137, 31, 0.1); outline: none; }
+
+    @media print {
+      .toolbar { display: none !important; }
+      body { background: #fff !important; color: #000; }
+      .report-container { max-width: none; padding: 0; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar" id="toolbar">
+    <div class="toolbar-brand">
+      <div class="toolbar-logo">GR</div>
+      <div>
+        <div class="toolbar-title">Survey Status Report</div>
+        <div class="toolbar-subtitle">Class & Statutory</div>
+      </div>
+    </div>
+    <div class="toolbar-actions">
+      <button class="btn btn-outline" onclick="window.print()">🖨 Print / PDF</button>
+    </div>
+  </div>
+
+  <div class="report-container">
+    <!-- HEADER -->
+    <div class="report-header">
+      <div class="header-top">
+        <div class="header-brand">
+          <div class="header-logo">GR</div>
+          <div>
+            <div class="header-org-name">GR CLASS</div>
+            <div class="header-org-sub">Classified for Standard</div>
+          </div>
+        </div>
+        <div class="header-meta">
+          <div class="header-meta-label">Report Date</div>
+          <div class="header-meta-value">{{print_date}}</div>
+        </div>
+      </div>
+      <div class="report-title">Class & Statutory Survey Status Report</div>
+      <div class="report-subtitle">Job No: {{job_number}}</div>
+      <div class="vessel-hero">
+        <div class="vessel-name-big" contenteditable="true">{{vessel_name}}</div>
+        <div class="vessel-flag-tag">🏳️ <span contenteditable="true">{{flag}}</span></div>
+      </div>
+    </div>
+
+    <!-- METRICS -->
+    <div class="metrics-row">
+      <div class="metric-card"><div class="metric-label">IMO Number</div><div class="metric-value">{{imo_number}}</div></div>
+      <div class="metric-card"><div class="metric-label">Class Number</div><div class="metric-value">{{class_number}}</div></div>
+      <div class="metric-card"><div class="metric-label">Gross Tonnage</div><div class="metric-value">{{gross_tonnage}}</div></div>
+      <div class="metric-card"><div class="metric-label">Deadweight</div><div class="metric-value">{{deadweight}}</div></div>
+    </div>
+
+    <!-- PARTICULARS -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-header-left">
+          <div class="section-number">1</div>
+          <div class="section-title">Vessel Identification & Particulars</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="particulars-grid">
+          <div class="particular-item"><div class="particular-label">Name of Ship</div><div class="particular-value" contenteditable="true">{{vessel_name}}</div></div>
+          <div class="particular-item"><div class="particular-label">IMO No.</div><div class="particular-value" contenteditable="true">{{imo_number}}</div></div>
+          <div class="particular-item"><div class="particular-label">Call Sign</div><div class="particular-value" contenteditable="true">{{call_sign}}</div></div>
+          <div class="particular-item"><div class="particular-label">Flag</div><div class="particular-value" contenteditable="true">{{flag}}</div></div>
+          <div class="particular-item"><div class="particular-label">Port of Registry</div><div class="particular-value" contenteditable="true">{{port_of_registry}}</div></div>
+          <div class="particular-item"><div class="particular-label">Type of Ship</div><div class="particular-value" contenteditable="true">{{ship_type}}</div></div>
+          <div class="particular-item"><div class="particular-label">Gross Tonnage</div><div class="particular-value" contenteditable="true">{{gross_tonnage}}</div></div>
+          <div class="particular-item"><div class="particular-label">Net Tonnage</div><div class="particular-value" contenteditable="true">{{net_tonnage}}</div></div>
+          <div class="particular-item"><div class="particular-label">Deadweight</div><div class="particular-value" contenteditable="true">{{deadweight}}</div></div>
+        </div>
+        <div class="stakeholder-cards">
+          <div class="stakeholder-card">
+            <div class="stakeholder-role">Registered Owner</div>
+            <div class="stakeholder-name" contenteditable="true">{{registered_owner}}</div>
+            <div class="stakeholder-address" contenteditable="true">{{owner_address}}</div>
+          </div>
+          <div class="stakeholder-card">
+            <div class="stakeholder-role">Management Company</div>
+            <div class="stakeholder-name" contenteditable="true">{{management_company}}</div>
+            <div class="stakeholder-address" contenteditable="true">{{management_address}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CERTIFICATES -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-header-left">
+          <div class="section-number">2</div>
+          <div class="section-title">Vessel Certificates</div>
+        </div>
+      </div>
+      <div class="section-body">
+        {{certificates_table}}
+      </div>
+    </div>
+
+    <!-- SURVEY STATUS -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-header-left">
+          <div class="section-number">3</div>
+          <div class="section-title">Current Survey Status</div>
+        </div>
+      </div>
+      <div class="section-body">
+        {{surveys_table}}
+      </div>
+    </div>
+
+    <!-- CONDITIONS OF CLASS -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-header-left">
+          <div class="section-number">4</div>
+          <div class="section-title">Conditions of Class & Deficiencies</div>
+        </div>
+      </div>
+      <div class="section-body">
+        {{conditions_table}}
+      </div>
+    </div>
+
+    <!-- MANUAL NOTES -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-header-left">
+          <div class="section-number">5</div>
+          <div class="section-title">Manual Notes & Remarks</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <textarea class="notes-area" placeholder="Add manual notes here...">{{manual_notes}}</textarea>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
