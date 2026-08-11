@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import QRCode from 'qrcode';
 
 /**
  * GR CLASS - Class & Statutory Survey Status Report Generator
@@ -52,6 +53,12 @@ export function generateSurveyStatusReport(data = {}) {
     managementAddress = 'Office 1314-1315, Level 13, Burjuman Business Tower, Al-Mankhool Road, Dubai, United Arab Emirates',
     classStatus = 'ACTIVE',
 
+    // Dynamic QR & Branding Assets
+    logo = '',
+    signature = '',
+    qrCodeHtml = '',
+    utnNumber = `00270904325020255972`,
+
     // Lists
     classCertificates = [],
     statutoryCertificates = [],
@@ -65,8 +72,7 @@ export function generateSurveyStatusReport(data = {}) {
     surveyHistory = [],
 
     manualNotes = '1. Annual Survey due within window 28/07/2026 - 28/10/2026.\n2. Intermediate Shafting inspection verified cleanly.',
-    printDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-    utnNumber = `00270904325020255972`
+    printDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
   } = data;
 
   let templateHtml = loadTemplateHtml();
@@ -255,8 +261,32 @@ export function generateSurveyStatusReport(data = {}) {
     </tr>
   `).join('');
 
+  // Process Logo, QR Code & Signature
+  const finalLogo = logo || `<div class="p1-logo-emblem">GR</div>`;
+  let finalQrCode = qrCodeHtml;
+  if (!finalQrCode) {
+    const qrUrl = `https://trust.grclass.com/verify?utn=${utnNumber}&imo=${imoNumber}`;
+    try {
+      // Inline SVG or placeholder
+      finalQrCode = `<svg width="44" height="44" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100" height="100" fill="#ffffff"/>
+        <path d="M10,10 h30 v30 h-30 z M15,15 v20 h20 v-20 z M22,22 h6 v6 h-6 z" fill="#0b2545"/>
+        <path d="M60,10 h30 v30 h-30 z M65,15 v20 h20 v-20 z M72,22 h6 v6 h-6 z" fill="#0b2545"/>
+        <path d="M10,60 h30 v30 h-30 z M15,65 v20 h20 v-20 z M22,72 h6 v6 h-6 z" fill="#0b2545"/>
+        <rect x="45" y="45" width="12" height="12" fill="#b08d57"/>
+        <rect x="60" y="60" width="10" height="10" fill="#0b2545"/>
+        <rect x="75" y="75" width="15" height="15" fill="#0b2545"/>
+      </svg>`;
+    } catch (e) {
+      finalQrCode = `<div style="font-size:6pt; text-align:center;">QR CODE</div>`;
+    }
+  }
+
   // Substitutions dictionary
   const replacements = {
+    '{logo}': finalLogo,
+    '{qr_code}': finalQrCode,
+    '{signature}': signature,
     '{vessel_name}': vesselName,
     '{imo_number}': imoNumber,
     '{class_number}': classNumber,

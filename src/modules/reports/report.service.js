@@ -6,6 +6,8 @@ import { Op } from 'sequelize';
 import JSZip from 'jszip';
 import { fileURLToPath } from 'url';
 import { generateSurveyStatusReport, generateSampleReport } from './templates/survey-status-report.template.js';
+import QRCode from 'qrcode';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const { Certificate, CertificateTemplate, CertificateType, NonConformity, Payment, Survey, JobRequest, Vessel } = db;
 
@@ -369,6 +371,27 @@ export const getSurveyStatusReportData = async (filters = {}) => {
         status: nc.status || 'OPEN'
     }));
 
+    const utnNumber = `0027${Date.now().toString().slice(-12)}`;
+    const qrVerifyUrl = `https://trust.grclass.com/verify?utn=${utnNumber}&imo=${vessel.imo_number || ''}`;
+    let qrCodeHtml = '';
+    try {
+        const qrDataUri = await QRCode.toDataURL(qrVerifyUrl, { margin: 1, width: 120 });
+        qrCodeHtml = `<img src="${qrDataUri}" alt="QR Code" style="width: 100%; height: 100%; object-fit: contain;">`;
+    } catch (qrErr) {
+        qrCodeHtml = `<div style="width:100%; height:100%; background:#eee; display:flex; align-items:center; justify-content:center; font-size:6pt; font-weight:bold;">QR CODE</div>`;
+    }
+
+    let signatureBase64 = '';
+    try {
+        const sigPath = path.resolve('src/modules/payments/Gr-class-sign.png');
+        if (fs.existsSync(sigPath)) {
+            const buffer = fs.readFileSync(sigPath);
+            signatureBase64 = `data:image/png;base64,${buffer.toString('base64')}`;
+        }
+    } catch (err) {
+        console.error('Error loading signature image:', err);
+    }
+
     const reportPayload = {
         vesselName: vessel.vessel_name || vessel.name,
         imoNumber: vessel.imo_number,
@@ -395,6 +418,9 @@ export const getSurveyStatusReportData = async (filters = {}) => {
         classStatus: vessel.status || 'ACTIVE',
         jobNumber: job ? job.job_number : '',
         jobType: job ? job.job_type : '',
+        utnNumber,
+        qrCodeHtml,
+        signature: signatureBase64,
         classCertificates,
         statutoryCertificates,
         nonConformities: nonConformitiesFormatted,
@@ -404,4 +430,5 @@ export const getSurveyStatusReportData = async (filters = {}) => {
     const html = generateSurveyStatusReport(reportPayload);
     return { html, data: reportPayload };
 };
+
 
