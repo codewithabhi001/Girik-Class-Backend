@@ -65,3 +65,17 @@ export const getFinancialReport = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getSurveyStatusReport = async (req, res, next) => {
+    try {
+        const { html, data } = await reportService.getSurveyStatusReportData(req.query);
+        if (req.query.format === 'json') {
+            return res.json(data);
+        }
+        res.setHeader('Content-Type', 'text/html');
+        return res.send(html);
+    } catch (error) {
+        next(error);
+    }
+};
+

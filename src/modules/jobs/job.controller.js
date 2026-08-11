@@ -356,3 +356,16 @@ export const addCertificates = async (req, res, next) => {
         res.status(200).json({ success: true, message: 'Certificates successfully added to job.', data: result });
     } catch (error) { next(error); }
 };
+
+export const getJobSurveyStatusReport = async (req, res, next) => {
+    try {
+        const reportService = await import('../reports/report.service.js');
+        const { html, data } = await reportService.getSurveyStatusReportData({ job_id: req.params.id, ...req.query });
+        if (req.query.format === 'json') {
+            return res.json({ success: true, data });
+        }
+        res.setHeader('Content-Type', 'text/html');
+        return res.send(html);
+    } catch (error) { next(error); }
+};
+

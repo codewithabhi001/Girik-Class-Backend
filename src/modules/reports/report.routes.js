@@ -9,8 +9,10 @@ router.use(authenticate);
 router.get('/certificates', authorizeRoles('ADMIN', 'GM', 'TM'), reportController.getCertificateReport);
 router.get('/surveyors', authorizeRoles('ADMIN', 'GM', 'TM'), reportController.getSurveyorReport);
 router.get('/non-conformities', authorizeRoles('ADMIN', 'GM', 'TM'), reportController.getNonConformityReport);
+router.get('/survey-status', authorizeRoles('ADMIN', 'GM', 'TM', 'CLIENT', 'SURVEYOR'), reportController.getSurveyStatusReport);
 
 // Restricted Financial Reports
 router.get('/financials', authorizeRoles('ADMIN', 'GM'), reportController.getFinancialReport);
 
 export default router;
+
