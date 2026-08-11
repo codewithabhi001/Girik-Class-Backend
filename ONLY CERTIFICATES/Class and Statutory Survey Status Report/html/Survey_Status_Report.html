@@ -495,7 +495,7 @@
 
       <div class="table-section-header">
         <span>CLASS CERTIFICATES</span>
-        <button class="add-row-btn-inline" onclick="addRow('classCertsTable')" title="Add Row">＋</button>
+        <button type="button" class="add-row-btn-inline" data-table-id="classCertsTable" onclick="addRow(\'classCertsTable\')" contenteditable="false" title="Add Row">＋</button>
       </div>
       <table class="report-table" id="classCertsTable">
         <thead>
@@ -514,7 +514,7 @@
 
       <div class="table-section-header">
         <span>STATUTORY CERTIFICATES</span>
-        <button class="add-row-btn-inline" onclick="addRow('statCertsTable')" title="Add Row">＋</button>
+        <button type="button" class="add-row-btn-inline" data-table-id="statCertsTable" onclick="addRow(\'statCertsTable\')" contenteditable="false" title="Add Row">＋</button>
       </div>
       <table class="report-table" id="statCertsTable">
         <thead>
@@ -533,7 +533,7 @@
 
       <div class="table-section-header">
         <span>PLAN APPROVAL CERTIFICATES</span>
-        <button class="add-row-btn-inline" onclick="addRow('planApprovalTable')" title="Add Row">＋</button>
+        <button type="button" class="add-row-btn-inline" data-table-id="planApprovalTable" onclick="addRow(\'planApprovalTable\')" contenteditable="false" title="Add Row">＋</button>
       </div>
       <table class="report-table" id="planApprovalTable">
         <thead>
@@ -579,7 +579,7 @@
 
       <div class="table-section-header">
         <span>Classification Surveys</span>
-        <button class="add-row-btn-inline" onclick="addRow('classificationSurveysTable')" title="Add Row">＋</button>
+        <button type="button" class="add-row-btn-inline" data-table-id="classificationSurveysTable" onclick="addRow(\'classificationSurveysTable\')" contenteditable="false" title="Add Row">＋</button>
       </div>
       <table class="report-table" id="classificationSurveysTable">
         <thead>
@@ -598,7 +598,7 @@
 
       <div class="table-section-header">
         <span>Statutory Surveys</span>
-        <button class="add-row-btn-inline" onclick="addRow('statutorySurveysTable')" title="Add Row">＋</button>
+        <button type="button" class="add-row-btn-inline" data-table-id="statutorySurveysTable" onclick="addRow(\'statutorySurveysTable\')" contenteditable="false" title="Add Row">＋</button>
       </div>
       <table class="report-table" id="statutorySurveysTable">
         <thead>
@@ -625,7 +625,7 @@
 
       <div class="table-section-header">
         <span>Conditions of Class / Deficiencies / Memoranda to Owners</span>
-        <button class="add-row-btn-inline" onclick="addRow('conditionsTable')" title="Add Row">＋</button>
+        <button type="button" class="add-row-btn-inline" data-table-id="conditionsTable" onclick="addRow(\'conditionsTable\')" contenteditable="false" title="Add Row">＋</button>
       </div>
       <table class="report-table" id="conditionsTable">
         <thead>
@@ -643,7 +643,7 @@
 
       <div class="table-section-header">
         <span>Non Conformities / Observations</span>
-        <button class="add-row-btn-inline" onclick="addRow('ncTable')" title="Add Row">＋</button>
+        <button type="button" class="add-row-btn-inline" data-table-id="ncTable" onclick="addRow(\'ncTable\')" contenteditable="false" title="Add Row">＋</button>
       </div>
       <table class="report-table" id="ncTable">
         <thead>
@@ -692,7 +692,7 @@
       <div class="sec-heading">5. PSC PERFORMANCE</div>
       <div class="table-section-header">
         <span>Port State Control Inspection Records</span>
-        <button class="add-row-btn-inline" onclick="addRow('pscTable')" title="Add Row">＋</button>
+        <button type="button" class="add-row-btn-inline" data-table-id="pscTable" onclick="addRow(\'pscTable\')" contenteditable="false" title="Add Row">＋</button>
       </div>
       <table class="report-table" id="pscTable">
         <thead>
@@ -712,7 +712,7 @@
       <div class="sec-heading">6. INFORMATION TO SHIP OWNERS / MANAGERS</div>
       <div class="table-section-header">
         <span>Owner / Manager Information</span>
-        <button class="add-row-btn-inline" onclick="addRow('infoTable')" title="Add Row">＋</button>
+        <button type="button" class="add-row-btn-inline" data-table-id="infoTable" onclick="addRow(\'infoTable\')" contenteditable="false" title="Add Row">＋</button>
       </div>
       <table class="report-table" id="infoTable">
         <thead>
@@ -730,7 +730,7 @@
       <div class="sec-heading">7. SURVEY HISTORY</div>
       <div class="table-section-header">
         <span>Recent Survey Records</span>
-        <button class="add-row-btn-inline" onclick="addRow('historyTable')" title="Add Row">＋</button>
+        <button type="button" class="add-row-btn-inline" data-table-id="historyTable" onclick="addRow(\'historyTable\')" contenteditable="false" title="Add Row">＋</button>
       </div>
       <table class="report-table" id="historyTable">
         <thead>
@@ -801,7 +801,7 @@
       });
       const removeTd = document.createElement('td');
       removeTd.className = 'col-action';
-      removeTd.innerHTML = '<button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button>';
+      removeTd.innerHTML = '<button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button>';
       tr.appendChild(removeTd);
       // Status cell placeholder if last data col looks like status table
       tbody.appendChild(tr);

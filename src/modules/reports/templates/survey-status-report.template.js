@@ -172,7 +172,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td contenteditable="true" data-date-role="valid-until">${c.validUntil}</td>
       <td contenteditable="true">${c.type || 'ST'}</td>
       <td>${statusBadgeHtml(status)}</td>
-      <td class="col-action"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button></td>
+      <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>`;
   }).join('');
 
@@ -216,7 +216,7 @@ export function generateSurveyStatusReport(data = {}) {
           <td contenteditable="true" data-date-role="valid-until">${c.validUntil}</td>
           <td contenteditable="true">${c.type || 'ST'}</td>
           <td>${statusBadgeHtml(status)}</td>
-          <td class="col-action"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button></td>
+          <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
         </tr>
       `;
     });
@@ -233,7 +233,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td contenteditable="true">${p.description}</td>
       <td style="font-family:monospace; font-weight:bold;" contenteditable="true">${p.code}</td>
       <td contenteditable="true">${p.issuedDate}</td>
-      <td class="col-action"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button></td>
+      <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>
   `).join('');
 
@@ -254,7 +254,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td style="font-size:7pt; color:#555;" contenteditable="true" data-date-role="range">${s.range}</td>
       <td contenteditable="true">${s.postponed}</td>
       <td>${statusBadgeHtml(status)}</td>
-      <td class="col-action"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button></td>
+      <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>`;
   }).join('');
 
@@ -275,7 +275,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td style="font-size:7pt; color:#555;" contenteditable="true" data-date-role="range">${s.range}</td>
       <td contenteditable="true">${s.postponed}</td>
       <td>${statusBadgeHtml(status)}</td>
-      <td class="col-action"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button></td>
+      <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>`;
   }).join('');
 
@@ -296,7 +296,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td contenteditable="true" data-date-role="due-date">${c.dueDate}</td>
       <td contenteditable="true">${c.certificate}</td>
       <td>${statusBadgeHtml(status)}</td>
-      <td class="col-action"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button></td>
+      <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>`;
   }).join('') : `
     <tr>
@@ -321,7 +321,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td contenteditable="true" data-date-role="due-date">${n.limitDate}</td>
       <td contenteditable="true">${n.certificate}</td>
       <td>${statusBadgeHtml(status)}</td>
-      <td class="col-action"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button></td>
+      <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>`;
   }).join('') : `
     <tr>
@@ -343,7 +343,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td contenteditable="true">${p.mou}</td>
       <td contenteditable="true">${p.defs}</td>
       <td><span class="badge badge-valid">${p.detained}</span></td>
-      <td class="col-action"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button></td>
+      <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>
   `).join('');
 
@@ -359,7 +359,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td contenteditable="true">${i.issueDate}</td>
       <td contenteditable="true">${i.entryInForce}</td>
       <td contenteditable="true">${i.description}</td>
-      <td class="col-action"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button></td>
+      <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>
   `).join('');
 
@@ -376,7 +376,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td contenteditable="true">${h.location}</td>
       <td contenteditable="true">${h.surveyor}</td>
       <td><span class="badge badge-valid">${h.status}</span></td>
-      <td class="col-action"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button></td>
+      <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>
   `).join('');
 
