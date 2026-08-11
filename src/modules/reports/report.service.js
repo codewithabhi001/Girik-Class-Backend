@@ -290,13 +290,18 @@ export const getSurveyStatusReportData = async (filters = {}) => {
                 { model: db.Client, as: 'Client' },
                 {
                     model: db.JobCertificate,
-                    include: [db.CertificateType, db.Certificate]
+                    as: 'certificates',
+                    include: [
+                        { model: db.CertificateType },
+                        { model: db.Certificate, as: 'Certificate' }
+                    ]
                 }
             ],
             useReplica: true
         });
         if (job) vessel = job.Vessel;
     }
+
 
     if (!vessel && filters.vessel_id) {
         vessel = await Vessel.findByPk(filters.vessel_id, { useReplica: true });
