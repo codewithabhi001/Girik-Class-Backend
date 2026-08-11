@@ -11,6 +11,24 @@ import QRCode from 'qrcode';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const { Certificate, CertificateTemplate, CertificateType, NonConformity, Payment, Survey, JobRequest, Vessel } = db;
 
+let cachedSignatureBase64 = null;
+const getCachedSignature = () => {
+    if (cachedSignatureBase64 !== null) return cachedSignatureBase64;
+    try {
+        const sigPath = path.resolve('src/modules/payments/Gr-class-sign.png');
+        if (fs.existsSync(sigPath)) {
+            const buffer = fs.readFileSync(sigPath);
+            cachedSignatureBase64 = `data:image/png;base64,${buffer.toString('base64')}`;
+            return cachedSignatureBase64;
+        }
+    } catch (err) {
+        console.error('Error loading signature image:', err);
+    }
+    cachedSignatureBase64 = '';
+    return cachedSignatureBase64;
+};
+
+
 
 
 // Helper to fetch raw certificate data
@@ -381,16 +399,8 @@ export const getSurveyStatusReportData = async (filters = {}) => {
         qrCodeHtml = `<div style="width:100%; height:100%; background:#eee; display:flex; align-items:center; justify-content:center; font-size:6pt; font-weight:bold;">QR CODE</div>`;
     }
 
-    let signatureBase64 = '';
-    try {
-        const sigPath = path.resolve('src/modules/payments/Gr-class-sign.png');
-        if (fs.existsSync(sigPath)) {
-            const buffer = fs.readFileSync(sigPath);
-            signatureBase64 = `data:image/png;base64,${buffer.toString('base64')}`;
-        }
-    } catch (err) {
-        console.error('Error loading signature image:', err);
-    }
+    let signatureBase64 = getCachedSignature();
+
 
     const reportPayload = {
         vesselName: vessel.vessel_name || vessel.name,
