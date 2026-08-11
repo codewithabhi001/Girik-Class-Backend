@@ -1,7 +1,7 @@
 import express from 'express';
 import { docUpload } from '../../utils/upload.util.js';
 import * as jobController from './job.controller.js';
-import { authenticate } from '../../middlewares/auth.middleware.js';
+import { authenticate, optionalAuthenticate } from '../../middlewares/auth.middleware.js';
 import { authorizeRoles } from '../../middlewares/rbac.middleware.js';
 import { validate, schemas } from '../../middlewares/validate.middleware.js';
 import { RBAC } from '../../config/rbac.config.js';
@@ -9,7 +9,11 @@ import { RBAC } from '../../config/rbac.config.js';
 const upload = docUpload;
 const router = express.Router();
 
+// ─── Survey Status Report (Supports Direct Browser Print Preview) ─────
+router.get('/:id/survey-status-report', optionalAuthenticate, jobController.getJobSurveyStatusReport);
+
 router.use(authenticate);
+
 // @deprecated - Use GET /api/v1/documents/get-upload-url instead
 router.get('/upload-url', authorizeRoles('CLIENT', 'ADMIN', 'GM', 'TM', 'SURVEYOR'), jobController.getUploadUrl);
 
