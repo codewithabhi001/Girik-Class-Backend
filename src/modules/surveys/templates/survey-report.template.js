@@ -71,9 +71,12 @@ export const buildSurveyReportHtml = ({ job, vessel, surveyor, survey, checklist
         
         <!-- Header -->
         <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1a365d; padding-bottom: 20px; margin-bottom: 30px;">
-            <div>
-                <h1 style="margin: 0; color: #1a365d; font-size: 28px; letter-spacing: 1px;">SURVEY STATEMENT OF FACT</h1>
-                <p style="margin: 5px 0 0 0; color: #4a5568; font-size: 14px; font-weight: 600;">GR-CLASS CERTIFICATION SERVICES</p>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" style="height: 52px; width: auto; object-fit: contain;" />
+                <div>
+                    <h1 style="margin: 0; color: #1a365d; font-size: 24px; letter-spacing: 1px;">SURVEY STATEMENT OF FACT</h1>
+                    <p style="margin: 3px 0 0 0; color: #4a5568; font-size: 13px; font-weight: 600;">GR-CLASS CERTIFICATION SERVICES</p>
+                </div>
             </div>
             <div style="text-align: right;">
                 <div style="font-size: 12px; color: #718096;">Report Reference</div>

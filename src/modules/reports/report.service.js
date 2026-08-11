@@ -390,7 +390,8 @@ export const getSurveyStatusReportData = async (filters = {}) => {
     }));
 
     const utnNumber = `0027${Date.now().toString().slice(-12)}`;
-    const qrVerifyUrl = `https://trust.grclass.com/verify?utn=${utnNumber}&imo=${vessel.imo_number || ''}`;
+    const baseUrl = env.certificateVerifyPublicUrl ? env.certificateVerifyPublicUrl.split('/verify')[0] : 'https://grclass.com';
+    const qrVerifyUrl = `${baseUrl}/verify?utn=${utnNumber}&imo=${vessel.imo_number || ''}`;
     let qrCodeHtml = '';
     try {
         const qrDataUri = await QRCode.toDataURL(qrVerifyUrl, { margin: 1, width: 120 });
@@ -401,8 +402,8 @@ export const getSurveyStatusReportData = async (filters = {}) => {
 
     let signatureBase64 = getCachedSignature();
 
-
     const reportPayload = {
+        logo: 'https://grclass.com/grclass-logo.webp',
         vesselName: vessel.vessel_name || vessel.name,
         imoNumber: vessel.imo_number,
         classNumber: vessel.class_number || vessel.registration_number || '—',

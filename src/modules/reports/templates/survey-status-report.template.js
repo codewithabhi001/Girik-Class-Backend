@@ -261,17 +261,18 @@ export function generateSurveyStatusReport(data = {}) {
   `).join('');
 
   // Process Logo, QR Code & Signature
-  const defaultLogoSvg = `<div style="display:flex; align-items:center; gap:10px;">
-    <svg width="48" height="48" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="50" cy="50" r="46" fill="#0b2545" stroke="#b08d57" stroke-width="4"/>
-      <text x="50" y="60" font-family="'Times New Roman', serif" font-size="34" font-weight="bold" fill="#b08d57" text-anchor="middle">GR</text>
-    </svg>
-  </div>`;
-  const finalLogo = logo || defaultLogoSvg;
+  const defaultLogo = `<img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" style="max-height: 52px; width: auto; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/><div class="p1-logo-emblem" style="display:none;">GR</div>`;
+  
+  let finalLogo = logo;
+  if (!finalLogo) {
+    finalLogo = defaultLogo;
+  } else if (typeof finalLogo === 'string' && !finalLogo.includes('<img') && !finalLogo.includes('<svg')) {
+    finalLogo = `<img src="${finalLogo}" alt="GR Class Logo" style="max-height: 52px; width: auto; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/><div class="p1-logo-emblem" style="display:none;">GR</div>`;
+  }
 
   let finalQrCode = qrCodeHtml;
   if (!finalQrCode) {
-    finalQrCode = `<svg width="44" height="44" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    finalQrCode = `<svg width="48" height="48" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
       <rect width="100" height="100" fill="#ffffff"/>
       <path d="M10,10 h30 v30 h-30 z M15,15 v20 h20 v-20 z M22,22 h6 v6 h-6 z" fill="#0b2545"/>
       <path d="M60,10 h30 v30 h-30 z M65,15 v20 h20 v-20 z M72,22 h6 v6 h-6 z" fill="#0b2545"/>

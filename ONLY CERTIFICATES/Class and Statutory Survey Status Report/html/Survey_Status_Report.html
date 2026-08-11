@@ -45,9 +45,10 @@
     html, body {
       background: #0f172a;
       color: var(--text-dark);
-      font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
       font-size: 8pt;
-      line-height: 1.35;
+      font-weight: 400;
+      line-height: 1.4;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -70,7 +71,7 @@
     .toolbar-title {
       color: #f8fafc;
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 600;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -82,7 +83,7 @@
       font-size: 11px;
       padding: 2px 9px;
       border-radius: 4px;
-      font-weight: 700;
+      font-weight: 600;
     }
     .toolbar-actions {
       display: flex;
@@ -95,7 +96,7 @@
       gap: 6px;
       padding: 7px 16px;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
       border-radius: 6px;
       border: none;
       cursor: pointer;
@@ -145,7 +146,7 @@
 
     /* Double Border System */
     .border-outer {
-      border: 2.5px solid var(--navy);
+      border: 2px solid var(--navy);
       height: 100%;
       padding: 2px;
       display: flex;
@@ -169,11 +170,11 @@
       position: absolute;
       top: 48%; left: 50%;
       transform: translate(-50%, -50%) rotate(-30deg);
-      font-family: 'Times New Roman', serif;
+      font-family: 'Times New Roman', Times, serif;
       font-size: 72pt;
       color: var(--navy);
       opacity: 0.035;
-      font-weight: 900;
+      font-weight: 700;
       text-align: center;
       pointer-events: none;
       white-space: nowrap;
@@ -190,50 +191,109 @@
     }
 
     /* ── EXECUTIVE BOOK COVER PAGE (PAGE 1) ── */
+    .book-cover-container {
+      display: flex;
+      height: 100%;
+      position: relative;
+      margin: -5mm -6mm;
+      background: #ffffff;
+    }
+
+    /* Left Executive Color Band (Split Cover Effect) */
+    .book-cover-sidebar {
+      width: 48px;
+      background: linear-gradient(180deg, var(--navy-dark) 0%, var(--navy) 60%, #133c6d 100%);
+      border-right: 3px solid var(--gold);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 0;
+      color: var(--gold-light);
+      box-shadow: 3px 0 10px rgba(0,0,0,0.15);
+      flex-shrink: 0;
+    }
+    .sidebar-brand-emblem {
+      width: 32px;
+      height: 32px;
+      border: 1.5px solid var(--gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Times New Roman', serif;
+      font-weight: 700;
+      font-size: 11pt;
+      color: var(--gold-light);
+      background: rgba(11, 37, 69, 0.6);
+    }
+    .sidebar-title-rotated {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-family: 'Times New Roman', serif;
+      font-size: 9.5pt;
+      font-weight: 600;
+      letter-spacing: 3px;
+      color: rgba(255, 255, 255, 0.85);
+      text-transform: uppercase;
+    }
+
+    .book-cover-main {
+      flex: 1;
+      padding: 6mm 8mm;
+      display: flex;
+      flex-direction: column;
+    }
+
     .p1-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 6mm;
-      border-bottom: 2px solid var(--gold);
-      padding-bottom: 3mm;
+      border-bottom: 1.5px solid var(--gold);
+      padding-bottom: 3.5mm;
     }
     .p1-logo-area {
       display: flex;
       align-items: center;
       gap: 14px;
     }
+    .p1-logo-area img {
+      max-height: 52px;
+      width: auto;
+      object-fit: contain;
+    }
     .p1-logo-emblem {
-      width: 52px;
-      height: 52px;
+      width: 48px;
+      height: 48px;
       background: var(--navy);
-      border: 2.5px solid var(--gold);
+      border: 2px solid var(--gold);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--gold);
       font-family: 'Times New Roman', serif;
-      font-weight: 900;
-      font-size: 17pt;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+      font-weight: 700;
+      font-size: 16pt;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
       flex-shrink: 0;
     }
     .p1-brand-title {
-      font-family: 'Times New Roman', serif;
+      font-family: 'Times New Roman', Times, serif;
       font-size: 22pt;
-      font-weight: 900;
+      font-weight: 700;
       color: var(--navy);
       letter-spacing: 0.8px;
       line-height: 1.0;
     }
     .p1-brand-sub {
-      font-size: 7.8pt;
-      color: var(--gold);
-      font-weight: 700;
+      font-size: 7.5pt;
+      color: var(--gold-dark);
+      font-weight: 600;
       letter-spacing: 1.8px;
       text-transform: uppercase;
-      margin-top: 2px;
+      margin-top: 3px;
     }
     .p1-date-box {
       text-align: right;
@@ -244,7 +304,7 @@
       color: var(--navy);
       display: block;
       font-size: 9.5pt;
-      font-weight: 700;
+      font-weight: 600;
     }
 
     /* Executive Title Box */
@@ -256,86 +316,88 @@
       margin-bottom: 6mm;
       border-radius: 3px;
       border: 1px solid var(--gold);
-      box-shadow: 0 4px 12px rgba(11, 37, 69, 0.3);
+      box-shadow: 0 4px 12px rgba(11, 37, 69, 0.2);
     }
     .title-banner-box h1 {
-      font-family: 'Times New Roman', serif;
-      font-size: 17pt;
-      font-weight: 800;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 16pt;
+      font-weight: 700;
       letter-spacing: 1.8px;
       text-transform: uppercase;
       color: #ffffff;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
     }
 
     /* Vessel Hero Card */
     .vessel-hero-box {
       text-align: center;
       margin-bottom: 6mm;
-      padding: 14px;
+      padding: 16px;
       background: #f8fafc;
-      border: 1.5px solid #cbd5e1;
+      border: 1px solid #cbd5e1;
       border-top: 3px solid var(--gold);
       border-radius: 3px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
     .vh-name {
-      font-family: 'Times New Roman', serif;
-      font-size: 24pt;
-      font-weight: 900;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 22pt;
+      font-weight: 700;
       color: var(--navy);
-      letter-spacing: 2px;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
       margin-bottom: 4px;
     }
     .vh-flag {
-      font-size: 13.5pt;
-      font-weight: 800;
+      font-size: 12pt;
+      font-weight: 600;
       color: var(--flag-red);
       text-transform: uppercase;
-      letter-spacing: 1.5px;
+      letter-spacing: 1.2px;
       margin-bottom: 6px;
     }
     .vh-meta {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 10pt;
-      font-weight: 700;
+      font-size: 9.5pt;
+      font-weight: 600;
       color: var(--navy-light);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
     .vh-status {
       display: inline-block;
-      padding: 4px 16px;
+      padding: 4px 18px;
       background: var(--badge-valid-bg);
       color: var(--badge-valid-color);
-      border: 1.5px solid var(--badge-valid-border);
-      font-size: 9pt;
-      font-weight: 800;
+      border: 1px solid var(--badge-valid-border);
+      font-size: 8.5pt;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
       border-radius: 3px;
     }
 
     .advise-box {
-      border: 1px solid #94a3b8;
-      padding: 10px 14px;
+      border: 1px solid #cbd5e1;
+      padding: 12px 16px;
       font-size: 7.2pt;
-      line-height: 1.4;
-      color: #1e293b;
+      font-weight: 400;
+      line-height: 1.45;
+      color: #334155;
       background: #ffffff;
       margin-bottom: 6mm;
+      border-radius: 2px;
     }
     .advise-box h4 {
       text-align: center;
-      font-size: 8pt;
-      font-weight: 800;
+      font-size: 8.5pt;
+      font-weight: 700;
       color: var(--navy);
       text-transform: uppercase;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
       letter-spacing: 0.5px;
     }
-    .advise-box ol { padding-left: 14px; }
-    .advise-box li { margin-bottom: 3px; }
+    .advise-box ol { padding-left: 16px; }
+    .advise-box li { margin-bottom: 4px; }
+    .advise-box strong { color: var(--navy); font-weight: 600; }
 
     .p1-validation-footer {
       margin-top: auto;
@@ -354,8 +416,8 @@
       gap: 10px;
     }
     .val-qr-box {
-      width: 48px;
-      height: 48px;
+      width: 50px;
+      height: 50px;
       border: 1px solid #cbd5e1;
       padding: 2px;
       background: #fff;
@@ -364,9 +426,9 @@
     .val-qr-box img, .val-qr-box svg {
       width: 100%; height: 100%; object-fit: contain;
     }
-    .val-text { max-width: 320px; }
-    .val-contact { text-align: right; }
-    .val-contact strong { color: var(--navy); font-size: 7.5pt; display: block; }
+    .val-text { max-width: 320px; color: #475569; font-weight: 400; }
+    .val-contact { text-align: right; color: #475569; }
+    .val-contact strong { color: var(--navy); font-size: 7.5pt; font-weight: 600; display: block; }
 
     /* ── MINI HEADER FOR PAGES 2+ ── */
     .mini-hdr {
@@ -379,12 +441,12 @@
       font-size: 7pt;
       color: var(--text-muted);
     }
-    .mini-hdr-title { font-weight: 800; color: var(--navy); text-transform: uppercase; letter-spacing: 0.5px; }
-    .mini-hdr-vessel { font-family: ui-monospace, monospace; font-weight: 700; color: var(--navy); }
+    .mini-hdr-title { font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.5px; }
+    .mini-hdr-vessel { font-family: ui-monospace, monospace; font-weight: 600; color: var(--navy); }
 
     .sec-heading {
-      font-size: 9.5pt;
-      font-weight: 800;
+      font-size: 9pt;
+      font-weight: 700;
       color: var(--navy);
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -394,8 +456,8 @@
     .table-section-header {
       background: var(--navy);
       color: #ffffff;
-      font-size: 8pt;
-      font-weight: 800;
+      font-size: 7.8pt;
+      font-weight: 600;
       text-transform: uppercase;
       padding: 4px 8px;
       letter-spacing: 0.5px;
@@ -410,6 +472,7 @@
       margin-bottom: 3mm;
       table-layout: fixed;
       font-size: 7.2pt;
+      font-weight: 400;
     }
     .report-table th, .report-table td {
       border: 1px solid #cbd5e1;
@@ -423,15 +486,15 @@
       font-size: 6.8pt;
       text-transform: uppercase;
       color: var(--navy);
-      font-weight: 800;
+      font-weight: 600;
     }
-    .report-table td { color: #0f172a; vertical-align: middle; }
+    .report-table td { color: #334155; vertical-align: middle; }
     .report-table tr:nth-child(even) td { background: #f8fafc; }
 
     .convention-row td {
       background: #fef3c7 !important;
       color: #92400e;
-      font-weight: 800;
+      font-weight: 600;
       font-size: 7pt;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -445,26 +508,27 @@
       border-collapse: collapse;
       margin-bottom: 3.5mm;
       font-size: 7.5pt;
+      font-weight: 400;
     }
     .particulars-table td {
       padding: 3.5px 6px;
       border-bottom: 1px solid #e2e8f0;
       vertical-align: top;
     }
-    .particulars-table td.lbl { font-weight: 700; color: #475569; width: 18%; }
-    .particulars-table td.colon { width: 2%; font-weight: 700; color: #475569; }
-    .particulars-table td.val { color: var(--navy); font-weight: 800; width: 30%; }
+    .particulars-table td.lbl { font-weight: 600; color: #475569; width: 18%; }
+    .particulars-table td.colon { width: 2%; font-weight: 600; color: #475569; }
+    .particulars-table td.val { color: var(--navy); font-weight: 600; width: 30%; }
 
-    /* STATUS BADGE - WIDE & SINGLE LINE (NO WRAPPING TO 3 LINES!) */
+    /* STATUS BADGE - SINGLE LINE & CLEAN COLOURS */
     .badge {
       display: inline-block;
-      padding: 3px 8px;
+      padding: 2.5px 8px;
       border-radius: 2px;
-      font-size: 7pt;
-      font-weight: 800;
+      font-size: 6.8pt;
+      font-weight: 700;
       text-transform: uppercase;
       text-align: center;
-      white-space: nowrap; /* NO TEXT WRAPPING TO 3 LINES! */
+      white-space: nowrap;
       width: 100%;
       box-sizing: border-box;
     }
@@ -536,7 +600,7 @@
   <div class="toolbar-container">
     <div class="toolbar-title">
       <span>GR CLASS Survey Status Report</span>
-      <span class="toolbar-pill">Official A4 Layout</span>
+      <span class="toolbar-pill">Official A4 Executive Layout</span>
     </div>
     <div class="toolbar-actions">
       <button class="btn-tb btn-tb-secondary" onclick="toggleEditMode()" id="editToggleBtn">✏️ Editable Mode</button>
@@ -547,78 +611,90 @@
   <div class="page-wrapper">
 
     <!-- ═══════════════════════════════════════════════════════
-         PAGE 1: EXECUTIVE COVER & SUMMARY
+         PAGE 1: EXECUTIVE BOOK COVER & SUMMARY
     ═══════════════════════════════════════════════════════ -->
     <div class="report-page">
       <div class="border-outer">
         <div class="border-inner">
           <div class="watermark">GR CLASS</div>
-          <div class="page-content">
+          
+          <div class="book-cover-container">
+            <!-- Left Executive Side Accent Strip (Split Book Cover Effect) -->
+            <div class="book-cover-sidebar">
+              <div class="sidebar-brand-emblem">GR</div>
+              <div class="sidebar-title-rotated">CLASSIFIED FOR STANDARD</div>
+              <div style="font-size: 7pt; font-family: monospace;">GR-CLASS</div>
+            </div>
 
-            <div class="p1-header">
-              <div class="p1-logo-area">
-                {logo}
-                <div class="p1-title-group">
-                  <div class="p1-brand-title">GR CLASS</div>
-                  <div class="p1-brand-sub">Classified For Standard</div>
+            <!-- Main Cover Content -->
+            <div class="book-cover-main">
+              
+              <div class="p1-header">
+                <div class="p1-logo-area">
+                  {logo}
+                  <div class="p1-title-group">
+                    <div class="p1-brand-title">GR CLASS</div>
+                    <div class="p1-brand-sub">Classified For Standard</div>
+                  </div>
+                </div>
+                <div class="p1-date-box">
+                  Printout Date:
+                  <strong>{print_date}</strong>
                 </div>
               </div>
-              <div class="p1-date-box">
-                Printout Date:
-                <strong>{print_date}</strong>
+
+              <div class="title-banner-box">
+                <h1>CLASS AND STATUTORY SURVEY STATUS REPORT</h1>
               </div>
-            </div>
 
-            <div class="title-banner-box">
-              <h1>CLASS AND STATUTORY SURVEY STATUS REPORT</h1>
-            </div>
+              <div class="vessel-hero-box">
+                <div class="vh-name" contenteditable="true">{vessel_name}</div>
+                <div class="vh-flag" contenteditable="true">{flag_state}</div>
+                <div class="vh-meta">IMO NO. <span contenteditable="true">{imo_number}</span> &nbsp;|&nbsp; CLASS No. <span contenteditable="true">{class_number}</span></div>
+                <div><span class="vh-status">CLASS / STATUTORY STATUS : <span contenteditable="true">{class_status}</span></span></div>
+              </div>
 
-            <div class="vessel-hero-box">
-              <div class="vh-name" contenteditable="true">{vessel_name}</div>
-              <div class="vh-flag" contenteditable="true">{flag_state}</div>
-              <div class="vh-meta">IMO NO. <span contenteditable="true">{imo_number}</span> &nbsp;|&nbsp; CLASS No. <span contenteditable="true">{class_number}</span></div>
-              <div><span class="vh-status">CLASS/STATUTORY STATUS : <span contenteditable="true">{class_status}</span></span></div>
-            </div>
+              <div class="advise-box">
+                <h4>ADVISE TO OWNERS</h4>
+                <p style="margin-bottom: 4px;">According to GR CLASS Rules, and Flag Administration provisions and requirements:</p>
+                <ol>
+                  <li><strong>The Class will be AUTOMATICALLY suspended:</strong>
+                    <ul>
+                      <li>In case of Damage of the ship.</li>
+                      <li>In case of every transgressing the specified service conditions without GR CLASS agreement.</li>
+                      <li>If surveys towards Class Renewal Survey have not been completed.</li>
+                      <li>If the annual/intermediate survey is not completed within 3 months after due date.</li>
+                    </ul>
+                  </li>
+                  <li style="margin-top: 3px;"><strong>The Class will be subject of suspension:</strong>
+                    <ul>
+                      <li>If items covered by continuous system are not surveyed within due date.</li>
+                      <li>If conditions and recommendations are not dealt with within the due date.</li>
+                      <li>If voyage repairs are performed without prior GR CLASS Agreement.</li>
+                      <li>In case of Owners financial overdue.</li>
+                    </ul>
+                  </li>
+                </ol>
+              </div>
 
-            <div class="advise-box">
-              <h4>ADVISE TO OWNERS</h4>
-              <p style="margin-bottom: 4px;">According to GR CLASS Rules, and Flag Administration provisions and requirements:</p>
-              <ol>
-                <li><strong>The Class will be AUTOMATICALLY suspended:</strong>
-                  <ul>
-                    <li>In case of Damage of the ship.</li>
-                    <li>In case of every transgressing the specified service conditions without GR CLASS agreement.</li>
-                    <li>If surveys towards Class Renewal Survey have not been completed.</li>
-                    <li>If the annual/intermediate survey is not completed within 3 months after due date.</li>
-                  </ul>
-                </li>
-                <li style="margin-top: 3px;"><strong>The Class will be subject of suspension:</strong>
-                  <ul>
-                    <li>If items covered by continuous system are not surveyed within due date.</li>
-                    <li>If conditions and recommendations are not dealt with within the due date.</li>
-                    <li>If voyage repairs are performed without prior GR CLASS Agreement.</li>
-                    <li>In case of Owners financial overdue.</li>
-                  </ul>
-                </li>
-              </ol>
-            </div>
-
-            <div class="p1-validation-footer">
-              <div class="val-qr-area">
-                <div class="val-qr-box">
-                  {qr_code}
+              <div class="p1-validation-footer">
+                <div class="val-qr-area">
+                  <div class="val-qr-box">
+                    {qr_code}
+                  </div>
+                  <div class="val-text">
+                    This document is signed electronically in accordance with IMO FAL.5/Circ.39/Rev.2. Validation and authentication can be obtained by scanning the unique QR Code or by using the Unique Tracking No(UTN): {utn_number} and IMO No: {imo_number}.
+                  </div>
                 </div>
-                <div class="val-text">
-                  This document is signed electronically in accordance with IMO FAL.5/Circ.39/Rev.2. Validation and authentication can be obtained by scanning the unique QR Code or by using the Unique Tracking No(UTN): {utn_number} and IMO No: {imo_number}.
+                <div class="val-contact">
+                  <strong>GR CLASS Head Office</strong>
+                  Email: surveys@grclass.com | Web: www.grclass.com
                 </div>
               </div>
-              <div class="val-contact">
-                <strong>GR CLASS Head Office</strong>
-                Email: surveys@grclass.com | Web: www.grclass.com
-              </div>
-            </div>
 
+            </div>
           </div>
+
         </div>
         <div class="page-footer-line" style="padding: 2px 8px;">
           <span>GR CLASS Survey Manager</span>
