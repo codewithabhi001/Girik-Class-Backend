@@ -7,12 +7,14 @@
   <style>
     /* ═════════════════════════════════════════════════════════════════════
        GR CLASS - CLASS AND STATUTORY SURVEY STATUS REPORT
-       Official Document Certificate Template (A4 Double-Border Standard)
+       Official Document Certificate Template (Executive Book Cover & A4 Standard)
     ═════════════════════════════════════════════════════════════════════ */
     :root {
       --navy: #0b2545;
       --navy-light: #133c6d;
+      --navy-dark: #07172c;
       --gold: #b08d57;
+      --gold-light: #d4af37;
       --gold-dark: #8c6b39;
       --flag-red: #b91c1c;
       --header-bg: #0b2545;
@@ -187,11 +189,11 @@
       height: 100%;
     }
 
-    /* ── PAGE 1 LAYOUT ── */
+    /* ── EXECUTIVE BOOK COVER PAGE (PAGE 1) ── */
     .p1-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
       margin-bottom: 6mm;
       border-bottom: 2px solid var(--gold);
       padding-bottom: 3mm;
@@ -199,13 +201,13 @@
     .p1-logo-area {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
     .p1-logo-emblem {
-      width: 50px;
-      height: 50px;
+      width: 52px;
+      height: 52px;
       background: var(--navy);
-      border: 2px solid var(--gold);
+      border: 2.5px solid var(--gold);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -213,23 +215,25 @@
       color: var(--gold);
       font-family: 'Times New Roman', serif;
       font-weight: 900;
-      font-size: 16pt;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      font-size: 17pt;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+      flex-shrink: 0;
     }
     .p1-brand-title {
       font-family: 'Times New Roman', serif;
-      font-size: 20pt;
+      font-size: 22pt;
       font-weight: 900;
       color: var(--navy);
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
       line-height: 1.0;
     }
     .p1-brand-sub {
-      font-size: 7.5pt;
+      font-size: 7.8pt;
       color: var(--gold);
       font-weight: 700;
-      letter-spacing: 1.5px;
+      letter-spacing: 1.8px;
       text-transform: uppercase;
+      margin-top: 2px;
     }
     .p1-date-box {
       text-align: right;
@@ -243,33 +247,41 @@
       font-weight: 700;
     }
 
+    /* Executive Title Box */
     .title-banner-box {
-      background: var(--navy);
+      background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 100%);
       color: #ffffff;
       text-align: center;
-      padding: 10px 16px;
+      padding: 14px 20px;
       margin-bottom: 6mm;
-      border-radius: 2px;
-      border-bottom: 2px solid var(--gold);
+      border-radius: 3px;
+      border: 1px solid var(--gold);
+      box-shadow: 0 4px 12px rgba(11, 37, 69, 0.3);
     }
     .title-banner-box h1 {
       font-family: 'Times New Roman', serif;
-      font-size: 16pt;
+      font-size: 17pt;
       font-weight: 800;
-      letter-spacing: 1.5px;
+      letter-spacing: 1.8px;
       text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
     }
 
+    /* Vessel Hero Card */
     .vessel-hero-box {
       text-align: center;
       margin-bottom: 6mm;
-      padding: 12px;
+      padding: 14px;
       background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      border: 1.5px solid #cbd5e1;
+      border-top: 3px solid var(--gold);
+      border-radius: 3px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     .vh-name {
       font-family: 'Times New Roman', serif;
-      font-size: 22pt;
+      font-size: 24pt;
       font-weight: 900;
       color: var(--navy);
       letter-spacing: 2px;
@@ -277,7 +289,7 @@
       margin-bottom: 4px;
     }
     .vh-flag {
-      font-size: 13pt;
+      font-size: 13.5pt;
       font-weight: 800;
       color: var(--flag-red);
       text-transform: uppercase;
@@ -289,15 +301,15 @@
       font-size: 10pt;
       font-weight: 700;
       color: var(--navy-light);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
     .vh-status {
       display: inline-block;
-      padding: 3px 14px;
+      padding: 4px 16px;
       background: var(--badge-valid-bg);
       color: var(--badge-valid-color);
-      border: 1px solid var(--badge-valid-border);
-      font-size: 8.5pt;
+      border: 1.5px solid var(--badge-valid-border);
+      font-size: 9pt;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 1px;
@@ -339,14 +351,15 @@
     .val-qr-area {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
     .val-qr-box {
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       border: 1px solid #cbd5e1;
       padding: 2px;
       background: #fff;
+      flex-shrink: 0;
     }
     .val-qr-box img, .val-qr-box svg {
       width: 100%; height: 100%; object-fit: contain;
@@ -442,15 +455,18 @@
     .particulars-table td.colon { width: 2%; font-weight: 700; color: #475569; }
     .particulars-table td.val { color: var(--navy); font-weight: 800; width: 30%; }
 
+    /* STATUS BADGE - WIDE & SINGLE LINE (NO WRAPPING TO 3 LINES!) */
     .badge {
       display: inline-block;
-      padding: 2px 7px;
+      padding: 3px 8px;
       border-radius: 2px;
-      font-size: 6.5pt;
+      font-size: 7pt;
       font-weight: 800;
       text-transform: uppercase;
       text-align: center;
+      white-space: nowrap; /* NO TEXT WRAPPING TO 3 LINES! */
       width: 100%;
+      box-sizing: border-box;
     }
     .badge-valid { background: var(--badge-valid-bg); color: var(--badge-valid-color); border: 1px solid var(--badge-valid-border); }
     .badge-expired { background: var(--badge-expired-bg); color: var(--badge-expired-color); border: 1px solid var(--badge-expired-border); }
@@ -531,7 +547,7 @@
   <div class="page-wrapper">
 
     <!-- ═══════════════════════════════════════════════════════
-         PAGE 1: COVER & SUMMARY
+         PAGE 1: EXECUTIVE COVER & SUMMARY
     ═══════════════════════════════════════════════════════ -->
     <div class="report-page">
       <div class="border-outer">
@@ -543,7 +559,6 @@
               <div class="p1-logo-area">
                 {logo}
                 <div class="p1-title-group">
-
                   <div class="p1-brand-title">GR CLASS</div>
                   <div class="p1-brand-sub">Classified For Standard</div>
                 </div>
@@ -675,12 +690,12 @@
             <table class="report-table">
               <thead>
                 <tr>
-                  <th width="35%">Certificate Description</th>
-                  <th width="15%">Code</th>
-                  <th width="15%">Issued</th>
-                  <th width="15%">Valid Until</th>
-                  <th width="10%">Type</th>
-                  <th width="10%">Status</th>
+                  <th width="36%">Certificate Description</th>
+                  <th width="14%">Code</th>
+                  <th width="12%">Issued</th>
+                  <th width="14%">Valid Until</th>
+                  <th width="8%">Type</th>
+                  <th width="16%">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -692,12 +707,12 @@
             <table class="report-table">
               <thead>
                 <tr>
-                  <th width="35%">Certificate Description</th>
-                  <th width="15%">Code</th>
-                  <th width="15%">Issued</th>
-                  <th width="15%">Valid Until</th>
-                  <th width="10%">Type</th>
-                  <th width="10%">Status</th>
+                  <th width="36%">Certificate Description</th>
+                  <th width="14%">Code</th>
+                  <th width="12%">Issued</th>
+                  <th width="14%">Valid Until</th>
+                  <th width="8%">Type</th>
+                  <th width="16%">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -748,12 +763,12 @@
             <table class="report-table">
               <thead>
                 <tr>
-                  <th width="40%">Survey Description</th>
+                  <th width="34%">Survey Description</th>
                   <th width="12%">Last Date</th>
                   <th width="12%">Due Date</th>
                   <th width="18%">Range</th>
-                  <th width="10%">Postponed</th>
-                  <th width="8%">STATUS</th>
+                  <th width="8%">Postponed</th>
+                  <th width="16%">STATUS</th>
                 </tr>
               </thead>
               <tbody>
@@ -765,12 +780,12 @@
             <table class="report-table">
               <thead>
                 <tr>
-                  <th width="40%">Survey Description</th>
+                  <th width="34%">Survey Description</th>
                   <th width="12%">Last Date</th>
                   <th width="12%">Due Date</th>
                   <th width="18%">Range</th>
-                  <th width="10%">Postponed</th>
-                  <th width="8%">STATUS</th>
+                  <th width="8%">Postponed</th>
+                  <th width="16%">STATUS</th>
                 </tr>
               </thead>
               <tbody>
@@ -808,10 +823,10 @@
               <thead>
                 <tr>
                   <th width="15%">Request No.</th>
-                  <th width="40%">Condition / Deficiency / Memo</th>
+                  <th width="38%">Condition / Deficiency / Memo</th>
                   <th width="15%">Due Date</th>
-                  <th width="20%">Certificate</th>
-                  <th width="10%">Status</th>
+                  <th width="16%">Certificate</th>
+                  <th width="16%">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -824,10 +839,10 @@
               <thead>
                 <tr>
                   <th width="15%">Request No.</th>
-                  <th width="40%">NC / Observation</th>
+                  <th width="38%">NC / Observation</th>
                   <th width="15%">Limit Date</th>
-                  <th width="20%">Certificate</th>
-                  <th width="10%">Status</th>
+                  <th width="16%">Certificate</th>
+                  <th width="16%">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -841,10 +856,10 @@
                 <tr>
                   <th width="15%">Doc No.</th>
                   <th width="15%">Date</th>
-                  <th width="25%">Port Name</th>
+                  <th width="24%">Port Name</th>
                   <th width="15%">MOU</th>
                   <th width="15%">Deficiencies</th>
-                  <th width="15%">Detained</th>
+                  <th width="16%">Detained</th>
                 </tr>
               </thead>
               <tbody>
@@ -898,7 +913,7 @@
                   <th width="15%">Date</th>
                   <th width="20%">Location</th>
                   <th width="20%">Surveyor</th>
-                  <th width="15%">Status</th>
+                  <th width="25%">Status</th>
                 </tr>
               </thead>
               <tbody>
