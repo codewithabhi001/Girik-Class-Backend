@@ -5,9 +5,10 @@ import path from 'path';
 import { Op } from 'sequelize';
 import JSZip from 'jszip';
 import { fileURLToPath } from 'url';
-import { generateSurveyStatusReport, generateSampleReport } from '../email-templates/survey-status-report.template.js';
+import { generateSurveyStatusReport, generateSampleReport } from './templates/survey-status-report.template.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const { Certificate, NonConformity, Payment, Survey, JobRequest, Vessel } = db;
+const { Certificate, CertificateTemplate, CertificateType, NonConformity, Payment, Survey, JobRequest, Vessel } = db;
+
 
 
 // Helper to fetch raw certificate data

@@ -1,6 +1,8 @@
 /**
  * GR CLASS - Class & Statutory Survey Status Report Template
  * 
+ * Location: src/modules/reports/templates/survey-status-report.template.js
+ * 
  * Generates a comprehensive, editable HTML report for a particular job/vessel
  * covering all survey, certificate, and compliance details.
  * 
@@ -13,10 +15,6 @@
  *   6. Information to Ship Owners/Managers
  *   7. Survey History (Previous surveys with dates)
  *   8. Manual Notes
- * 
- * Usage:
- *   import { generateSurveyStatusReport } from './survey-status-report.template.js';
- *   const html = generateSurveyStatusReport(data);
  */
 
 export function generateSurveyStatusReport(data = {}) {
@@ -49,7 +47,6 @@ export function generateSurveyStatusReport(data = {}) {
     // Job Info
     jobNumber = '',
     jobType = '',
-    surveyLocation = '',
 
     // Certificates
     classCertificates = [],
@@ -1758,11 +1755,6 @@ export function generateSurveyStatusReport(data = {}) {
 </html>`;
 }
 
-
-/**
- * Generate a standalone HTML preview file with sample data 
- * matching the OMCS/ENABLE PDF format
- */
 export function generateSampleReport() {
   return generateSurveyStatusReport({
     vesselName: 'ENABLE',
@@ -1775,7 +1767,7 @@ export function generateSampleReport() {
     keelLayingDate: '28-07-2000',
     dateOfBuild: '17-04-2001',
     vesselEntryDate: '27-09-2025',
-    classNotation: '',
+    classNotation: 'CM.BULK CARRIER.ESP.BC-A. Holds 2&4 may be empty.IC.CDC.',
     deadweight: '48910',
     grossTonnage: '27198',
     netTonnage: '15365',
