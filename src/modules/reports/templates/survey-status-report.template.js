@@ -381,13 +381,13 @@ export function generateSurveyStatusReport(data = {}) {
   `).join('');
 
   // Process Logo, QR Code & Signature
-  const defaultLogo = `<img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" style="max-height: 70px; width: auto; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/><div class="cover-logo-emblem" style="display:none;">GR</div>`;
+  const defaultLogo = `<img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" style="max-height: 48px; width: auto; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/><div class="cover-logo-emblem" style="display:none;">GR</div>`;
   
   let finalLogo = logo;
   if (!finalLogo) {
     finalLogo = defaultLogo;
   } else if (typeof finalLogo === 'string' && !finalLogo.includes('<img') && !finalLogo.includes('<svg')) {
-    finalLogo = `<img src="${finalLogo}" alt="GR Class Logo" style="max-height: 70px; width: auto; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/><div class="cover-logo-emblem" style="display:none;">GR</div>`;
+    finalLogo = `<img src="${finalLogo}" alt="GR Class Logo" style="max-height: 48px; width: auto; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/><div class="cover-logo-emblem" style="display:none;">GR</div>`;
   }
 
   let finalQrCode = qrCodeHtml;
