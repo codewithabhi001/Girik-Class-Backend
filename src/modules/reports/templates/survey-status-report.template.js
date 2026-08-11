@@ -83,12 +83,13 @@ export function generateSurveyStatusReport(data = {}) {
 
   const classCertRowsHtml = defaultClassCerts.map(c => `
     <tr>
-      <td style="font-weight:bold;">${c.description}</td>
-      <td style="font-family:monospace; font-weight:bold;">${c.code}</td>
-      <td>${c.issuedDate}</td>
-      <td>${c.validUntil}</td>
-      <td>${c.type || 'ST'}</td>
+      <td style="font-weight:bold;" contenteditable="true">${c.description}</td>
+      <td style="font-family:monospace; font-weight:bold;" contenteditable="true">${c.code}</td>
+      <td contenteditable="true">${c.issuedDate}</td>
+      <td contenteditable="true">${c.validUntil}</td>
+      <td contenteditable="true">${c.type || 'ST'}</td>
       <td><span class="badge badge-valid">${c.status || 'VALID'}</span></td>
+      <td style="text-align:center;"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove Row">✕</button></td>
     </tr>
   `).join('');
 
@@ -121,29 +122,36 @@ export function generateSurveyStatusReport(data = {}) {
 
   let statCertRowsHtml = '';
   for (const [conv, certList] of Object.entries(statGroups)) {
-    statCertRowsHtml += `<tr class="convention-row"><td colspan="6">${conv}</td></tr>`;
+    statCertRowsHtml += `<tr class="convention-row"><td colspan="7">${conv}</td></tr>`;
     certList.forEach(c => {
       statCertRowsHtml += `
         <tr>
-          <td>${c.description}</td>
-          <td style="font-family:monospace; font-weight:bold;">${c.code}</td>
-          <td>${c.issuedDate}</td>
-          <td>${c.validUntil}</td>
-          <td>${c.type || 'ST'}</td>
+          <td contenteditable="true">${c.description}</td>
+          <td style="font-family:monospace; font-weight:bold;" contenteditable="true">${c.code}</td>
+          <td contenteditable="true">${c.issuedDate}</td>
+          <td contenteditable="true">${c.validUntil}</td>
+          <td contenteditable="true">${c.type || 'ST'}</td>
           <td><span class="badge badge-valid">${c.status || 'VALID'}</span></td>
+          <td style="text-align:center;"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove Row">✕</button></td>
         </tr>
       `;
     });
   }
 
   // 3. Plan Approval Rows
-  const planApprovalRowsHtml = `
+  const defaultPlanApproval = planApprovalCertificates.length > 0 ? planApprovalCertificates : [
+    { description: 'Stability Information Booklet', code: 'SIB22879', issuedDate: '26-04-2026' },
+    { description: 'Loading Manual', code: 'LM22879', issuedDate: '26-04-2026' }
+  ];
+
+  const planApprovalRowsHtml = defaultPlanApproval.map(p => `
     <tr>
-      <td colspan="3" style="font-size: 6.5pt; color: #475569; font-style: italic;">
-        For ships built under supervision of GR CLASS; the date at which the new-construction survey process is completed (and interim classification certificate is issued). For ships built under the supervision of another classification society or Recognized Organization; the Date of Built as shown in their respective register books.
-      </td>
+      <td contenteditable="true">${p.description}</td>
+      <td style="font-family:monospace; font-weight:bold;" contenteditable="true">${p.code}</td>
+      <td contenteditable="true">${p.issuedDate}</td>
+      <td style="text-align:center;"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove Row">✕</button></td>
     </tr>
-  `;
+  `).join('');
 
   // 4. Classification Surveys Rows
   const defaultClassSurveys = classificationSurveys.length > 0 ? classificationSurveys : [
@@ -154,12 +162,13 @@ export function generateSurveyStatusReport(data = {}) {
 
   const classSurveysRowsHtml = defaultClassSurveys.map(s => `
     <tr>
-      <td style="font-weight:bold;">${s.name}</td>
-      <td>${s.lastDate}</td>
-      <td>${s.dueDate}</td>
-      <td style="font-size:6.8pt; color:#555;">${s.range}</td>
-      <td>${s.postponed}</td>
+      <td style="font-weight:bold;" contenteditable="true">${s.name}</td>
+      <td contenteditable="true">${s.lastDate}</td>
+      <td contenteditable="true">${s.dueDate}</td>
+      <td style="font-size:7pt; color:#555;" contenteditable="true">${s.range}</td>
+      <td contenteditable="true">${s.postponed}</td>
       <td><span class="badge badge-valid">${s.status}</span></td>
+      <td style="text-align:center;"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove Row">✕</button></td>
     </tr>
   `).join('');
 
@@ -172,42 +181,45 @@ export function generateSurveyStatusReport(data = {}) {
 
   const statSurveysRowsHtml = defaultStatSurveys.map(s => `
     <tr>
-      <td style="font-weight:bold;">${s.name}</td>
-      <td>${s.lastDate}</td>
-      <td>${s.dueDate}</td>
-      <td style="font-size:6.8pt; color:#555;">${s.range}</td>
-      <td>${s.postponed}</td>
+      <td style="font-weight:bold;" contenteditable="true">${s.name}</td>
+      <td contenteditable="true">${s.lastDate}</td>
+      <td contenteditable="true">${s.dueDate}</td>
+      <td style="font-size:7pt; color:#555;" contenteditable="true">${s.range}</td>
+      <td contenteditable="true">${s.postponed}</td>
       <td><span class="badge badge-valid">${s.status}</span></td>
+      <td style="text-align:center;"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove Row">✕</button></td>
     </tr>
   `).join('');
 
   // 6. Conditions of Class Rows
   const conditionsRowsHtml = conditionsOfClass.length > 0 ? conditionsOfClass.map(c => `
     <tr>
-      <td style="font-family:monospace;">${c.requestNo}</td>
-      <td>${c.observation}</td>
-      <td>${c.dueDate}</td>
-      <td>${c.certificate}</td>
+      <td style="font-family:monospace;" contenteditable="true">${c.requestNo}</td>
+      <td contenteditable="true">${c.observation}</td>
+      <td contenteditable="true">${c.dueDate}</td>
+      <td contenteditable="true">${c.certificate}</td>
       <td><span class="badge badge-valid">${c.status}</span></td>
+      <td style="text-align:center;"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove Row">✕</button></td>
     </tr>
   `).join('') : `
     <tr>
-      <td colspan="5" style="text-align:center; color:#777; font-style:italic;">No active Conditions of Class or Memoranda logged for this vessel.</td>
+      <td colspan="6" style="text-align:center; color:#777; font-style:italic;">No active Conditions of Class or Memoranda logged for this vessel.</td>
     </tr>
   `;
 
   // 7. Non-Conformities Rows
   const ncRowsHtml = nonConformities.length > 0 ? nonConformities.map(n => `
     <tr>
-      <td style="font-family:monospace;">${n.requestNo}</td>
-      <td>${n.observation}</td>
-      <td>${n.limitDate}</td>
-      <td>${n.certificate}</td>
+      <td style="font-family:monospace;" contenteditable="true">${n.requestNo}</td>
+      <td contenteditable="true">${n.observation}</td>
+      <td contenteditable="true">${n.limitDate}</td>
+      <td contenteditable="true">${n.certificate}</td>
       <td><span class="badge badge-valid">${n.status}</span></td>
+      <td style="text-align:center;"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove Row">✕</button></td>
     </tr>
   `).join('') : `
     <tr>
-      <td colspan="5" style="text-align:center; color:#777; font-style:italic;">No outstanding Non-Conformities or Deficiencies.</td>
+      <td colspan="6" style="text-align:center; color:#777; font-style:italic;">No outstanding Non-Conformities or Deficiencies.</td>
     </tr>
   `;
 
@@ -219,30 +231,31 @@ export function generateSurveyStatusReport(data = {}) {
 
   const pscRowsHtml = defaultPsc.map(p => `
     <tr>
-      <td style="font-family:monospace;">${p.docNo}</td>
-      <td>${p.date}</td>
-      <td style="font-weight:bold;">${p.port}</td>
-      <td>${p.mou}</td>
-      <td>${p.defs}</td>
+      <td style="font-family:monospace;" contenteditable="true">${p.docNo}</td>
+      <td contenteditable="true">${p.date}</td>
+      <td style="font-weight:bold;" contenteditable="true">${p.port}</td>
+      <td contenteditable="true">${p.mou}</td>
+      <td contenteditable="true">${p.defs}</td>
       <td><span class="badge badge-valid">${p.detained}</span></td>
+      <td style="text-align:center;"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove Row">✕</button></td>
     </tr>
   `).join('');
 
   // 9. Information Rows
-  const infoRowsHtml = `
+  const defaultInfoRows = ownerInformation.length > 0 ? ownerInformation : [
+    { no: '090', issueDate: '16-04-2024', entryInForce: '01-08-2025', description: 'MARPOL *** / MARPOL 2024 Amendment (81st) / ANNEX VI / Reg. 27 — The new requirements of collection and reporting of ship fuel oil consumption data like new paragraph 14 in regulation 27 allowing the IMO to share data with analytical consultancies and research entities...' },
+    { no: '095', issueDate: '26-09-2024', entryInForce: '06-06-2025', description: 'The Hong Kong International Convention for the Safe and Environmentally Sound Recycling of Ships, 2009 (the Hong Kong Convention) enters into force...' }
+  ];
+
+  const infoRowsHtml = defaultInfoRows.map(i => `
     <tr>
-      <td style="font-weight:bold;">090</td>
-      <td>16-04-2024</td>
-      <td>01-08-2025</td>
-      <td>MARPOL *** / MARPOL 2024 Amendment (81st) / ANNEX VI / Reg. 27<br>The new requirements of collection and reporting of ship fuel oil consumption data like new paragraph 14 in regulation 27 allowing the IMO to share data with analytical consultancies and research entities...</td>
+      <td style="font-weight:bold;" contenteditable="true">${i.no}</td>
+      <td contenteditable="true">${i.issueDate}</td>
+      <td contenteditable="true">${i.entryInForce}</td>
+      <td contenteditable="true">${i.description}</td>
+      <td style="text-align:center;"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove Row">✕</button></td>
     </tr>
-    <tr>
-      <td style="font-weight:bold;">095</td>
-      <td>26-09-2024</td>
-      <td>06-06-2025</td>
-      <td>The Hong Kong International Convention for the Safe and Environmentally Sound Recycling of Ships, 2009 (the Hong Kong Convention) enters into force...</td>
-    </tr>
-  `;
+  `).join('');
 
   // 10. Survey History Rows
   const defaultHistory = surveyHistory.length > 0 ? surveyHistory : [
@@ -252,11 +265,12 @@ export function generateSurveyStatusReport(data = {}) {
 
   const historyRowsHtml = defaultHistory.map(h => `
     <tr>
-      <td style="font-weight:bold;">${h.type}</td>
-      <td>${h.date}</td>
-      <td>${h.location}</td>
-      <td>${h.surveyor}</td>
+      <td style="font-weight:bold;" contenteditable="true">${h.type}</td>
+      <td contenteditable="true">${h.date}</td>
+      <td contenteditable="true">${h.location}</td>
+      <td contenteditable="true">${h.surveyor}</td>
       <td><span class="badge badge-valid">${h.status}</span></td>
+      <td style="text-align:center;"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove Row">✕</button></td>
     </tr>
   `).join('');
 
