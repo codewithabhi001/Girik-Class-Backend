@@ -52,16 +52,38 @@ export const verifyCertificate = async (certificateNumber) => {
 
 export const verifyVessel = async (imoNumber) => {
     if (!imoNumber) throw { statusCode: 400, message: 'IMO number is required' };
-    const vessel = await Vessel.findOne({ where: { imo_number: imoNumber }, useReplica: true });
+    const vessel = await Vessel.findOne({
+        where: { imo_number: imoNumber },
+        attributes: [
+            'vessel_name',
+            'imo_number',
+            'call_sign',
+            'port_of_registry',
+            'ship_type',
+            'class_status',
+            'current_class_society',
+        ],
+        include: [
+            {
+                model: db.FlagAdministration,
+                as: 'FlagAdministration',
+                attributes: ['flag_state_name', 'country'],
+                required: false,
+            },
+        ],
+        useReplica: true,
+    });
     if (!vessel) throw { statusCode: 404, message: 'Vessel not found' };
 
-    // Public details only
     return {
         vessel_name: vessel.vessel_name,
         imo_number: vessel.imo_number,
         call_sign: vessel.call_sign,
-        flag: vessel.flag,
-        classification_society: vessel.classification_society
+        flag: vessel.FlagAdministration?.flag_state_name || vessel.FlagAdministration?.country || null,
+        classification_society: vessel.current_class_society || 'GR CLASS',
+        vessel_type: vessel.ship_type,
+        status: vessel.class_status,
+        port_of_registry: vessel.port_of_registry,
     };
 };
 

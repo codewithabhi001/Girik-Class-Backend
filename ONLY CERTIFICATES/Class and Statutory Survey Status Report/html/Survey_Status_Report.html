@@ -162,13 +162,20 @@
 
     .cover-footer {
       margin-top: auto; padding: 10px 24px;
-      display: flex; gap: 12px; align-items: flex-start;
-      font-size: 6.5pt; color: #555; line-height: 1.3;
+      display: flex; gap: 14px; align-items: flex-start;
+      font-size: 6.5pt; color: #555; line-height: 1.35;
       border-top: 1px solid #ddd;
     }
-    .cover-qr { width: 48px; height: 48px; flex-shrink: 0; border: 1px solid #ccc; padding: 2px; background: #fff; }
+    .cover-qr {
+      width: 72px; height: 72px; flex-shrink: 0;
+      border: 1px solid #ccc; padding: 3px; background: #fff;
+    }
     .cover-qr img, .cover-qr svg { width: 100%; height: 100%; object-fit: contain; }
     .cover-footer-text { flex: 1; }
+    .cover-utn-line {
+      margin-top: 4px; font-family: monospace; font-size: 7pt;
+      font-weight: 700; color: var(--navy); letter-spacing: 0.3px;
+    }
     .cover-disclaimer {
       padding: 8px 14px; background: var(--accent-green);
       color: #fff; font-size: 6.5pt; line-height: 1.35; font-style: italic;
@@ -401,7 +408,10 @@
         <div class="cover-footer">
           <div class="cover-qr">{qr_code}</div>
           <div class="cover-footer-text">
-            This document is signed electronically in accordance with IMO FAL.5/Circ.39/Rev.2. Validation and authentication can be obtained by scanning the unique QR Code or by using the Unique Tracking No(UTN): {utn_number} and IMO No: {imo_number}.
+            This document is signed electronically in accordance with IMO FAL.5/Circ.39/Rev.2.
+            Validate authenticity by scanning the QR code, or visit <strong>grclass.com/verify</strong>
+            with the Unique Tracking No (UTN) and IMO No below.
+            <div class="cover-utn-line">UTN: {utn_number} &nbsp;|&nbsp; IMO: {imo_number}</div>
           </div>
         </div>
         <div class="cover-disclaimer">
@@ -779,23 +789,163 @@
       const tbody = table.querySelector('tbody');
       const headerCells = table.querySelectorAll('thead th:not(.col-action)');
       const tr = document.createElement('tr');
-      headerCells.forEach(() => {
+      headerCells.forEach((th, idx) => {
         const td = document.createElement('td');
         td.contentEditable = 'true';
         td.textContent = '—';
+        const label = (th.textContent || '').toLowerCase();
+        if (label.includes('valid')) td.setAttribute('data-date-role', 'valid-until');
+        if (label.includes('due')) td.setAttribute('data-date-role', 'due-date');
+        if (label.includes('range')) td.setAttribute('data-date-role', 'range');
         tr.appendChild(td);
       });
       const removeTd = document.createElement('td');
       removeTd.className = 'col-action';
       removeTd.innerHTML = '<button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button>';
       tr.appendChild(removeTd);
+      // Status cell placeholder if last data col looks like status table
       tbody.appendChild(tr);
+      refreshRuntimeStatuses();
     }
 
     function removeRow(btn) {
       const tr = btn.closest('tr');
       if (tr) tr.remove();
     }
+
+    function parseReportDate(value) {
+      if (!value || value === '—') return null;
+      const raw = String(value).trim();
+      if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+        const iso = new Date(raw);
+        if (!Number.isNaN(iso.getTime())) { iso.setHours(0,0,0,0); return iso; }
+      }
+      const m = raw.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+      if (!m) return null;
+      const day = parseInt(m[1], 10);
+      const month = parseInt(m[2], 10) - 1;
+      let year = parseInt(m[3], 10);
+      if (year < 100) year += 2000;
+      const d = new Date(year, month, day);
+      if (Number.isNaN(d.getTime())) return null;
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+
+    function todayLocal() {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+
+    function badgeClassFor(status) {
+      const s = String(status || '').toUpperCase();
+      if (['EXPIRED', 'REVOKED', 'CANCELLED', 'OVERDUE', 'WITHDRAWN'].includes(s)) return 'badge-expired';
+      if (['DUE SOON', 'SUSPENDED', 'WITHIN RANGE', 'OPEN'].includes(s)) return 'badge-due';
+      return 'badge-valid';
+    }
+
+    function setBadge(cell, status) {
+      if (!cell) return;
+      const s = String(status || 'VALID').toUpperCase();
+      cell.innerHTML = '<span class="badge ' + badgeClassFor(s) + '" data-runtime-status="1">' + s + '</span>';
+    }
+
+    function resolveCertStatus(currentText, validUntilText) {
+      const locked = ['SUSPENDED', 'REVOKED', 'CANCELLED', 'TRANSFERRED', 'DOWNGRADED', 'DRAFT'];
+      const upper = String(currentText || '').toUpperCase().trim();
+      if (locked.includes(upper)) return upper;
+      const expiry = parseReportDate(validUntilText);
+      if (!expiry) return upper || 'VALID';
+      const today = todayLocal();
+      if (expiry < today) return 'EXPIRED';
+      const daysLeft = Math.ceil((expiry - today) / 86400000);
+      if (daysLeft <= 30) return 'DUE SOON';
+      return 'VALID';
+    }
+
+    function resolveSurveyStatus(dueText, rangeText) {
+      const today = todayLocal();
+      let start = null;
+      let end = parseReportDate(dueText);
+      if (rangeText) {
+        const parts = String(rangeText).split(/\s*[-–—]\s*/);
+        if (parts.length >= 2) {
+          start = parseReportDate(parts[0]);
+          end = parseReportDate(parts[1]) || end;
+        }
+      }
+      if (end && today > end) return 'OVERDUE';
+      if (start && end && today >= start && today <= end) return 'WITHIN RANGE';
+      if (end && !start) {
+        const windowStart = new Date(end);
+        windowStart.setMonth(windowStart.getMonth() - 3);
+        if (today >= windowStart && today <= end) return 'WITHIN RANGE';
+      }
+      if (end && today <= end) return 'BEFORE RANGE';
+      return 'BEFORE RANGE';
+    }
+
+    function refreshRuntimeStatuses() {
+      // Certificate tables: Valid Until → Status
+      ['classCertsTable', 'statCertsTable'].forEach(function (id) {
+        const table = document.getElementById(id);
+        if (!table) return;
+        table.querySelectorAll('tbody tr').forEach(function (tr) {
+          if (tr.classList.contains('convention-row')) return;
+          const cells = tr.querySelectorAll('td');
+          if (cells.length < 6) return;
+          const validUntil = (cells[3].getAttribute('data-date-role') === 'valid-until' ? cells[3] : cells[3]).textContent;
+          const current = (cells[5].querySelector('.badge') || cells[5]).textContent;
+          setBadge(cells[5], resolveCertStatus(current, validUntil));
+        });
+      });
+
+      // Survey tables: Due Date / Range → Status
+      ['classificationSurveysTable', 'statutorySurveysTable'].forEach(function (id) {
+        const table = document.getElementById(id);
+        if (!table) return;
+        table.querySelectorAll('tbody tr').forEach(function (tr) {
+          const cells = tr.querySelectorAll('td');
+          if (cells.length < 6) return;
+          setBadge(cells[5], resolveSurveyStatus(cells[2].textContent, cells[3].textContent));
+        });
+      });
+
+      // Conditions / NC: Due/Limit date → OVERDUE if past
+      ['conditionsTable', 'ncTable'].forEach(function (id) {
+        const table = document.getElementById(id);
+        if (!table) return;
+        table.querySelectorAll('tbody tr').forEach(function (tr) {
+          const cells = tr.querySelectorAll('td');
+          if (cells.length < 5) return;
+          const locked = ['CLOSED', 'CLEARED', 'RECTIFIED', 'COMPLETED'];
+          const current = ((cells[4].querySelector('.badge') || cells[4]).textContent || '').toUpperCase().trim();
+          if (locked.includes(current)) return;
+          const due = parseReportDate(cells[2].textContent);
+          if (due && due < todayLocal()) setBadge(cells[4], 'OVERDUE');
+          else if (current === 'OVERDUE' || current === 'OPEN' || !current) setBadge(cells[4], due ? 'OPEN' : (current || 'OPEN'));
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      refreshRuntimeStatuses();
+      document.body.addEventListener('blur', function (e) {
+        const role = e.target && e.target.getAttribute && e.target.getAttribute('data-date-role');
+        if (role || (e.target && e.target.isContentEditable)) {
+          refreshRuntimeStatuses();
+        }
+      }, true);
+      document.body.addEventListener('input', function (e) {
+        if (e.target && e.target.getAttribute && e.target.getAttribute('data-date-role')) {
+          refreshRuntimeStatuses();
+        }
+      }, true);
+    });
+
+    // Also run immediately (editor may inject HTML without waiting for DOMContentLoaded)
+    setTimeout(refreshRuntimeStatuses, 50);
   </script>
 
 </body>

@@ -307,7 +307,23 @@ export const getSurveyStatusReportData = async (filters = {}) => {
     if (filters.job_id) {
         job = await JobRequest.findByPk(filters.job_id, {
             include: [
-                { model: Vessel },
+                {
+                    model: Vessel,
+                    include: [
+                        {
+                            model: db.FlagAdministration,
+                            as: 'FlagAdministration',
+                            attributes: ['flag_state_name', 'country'],
+                            required: false,
+                        },
+                        {
+                            model: db.Client,
+                            as: 'Client',
+                            attributes: ['company_name', 'address'],
+                            required: false,
+                        },
+                    ],
+                },
                 { model: db.Client, as: 'Client' },
                 {
                     model: db.JobCertificate,
@@ -325,7 +341,23 @@ export const getSurveyStatusReportData = async (filters = {}) => {
 
 
     if (!vessel && filters.vessel_id) {
-        vessel = await Vessel.findByPk(filters.vessel_id, { useReplica: true });
+        vessel = await Vessel.findByPk(filters.vessel_id, {
+            include: [
+                {
+                    model: db.FlagAdministration,
+                    as: 'FlagAdministration',
+                    attributes: ['flag_state_name', 'country'],
+                    required: false,
+                },
+                {
+                    model: db.Client,
+                    as: 'Client',
+                    attributes: ['company_name', 'address'],
+                    required: false,
+                },
+            ],
+            useReplica: true,
+        });
     }
 
     if (!vessel) {
@@ -345,14 +377,34 @@ export const getSurveyStatusReportData = async (filters = {}) => {
     const classCertificates = [];
     const statutoryCertificates = [];
 
+    /** Runtime status from expiry date — always fresh when report is opened */
+    const resolveCertDisplayStatus = (dbStatus, expiryDate) => {
+        const locked = new Set(['SUSPENDED', 'REVOKED', 'CANCELLED', 'TRANSFERRED', 'DOWNGRADED', 'DRAFT']);
+        const upper = String(dbStatus || '').toUpperCase();
+        if (locked.has(upper)) return upper;
+
+        if (!expiryDate) return upper === 'ISSUED' || !upper ? 'VALID' : upper;
+
+        const expiry = new Date(expiryDate);
+        if (Number.isNaN(expiry.getTime())) return upper || 'VALID';
+        expiry.setHours(0, 0, 0, 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (expiry < today) return 'EXPIRED';
+        const daysLeft = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        if (daysLeft <= 30) return 'DUE SOON';
+        return 'VALID';
+    };
+
     certs.forEach(c => {
         const item = {
             description: c.CertificateType?.name || 'Certificate',
             code: c.certificate_number || c.id,
             issuedDate: c.issue_date ? new Date(c.issue_date).toLocaleDateString('en-GB') : '—',
             validUntil: c.expiry_date ? new Date(c.expiry_date).toLocaleDateString('en-GB') : '—',
-            type: c.term_type || 'ST',
-            status: c.status || 'VALID',
+            type: c.certificate_term || c.term_type || 'ST',
+            status: resolveCertDisplayStatus(c.status, c.expiry_date),
             convention: c.CertificateType?.category || 'STATUTORY'
         };
         if (c.CertificateType?.category === 'CLASS' || c.CertificateType?.name?.toUpperCase().includes('CLASS') || c.CertificateType?.name?.toUpperCase().includes('HULL')) {
@@ -390,44 +442,63 @@ export const getSurveyStatusReportData = async (filters = {}) => {
         status: nc.status || 'OPEN'
     }));
 
-    const utnNumber = `0027${Date.now().toString().slice(-12)}`;
-    const frontendUrl = (process.env.FRONTEND_URL || 'https://ops.grclass.com').replace(/\/$/, '');
-    const qrVerifyUrl = `${frontendUrl}/verify?utn=${utnNumber}&imo=${vessel.imo_number || ''}`;
+    // Stable UTN so the same job/vessel always produces the same tracking number & QR target
+    const imoDigits = String(vessel.imo_number || '').replace(/\D/g, '').padStart(7, '0').slice(-7);
+    const jobDigits = String(job?.job_number || job?.id || vessel.class_number || vessel.id || '')
+        .replace(/\D/g, '')
+        .padStart(9, '0')
+        .slice(-9);
+    const utnNumber = `0027${imoDigits}${jobDigits}`.slice(0, 20);
+
+    // Public marketing site hosts /verify — NOT the ops portal (ops has no public verify route)
+    const verifyPath = (env.certificateVerifyPublicUrl || 'https://grclass.com/verify?certificate={number}')
+        .split('?')[0]
+        .replace(/\/$/, '');
+    const qrVerifyUrl = `${verifyPath}?utn=${encodeURIComponent(utnNumber)}&imo=${encodeURIComponent(vessel.imo_number || '')}`;
     let qrCodeHtml = '';
     try {
-        const qrDataUri = await QRCode.toDataURL(qrVerifyUrl, { margin: 1, width: 120 });
-        qrCodeHtml = `<img src="${qrDataUri}" alt="QR Code" style="width: 100%; height: 100%; object-fit: contain;">`;
+        const qrDataUri = await QRCode.toDataURL(qrVerifyUrl, { margin: 1, width: 160, errorCorrectionLevel: 'M' });
+        qrCodeHtml = `<img src="${qrDataUri}" alt="Scan to verify" style="width: 100%; height: 100%; object-fit: contain;">`;
     } catch (qrErr) {
         qrCodeHtml = `<div style="width:100%; height:100%; background:#eee; display:flex; align-items:center; justify-content:center; font-size:6pt; font-weight:bold;">QR CODE</div>`;
     }
 
     let signatureBase64 = getCachedSignature();
 
+    const ownerClient = vessel.Client || job?.Client || null;
+    const flagName =
+        vessel.FlagAdministration?.flag_state_name ||
+        vessel.FlagAdministration?.country ||
+        vessel.flag ||
+        '—';
+
     const reportPayload = {
         logo: 'https://grclass.com/grclass-logo.webp',
-        vesselName: vessel.vessel_name || vessel.name,
-        imoNumber: vessel.imo_number,
-        classNumber: vessel.class_number || vessel.registration_number || '—',
+        vesselName: vessel.vessel_name || vessel.name || '—',
+        imoNumber: vessel.imo_number || '—',
+        classNumber: vessel.class_number || vessel.registration_number || vessel.imo_number || '—',
         callSign: vessel.call_sign || '—',
-        flag: vessel.flag || 'PANAMA',
+        flag: flagName,
         portOfRegistry: vessel.port_of_registry || '—',
-        shipType: vessel.vessel_type || 'BULK CARRIER',
+        shipType: vessel.ship_type || vessel.vessel_type || '—',
         keelLayingDate: vessel.keel_date ? new Date(vessel.keel_date).toLocaleDateString('en-GB') : '—',
-        dateOfBuild: vessel.build_date ? new Date(vessel.build_date).toLocaleDateString('en-GB') : '—',
+        dateOfBuild: vessel.year_built
+            ? String(vessel.year_built)
+            : (vessel.build_date ? new Date(vessel.build_date).toLocaleDateString('en-GB') : '—'),
         vesselEntryDate: vessel.createdAt ? new Date(vessel.createdAt).toLocaleDateString('en-GB') : '—',
-        classNotation: vessel.class_notation || '',
-        deadweight: vessel.dead_weight || vessel.dwt || '—',
-        grossTonnage: vessel.gross_tonnage || vessel.gt || '—',
-        netTonnage: vessel.net_tonnage || vessel.nt || '—',
+        classNotation: vessel.class_notation || vessel.current_class_society || 'GR CLASS',
+        deadweight: vessel.deadweight ? `${vessel.deadweight} MT` : (vessel.dead_weight || vessel.dwt || '—'),
+        grossTonnage: vessel.gross_tonnage ? `${vessel.gross_tonnage} GT` : (vessel.gt || '—'),
+        netTonnage: vessel.net_tonnage ? `${vessel.net_tonnage} NT` : (vessel.nt || '—'),
         length: vessel.length ? `${vessel.length} Meter` : '—',
         breadth: vessel.breadth ? `${vessel.breadth} Meter` : '—',
         depth: vessel.depth ? `${vessel.depth} Meter` : '—',
-        radioArea: vessel.radio_area || 'Area A1+A2+A3',
-        registeredOwner: vessel.owner_name || '—',
-        ownerAddress: vessel.owner_address || '—',
-        managementCompany: vessel.manager_name || '—',
-        managementAddress: vessel.manager_address || '—',
-        classStatus: vessel.status || 'ACTIVE',
+        radioArea: vessel.radio_area || '—',
+        registeredOwner: ownerClient?.company_name || vessel.owner_name || '—',
+        ownerAddress: ownerClient?.address || vessel.owner_address || '—',
+        managementCompany: vessel.manager_name || ownerClient?.company_name || '—',
+        managementAddress: vessel.manager_address || ownerClient?.address || '—',
+        classStatus: vessel.class_status || vessel.status || 'ACTIVE',
         jobNumber: job ? job.job_number : '',
         jobType: job ? job.job_type : '',
         utnNumber,

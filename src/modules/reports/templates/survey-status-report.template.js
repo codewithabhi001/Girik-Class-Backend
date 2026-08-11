@@ -12,7 +12,7 @@ import path from 'path';
 let cachedTemplate = null;
 
 function loadTemplateHtml() {
-  if (cachedTemplate) return cachedTemplate;
+  // Always read from disk so template polish shows up without process restart
   try {
     const htmlPath = path.resolve('ONLY CERTIFICATES/Class and Statutory Survey Status Report/html/Survey_Status_Report.html');
     if (fs.existsSync(htmlPath)) {
@@ -22,7 +22,88 @@ function loadTemplateHtml() {
   } catch (err) {
     console.error('Error loading Survey_Status_Report.html:', err);
   }
-  return '';
+  return cachedTemplate || '';
+}
+
+/** Parse DD/MM/YYYY, DD-MM-YYYY, or ISO into a date at local midnight */
+function parseReportDate(value) {
+  if (!value || value === '—') return null;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    const d = new Date(value);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+  const raw = String(value).trim();
+  const iso = new Date(raw);
+  if (/^\d{4}-\d{2}-\d{2}/.test(raw) && !Number.isNaN(iso.getTime())) {
+    iso.setHours(0, 0, 0, 0);
+    return iso;
+  }
+  const m = raw.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+  if (!m) return null;
+  const day = parseInt(m[1], 10);
+  const month = parseInt(m[2], 10) - 1;
+  let year = parseInt(m[3], 10);
+  if (year < 100) year += 2000;
+  const d = new Date(year, month, day);
+  if (Number.isNaN(d.getTime())) return null;
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function todayLocal() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+/** Runtime certificate status from Valid Until (keeps admin locks like SUSPENDED/REVOKED) */
+function resolveCertStatus(dbStatus, validUntil) {
+  const locked = new Set(['SUSPENDED', 'REVOKED', 'CANCELLED', 'TRANSFERRED', 'DOWNGRADED', 'DRAFT']);
+  const upper = String(dbStatus || '').toUpperCase();
+  if (locked.has(upper)) return upper;
+
+  const expiry = parseReportDate(validUntil);
+  if (!expiry) return upper === 'ISSUED' || !upper ? 'VALID' : upper;
+
+  const today = todayLocal();
+  if (expiry < today) return 'EXPIRED';
+  const daysLeft = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  if (daysLeft <= 30) return 'DUE SOON';
+  return 'VALID';
+}
+
+/** Runtime survey window status from due date / range text */
+function resolveSurveyStatus(dueDate, rangeText) {
+  const today = todayLocal();
+  let start = null;
+  let end = parseReportDate(dueDate);
+
+  if (rangeText) {
+    const parts = String(rangeText).split(/\s*[-–—]\s*/);
+    if (parts.length >= 2) {
+      start = parseReportDate(parts[0]);
+      end = parseReportDate(parts[1]) || end;
+    }
+  }
+
+  if (end && today > end) return 'OVERDUE';
+  if (start && end && today >= start && today <= end) return 'WITHIN RANGE';
+  if (end && !start) {
+    const windowStart = new Date(end);
+    windowStart.setMonth(windowStart.getMonth() - 3);
+    if (today >= windowStart && today <= end) return 'WITHIN RANGE';
+  }
+  if (end && today <= end) return 'BEFORE RANGE';
+  return 'BEFORE RANGE';
+}
+
+function statusBadgeHtml(status) {
+  const s = String(status || 'VALID').toUpperCase();
+  let cls = 'badge-valid';
+  if (['EXPIRED', 'REVOKED', 'CANCELLED', 'OVERDUE', 'WITHDRAWN'].includes(s)) cls = 'badge-expired';
+  else if (['DUE SOON', 'SUSPENDED', 'WITHIN RANGE', 'OPEN'].includes(s)) cls = 'badge-due';
+  return `<span class="badge ${cls}" data-runtime-status="1">${s}</span>`;
 }
 
 export function generateSurveyStatusReport(data = {}) {
@@ -81,17 +162,19 @@ export function generateSurveyStatusReport(data = {}) {
     { description: 'Hull & Machinery', code: 'H22879', issuedDate: '26-04-2026', validUntil: '17-07-2026', type: 'COND', status: 'VALID' }
   ];
 
-  const classCertRowsHtml = defaultClassCerts.map(c => `
+  const classCertRowsHtml = defaultClassCerts.map(c => {
+    const status = resolveCertStatus(c.status, c.validUntil);
+    return `
     <tr>
       <td style="font-weight:bold;" contenteditable="true">${c.description}</td>
       <td style="font-family:monospace; font-weight:bold;" contenteditable="true">${c.code}</td>
       <td contenteditable="true">${c.issuedDate}</td>
-      <td contenteditable="true">${c.validUntil}</td>
+      <td contenteditable="true" data-date-role="valid-until">${c.validUntil}</td>
       <td contenteditable="true">${c.type || 'ST'}</td>
-      <td><span class="badge badge-valid">${c.status || 'VALID'}</span></td>
+      <td>${statusBadgeHtml(status)}</td>
       <td class="col-action"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button></td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 
   // 2. Build Statutory Certificates Rows
   const defaultStatCerts = statutoryCertificates.length > 0 ? statutoryCertificates : [
@@ -124,14 +207,15 @@ export function generateSurveyStatusReport(data = {}) {
   for (const [conv, certList] of Object.entries(statGroups)) {
     statCertRowsHtml += `<tr class="convention-row"><td colspan="7">${conv}</td></tr>`;
     certList.forEach(c => {
+      const status = resolveCertStatus(c.status, c.validUntil);
       statCertRowsHtml += `
         <tr>
           <td contenteditable="true">${c.description}</td>
           <td style="font-family:monospace; font-weight:bold;" contenteditable="true">${c.code}</td>
           <td contenteditable="true">${c.issuedDate}</td>
-          <td contenteditable="true">${c.validUntil}</td>
+          <td contenteditable="true" data-date-role="valid-until">${c.validUntil}</td>
           <td contenteditable="true">${c.type || 'ST'}</td>
-          <td><span class="badge badge-valid">${c.status || 'VALID'}</span></td>
+          <td>${statusBadgeHtml(status)}</td>
           <td class="col-action"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button></td>
         </tr>
       `;
@@ -160,17 +244,19 @@ export function generateSurveyStatusReport(data = {}) {
     { name: 'Boiler Survey', lastDate: '24-10-2025', dueDate: '28-10-2027', range: '28-04-2027 - 28-10-2027', postponed: '—', status: 'BEFORE RANGE' }
   ];
 
-  const classSurveysRowsHtml = defaultClassSurveys.map(s => `
+  const classSurveysRowsHtml = defaultClassSurveys.map(s => {
+    const status = resolveSurveyStatus(s.dueDate, s.range);
+    return `
     <tr>
       <td style="font-weight:bold;" contenteditable="true">${s.name}</td>
       <td contenteditable="true">${s.lastDate}</td>
-      <td contenteditable="true">${s.dueDate}</td>
-      <td style="font-size:7pt; color:#555;" contenteditable="true">${s.range}</td>
+      <td contenteditable="true" data-date-role="due-date">${s.dueDate}</td>
+      <td style="font-size:7pt; color:#555;" contenteditable="true" data-date-role="range">${s.range}</td>
       <td contenteditable="true">${s.postponed}</td>
-      <td><span class="badge badge-valid">${s.status}</span></td>
+      <td>${statusBadgeHtml(status)}</td>
       <td class="col-action"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button></td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 
   // 5. Statutory Surveys Rows
   const defaultStatSurveys = statutorySurveys.length > 0 ? statutorySurveys : [
@@ -179,45 +265,65 @@ export function generateSurveyStatusReport(data = {}) {
     { name: 'Safety Equipment Annual Survey', lastDate: '24-10-2025', dueDate: '28-10-2026', range: '28-07-2026 - 28-01-2027', postponed: '—', status: 'BEFORE RANGE' }
   ];
 
-  const statSurveysRowsHtml = defaultStatSurveys.map(s => `
+  const statSurveysRowsHtml = defaultStatSurveys.map(s => {
+    const status = resolveSurveyStatus(s.dueDate, s.range);
+    return `
     <tr>
       <td style="font-weight:bold;" contenteditable="true">${s.name}</td>
       <td contenteditable="true">${s.lastDate}</td>
-      <td contenteditable="true">${s.dueDate}</td>
-      <td style="font-size:7pt; color:#555;" contenteditable="true">${s.range}</td>
+      <td contenteditable="true" data-date-role="due-date">${s.dueDate}</td>
+      <td style="font-size:7pt; color:#555;" contenteditable="true" data-date-role="range">${s.range}</td>
       <td contenteditable="true">${s.postponed}</td>
-      <td><span class="badge badge-valid">${s.status}</span></td>
+      <td>${statusBadgeHtml(status)}</td>
       <td class="col-action"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button></td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 
   // 6. Conditions of Class Rows
-  const conditionsRowsHtml = conditionsOfClass.length > 0 ? conditionsOfClass.map(c => `
+  const conditionsRowsHtml = conditionsOfClass.length > 0 ? conditionsOfClass.map(c => {
+    const locked = new Set(['CLOSED', 'CLEARED', 'RECTIFIED', 'COMPLETED']);
+    const raw = String(c.status || 'OPEN').toUpperCase();
+    let status = raw;
+    if (!locked.has(raw)) {
+      const due = parseReportDate(c.dueDate);
+      if (due && due < todayLocal()) status = 'OVERDUE';
+      else status = raw || 'OPEN';
+    }
+    return `
     <tr>
       <td style="font-family:monospace;" contenteditable="true">${c.requestNo}</td>
       <td contenteditable="true">${c.observation}</td>
-      <td contenteditable="true">${c.dueDate}</td>
+      <td contenteditable="true" data-date-role="due-date">${c.dueDate}</td>
       <td contenteditable="true">${c.certificate}</td>
-      <td><span class="badge badge-valid">${c.status}</span></td>
+      <td>${statusBadgeHtml(status)}</td>
       <td class="col-action"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button></td>
-    </tr>
-  `).join('') : `
+    </tr>`;
+  }).join('') : `
     <tr>
       <td colspan="6" style="text-align:center; color:#777; font-style:italic;">No active Conditions of Class or Memoranda logged for this vessel.</td>
     </tr>
   `;
 
   // 7. Non-Conformities Rows
-  const ncRowsHtml = nonConformities.length > 0 ? nonConformities.map(n => `
+  const ncRowsHtml = nonConformities.length > 0 ? nonConformities.map(n => {
+    const locked = new Set(['CLOSED', 'CLEARED', 'RECTIFIED', 'COMPLETED']);
+    const raw = String(n.status || 'OPEN').toUpperCase();
+    let status = raw;
+    if (!locked.has(raw)) {
+      const due = parseReportDate(n.limitDate);
+      if (due && due < todayLocal()) status = 'OVERDUE';
+      else status = raw || 'OPEN';
+    }
+    return `
     <tr>
       <td style="font-family:monospace;" contenteditable="true">${n.requestNo}</td>
       <td contenteditable="true">${n.observation}</td>
-      <td contenteditable="true">${n.limitDate}</td>
+      <td contenteditable="true" data-date-role="due-date">${n.limitDate}</td>
       <td contenteditable="true">${n.certificate}</td>
-      <td><span class="badge badge-valid">${n.status}</span></td>
+      <td>${statusBadgeHtml(status)}</td>
       <td class="col-action"><button class="remove-row-btn" onclick="removeRow(this)" title="Remove">✕</button></td>
-    </tr>
-  `).join('') : `
+    </tr>`;
+  }).join('') : `
     <tr>
       <td colspan="6" style="text-align:center; color:#777; font-style:italic;">No outstanding Non-Conformities or Deficiencies.</td>
     </tr>
@@ -275,18 +381,18 @@ export function generateSurveyStatusReport(data = {}) {
   `).join('');
 
   // Process Logo, QR Code & Signature
-  const defaultLogo = `<img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" style="max-height: 52px; width: auto; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/><div class="p1-logo-emblem" style="display:none;">GR</div>`;
+  const defaultLogo = `<img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" style="max-height: 70px; width: auto; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/><div class="cover-logo-emblem" style="display:none;">GR</div>`;
   
   let finalLogo = logo;
   if (!finalLogo) {
     finalLogo = defaultLogo;
   } else if (typeof finalLogo === 'string' && !finalLogo.includes('<img') && !finalLogo.includes('<svg')) {
-    finalLogo = `<img src="${finalLogo}" alt="GR Class Logo" style="max-height: 52px; width: auto; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/><div class="p1-logo-emblem" style="display:none;">GR</div>`;
+    finalLogo = `<img src="${finalLogo}" alt="GR Class Logo" style="max-height: 70px; width: auto; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/><div class="cover-logo-emblem" style="display:none;">GR</div>`;
   }
 
   let finalQrCode = qrCodeHtml;
   if (!finalQrCode) {
-    finalQrCode = `<svg width="48" height="48" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    finalQrCode = `<svg width="72" height="72" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
       <rect width="100" height="100" fill="#ffffff"/>
       <path d="M10,10 h30 v30 h-30 z M15,15 v20 h20 v-20 z M22,22 h6 v6 h-6 z" fill="#0b2545"/>
       <path d="M60,10 h30 v30 h-30 z M65,15 v20 h20 v-20 z M72,22 h6 v6 h-6 z" fill="#0b2545"/>
