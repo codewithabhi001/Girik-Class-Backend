@@ -341,11 +341,25 @@ export const getSurveyStatusReportData = async (filters = {}) => {
         }
     });
 
-    // Fetch non conformities
+    // Fetch non conformities by job_id
+    const ncWhere = {};
+    if (job) {
+        ncWhere.job_id = job.id;
+    } else if (vessel) {
+        const vesselJobs = await JobRequest.findAll({
+            where: { vessel_id: vessel.id },
+            attributes: ['id'],
+            useReplica: true
+        });
+        const jobIds = vesselJobs.map(j => j.id);
+        ncWhere.job_id = { [Op.in]: jobIds.length > 0 ? jobIds : ['00000000-0000-0000-0000-000000000000'] };
+    }
+
     const ncs = await NonConformity.findAll({
-        where: { vessel_id: vessel.id },
+        where: ncWhere,
         useReplica: true
     });
+
 
     const nonConformitiesFormatted = ncs.map(nc => ({
         requestNo: nc.id ? String(nc.id).slice(0, 8) : '—',
