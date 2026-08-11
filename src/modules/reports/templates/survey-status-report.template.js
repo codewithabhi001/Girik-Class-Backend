@@ -1,12 +1,11 @@
 import fs from 'fs';
 import path from 'path';
-import QRCode from 'qrcode';
 
 /**
  * GR CLASS - Class & Statutory Survey Status Report Generator
  * 
- * Renders an authentic official document certificate (A4 multi-page format)
- * using the HTML template stored in `ONLY CERTIFICATES/Class and Statutory Survey Status Report/html/Survey_Status_Report.html`
+ * Generates an exact replica of OMCS CLASS Survey Status Report for GR CLASS
+ * using the template stored in `ONLY CERTIFICATES/Class and Statutory Survey Status Report/html/Survey_Status_Report.html`
  * (and seeded into the `certificate_templates` database table).
  */
 
@@ -29,28 +28,28 @@ function loadTemplateHtml() {
 export function generateSurveyStatusReport(data = {}) {
   const {
     // Vessel Particulars
-    vesselName = 'EAVLE',
+    vesselName = 'ENABLE',
     imoNumber = '9246891',
     classNumber = '0026891',
-    callSign = 'HP9241',
+    callSign = '3E6099',
     flag = 'PANAMA',
     portOfRegistry = 'PANAMA',
-    shipType = 'OIL TANKER',
-    keelLayingDate = '15/04/2002',
-    dateOfBuild = '28/10/2003',
-    vesselEntryDate = '12/01/2021',
-    classNotation = 'OU 100 A1 OIL TANKER, ESP, AMS, ACCU',
-    deadweight = '48910 MT',
-    grossTonnage = '27198.00 GT',
-    netTonnage = '14520.00 NT',
-    length = '182.50 M',
-    breadth = '32.20 M',
-    depth = '19.10 M',
+    shipType = 'BULK CARRIER',
+    keelLayingDate = '28-07-2000',
+    dateOfBuild = '17-04-2001',
+    vesselEntryDate = '27-09-2025',
+    classNotation = 'CM.BULK CARRIER.ESP.BC-A. Holds 2&4 may be empty.IC.CDC.',
+    deadweight = '48910',
+    grossTonnage = '27198',
+    netTonnage = '15365',
+    length = '187.500 Meter',
+    breadth = '31.000 Meter',
+    depth = '16.750 Meter',
     radioArea = 'Area A1+A2+A3',
-    registeredOwner = 'NAVIGATOR MARITIME INC.',
-    ownerAddress = 'TRUST COMPANY COMPLEX, AJELTAKE ROAD, MAJURO, MARSHALL ISLANDS',
-    managementCompany = 'GLOBAL VESSEL MANAGEMENT LTD.',
-    managementAddress = 'SUITE 401, MARITIME TOWER, PANAMA CITY, PANAMA',
+    registeredOwner = 'Cassini Shipping Services LLC',
+    ownerAddress = 'Office 29, Al Khabaisi Street, Dubai, United Arab Emirates',
+    managementCompany = 'TOTAL VSV SHIPPING SERVICES LLC-FZ',
+    managementAddress = 'Office 1314-1315, Level 13, Burjuman Business Tower, Al-Mankhool Road, Dubai, United Arab Emirates',
     classStatus = 'ACTIVE',
 
     // Lists
@@ -67,41 +66,47 @@ export function generateSurveyStatusReport(data = {}) {
 
     manualNotes = '1. Annual Survey due within window 28/07/2026 - 28/10/2026.\n2. Intermediate Shafting inspection verified cleanly.',
     printDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-    utnNumber = `GR-SSR-${Date.now().toString(36).toUpperCase()}`
+    utnNumber = `00270904325020255972`
   } = data;
 
   let templateHtml = loadTemplateHtml();
 
   // 1. Build Class Certificates Rows
   const defaultClassCerts = classCertificates.length > 0 ? classCertificates : [
-    { description: 'CERTIFICATE OF CLASS (HULL)', code: 'GR-CLC-9241-01', issuedDate: '28/10/2023', validUntil: '27/10/2028', type: 'FT', status: 'VALID' },
-    { description: 'CERTIFICATE OF CLASS (MACHINERY)', code: 'GR-CLC-9241-02', issuedDate: '28/10/2023', validUntil: '27/10/2028', type: 'FT', status: 'VALID' }
+    { description: 'Hull & Machinery', code: 'H22879', issuedDate: '26-04-2026', validUntil: '17-07-2026', type: 'COND', status: 'VALID' }
   ];
 
   const classCertRowsHtml = defaultClassCerts.map(c => `
     <tr>
-      <td>${c.description || 'CERTIFICATE OF CLASS'}</td>
-      <td style="font-family:monospace; font-weight:bold;">${c.code || '—'}</td>
-      <td>${c.issuedDate || '—'}</td>
-      <td>${c.validUntil || '—'}</td>
-      <td><span class="badge badge-valid">${c.type || 'FT'}</span></td>
-      <td><span class="badge badge-valid">${c.status || 'VALID'}</span></td>
+      <td style="font-weight:bold;">${c.description}</td>
+      <td style="font-family:monospace; font-weight:bold;">${c.code}</td>
+      <td>${c.issuedDate}</td>
+      <td>${c.validUntil}</td>
+      <td>${c.type || 'ST'}</td>
+      <td><span class="pill pill-valid">${c.status || 'VALID'}</span></td>
     </tr>
   `).join('');
 
   // 2. Build Statutory Certificates Rows
   const defaultStatCerts = statutoryCertificates.length > 0 ? statutoryCertificates : [
-    { convention: 'LOAD LINE & TONNAGE CONVENTIONS', description: 'INTERNATIONAL LOAD LINE CERTIFICATE', code: 'GR-ILL-9241', issuedDate: '28/10/2023', validUntil: '27/10/2028', type: 'FT', status: 'VALID' },
-    { convention: 'LOAD LINE & TONNAGE CONVENTIONS', description: 'INTERNATIONAL TONNAGE CERTIFICATE (1969)', code: 'GR-ITC-9241', issuedDate: '28/10/2023', validUntil: 'PERMANENT', type: 'FT', status: 'VALID' },
-    { convention: 'SOLAS CONVENTION', description: 'CARGO SHIP SAFETY CONSTRUCTION CERTIFICATE', code: 'GR-SCC-9241', issuedDate: '28/10/2023', validUntil: '27/10/2028', type: 'FT', status: 'VALID' },
-    { convention: 'SOLAS CONVENTION', description: 'CARGO SHIP SAFETY EQUIPMENT CERTIFICATE', code: 'GR-SEC-9241', issuedDate: '28/10/2023', validUntil: '27/10/2028', type: 'FT', status: 'VALID' },
-    { convention: 'SOLAS CONVENTION', description: 'CARGO SHIP SAFETY RADIO CERTIFICATE', code: 'GR-SRC-9241', issuedDate: '28/10/2023', validUntil: '27/10/2028', type: 'FT', status: 'VALID' },
-    { convention: 'MARPOL CONVENTION', description: 'INTERNATIONAL OIL POLLUTION PREVENTION CERTIFICATE (IOPP)', code: 'GR-IOPP-9241', issuedDate: '28/10/2023', validUntil: '27/10/2028', type: 'FT', status: 'VALID' },
-    { convention: 'MARPOL CONVENTION', description: 'INTERNATIONAL SEWAGE POLLUTION PREVENTION CERTIFICATE (ISPP)', code: 'GR-ISPP-9241', issuedDate: '28/10/2023', validUntil: '27/10/2028', type: 'FT', status: 'VALID' },
-    { convention: 'MARPOL CONVENTION', description: 'INTERNATIONAL AIR POLLUTION PREVENTION CERTIFICATE (IAPP)', code: 'GR-IAPP-9241', issuedDate: '28/10/2023', validUntil: '27/10/2028', type: 'FT', status: 'VALID' }
+    { convention: 'LOAD LINE & TONNAGE CONVENTIONS', description: 'International Load Line Certificate', code: 'LL22879', issuedDate: '26-04-2026', validUntil: '17-07-2026', type: 'COND', status: 'VALID' },
+    { convention: 'LOAD LINE & TONNAGE CONVENTIONS', description: 'International Tonnage Certificate', code: 'ITC22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
+    { convention: 'IMO CODES', description: 'Certificate of Compliance with the International Maritime Solid Bulk Cargoes (IMSBC) CODE', code: 'IMSBC22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
+    { convention: 'SOLAS CONVENTION', description: 'Cargo Ship Safety Construction Certificate', code: 'CCC22879', issuedDate: '26-04-2026', validUntil: '17-07-2026', type: 'COND', status: 'VALID' },
+    { convention: 'SOLAS CONVENTION', description: 'Cargo Ship Safety Equipment Certificate', code: 'CEC22879', issuedDate: '26-04-2026', validUntil: '17-07-2026', type: 'COND', status: 'VALID' },
+    { convention: 'SOLAS CONVENTION', description: 'Cargo Ship Safety Radio Certificate', code: 'CRC22879', issuedDate: '26-04-2026', validUntil: '17-07-2026', type: 'COND', status: 'VALID' },
+    { convention: 'MARPOL CONVENTION', description: 'International Air Pollution Prevention Certificate', code: 'IAPP22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
+    { convention: 'MARPOL CONVENTION', description: 'International Energy Efficiency Certificate', code: 'IEEC22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
+    { convention: 'MARPOL CONVENTION', description: 'International Oil Pollution Prevention Certificate', code: 'IOPP22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
+    { convention: 'MARPOL CONVENTION', description: 'International Sewage Pollution Prevention Certificate', code: 'ISPP22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
+    { convention: 'BALLAST WATER MANAGEMENT CONVENTION', description: 'Ballast Water Management Certificate', code: 'BWMC22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
+    { convention: 'ANTIFOULING CONVENTION', description: 'Antifouling System Certificate', code: 'AFS22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
+    { convention: 'ISM CODE', description: 'Safety Management Certificate', code: 'SMC22122', issuedDate: '09-02-2026', validUntil: '07-08-2026', type: 'IT', status: 'VALID' },
+    { convention: 'ISPS CODE', description: 'International Ship Security Certificate', code: 'ISSC22122', issuedDate: '09-02-2026', validUntil: '07-08-2026', type: 'IT', status: 'VALID' },
+    { convention: 'ILO CONVENTION', description: 'Crew Accommodation Inspection Certificate', code: 'OMCA22122', issuedDate: '18-03-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
+    { convention: 'ILO CONVENTION', description: 'Maritime Labor Convention Certificate', code: 'MLC22122', issuedDate: '09-02-2026', validUntil: '07-08-2026', type: 'IT', status: 'VALID' }
   ];
 
-  // Group statutory certs by convention
   const statGroups = {};
   defaultStatCerts.forEach(c => {
     const conv = c.convention || 'STATUTORY CONVENTIONS';
@@ -111,7 +116,7 @@ export function generateSurveyStatusReport(data = {}) {
 
   let statCertRowsHtml = '';
   for (const [conv, certList] of Object.entries(statGroups)) {
-    statCertRowsHtml += `<tr class="convention-row"><td colspan="6">${conv}</td></tr>`;
+    statCertRowsHtml += `<tr class="subhdr-row"><td colspan="6">${conv}</td></tr>`;
     certList.forEach(c => {
       statCertRowsHtml += `
         <tr>
@@ -119,8 +124,8 @@ export function generateSurveyStatusReport(data = {}) {
           <td style="font-family:monospace; font-weight:bold;">${c.code}</td>
           <td>${c.issuedDate}</td>
           <td>${c.validUntil}</td>
-          <td><span class="badge badge-valid">${c.type || 'FT'}</span></td>
-          <td><span class="badge badge-valid">${c.status || 'VALID'}</span></td>
+          <td>${c.type || 'ST'}</td>
+          <td><span class="pill pill-valid">${c.status || 'VALID'}</span></td>
         </tr>
       `;
     });
@@ -129,23 +134,17 @@ export function generateSurveyStatusReport(data = {}) {
   // 3. Plan Approval Rows
   const planApprovalRowsHtml = `
     <tr>
-      <td>SOPEP & SMPEP MANUAL APPROVAL</td>
-      <td style="font-family:monospace; font-weight:bold;">GR-PA-SOPEP-01</td>
-      <td>15/11/2023</td>
-    </tr>
-    <tr>
-      <td>BALLAST WATER MANAGEMENT PLAN (BWMP)</td>
-      <td style="font-family:monospace; font-weight:bold;">GR-PA-BWMP-02</td>
-      <td>20/11/2023</td>
+      <td colspan="3" style="font-size: 6.5pt; color: #475569; font-style: italic;">
+        For ships built under supervision of OMCS; the date at which the new-construction survey process is completed (and interim classification certificate is issued). For ships built under the supervision of another classification society or Recognized Organization; the Date of Built as shown in their respective register books.
+      </td>
     </tr>
   `;
 
   // 4. Classification Surveys Rows
   const defaultClassSurveys = classificationSurveys.length > 0 ? classificationSurveys : [
-    { name: 'ANNUAL HULL SURVEY', lastDate: '24/10/2025', dueDate: '28/10/2026', range: '28/07/2026 - 28/01/2027', postponed: '—', status: 'BEFORE RANGE' },
-    { name: 'ANNUAL MACHINERY SURVEY', lastDate: '24/10/2025', dueDate: '28/10/2026', range: '28/07/2026 - 28/01/2027', postponed: '—', status: 'BEFORE RANGE' },
-    { name: 'BOILER SURVEY', lastDate: '24/10/2025', dueDate: '28/10/2027', range: '28/04/2027 - 28/10/2027', postponed: '—', status: 'BEFORE RANGE' },
-    { name: 'TAILSHAFT SURVEY', lastDate: '28/10/2023', dueDate: '27/10/2028', range: '27/04/2028 - 27/10/2028', postponed: '—', status: 'BEFORE RANGE' }
+    { name: 'Annual Hull Survey', lastDate: '24-10-2025', dueDate: '28-10-2026', range: '28-07-2026 - 28-01-2027', postponed: '—', status: 'BEFORE RANGE' },
+    { name: 'Annual Machinery Survey', lastDate: '24-10-2025', dueDate: '28-10-2026', range: '28-07-2026 - 28-01-2027', postponed: '—', status: 'BEFORE RANGE' },
+    { name: 'Boiler Survey', lastDate: '24-10-2025', dueDate: '28-10-2027', range: '28-04-2027 - 28-10-2027', postponed: '—', status: 'BEFORE RANGE' }
   ];
 
   const classSurveysRowsHtml = defaultClassSurveys.map(s => `
@@ -153,19 +152,17 @@ export function generateSurveyStatusReport(data = {}) {
       <td style="font-weight:bold;">${s.name}</td>
       <td>${s.lastDate}</td>
       <td>${s.dueDate}</td>
-      <td style="font-size:7pt; color:#555;">${s.range}</td>
+      <td style="font-size:6.8pt; color:#555;">${s.range}</td>
       <td>${s.postponed}</td>
-      <td><span class="badge badge-valid" style="font-size:6.5pt;">${s.status}</span></td>
+      <td><span class="pill pill-valid" style="font-size:6pt;">${s.status}</span></td>
     </tr>
   `).join('');
 
   // 5. Statutory Surveys Rows
   const defaultStatSurveys = statutorySurveys.length > 0 ? statutorySurveys : [
-    { name: 'LOAD LINE ANNUAL SURVEY', lastDate: '24/10/2025', dueDate: '28/10/2026', range: '28/07/2026 - 28/01/2027', postponed: '—', status: 'BEFORE RANGE' },
-    { name: 'SAFETY CONSTRUCTION ANNUAL SURVEY', lastDate: '24/10/2025', dueDate: '28/10/2026', range: '28/07/2026 - 28/01/2027', postponed: '—', status: 'BEFORE RANGE' },
-    { name: 'SAFETY EQUIPMENT ANNUAL SURVEY', lastDate: '24/10/2025', dueDate: '28/10/2026', range: '28/07/2026 - 28/01/2027', postponed: '—', status: 'BEFORE RANGE' },
-    { name: 'SAFETY RADIO ANNUAL SURVEY', lastDate: '24/10/2025', dueDate: '28/10/2026', range: '28/07/2026 - 28/01/2027', postponed: '—', status: 'BEFORE RANGE' },
-    { name: 'IOPP ANNUAL SURVEY', lastDate: '24/10/2025', dueDate: '28/10/2026', range: '28/07/2026 - 28/01/2027', postponed: '—', status: 'BEFORE RANGE' }
+    { name: 'Load Line Annual Survey', lastDate: '24-10-2025', dueDate: '28-10-2026', range: '28-07-2026 - 28-01-2027', postponed: '—', status: 'BEFORE RANGE' },
+    { name: 'Safety Construction Annual Survey', lastDate: '24-10-2025', dueDate: '28-10-2026', range: '28-07-2026 - 28-01-2027', postponed: '—', status: 'BEFORE RANGE' },
+    { name: 'Safety Equipment Annual Survey', lastDate: '24-10-2025', dueDate: '28-10-2026', range: '28-07-2026 - 28-01-2027', postponed: '—', status: 'BEFORE RANGE' }
   ];
 
   const statSurveysRowsHtml = defaultStatSurveys.map(s => `
@@ -173,9 +170,9 @@ export function generateSurveyStatusReport(data = {}) {
       <td style="font-weight:bold;">${s.name}</td>
       <td>${s.lastDate}</td>
       <td>${s.dueDate}</td>
-      <td style="font-size:7pt; color:#555;">${s.range}</td>
+      <td style="font-size:6.8pt; color:#555;">${s.range}</td>
       <td>${s.postponed}</td>
-      <td><span class="badge badge-valid" style="font-size:6.5pt;">${s.status}</span></td>
+      <td><span class="pill pill-valid" style="font-size:6pt;">${s.status}</span></td>
     </tr>
   `).join('');
 
@@ -186,7 +183,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td>${c.observation}</td>
       <td>${c.dueDate}</td>
       <td>${c.certificate}</td>
-      <td><span class="badge badge-valid">${c.status}</span></td>
+      <td><span class="pill pill-valid">${c.status}</span></td>
     </tr>
   `).join('') : `
     <tr>
@@ -201,7 +198,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td>${n.observation}</td>
       <td>${n.limitDate}</td>
       <td>${n.certificate}</td>
-      <td><span class="badge badge-valid">${n.status}</span></td>
+      <td><span class="pill pill-valid">${n.status}</span></td>
     </tr>
   `).join('') : `
     <tr>
@@ -211,8 +208,8 @@ export function generateSurveyStatusReport(data = {}) {
 
   // 8. PSC Performance Rows
   const defaultPsc = pscRecords.length > 0 ? pscRecords : [
-    { docNo: 'PSC-2025-01', date: '14/03/2025', port: 'SINGAPORE', mou: 'TOKYO MOU', defs: '0', detained: 'NO' },
-    { docNo: 'PSC-2024-08', date: '19/11/2024', port: 'ROTTERDAM', mou: 'PARIS MOU', defs: '1 (RECTIFIED)', detained: 'NO' }
+    { docNo: 'PSC-2025-01', date: '14-03-2025', port: 'SINGAPORE', mou: 'TOKYO MOU', defs: '0', detained: 'NO' },
+    { docNo: 'PSC-2024-08', date: '19-11-2024', port: 'ROTTERDAM', mou: 'PARIS MOU', defs: '1 (RECTIFIED)', detained: 'NO' }
   ];
 
   const pscRowsHtml = defaultPsc.map(p => `
@@ -222,30 +219,30 @@ export function generateSurveyStatusReport(data = {}) {
       <td style="font-weight:bold;">${p.port}</td>
       <td>${p.mou}</td>
       <td>${p.defs}</td>
-      <td><span class="badge badge-valid">${p.detained}</span></td>
+      <td><span class="pill pill-valid">${p.detained}</span></td>
     </tr>
   `).join('');
 
   // 9. Information Rows
   const infoRowsHtml = `
     <tr>
-      <td style="font-weight:bold;">CIRC-042</td>
-      <td>01/01/2025</td>
-      <td>01/07/2025</td>
-      <td>Implementation of revised MARPOL Annex VI regulations concerning CII & EEXI requirements.</td>
+      <td style="font-weight:bold;">090</td>
+      <td>16-04-2024</td>
+      <td>01-08-2025</td>
+      <td>MARPOL *** / MARPOL 2024 Amendment (81st) / ANNEX VI / Reg. 27<br>The new requirements of collection and reporting of ship fuel oil consumption data like new paragraph 14 in regulation 27 allowing the IMO to share data with analytical consultancies and research entities...</td>
     </tr>
     <tr>
-      <td style="font-weight:bold;">CIRC-039</td>
-      <td>15/06/2024</td>
-      <td>01/01/2025</td>
-      <td>Mandatory installation of cyber risk management protocols onboard cargo vessels.</td>
+      <td style="font-weight:bold;">095</td>
+      <td>26-09-2024</td>
+      <td>06-06-2025</td>
+      <td>The Hong Kong International Convention for the Safe and Environmentally Sound Recycling of Ships, 2009 (the Hong Kong Convention) enters into force...</td>
     </tr>
   `;
 
   // 10. Survey History Rows
   const defaultHistory = surveyHistory.length > 0 ? surveyHistory : [
-    { type: 'ANNUAL SURVEY', date: '24/10/2025', location: 'BUSAN, KOREA', surveyor: 'CAPT. R. SHARMA', status: 'COMPLETED' },
-    { type: 'INTERMEDIATE SURVEY', date: '28/10/2023', location: 'SINGAPORE', surveyor: 'ENG. M. ALVAREZ', status: 'COMPLETED' }
+    { type: 'Annual Survey', date: '24-10-2025', location: 'BUSAN, KOREA', surveyor: 'CAPT. R. SHARMA', status: 'COMPLETED' },
+    { type: 'Intermediate Survey', date: '28-10-2023', location: 'SINGAPORE', surveyor: 'ENG. M. ALVAREZ', status: 'COMPLETED' }
   ];
 
   const historyRowsHtml = defaultHistory.map(h => `
@@ -254,7 +251,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td>${h.date}</td>
       <td>${h.location}</td>
       <td>${h.surveyor}</td>
-      <td><span class="badge badge-valid">${h.status}</span></td>
+      <td><span class="pill pill-valid">${h.status}</span></td>
     </tr>
   `).join('');
 
