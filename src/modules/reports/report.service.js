@@ -391,8 +391,8 @@ export const getSurveyStatusReportData = async (filters = {}) => {
     }));
 
     const utnNumber = `0027${Date.now().toString().slice(-12)}`;
-    const baseUrl = env.certificateVerifyPublicUrl ? env.certificateVerifyPublicUrl.split('/verify')[0] : 'https://grclass.com';
-    const qrVerifyUrl = `${baseUrl}/verify?utn=${utnNumber}&imo=${vessel.imo_number || ''}`;
+    const frontendUrl = (process.env.FRONTEND_URL || 'https://ops.grclass.com').replace(/\/$/, '');
+    const qrVerifyUrl = `${frontendUrl}/verify?utn=${utnNumber}&imo=${vessel.imo_number || ''}`;
     let qrCodeHtml = '';
     try {
         const qrDataUri = await QRCode.toDataURL(qrVerifyUrl, { margin: 1, width: 120 });
