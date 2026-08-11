@@ -4,7 +4,7 @@ import path from 'path';
 /**
  * GR CLASS - Class & Statutory Survey Status Report Generator
  * 
- * Generates an exact replica of OMCS CLASS Survey Status Report for GR CLASS
+ * Generates an official GR CLASS Class & Statutory Survey Status Report
  * using the template stored in `ONLY CERTIFICATES/Class and Statutory Survey Status Report/html/Survey_Status_Report.html`
  * (and seeded into the `certificate_templates` database table).
  */
@@ -38,10 +38,10 @@ export function generateSurveyStatusReport(data = {}) {
     keelLayingDate = '28-07-2000',
     dateOfBuild = '17-04-2001',
     vesselEntryDate = '27-09-2025',
-    classNotation = 'CM.BULK CARRIER.ESP.BC-A. Holds 2&4 may be empty.IC.CDC.',
-    deadweight = '48910',
-    grossTonnage = '27198',
-    netTonnage = '15365',
+    classNotation = 'GR.BULK CARRIER.ESP.BC-A. Holds 2&4 may be empty.IC.CDC.',
+    deadweight = '48910 MT',
+    grossTonnage = '27198 GT',
+    netTonnage = '15365 NT',
     length = '187.500 Meter',
     breadth = '31.000 Meter',
     depth = '16.750 Meter',
@@ -83,7 +83,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td>${c.issuedDate}</td>
       <td>${c.validUntil}</td>
       <td>${c.type || 'ST'}</td>
-      <td><span class="pill pill-valid">${c.status || 'VALID'}</span></td>
+      <td><span class="badge badge-valid">${c.status || 'VALID'}</span></td>
     </tr>
   `).join('');
 
@@ -103,7 +103,7 @@ export function generateSurveyStatusReport(data = {}) {
     { convention: 'ANTIFOULING CONVENTION', description: 'Antifouling System Certificate', code: 'AFS22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
     { convention: 'ISM CODE', description: 'Safety Management Certificate', code: 'SMC22122', issuedDate: '09-02-2026', validUntil: '07-08-2026', type: 'IT', status: 'VALID' },
     { convention: 'ISPS CODE', description: 'International Ship Security Certificate', code: 'ISSC22122', issuedDate: '09-02-2026', validUntil: '07-08-2026', type: 'IT', status: 'VALID' },
-    { convention: 'ILO CONVENTION', description: 'Crew Accommodation Inspection Certificate', code: 'OMCA22122', issuedDate: '18-03-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
+    { convention: 'ILO CONVENTION', description: 'Crew Accommodation Inspection Certificate', code: 'GRCA22122', issuedDate: '18-03-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
     { convention: 'ILO CONVENTION', description: 'Maritime Labor Convention Certificate', code: 'MLC22122', issuedDate: '09-02-2026', validUntil: '07-08-2026', type: 'IT', status: 'VALID' }
   ];
 
@@ -116,7 +116,7 @@ export function generateSurveyStatusReport(data = {}) {
 
   let statCertRowsHtml = '';
   for (const [conv, certList] of Object.entries(statGroups)) {
-    statCertRowsHtml += `<tr class="subhdr-row"><td colspan="6">${conv}</td></tr>`;
+    statCertRowsHtml += `<tr class="convention-row"><td colspan="6">${conv}</td></tr>`;
     certList.forEach(c => {
       statCertRowsHtml += `
         <tr>
@@ -125,7 +125,7 @@ export function generateSurveyStatusReport(data = {}) {
           <td>${c.issuedDate}</td>
           <td>${c.validUntil}</td>
           <td>${c.type || 'ST'}</td>
-          <td><span class="pill pill-valid">${c.status || 'VALID'}</span></td>
+          <td><span class="badge badge-valid">${c.status || 'VALID'}</span></td>
         </tr>
       `;
     });
@@ -135,7 +135,7 @@ export function generateSurveyStatusReport(data = {}) {
   const planApprovalRowsHtml = `
     <tr>
       <td colspan="3" style="font-size: 6.5pt; color: #475569; font-style: italic;">
-        For ships built under supervision of OMCS; the date at which the new-construction survey process is completed (and interim classification certificate is issued). For ships built under the supervision of another classification society or Recognized Organization; the Date of Built as shown in their respective register books.
+        For ships built under supervision of GR CLASS; the date at which the new-construction survey process is completed (and interim classification certificate is issued). For ships built under the supervision of another classification society or Recognized Organization; the Date of Built as shown in their respective register books.
       </td>
     </tr>
   `;
@@ -154,7 +154,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td>${s.dueDate}</td>
       <td style="font-size:6.8pt; color:#555;">${s.range}</td>
       <td>${s.postponed}</td>
-      <td><span class="pill pill-valid" style="font-size:6pt;">${s.status}</span></td>
+      <td><span class="badge badge-valid" style="font-size:6pt;">${s.status}</span></td>
     </tr>
   `).join('');
 
@@ -172,7 +172,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td>${s.dueDate}</td>
       <td style="font-size:6.8pt; color:#555;">${s.range}</td>
       <td>${s.postponed}</td>
-      <td><span class="pill pill-valid" style="font-size:6pt;">${s.status}</span></td>
+      <td><span class="badge badge-valid" style="font-size:6pt;">${s.status}</span></td>
     </tr>
   `).join('');
 
@@ -183,7 +183,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td>${c.observation}</td>
       <td>${c.dueDate}</td>
       <td>${c.certificate}</td>
-      <td><span class="pill pill-valid">${c.status}</span></td>
+      <td><span class="badge badge-valid">${c.status}</span></td>
     </tr>
   `).join('') : `
     <tr>
@@ -198,7 +198,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td>${n.observation}</td>
       <td>${n.limitDate}</td>
       <td>${n.certificate}</td>
-      <td><span class="pill pill-valid">${n.status}</span></td>
+      <td><span class="badge badge-valid">${n.status}</span></td>
     </tr>
   `).join('') : `
     <tr>
@@ -219,7 +219,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td style="font-weight:bold;">${p.port}</td>
       <td>${p.mou}</td>
       <td>${p.defs}</td>
-      <td><span class="pill pill-valid">${p.detained}</span></td>
+      <td><span class="badge badge-valid">${p.detained}</span></td>
     </tr>
   `).join('');
 
@@ -251,7 +251,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td>${h.date}</td>
       <td>${h.location}</td>
       <td>${h.surveyor}</td>
-      <td><span class="pill pill-valid">${h.status}</span></td>
+      <td><span class="badge badge-valid">${h.status}</span></td>
     </tr>
   `).join('');
 
