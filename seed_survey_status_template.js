@@ -1,5 +1,6 @@
 import db from './src/models/index.js';
-import { generateSampleReport } from './src/modules/reports/templates/survey-status-report.template.js';
+import fs from 'fs';
+import path from 'path';
 
 async function seedSurveyStatusReportTemplate() {
     try {
@@ -28,8 +29,9 @@ async function seedSurveyStatusReportTemplate() {
             console.log(`CertificateType already exists: ${reportTypeName}`);
         }
 
-        // 2. Generate HTML content
-        const htmlContent = generateSampleReport();
+        // 2. Read HTML template content from ONLY CERTIFICATES folder
+        const htmlPath = path.resolve('ONLY CERTIFICATES/Class and Statutory Survey Status Report/html/Survey_Status_Report.html');
+        const htmlContent = fs.readFileSync(htmlPath, 'utf-8');
 
         // 3. Upsert into CertificateTemplate
         const existingTemplate = await db.CertificateTemplate.findOne({
@@ -39,7 +41,7 @@ async function seedSurveyStatusReportTemplate() {
         if (existingTemplate) {
             console.log('Updating existing CertificateTemplate in DB...');
             await existingTemplate.update({
-                template_name: 'Survey Status Report Template',
+                template_name: 'Class & Statutory Survey Status Report',
                 template_content: htmlContent,
                 is_active: true
             });
@@ -47,18 +49,23 @@ async function seedSurveyStatusReportTemplate() {
             console.log('Creating new CertificateTemplate in DB...');
             await db.CertificateTemplate.create({
                 certificate_type_id: certType.id,
-                template_name: 'Survey Status Report Template',
+                template_name: 'Class & Statutory Survey Status Report',
                 template_content: htmlContent,
                 variables: [
-                    'vessel_name', 'imo_number', 'class_number', 'call_sign', 'flag',
-                    'port_of_registry', 'ship_type', 'keel_laying_date', 'date_of_build',
-                    'gross_tonnage', 'net_tonnage', 'deadweight', 'length', 'breadth', 'depth'
+                    'vessel_name', 'imo_number', 'class_number', 'call_sign', 'flag_state',
+                    'port_of_registry', 'vessel_type', 'keel_date', 'build_date', 'entry_date',
+                    'gross_tonnage', 'net_tonnage', 'deadweight', 'length_overall', 'breadth', 'depth',
+                    'radio_area', 'registered_owner', 'owner_address', 'management_company', 'management_address',
+                    'class_status', 'class_notation', 'class_certificates_rows', 'statutory_certificates_rows',
+                    'plan_approval_rows', 'classification_surveys_rows', 'statutory_surveys_rows',
+                    'conditions_of_class_rows', 'non_conformities_rows', 'psc_performance_rows',
+                    'information_rows', 'survey_history_rows', 'manual_notes'
                 ],
                 is_active: true
             });
         }
 
-        console.log('✅ Survey Status Report template successfully seeded into database!');
+        console.log('✅ Class & Statutory Survey Status Report template successfully seeded into database!');
         process.exit(0);
     } catch (error) {
         console.error('❌ Error seeding survey status report template:', error);
@@ -67,3 +74,4 @@ async function seedSurveyStatusReportTemplate() {
 }
 
 seedSurveyStatusReportTemplate();
+
