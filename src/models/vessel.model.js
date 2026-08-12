@@ -38,6 +38,11 @@ export default (sequelize, DataTypes) => {
         current_class_society: DataTypes.STRING,
         engine_type: DataTypes.STRING,
         builder_name: DataTypes.STRING,
+        gr_class_number: {
+            type: DataTypes.STRING(20),
+            allowNull: true,
+            unique: true,
+        },
     }, {
         tableName: 'vessels',
         underscored: true,
@@ -53,12 +58,28 @@ export default (sequelize, DataTypes) => {
                     'ship_type',
                     'current_class_society',
                     'engine_type',
-                    'builder_name'
+                    'builder_name',
+                    'gr_class_number'
                 ];
                 for (const field of fieldsToTrim) {
                     if (typeof vessel[field] === 'string') {
                         vessel[field] = vessel[field].trim();
                     }
+                }
+            },
+            beforeCreate: async (vessel) => {
+                // Auto-generate GR CLASS number if not provided
+                if (!vessel.gr_class_number) {
+                    const { sequelize: seq } = vessel.constructor;
+                    const [results] = await seq.query(
+                        `SELECT gr_class_number FROM vessels WHERE gr_class_number IS NOT NULL ORDER BY gr_class_number DESC LIMIT 1`
+                    );
+                    let nextSeq = 1;
+                    if (results.length > 0 && results[0].gr_class_number) {
+                        const lastNum = parseInt(results[0].gr_class_number.replace(/^GRC/, ''), 10);
+                        if (!isNaN(lastNum)) nextSeq = lastNum + 1;
+                    }
+                    vessel.gr_class_number = `GRC${String(nextSeq).padStart(7, '0')}`;
                 }
             }
         }

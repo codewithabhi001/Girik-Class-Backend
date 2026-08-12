@@ -472,8 +472,8 @@ export const getSurveyStatusReportData = async (filters = {}) => {
         vessel.flag ||
         '—';
 
-    // Generate a proper GR CLASS number — never fall back to IMO number
-    const grClassNumber = vessel.class_number || vessel.registration_number || '';
+    // Use the auto-generated GR CLASS number from the vessel record
+    const grClassNumber = vessel.gr_class_number || '';
 
     const reportPayload = {
         logo: 'https://grclass.com/grclass-logo.webp',
