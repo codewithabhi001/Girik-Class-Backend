@@ -397,13 +397,24 @@ export const getSurveyStatusReportData = async (filters = {}) => {
         return 'VALID';
     };
 
+    const formatCertTerm = (term) => {
+        if (!term) return 'ST';
+        const t = String(term).toUpperCase().trim();
+        if (t === 'SHORT_TERM' || t === 'SHORT TERM') return 'ST';
+        if (t === 'FULL_TERM' || t === 'FULL TERM') return 'FT';
+        if (t === 'INTERIM') return 'IT';
+        if (t === 'CONDITIONAL') return 'COND';
+        if (t === 'PROVISIONAL') return 'PROV';
+        return t;
+    };
+
     certs.forEach(c => {
         const item = {
             description: c.CertificateType?.name || 'Certificate',
             code: c.certificate_number || c.id,
             issuedDate: c.issue_date ? new Date(c.issue_date).toLocaleDateString('en-GB') : '—',
             validUntil: c.expiry_date ? new Date(c.expiry_date).toLocaleDateString('en-GB') : '—',
-            type: c.certificate_term || c.term_type || 'ST',
+            type: formatCertTerm(c.certificate_term || c.term_type),
             status: resolveCertDisplayStatus(c.status, c.expiry_date),
             convention: c.CertificateType?.category || 'STATUTORY'
         };

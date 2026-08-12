@@ -157,6 +157,17 @@ export function generateSurveyStatusReport(data = {}) {
 
   let templateHtml = loadTemplateHtml();
 
+  const formatCertTerm = (term) => {
+    if (!term) return 'ST';
+    const t = String(term).toUpperCase().trim();
+    if (t === 'SHORT_TERM' || t === 'SHORT TERM') return 'ST';
+    if (t === 'FULL_TERM' || t === 'FULL TERM') return 'FT';
+    if (t === 'INTERIM') return 'IT';
+    if (t === 'CONDITIONAL') return 'COND';
+    if (t === 'PROVISIONAL') return 'PROV';
+    return t;
+  };
+
   // 1. Build Class Certificates Rows
   const classCertRowsHtml = classCertificates.length > 0 ? classCertificates.map(c => {
     const status = resolveCertStatus(c.status, c.validUntil);
@@ -166,7 +177,7 @@ export function generateSurveyStatusReport(data = {}) {
       <td style="font-family:monospace; font-weight:bold;" contenteditable="true">${c.code}</td>
       <td contenteditable="true">${c.issuedDate}</td>
       <td contenteditable="true" data-date-role="valid-until">${c.validUntil}</td>
-      <td contenteditable="true">${c.type || 'ST'}</td>
+      <td contenteditable="true">${formatCertTerm(c.type)}</td>
       <td>${statusBadgeHtml(status)}</td>
       <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>`;
@@ -196,7 +207,7 @@ export function generateSurveyStatusReport(data = {}) {
             <td style="font-family:monospace; font-weight:bold;" contenteditable="true">${c.code}</td>
             <td contenteditable="true">${c.issuedDate}</td>
             <td contenteditable="true" data-date-role="valid-until">${c.validUntil}</td>
-            <td contenteditable="true">${c.type || 'ST'}</td>
+            <td contenteditable="true">${formatCertTerm(c.type)}</td>
             <td>${statusBadgeHtml(status)}</td>
             <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
           </tr>

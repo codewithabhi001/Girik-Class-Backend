@@ -395,7 +395,7 @@
 
     /* Page Footer */
     .page-footer-line {
-      border-top: 1px solid #ccc; padding-top: 3px; margin-top: auto;
+      border-top: 1px solid #ccc; padding-top: 3px; margin-top: 3mm;
       display: flex; justify-content: space-between; font-size: 6.5pt; color: #777;
     }
 
@@ -416,7 +416,7 @@
 
     /* Signature Block */
     .signature-block {
-      margin-top: 6mm; display: flex; justify-content: space-between; align-items: flex-end;
+      margin-top: auto; margin-bottom: 3mm; display: flex; justify-content: space-between; align-items: flex-end;
       page-break-inside: avoid;
     }
     .sig-left { }
@@ -504,8 +504,12 @@
         flex-direction: column !important;
         box-sizing: border-box !important;
       }
-      .page-footer-line {
+      .signature-block {
         margin-top: auto !important;
+        margin-bottom: 3mm !important;
+      }
+      .page-footer-line {
+        margin-top: 0 !important;
       }
       /* First content page after cover: cover already has page-break-after,
          so skip page-break-before to prevent a blank page between them */
