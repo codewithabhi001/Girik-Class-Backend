@@ -288,11 +288,12 @@
        CONTENT PAGES: FLOWING LAYOUT (NO FIXED HEIGHT)
     ══════════════════════════════════════════════ */
     .content-page {
-      width: 210mm; background: var(--paper);
+      width: 210mm; min-height: 297mm; background: var(--paper);
       box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-      padding: 10mm 12mm;
+      padding: 10mm 12mm 8mm 12mm;
       page-break-before: always; break-before: page;
       box-sizing: border-box;
+      display: flex; flex-direction: column;
     }
 
     /* Mini Header */
@@ -394,7 +395,7 @@
 
     /* Page Footer */
     .page-footer-line {
-      border-top: 1px solid #ccc; padding-top: 3px; margin-top: 3mm;
+      border-top: 1px solid #ccc; padding-top: 3px; margin-top: auto;
       display: flex; justify-content: space-between; font-size: 6.5pt; color: #777;
     }
 
@@ -490,7 +491,7 @@
       /* Each content section starts on a new page; tall tables may continue */
       .content-page {
         width: 210mm !important;
-        min-height: 0 !important;
+        min-height: 296mm !important;
         height: auto !important;
         margin: 0 !important;
         box-shadow: none !important;
@@ -499,6 +500,12 @@
         break-before: page !important;
         page-break-inside: auto !important;
         break-inside: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        box-sizing: border-box !important;
+      }
+      .page-footer-line {
+        margin-top: auto !important;
       }
       /* First content page after cover: cover already has page-break-after,
          so skip page-break-before to prevent a blank page between them */
