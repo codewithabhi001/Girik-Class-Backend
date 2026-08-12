@@ -453,11 +453,23 @@
         margin: 0 !important;
         padding: 0 !important;
         width: 210mm !important;
+        height: auto !important;
+        overflow: visible !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
-      .toolbar-container { display: none !important; }
-      .add-row-btn-inline, .remove-row-btn, .col-action { display: none !important; }
+      .toolbar-container, .no-print, .add-row-btn-inline, .remove-row-btn, .col-action {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        max-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        position: absolute !important;
+        top: -9999px !important;
+        left: -9999px !important;
+      }
 
       .page-wrapper {
         display: block !important;
@@ -465,32 +477,35 @@
         gap: 0 !important;
         margin: 0 !important;
         width: 210mm !important;
+        height: auto !important;
       }
 
-          /* Cover = exactly one A4 sheet — never split across pages */
-          .cover-page {
-            width: 210mm !important;
-            height: 297mm !important;
-            max-height: 297mm !important;
-            min-height: 297mm !important;
-            margin: 0 !important;
-            box-shadow: none !important;
-            overflow: hidden !important;
-            page-break-after: always !important;
-            break-after: page !important;
-            page-break-inside: avoid !important;
-            break-inside: avoid-page !important;
-            page-break-before: auto !important;
-          }
-          .cover-masthead,
-          .cover-hero,
-          .cover-advise,
-          .cover-auth,
-          .cover-auth-panel,
-          .cover-advise-card {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-          }
+      /* Cover = exactly one A4 sheet — never split across pages */
+      .cover-page {
+        width: 210mm !important;
+        height: 296mm !important;
+        max-height: 296mm !important;
+        min-height: 296mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        overflow: hidden !important;
+        page-break-before: avoid !important;
+        break-before: avoid !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid-page !important;
+      }
+      .cover-masthead,
+      .cover-hero,
+      .cover-advise,
+      .cover-auth,
+      .cover-auth-panel,
+      .cover-advise-card {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
 
       /* Each content section starts on a new page; tall tables may continue */
       .content-page {
@@ -499,7 +514,7 @@
         height: auto !important;
         margin: 0 !important;
         box-shadow: none !important;
-        padding: 10mm 12mm !important;
+        padding: 8mm 12mm !important;
         page-break-before: always !important;
         break-before: page !important;
         page-break-inside: auto !important;
@@ -512,8 +527,10 @@
         break-before: auto !important;
       }
       .content-page:last-child {
-        page-break-after: auto !important;
-        break-after: auto !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
       }
 
       .page-mini-header,
