@@ -108,38 +108,38 @@ function statusBadgeHtml(status) {
 
 export function generateSurveyStatusReport(data = {}) {
   const {
-    // Vessel Particulars
-    vesselName = 'ENABLE',
-    imoNumber = '9246891',
-    classNumber = '0026891',
-    callSign = '3E6099',
-    flag = 'PANAMA',
-    portOfRegistry = 'PANAMA',
-    shipType = 'BULK CARRIER',
-    keelLayingDate = '28-07-2000',
-    dateOfBuild = '17-04-2001',
-    vesselEntryDate = '27-09-2025',
-    classNotation = 'GR.BULK CARRIER.ESP.BC-A. Holds 2&4 may be empty.IC.CDC.',
-    deadweight = '48910 MT',
-    grossTonnage = '27198 GT',
-    netTonnage = '15365 NT',
-    length = '187.500 Meter',
-    breadth = '31.000 Meter',
-    depth = '16.750 Meter',
-    radioArea = 'Area A1+A2+A3',
-    registeredOwner = 'Cassini Shipping Services LLC',
-    ownerAddress = 'Office 29, Al Khabaisi Street, Dubai, United Arab Emirates',
-    managementCompany = 'TOTAL VSV SHIPPING SERVICES LLC-FZ',
-    managementAddress = 'Office 1314-1315, Level 13, Burjuman Business Tower, Al-Mankhool Road, Dubai, United Arab Emirates',
-    classStatus = 'ACTIVE',
+    // Vessel Particulars — all default to dash (no hardcoded sample data)
+    vesselName = '—',
+    imoNumber = '—',
+    classNumber = '—',
+    callSign = '—',
+    flag = '—',
+    portOfRegistry = '—',
+    shipType = '—',
+    keelLayingDate = '—',
+    dateOfBuild = '—',
+    vesselEntryDate = '—',
+    classNotation = '—',
+    deadweight = '—',
+    grossTonnage = '—',
+    netTonnage = '—',
+    length = '—',
+    breadth = '—',
+    depth = '—',
+    radioArea = '—',
+    registeredOwner = '—',
+    ownerAddress = '—',
+    managementCompany = '—',
+    managementAddress = '—',
+    classStatus = '—',
 
     // Dynamic QR & Branding Assets
     logo = '',
     signature = '',
     qrCodeHtml = '',
-    utnNumber = `00270904325020255972`,
+    utnNumber = '—',
 
-    // Lists
+    // Lists — all default to empty (no hardcoded sample rows)
     classCertificates = [],
     statutoryCertificates = [],
     planApprovalCertificates = [],
@@ -151,18 +151,14 @@ export function generateSurveyStatusReport(data = {}) {
     ownerInformation = [],
     surveyHistory = [],
 
-    manualNotes = '1. Annual Survey due within window 28/07/2026 - 28/10/2026.\n2. Intermediate Shafting inspection verified cleanly.',
+    manualNotes = '',
     printDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
   } = data;
 
   let templateHtml = loadTemplateHtml();
 
   // 1. Build Class Certificates Rows
-  const defaultClassCerts = classCertificates.length > 0 ? classCertificates : [
-    { description: 'Hull & Machinery', code: 'H22879', issuedDate: '26-04-2026', validUntil: '17-07-2026', type: 'COND', status: 'VALID' }
-  ];
-
-  const classCertRowsHtml = defaultClassCerts.map(c => {
+  const classCertRowsHtml = classCertificates.length > 0 ? classCertificates.map(c => {
     const status = resolveCertStatus(c.status, c.validUntil);
     return `
     <tr>
@@ -174,77 +170,63 @@ export function generateSurveyStatusReport(data = {}) {
       <td>${statusBadgeHtml(status)}</td>
       <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>`;
-  }).join('');
+  }).join('') : `
+    <tr>
+      <td colspan="7" style="text-align:center; color:#777; font-style:italic;">No Class Certificates on record.</td>
+    </tr>
+  `;
 
   // 2. Build Statutory Certificates Rows
-  const defaultStatCerts = statutoryCertificates.length > 0 ? statutoryCertificates : [
-    { convention: 'LOAD LINE & TONNAGE CONVENTIONS', description: 'International Load Line Certificate', code: 'LL22879', issuedDate: '26-04-2026', validUntil: '17-07-2026', type: 'COND', status: 'VALID' },
-    { convention: 'LOAD LINE & TONNAGE CONVENTIONS', description: 'International Tonnage Certificate', code: 'ITC22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
-    { convention: 'IMO CODES', description: 'Certificate of Compliance with the International Maritime Solid Bulk Cargoes (IMSBC) CODE', code: 'IMSBC22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
-    { convention: 'SOLAS CONVENTION', description: 'Cargo Ship Safety Construction Certificate', code: 'CCC22879', issuedDate: '26-04-2026', validUntil: '17-07-2026', type: 'COND', status: 'VALID' },
-    { convention: 'SOLAS CONVENTION', description: 'Cargo Ship Safety Equipment Certificate', code: 'CEC22879', issuedDate: '26-04-2026', validUntil: '17-07-2026', type: 'COND', status: 'VALID' },
-    { convention: 'SOLAS CONVENTION', description: 'Cargo Ship Safety Radio Certificate', code: 'CRC22879', issuedDate: '26-04-2026', validUntil: '17-07-2026', type: 'COND', status: 'VALID' },
-    { convention: 'MARPOL CONVENTION', description: 'International Air Pollution Prevention Certificate', code: 'IAPP22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
-    { convention: 'MARPOL CONVENTION', description: 'International Energy Efficiency Certificate', code: 'IEEC22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
-    { convention: 'MARPOL CONVENTION', description: 'International Oil Pollution Prevention Certificate', code: 'IOPP22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
-    { convention: 'MARPOL CONVENTION', description: 'International Sewage Pollution Prevention Certificate', code: 'ISPP22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
-    { convention: 'BALLAST WATER MANAGEMENT CONVENTION', description: 'Ballast Water Management Certificate', code: 'BWMC22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
-    { convention: 'ANTIFOULING CONVENTION', description: 'Antifouling System Certificate', code: 'AFS22122', issuedDate: '09-02-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
-    { convention: 'ISM CODE', description: 'Safety Management Certificate', code: 'SMC22122', issuedDate: '09-02-2026', validUntil: '07-08-2026', type: 'IT', status: 'VALID' },
-    { convention: 'ISPS CODE', description: 'International Ship Security Certificate', code: 'ISSC22122', issuedDate: '09-02-2026', validUntil: '07-08-2026', type: 'IT', status: 'VALID' },
-    { convention: 'ILO CONVENTION', description: 'Crew Accommodation Inspection Certificate', code: 'GRCA22122', issuedDate: '18-03-2026', validUntil: '06-07-2026', type: 'ST', status: 'VALID' },
-    { convention: 'ILO CONVENTION', description: 'Maritime Labor Convention Certificate', code: 'MLC22122', issuedDate: '09-02-2026', validUntil: '07-08-2026', type: 'IT', status: 'VALID' }
-  ];
-
-  const statGroups = {};
-  defaultStatCerts.forEach(c => {
-    const conv = c.convention || 'STATUTORY CONVENTIONS';
-    if (!statGroups[conv]) statGroups[conv] = [];
-    statGroups[conv].push(c);
-  });
-
   let statCertRowsHtml = '';
-  for (const [conv, certList] of Object.entries(statGroups)) {
-    statCertRowsHtml += `<tr class="convention-row"><td colspan="7">${conv}</td></tr>`;
-    certList.forEach(c => {
-      const status = resolveCertStatus(c.status, c.validUntil);
-      statCertRowsHtml += `
-        <tr>
-          <td contenteditable="true">${c.description}</td>
-          <td style="font-family:monospace; font-weight:bold;" contenteditable="true">${c.code}</td>
-          <td contenteditable="true">${c.issuedDate}</td>
-          <td contenteditable="true" data-date-role="valid-until">${c.validUntil}</td>
-          <td contenteditable="true">${c.type || 'ST'}</td>
-          <td>${statusBadgeHtml(status)}</td>
-          <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
-        </tr>
-      `;
+  if (statutoryCertificates.length > 0) {
+    const statGroups = {};
+    statutoryCertificates.forEach(c => {
+      const conv = c.convention || 'STATUTORY CONVENTIONS';
+      if (!statGroups[conv]) statGroups[conv] = [];
+      statGroups[conv].push(c);
     });
+
+    for (const [conv, certList] of Object.entries(statGroups)) {
+      statCertRowsHtml += `<tr class="convention-row"><td colspan="7">${conv}</td></tr>`;
+      certList.forEach(c => {
+        const status = resolveCertStatus(c.status, c.validUntil);
+        statCertRowsHtml += `
+          <tr>
+            <td contenteditable="true">${c.description}</td>
+            <td style="font-family:monospace; font-weight:bold;" contenteditable="true">${c.code}</td>
+            <td contenteditable="true">${c.issuedDate}</td>
+            <td contenteditable="true" data-date-role="valid-until">${c.validUntil}</td>
+            <td contenteditable="true">${c.type || 'ST'}</td>
+            <td>${statusBadgeHtml(status)}</td>
+            <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
+          </tr>
+        `;
+      });
+    }
+  } else {
+    statCertRowsHtml = `
+      <tr>
+        <td colspan="7" style="text-align:center; color:#777; font-style:italic;">No Statutory Certificates on record.</td>
+      </tr>
+    `;
   }
 
   // 3. Plan Approval Rows
-  const defaultPlanApproval = planApprovalCertificates.length > 0 ? planApprovalCertificates : [
-    { description: 'Stability Information Booklet', code: 'SIB22879', issuedDate: '26-04-2026' },
-    { description: 'Loading Manual', code: 'LM22879', issuedDate: '26-04-2026' }
-  ];
-
-  const planApprovalRowsHtml = defaultPlanApproval.map(p => `
+  const planApprovalRowsHtml = planApprovalCertificates.length > 0 ? planApprovalCertificates.map(p => `
     <tr>
       <td contenteditable="true">${p.description}</td>
       <td style="font-family:monospace; font-weight:bold;" contenteditable="true">${p.code}</td>
       <td contenteditable="true">${p.issuedDate}</td>
       <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>
-  `).join('');
+  `).join('') : `
+    <tr>
+      <td colspan="4" style="text-align:center; color:#777; font-style:italic;">No Plan Approval Certificates on record.</td>
+    </tr>
+  `;
 
   // 4. Classification Surveys Rows
-  const defaultClassSurveys = classificationSurveys.length > 0 ? classificationSurveys : [
-    { name: 'Annual Hull Survey', lastDate: '24-10-2025', dueDate: '28-10-2026', range: '28-07-2026 - 28-01-2027', postponed: '—', status: 'BEFORE RANGE' },
-    { name: 'Annual Machinery Survey', lastDate: '24-10-2025', dueDate: '28-10-2026', range: '28-07-2026 - 28-01-2027', postponed: '—', status: 'BEFORE RANGE' },
-    { name: 'Boiler Survey', lastDate: '24-10-2025', dueDate: '28-10-2027', range: '28-04-2027 - 28-10-2027', postponed: '—', status: 'BEFORE RANGE' }
-  ];
-
-  const classSurveysRowsHtml = defaultClassSurveys.map(s => {
+  const classSurveysRowsHtml = classificationSurveys.length > 0 ? classificationSurveys.map(s => {
     const status = resolveSurveyStatus(s.dueDate, s.range);
     return `
     <tr>
@@ -256,16 +238,14 @@ export function generateSurveyStatusReport(data = {}) {
       <td>${statusBadgeHtml(status)}</td>
       <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>`;
-  }).join('');
+  }).join('') : `
+    <tr>
+      <td colspan="7" style="text-align:center; color:#777; font-style:italic;">No Classification Surveys on record.</td>
+    </tr>
+  `;
 
   // 5. Statutory Surveys Rows
-  const defaultStatSurveys = statutorySurveys.length > 0 ? statutorySurveys : [
-    { name: 'Load Line Annual Survey', lastDate: '24-10-2025', dueDate: '28-10-2026', range: '28-07-2026 - 28-01-2027', postponed: '—', status: 'BEFORE RANGE' },
-    { name: 'Safety Construction Annual Survey', lastDate: '24-10-2025', dueDate: '28-10-2026', range: '28-07-2026 - 28-01-2027', postponed: '—', status: 'BEFORE RANGE' },
-    { name: 'Safety Equipment Annual Survey', lastDate: '24-10-2025', dueDate: '28-10-2026', range: '28-07-2026 - 28-01-2027', postponed: '—', status: 'BEFORE RANGE' }
-  ];
-
-  const statSurveysRowsHtml = defaultStatSurveys.map(s => {
+  const statSurveysRowsHtml = statutorySurveys.length > 0 ? statutorySurveys.map(s => {
     const status = resolveSurveyStatus(s.dueDate, s.range);
     return `
     <tr>
@@ -277,7 +257,11 @@ export function generateSurveyStatusReport(data = {}) {
       <td>${statusBadgeHtml(status)}</td>
       <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>`;
-  }).join('');
+  }).join('') : `
+    <tr>
+      <td colspan="7" style="text-align:center; color:#777; font-style:italic;">No Statutory Surveys on record.</td>
+    </tr>
+  `;
 
   // 6. Conditions of Class Rows
   const conditionsRowsHtml = conditionsOfClass.length > 0 ? conditionsOfClass.map(c => {
@@ -330,12 +314,7 @@ export function generateSurveyStatusReport(data = {}) {
   `;
 
   // 8. PSC Performance Rows
-  const defaultPsc = pscRecords.length > 0 ? pscRecords : [
-    { docNo: 'PSC-2025-01', date: '14-03-2025', port: 'SINGAPORE', mou: 'TOKYO MOU', defs: '0', detained: 'NO' },
-    { docNo: 'PSC-2024-08', date: '19-11-2024', port: 'ROTTERDAM', mou: 'PARIS MOU', defs: '1 (RECTIFIED)', detained: 'NO' }
-  ];
-
-  const pscRowsHtml = defaultPsc.map(p => `
+  const pscRowsHtml = pscRecords.length > 0 ? pscRecords.map(p => `
     <tr>
       <td style="font-family:monospace;" contenteditable="true">${p.docNo}</td>
       <td contenteditable="true">${p.date}</td>
@@ -345,15 +324,14 @@ export function generateSurveyStatusReport(data = {}) {
       <td><span class="badge badge-valid">${p.detained}</span></td>
       <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>
-  `).join('');
+  `).join('') : `
+    <tr>
+      <td colspan="7" style="text-align:center; color:#777; font-style:italic;">No PSC Inspection Records on file.</td>
+    </tr>
+  `;
 
   // 9. Information Rows
-  const defaultInfoRows = ownerInformation.length > 0 ? ownerInformation : [
-    { no: '090', issueDate: '16-04-2024', entryInForce: '01-08-2025', description: 'MARPOL *** / MARPOL 2024 Amendment (81st) / ANNEX VI / Reg. 27 — The new requirements of collection and reporting of ship fuel oil consumption data like new paragraph 14 in regulation 27 allowing the IMO to share data with analytical consultancies and research entities...' },
-    { no: '095', issueDate: '26-09-2024', entryInForce: '06-06-2025', description: 'The Hong Kong International Convention for the Safe and Environmentally Sound Recycling of Ships, 2009 (the Hong Kong Convention) enters into force...' }
-  ];
-
-  const infoRowsHtml = defaultInfoRows.map(i => `
+  const infoRowsHtml = ownerInformation.length > 0 ? ownerInformation.map(i => `
     <tr>
       <td style="font-weight:bold;" contenteditable="true">${i.no}</td>
       <td contenteditable="true">${i.issueDate}</td>
@@ -361,15 +339,14 @@ export function generateSurveyStatusReport(data = {}) {
       <td contenteditable="true">${i.description}</td>
       <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>
-  `).join('');
+  `).join('') : `
+    <tr>
+      <td colspan="5" style="text-align:center; color:#777; font-style:italic;">No Owner / Manager Information on record.</td>
+    </tr>
+  `;
 
   // 10. Survey History Rows
-  const defaultHistory = surveyHistory.length > 0 ? surveyHistory : [
-    { type: 'Annual Survey', date: '24-10-2025', location: 'BUSAN, KOREA', surveyor: 'CAPT. R. SHARMA', status: 'COMPLETED' },
-    { type: 'Intermediate Survey', date: '28-10-2023', location: 'SINGAPORE', surveyor: 'ENG. M. ALVAREZ', status: 'COMPLETED' }
-  ];
-
-  const historyRowsHtml = defaultHistory.map(h => `
+  const historyRowsHtml = surveyHistory.length > 0 ? surveyHistory.map(h => `
     <tr>
       <td style="font-weight:bold;" contenteditable="true">${h.type}</td>
       <td contenteditable="true">${h.date}</td>
@@ -378,7 +355,11 @@ export function generateSurveyStatusReport(data = {}) {
       <td><span class="badge badge-valid">${h.status}</span></td>
       <td class="col-action"><button type="button" class="remove-row-btn" onclick="removeRow(this)" contenteditable="false" title="Remove">✕</button></td>
     </tr>
-  `).join('');
+  `).join('') : `
+    <tr>
+      <td colspan="6" style="text-align:center; color:#777; font-style:italic;">No Survey History on record.</td>
+    </tr>
+  `;
 
   // Process Logo, QR Code & Signature
   const defaultLogo = `<img src="https://grclass.com/grclass-logo.webp" alt="GR Class Logo" style="max-height: 48px; width: auto; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/><div class="cover-logo-emblem" style="display:none;">GR</div>`;
@@ -443,7 +424,7 @@ export function generateSurveyStatusReport(data = {}) {
     '{psc_performance_rows}': pscRowsHtml,
     '{information_rows}': infoRowsHtml,
     '{survey_history_rows}': historyRowsHtml,
-    '{manual_notes}': manualNotes.replace(/\n/g, '<br>')
+    '{manual_notes}': (manualNotes || '').replace(/\n/g, '<br>')
   };
 
   let renderedHtml = templateHtml;
@@ -457,3 +438,4 @@ export function generateSurveyStatusReport(data = {}) {
 export function generateSampleReport() {
   return generateSurveyStatusReport({});
 }
+

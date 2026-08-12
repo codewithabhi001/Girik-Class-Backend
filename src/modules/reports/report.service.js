@@ -472,11 +472,14 @@ export const getSurveyStatusReportData = async (filters = {}) => {
         vessel.flag ||
         '—';
 
+    // Generate a proper GR CLASS number — never fall back to IMO number
+    const grClassNumber = vessel.class_number || vessel.registration_number || '';
+
     const reportPayload = {
         logo: 'https://grclass.com/grclass-logo.webp',
         vesselName: vessel.vessel_name || vessel.name || '—',
         imoNumber: vessel.imo_number || '—',
-        classNumber: vessel.class_number || vessel.registration_number || vessel.imo_number || '—',
+        classNumber: grClassNumber || '—',
         callSign: vessel.call_sign || '—',
         flag: flagName,
         portOfRegistry: vessel.port_of_registry || '—',
@@ -494,8 +497,8 @@ export const getSurveyStatusReportData = async (filters = {}) => {
         breadth: vessel.breadth ? `${vessel.breadth} Meter` : '—',
         depth: vessel.depth ? `${vessel.depth} Meter` : '—',
         radioArea: vessel.radio_area || '—',
-        registeredOwner: ownerClient?.company_name || vessel.owner_name || '—',
-        ownerAddress: ownerClient?.address || vessel.owner_address || '—',
+        registeredOwner: vessel.owner_name || ownerClient?.company_name || '—',
+        ownerAddress: vessel.owner_address || ownerClient?.address || '—',
         managementCompany: vessel.manager_name || ownerClient?.company_name || '—',
         managementAddress: vessel.manager_address || ownerClient?.address || '—',
         classStatus: vessel.class_status || vessel.status || 'ACTIVE',

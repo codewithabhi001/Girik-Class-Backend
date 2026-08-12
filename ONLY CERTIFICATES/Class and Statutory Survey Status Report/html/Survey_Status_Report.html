@@ -505,6 +505,12 @@
         page-break-inside: auto !important;
         break-inside: auto !important;
       }
+      /* First content page after cover: cover already has page-break-after,
+         so skip page-break-before to prevent a blank page between them */
+      .cover-page + .content-page {
+        page-break-before: auto !important;
+        break-before: auto !important;
+      }
       .content-page:last-child {
         page-break-after: auto !important;
         break-after: auto !important;
