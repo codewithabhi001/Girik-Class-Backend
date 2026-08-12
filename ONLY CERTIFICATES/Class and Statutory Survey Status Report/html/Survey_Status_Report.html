@@ -44,26 +44,6 @@
       print-color-adjust: exact;
     }
 
-    /* ── TOOLBAR ── */
-    .toolbar-container {
-      position: sticky; top: 0; z-index: 9999;
-      background: rgba(15, 23, 42, 0.96);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid #334155;
-      padding: 8px 24px;
-      margin-bottom: 16px;
-      display: flex; justify-content: space-between; align-items: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-    .toolbar-title { color: #f8fafc; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
-    .toolbar-pill { background: #1e293b; border: 1px solid #475569; color: #fbbf24; font-size: 11px; padding: 2px 9px; border-radius: 4px; font-weight: 600; }
-    .toolbar-actions { display: flex; align-items: center; gap: 10px; }
-    .btn-tb { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; font-size: 11px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; transition: all 0.15s ease; text-transform: uppercase; letter-spacing: 0.5px; }
-    .btn-tb-primary { background: linear-gradient(135deg, #0b2545, #133c6d); color: #fff; border: 1px solid #b08d57; }
-    .btn-tb-primary:hover { background: linear-gradient(135deg, #133c6d, #1e40af); }
-    .btn-tb-secondary { background: #334155; color: #f1f5f9; }
-    .btn-tb-secondary:hover { background: #475569; }
-
     /* ── PAGE WRAPPER ── */
     .page-wrapper {
       display: flex; flex-direction: column; align-items: center;
@@ -558,17 +538,6 @@
   </style>
 </head>
 <body>
-
-  <div class="toolbar-container">
-    <div class="toolbar-title">
-      <span>GR CLASS Survey Status Report</span>
-      <span class="toolbar-pill">Official A4 Layout</span>
-    </div>
-    <div class="toolbar-actions">
-      <button class="btn-tb btn-tb-secondary" onclick="toggleEditMode()" id="editToggleBtn">✏️ Editable Mode</button>
-      <button class="btn-tb btn-tb-primary" onclick="window.print()">🖨 Print / Save PDF</button>
-    </div>
-  </div>
 
   <div class="page-wrapper">
 
