@@ -115,7 +115,7 @@
   .pay-title { font-weight: 800; font-size: 9pt; margin-bottom: 4px; color: #0B2443; text-transform: uppercase; letter-spacing: .5px; }
   .pay-lines { font-size: 8.5pt; line-height: 1.6; }
   .pay-lines .row { display: flex; gap: 6px; }
-  .pay-lines .lbl { width: 80px; font-weight: 700; flex-shrink: 0; color: #444; }
+  .pay-lines .lbl { width: 95px; font-weight: 700; flex-shrink: 0; color: #444; }
   .say-box {
     border: 1px solid #B5891F; border-radius: 2px;
     padding: 8px 12px; font-size: 9pt; font-style: italic;
@@ -237,12 +237,13 @@
       <div class="pay-title">Payment Details</div>
       <div class="pay-lines">
         Free remittance to the address:<br>
-        <div class="row"><div class="lbl">Bank</div><div>{{bank_name}}</div></div>
-        <div class="row"><div class="lbl">Branch</div><div>{{bank_branch}}</div></div>
-        <div class="row"><div class="lbl">BIC/SWIFT</div><div>{{bank_swift}}</div></div>
+        <div class="row"><div class="lbl">Beneficiary</div><div>{{beneficiary_name}}</div></div>
+        <div class="row"><div class="lbl">Bank Address</div><div>{{bank_address}}</div></div>
+        <div class="row"><div class="lbl">AED ACC NO</div><div>{{acc_no_aed}}</div></div>
+        <div class="row"><div class="lbl">IBAN AED</div><div>{{iban_aed}}</div></div>
+        <div class="row"><div class="lbl">USD ACC NO</div><div>{{acc_no_usd}}</div></div>
         <div class="row"><div class="lbl">IBAN USD</div><div>{{iban_usd}}</div></div>
-        <div class="row"><div class="lbl">IBAN EUR</div><div>{{iban_eur}}</div></div>
-        <div class="row"><div class="lbl">In favour of</div><div>GR CLASS</div></div>
+        <div class="row"><div class="lbl">In favour of</div><div>{{beneficiary_name}}</div></div>
       </div>
     </div>
     <div class="say-box">
