@@ -715,7 +715,7 @@ export const generateInvoicePdf = async (paymentId) => {
         iban_aed: 'AE500260001015977378501',
         acc_no_usd: '1025977378502',
         iban_usd: 'AE580260001025977378502',
-        bank_name: 'GR Class - F.Z.C',
+        bank_name: 'Emirates NBD',
         bank_branch: '3rd floor, N- Building, Nad Al Sheba-1, Meydan, Dubai, UAE',
         bank_swift: '',
         iban_eur: '',
