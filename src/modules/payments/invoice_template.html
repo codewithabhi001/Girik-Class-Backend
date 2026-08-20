@@ -111,11 +111,11 @@
   .totals-table tr.grand.eur td { background: #FFF8E7; }
 
   /* payment + say */
-  .bottom-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px; margin-bottom: 6px; page-break-inside: avoid; break-inside: avoid; }
+  .bottom-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; margin-bottom: 6px; page-break-inside: avoid; break-inside: avoid; }
   .pay-title { font-weight: 800; font-size: 9pt; margin-bottom: 4px; color: #0B2443; text-transform: uppercase; letter-spacing: .5px; }
-  .pay-lines { font-size: 8.5pt; line-height: 1.6; }
-  .pay-lines .row { display: flex; gap: 6px; }
-  .pay-lines .lbl { width: 95px; font-weight: 700; flex-shrink: 0; color: #444; }
+  .pay-lines { font-size: 8.5pt; line-height: 1.45; }
+  .pay-lines .row { display: flex; gap: 6px; margin-bottom: 2px; }
+  .pay-lines .lbl { width: 100px; font-weight: 700; flex-shrink: 0; color: #0B2443; }
   .say-box {
     border: 1px solid #B5891F; border-radius: 2px;
     padding: 8px 12px; font-size: 9pt; font-style: italic;
@@ -240,13 +240,9 @@
         <div class="row"><div class="lbl">Beneficiary</div><div>{{beneficiary_name}}</div></div>
         <div class="row"><div class="lbl">Bank Name</div><div>{{bank_name}}</div></div>
         <div class="row"><div class="lbl">Bank Address</div><div>{{bank_address}}</div></div>
-        <div class="row"><div class="lbl">Routing Code</div><div>{{bank_routing}}</div></div>
-        <div class="row"><div class="lbl">SWIFT Code</div><div>{{bank_swift}}</div></div>
-        <div class="row"><div class="lbl">AED ACC NO</div><div>{{acc_no_aed}}</div></div>
-        <div class="row"><div class="lbl">IBAN AED</div><div>{{iban_aed}}</div></div>
-        <div class="row"><div class="lbl">USD ACC NO</div><div>{{acc_no_usd}}</div></div>
-        <div class="row"><div class="lbl">IBAN USD</div><div>{{iban_usd}}</div></div>
-        <div class="row"><div class="lbl">In favour of</div><div>{{beneficiary_name}}</div></div>
+        <div class="row"><div class="lbl">Routing / SWIFT</div><div>Routing: <strong>{{bank_routing}}</strong> &nbsp;|&nbsp; SWIFT: <strong>{{bank_swift}}</strong></div></div>
+        <div class="row"><div class="lbl">AED Account</div><div>{{acc_no_aed}} &nbsp;|&nbsp; IBAN: <strong>{{iban_aed}}</strong></div></div>
+        <div class="row"><div class="lbl">USD Account</div><div>{{acc_no_usd}} &nbsp;|&nbsp; IBAN: <strong>{{iban_usd}}</strong></div></div>
       </div>
     </div>
     <div class="say-box">
